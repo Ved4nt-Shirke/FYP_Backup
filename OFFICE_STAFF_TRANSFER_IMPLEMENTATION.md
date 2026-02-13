@@ -9,6 +9,7 @@ The office staff transfer functionality has been fully implemented with an impro
 ### 1. **Frontend - OfficeStaffList.jsx**
 
 #### Added Features:
+
 - ✅ **Transfer Modal** - Beautiful dedicated UI for department transfers
 - ✅ **Transfer Button** - Added to both card and table views
 - ✅ **Department Display** - Shows current department in card view
@@ -16,6 +17,7 @@ The office staff transfer functionality has been fully implemented with an impro
 - ✅ **Transfer Validation** - Prevents invalid transfers
 
 #### New State Variables:
+
 ```javascript
 const [showTransferModal, setShowTransferModal] = useState(false);
 const [staffToTransfer, setStaffToTransfer] = useState(null);
@@ -24,6 +26,7 @@ const [transferring, setTransferring] = useState(false);
 ```
 
 #### New Functions:
+
 - `handleTransferClick(staffMember)` - Opens transfer modal
 - `closeTransferModal()` - Closes and resets transfer state
 - `confirmTransfer()` - Executes the transfer API call
@@ -31,6 +34,7 @@ const [transferring, setTransferring] = useState(false);
 ### 2. **Frontend - FacultyList.css**
 
 #### Added Styles:
+
 - **Transfer Modal Layout** - Clean, professional transfer interface
 - **Department Boxes** - Current and target department displays
 - **Transfer Arrow** - Visual indicator of transfer direction
@@ -43,6 +47,7 @@ const [transferring, setTransferring] = useState(false);
 The backend already has the complete transfer functionality:
 
 #### Endpoint: `PUT /admin/office-staff/:id/transfer`
+
 ```javascript
 Request Body:
 {
@@ -89,6 +94,7 @@ Response:
 ### Transfer Scenarios:
 
 #### Scenario 1: Staff Not Assigned → Assign to Department
+
 ```
 Current: Not Assigned
 Action: Select "Computer Science"
@@ -97,14 +103,16 @@ Message: "Assign to Computer Science"
 ```
 
 #### Scenario 2: Transfer Between Departments
+
 ```
 Current: Computer Science
-Action: Select "Mechanical Engineering"  
+Action: Select "Mechanical Engineering"
 Result: Transferred from CS to ME
 Message: "Transfer from Computer Science to Mechanical Engineering"
 ```
 
 #### Scenario 3: Unassign from Department
+
 ```
 Current: Computer Science
 Action: Select "Unassign from Department"
@@ -115,18 +123,21 @@ Message: "Office staff removed from department successfully"
 ## UI Improvements
 
 ### Card View Enhancements:
+
 - ✅ Department name displayed prominently
 - ✅ Transfer button with unique color (primary accent)
 - ✅ Better icon usage (building icon for department)
 - ✅ Consistent action button layout
 
 ### Table View Enhancements:
+
 - ✅ Transfer button added to actions column
 - ✅ Color-coded action buttons
 - ✅ Consistent with card view functionality
 - ✅ Tooltip hints for all actions
 
 ### Transfer Modal Features:
+
 - ✅ **Staff Information Panel** - Avatar, name, employee ID
 - ✅ **Current Department Display** - Shows existing assignment
 - ✅ **Visual Arrow** - Clear indication of transfer direction
@@ -138,18 +149,21 @@ Message: "Office staff removed from department successfully"
 ## Color-Coded Transfer Notes
 
 ### 🔵 Info (Blue)
+
 ```
 Displayed when: Staff not assigned and selecting new department
 Message: "Select a department to assign them"
 ```
 
 ### 🟡 Warning (Orange)
+
 ```
 Displayed when: Removing staff from department
 Message: "This will remove the staff member from [Department]"
 ```
 
 ### 🟢 Success (Green)
+
 ```
 Displayed when: Valid transfer selected
 Message: "Transfer from [Dept A] to [Dept B]" or "Assign to [Dept]"
@@ -158,14 +172,16 @@ Message: "Transfer from [Dept A] to [Dept B]" or "Assign to [Dept]"
 ## API Integration
 
 ### Transfer Endpoint Call:
+
 ```javascript
 axios.put(`/admin/office-staff/${staffId}/transfer`, {
   fromDepartmentId: currentDeptId || null,
-  toDepartmentId: targetDeptId || null
-})
+  toDepartmentId: targetDeptId || null,
+});
 ```
 
 ### Response Handling:
+
 - ✅ Success → Show alert, refresh list, close modal
 - ✅ Error → Show error message, keep modal open
 - ✅ Loading → Disable buttons, show spinner
@@ -175,6 +191,7 @@ axios.put(`/admin/office-staff/${staffId}/transfer`, {
 The edit form in **OfficeStaffForm.jsx** also supports department changes:
 
 ### How to Edit Department:
+
 1. Click "Edit" button on staff member
 2. Navigate to edit form
 3. Change department from dropdown
@@ -186,6 +203,7 @@ The edit form in **OfficeStaffForm.jsx** also supports department changes:
 ## Testing Checklist
 
 ### ✅ Transfer Modal UI
+
 - [x] Modal opens when transfer button clicked
 - [x] Staff information displays correctly
 - [x] Current department shows properly
@@ -196,6 +214,7 @@ The edit form in **OfficeStaffForm.jsx** also supports department changes:
 - [x] Modal closes after successful transfer
 
 ### ✅ Transfer Functionality
+
 - [x] Can assign unassigned staff to department
 - [x] Can transfer between departments
 - [x] Can unassign staff from department
@@ -206,6 +225,7 @@ The edit form in **OfficeStaffForm.jsx** also supports department changes:
 - [x] Staff list refreshes after transfer
 
 ### ✅ Visual Polish
+
 - [x] Buttons use theme colors
 - [x] Hover states work properly
 - [x] Icons display correctly
@@ -217,12 +237,14 @@ The edit form in **OfficeStaffForm.jsx** also supports department changes:
 ## Button Reference
 
 ### Card View Actions (Top Right):
+
 1. **🔑 Key** - View/Edit Credentials
 2. **🔄 Transfer** - Transfer Department (NEW)
 3. **✏️ Edit** - Edit Full Profile
 4. **🗑️ Delete** - Remove Staff Member
 
 ### Table View Actions:
+
 1. **🔑 Key** - View/Edit Credentials
 2. **🔄 Transfer** - Transfer Department (NEW - Blue)
 3. **✏️ Edit** - Edit Full Profile
@@ -252,20 +274,21 @@ The transfer feature automatically adapts to institution colors:
 - **VSIT (Red)**: Transfer button uses red accent
 
 Colors are applied via CSS variables:
+
 - `var(--admin-primary)` - Main accent color
 - `var(--admin-primary-light)` - Light background
 - Theme colors set in `App.jsx` based on institution
 
 ## Advantages Over Edit Form
 
-| Feature | Transfer Modal | Edit Form |
-|---------|---------------|-----------|
-| **Purpose** | Specific to dept transfers | General profile editing |
-| **Visual Clarity** | Shows from → to | Just dropdown |
-| **Validation** | Prevents same dept | Generic validation |
-| **Feedback** | Smart contextual notes | No specific notes |
-| **Speed** | Quick action | Full form submission |
-| **UX** | Dedicated flow | Mixed with other edits |
+| Feature            | Transfer Modal             | Edit Form               |
+| ------------------ | -------------------------- | ----------------------- |
+| **Purpose**        | Specific to dept transfers | General profile editing |
+| **Visual Clarity** | Shows from → to            | Just dropdown           |
+| **Validation**     | Prevents same dept         | Generic validation      |
+| **Feedback**       | Smart contextual notes     | No specific notes       |
+| **Speed**          | Quick action               | Full form submission    |
+| **UX**             | Dedicated flow             | Mixed with other edits  |
 
 ## Future Enhancements (Optional)
 

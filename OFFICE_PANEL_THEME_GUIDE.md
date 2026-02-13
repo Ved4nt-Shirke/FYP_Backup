@@ -1,16 +1,19 @@
 # Office Panel Institution Theme Guide
 
 ## Overview
+
 The office staff panel now automatically adapts its color scheme based on the institution the staff member belongs to. This provides a consistent visual identity across the application.
 
 ## Institution Color Palettes
 
 ### 1. **VP (Vidyalankar Polytechnic)** - Green Theme
+
 - **Primary Color**: `#10b981` (Emerald Green)
 - **Dark Accent**: `#059669` (Dark Green)
 - **Header Background**: `#2e7d32` (Forest Green)
 
 **Applied to:**
+
 - Sidebar logo and active menu items
 - Header gradient
 - Primary buttons (Upload, Apply Filter, etc.)
@@ -21,24 +24,29 @@ The office staff panel now automatically adapts its color scheme based on the in
 - Copy buttons
 
 ### 2. **VIT (Vidyalankar Institute of Technology)** - Blue Theme
+
 - **Primary Color**: `#3b82f6` (Sky Blue)
 - **Dark Accent**: `#1d4ed8` (Royal Blue)
 - **Header Background**: `#1565c0` (Deep Blue)
 
 **Applied to:**
+
 - All the same elements as VP, but in blue tones
 
 ### 3. **VSIT (Vidyalankar School of Information Technology)** - Red Theme
+
 - **Primary Color**: `#ef4444` (Bright Red)
 - **Dark Accent**: `#b91c1c` (Crimson)
 - **Header Background**: `#c62828` (Dark Red)
 
 **Applied to:**
+
 - All the same elements as VP, but in red tones
 
 ## Implementation Details
 
 ### CSS Variables Used
+
 The office panel uses the following CSS variables that automatically adapt:
 
 ```css
@@ -89,6 +97,7 @@ To test different institution themes:
 ## Elements Styled
 
 ### Office Dashboard
+
 - Tab buttons (active state)
 - Primary action buttons
 - Upload buttons
@@ -99,6 +108,7 @@ To test different institution themes:
 - Credential display borders
 
 ### Division Credentials
+
 - Expand/Collapse division buttons
 - Table headers
 - Student count badges
@@ -106,6 +116,7 @@ To test different institution themes:
 - Code display in credential tables
 
 ### Manage Students
+
 - Edit/Filter input borders on focus
 - Primary action buttons (Edit, Save)
 - Pagination navigation (hover state)
@@ -114,11 +125,13 @@ To test different institution themes:
 - Copy to clipboard buttons
 
 ### Office Header
+
 - Header background gradient
 - Quick action buttons
 - Notification badges
 
 ### Office Sidebar
+
 - Logo background gradient
 - Active menu item highlighting
 - Section dividers
@@ -137,6 +150,7 @@ To test different institution themes:
 To add a new institution:
 
 1. Update `applyTheme()` in `App.jsx`:
+
 ```javascript
 const themeMap = {
   VSIT: { header: "#c62828", accent: "#ef4444", accentDark: "#b91c1c" },

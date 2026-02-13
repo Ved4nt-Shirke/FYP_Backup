@@ -289,7 +289,7 @@ const OfficeStaffList = () => {
       showErrorAlert("Please select a target department");
       return;
     }
-    
+
     setTransferring(true);
     try {
       const response = await axios.put(
@@ -297,9 +297,9 @@ const OfficeStaffList = () => {
         {
           fromDepartmentId: staffToTransfer.department?._id || null,
           toDepartmentId: targetDepartment || null,
-        }
+        },
       );
-      
+
       if (response.data.success) {
         showSuccessAlert(response.data.message);
         fetchOfficeStaff();
@@ -309,7 +309,9 @@ const OfficeStaffList = () => {
       }
     } catch (err) {
       console.error("Error transferring office staff:", err);
-      showErrorAlert(err.response?.data?.message || "Failed to transfer office staff");
+      showErrorAlert(
+        err.response?.data?.message || "Failed to transfer office staff",
+      );
     } finally {
       setTransferring(false);
     }
@@ -485,7 +487,8 @@ const OfficeStaffList = () => {
                   <i className="bi bi-envelope"></i> {member.email}
                 </p>
                 <p className="faculty-department">
-                  <i className="bi bi-building"></i> {member.department?.name || "No Department"}
+                  <i className="bi bi-building"></i>{" "}
+                  {member.department?.name || "No Department"}
                 </p>
                 {getStatusBadge(member.status)}
               </div>
@@ -819,30 +822,43 @@ const OfficeStaffList = () => {
             <div className="modal-body">
               <div className="transfer-info">
                 <div className="transfer-staff-info">
-                  <div className="faculty-avatar" style={{ width: "60px", height: "60px" }}>
+                  <div
+                    className="faculty-avatar"
+                    style={{ width: "60px", height: "60px" }}
+                  >
                     <i className="bi bi-person-badge"></i>
                   </div>
                   <div>
-                    <h4 style={{ margin: "0 0 4px 0" }}>{staffToTransfer.fullName}</h4>
-                    <p style={{ margin: "0", color: "#6b7280", fontSize: "14px" }}>
+                    <h4 style={{ margin: "0 0 4px 0" }}>
+                      {staffToTransfer.fullName}
+                    </h4>
+                    <p
+                      style={{
+                        margin: "0",
+                        color: "#6b7280",
+                        fontSize: "14px",
+                      }}
+                    >
                       {staffToTransfer.employeeId}
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="transfer-departments">
                   <div className="department-box current-dept">
                     <label>Current Department</label>
                     <div className="dept-display">
                       <i className="bi bi-building"></i>
-                      <span>{staffToTransfer.department?.name || "Not Assigned"}</span>
+                      <span>
+                        {staffToTransfer.department?.name || "Not Assigned"}
+                      </span>
                     </div>
                   </div>
-                  
+
                   <div className="transfer-arrow">
                     <i className="bi bi-arrow-right"></i>
                   </div>
-                  
+
                   <div className="department-box target-dept">
                     <label>Transfer To</label>
                     <select
@@ -852,7 +868,10 @@ const OfficeStaffList = () => {
                     >
                       <option value="">Unassign from Department</option>
                       {departments
-                        .filter((dept) => dept._id !== staffToTransfer.department?._id)
+                        .filter(
+                          (dept) =>
+                            dept._id !== staffToTransfer.department?._id,
+                        )
                         .map((dept) => (
                           <option key={dept._id} value={dept._id}>
                             {dept.name} ({dept.code})
@@ -861,42 +880,54 @@ const OfficeStaffList = () => {
                     </select>
                   </div>
                 </div>
-                
+
                 {!targetDepartment && !staffToTransfer.department && (
                   <div className="transfer-note info">
                     <i className="bi bi-info-circle"></i>
-                    <span>This staff member is not currently assigned to any department. Select a department to assign them.</span>
+                    <span>
+                      This staff member is not currently assigned to any
+                      department. Select a department to assign them.
+                    </span>
                   </div>
                 )}
-                
+
                 {!targetDepartment && staffToTransfer.department && (
                   <div className="transfer-note warning">
                     <i className="bi bi-exclamation-triangle"></i>
-                    <span>This will remove the staff member from {staffToTransfer.department?.name}.</span>
+                    <span>
+                      This will remove the staff member from{" "}
+                      {staffToTransfer.department?.name}.
+                    </span>
                   </div>
                 )}
-                
+
                 {targetDepartment && (
                   <div className="transfer-note success">
                     <i className="bi bi-check-circle"></i>
                     <span>
-                      {staffToTransfer.department 
-                        ? `Transfer from ${staffToTransfer.department?.name} to ${departments.find(d => d._id === targetDepartment)?.name}`
-                        : `Assign to ${departments.find(d => d._id === targetDepartment)?.name}`
-                      }
+                      {staffToTransfer.department
+                        ? `Transfer from ${staffToTransfer.department?.name} to ${departments.find((d) => d._id === targetDepartment)?.name}`
+                        : `Assign to ${departments.find((d) => d._id === targetDepartment)?.name}`}
                     </span>
                   </div>
                 )}
               </div>
             </div>
             <div className="modal-footer">
-              <button className="view-btn" onClick={closeTransferModal} disabled={transferring}>
+              <button
+                className="view-btn"
+                onClick={closeTransferModal}
+                disabled={transferring}
+              >
                 Cancel
               </button>
               <button
                 className="btn-primary"
                 onClick={confirmTransfer}
-                disabled={transferring || (targetDepartment === (staffToTransfer.department?._id || ""))}
+                disabled={
+                  transferring ||
+                  targetDepartment === (staffToTransfer.department?._id || "")
+                }
               >
                 {transferring ? (
                   <>

@@ -7,6 +7,7 @@ The office staff panel now automatically applies institution-specific color them
 ## How It Works
 
 ### 1. **Login Process**
+
 ```
 User Login → Select Institution (VP/VIT/VSIT) → Login as Office Staff
                 ↓
@@ -17,15 +18,16 @@ User Login → Select Institution (VP/VIT/VSIT) → Login as Office Staff
 
 ### 2. **Theme Colors**
 
-| Institution | Code | Primary Color | Header Color | Example |
-|------------|------|---------------|--------------|---------|
-| **Vidyalankar Polytechnic** | VP | 🟢 Green `#10b981` | `#2e7d32` | Default |
-| **Vidyalankar Institute of Technology** | VIT | 🔵 Blue `#3b82f6` | `#1565c0` | Tech-focused |
-| **Vidyalankar School of IT** | VSIT | 🔴 Red `#ef4444` | `#c62828` | Energy |
+| Institution                             | Code | Primary Color      | Header Color | Example      |
+| --------------------------------------- | ---- | ------------------ | ------------ | ------------ |
+| **Vidyalankar Polytechnic**             | VP   | 🟢 Green `#10b981` | `#2e7d32`    | Default      |
+| **Vidyalankar Institute of Technology** | VIT  | 🔵 Blue `#3b82f6`  | `#1565c0`    | Tech-focused |
+| **Vidyalankar School of IT**            | VSIT | 🔴 Red `#ef4444`   | `#c62828`    | Energy       |
 
 ### 3. **What Changes Color**
 
 #### Office Dashboard
+
 - ✓ Active tab indicators
 - ✓ Primary action buttons
 - ✓ Upload/Filter buttons
@@ -33,12 +35,14 @@ User Login → Select Institution (VP/VIT/VSIT) → Login as Office Staff
 - ✓ Badge/pill elements
 
 #### Division Credentials Page
+
 - ✓ Expand/Collapse buttons
 - ✓ Table headers
 - ✓ Student count badges
 - ✓ Hover states
 
 #### Manage Students Page
+
 - ✓ Edit buttons
 - ✓ Input borders (edit mode)
 - ✓ Pagination controls
@@ -46,10 +50,12 @@ User Login → Select Institution (VP/VIT/VSIT) → Login as Office Staff
 - ✓ Copy buttons
 
 #### Office Header
+
 - ✓ Header background gradient
 - ✓ Quick action buttons
 
 #### Office Sidebar
+
 - ✓ Logo background
 - ✓ Active menu items
 - ✓ Section highlights
@@ -57,6 +63,7 @@ User Login → Select Institution (VP/VIT/VSIT) → Login as Office Staff
 ### 4. **Technical Implementation**
 
 **Files Updated:**
+
 1. ✅ `DivisionCredentials.css` - Added CSS variables
 2. ✅ `ManageStudents.css` - Added CSS variables
 3. ✅ `OfficeSidebar.css` - Already using variables
@@ -65,6 +72,7 @@ User Login → Select Institution (VP/VIT/VSIT) → Login as Office Staff
 6. ✅ `App.jsx` - Theme application logic (already working)
 
 **CSS Variables Used:**
+
 ```css
 :root {
   --primary-accent: [Institution Color];
@@ -76,6 +84,7 @@ User Login → Select Institution (VP/VIT/VSIT) → Login as Office Staff
 ### 5. **Testing Instructions**
 
 **Test VP (Green Theme):**
+
 ```
 1. Go to login page
 2. Select "VP" from institution dropdown
@@ -85,6 +94,7 @@ User Login → Select Institution (VP/VIT/VSIT) → Login as Office Staff
 ```
 
 **Test VIT (Blue Theme):**
+
 ```
 1. Logout
 2. Select "VIT" from institution dropdown
@@ -94,6 +104,7 @@ User Login → Select Institution (VP/VIT/VSIT) → Login as Office Staff
 ```
 
 **Test VSIT (Red Theme):**
+
 ```
 1. Logout
 2. Select "VSIT" from institution dropdown
@@ -125,6 +136,7 @@ This ensures important action colors remain intuitive across all institutions.
 ## Example Scenarios
 
 ### Scenario 1: VP Office Staff
+
 ```
 Login → VP selected → Green theme applied
 Dashboard Opens → Green buttons, headers, accents
@@ -134,6 +146,7 @@ Division Credentials → Green expand buttons
 ```
 
 ### Scenario 2: VIT Office Staff
+
 ```
 Login → VIT selected → Blue theme applied
 Dashboard Opens → Blue buttons, headers, accents
@@ -143,6 +156,7 @@ Division Credentials → Blue expand buttons
 ```
 
 ### Scenario 3: VSIT Office Staff
+
 ```
 Login → VSIT selected → Red theme applied
 Dashboard Opens → Red buttons, headers, accents
