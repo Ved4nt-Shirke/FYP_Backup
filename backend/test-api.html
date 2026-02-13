@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1>Test Super Admin API</h1>
+    <button onclick="testCreateInstitution()">Test Create Institution</button>
+    <div id="result"></div>
+
+    <script>
+        async function testCreateInstitution() {
+            try {
+                // First login as super admin
+                const loginResponse = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'superadmin',
+                        password: 'superadmin123',
+                        college: 'ALL',
+                        role: 'superadmin'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                console.log('Login response:', loginData);
+                
+                if (!loginResponse.ok) {
+                    document.getElementById('result').innerHTML = `<p>Error: ${loginData.msg}</p>`;
+                    return;
+                }
+                
+                const token = loginData.token;
+                console.log('Token:', token);
+                
+                // Decode token to check expiration
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    console.log('Token payload:', payload);
+                    const now = Math.floor(Date.now() / 1000);
+                    console.log('Current time:', now);
+                    console.log('Token expiration:', payload.exp);
+                    console.log('Token valid:', payload.exp > now);
+                } catch (decodeError) {
+                    console.error('Error decoding token:', decodeError);
+                }
+                
+                // Now test creating an institution
+                const institutionResponse = await fetch('http://localhost:5000/api/superadmin/create-institution', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        name: 'Test Institution ' + Date.now(),
+                        code: 'TI' + Date.now() % 10000
+                    })
+                });
+                
+                const institutionData = await institutionResponse.json();
+                console.log('Institution creation response:', institutionData);
+                
+                if (institutionResponse.ok) {
+                    document.getElementById('result').innerHTML = `<p>Success: ${institutionData.message}</p>
+                    <p>Institution: ${institutionData.institution.name}</p>
+                    <p>Code: ${institutionData.institution.code}</p>
+                    <p>Admin Username: ${institutionData.institution.adminUsername}</p>
+                    <p>Admin Password: ${institutionData.institution.adminPassword}</p>`;
+                } else {
+                    document.getElementById('result').innerHTML = `<p>Error: ${institutionData.message}</p>
+                    <p>Status: ${institutionResponse.status}</p>
+                    <p>Status Text: ${institutionResponse.statusText}</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

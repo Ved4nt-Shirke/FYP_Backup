@@ -1,0 +1,26 @@
+/* Office Layout Styles */
+.office-layout-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.office-layout-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 280px;
+  transition: margin-left 0.3s ease;
+}
+
+.office-layout-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .office-layout-main {
+    margin-left: 0;
+  }
+}

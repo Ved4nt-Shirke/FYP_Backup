@@ -1,0 +1,511 @@
+/* Main content area within the layout - original for timetable compatibility */
+.timetable-main-content {
+  flex: 1; /* Allows it to grow and take available space */
+  display: flex;
+  justify-content: center; /* Center content horizontally within itself */
+  align-items: flex-start; /* Align content to the top */
+  padding: 0 ; /* Removed padding to allow .theory-attendance-container to stretch more */
+  box-sizing: border-box; /* Include padding in width */
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  /* Add padding-left to create space from the sidebar */
+  padding-left: 260px; /* Adjust this value based on your sidebar's width */
+}
+
+/* Fixed version for attendance pages - works with sidebar layout */
+.attendance-main-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 15px;
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+}
+
+/* Specific container for the Practical Attendance table and controls */
+.theory-attendance-container {
+  width: 98%; /* Keep 98% width relative to its parent */
+  max-width: 1400px; /* Increased max-width to allow it to stretch significantly more */
+  margin: 0px auto 40px auto; /* Changed top margin to 0px, kept auto for horizontal centering, and 40px for bottom margin */
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12); /* More prominent shadow */
+  padding: 40px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* Removed overflow-x: auto here, as it will be on table-container now */
+  min-height: 400px; /* Ensure a minimum height for the container */
+  height: fit-content; /* Allow container to shrink to content if less than min-height */
+}
+
+.header-row {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 32px;
+  border-bottom: 2px solid #e0e0e0; /* Subtle separator */
+  padding-bottom: 15px;
+}
+
+.header-row h3 {
+  font-size: 2rem; /* Larger title */
+  color: var(--app-header-bg, #28a745); /* Use theme variable */
+  font-weight: 700; /* Bolder */
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.ciann-info {
+  width: 100%;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid var(--app-header-bg, #28a745); /* Use theme variable */
+  font-size: 14px;
+  color: #495057;
+}
+
+.table-container {
+  width: 100%; /* Take full width of its parent (.theory-attendance-container) */
+  overflow-x: auto; /* Important: Allow table to scroll horizontally if it exceeds container width */
+  overflow-y: auto; /* Added for vertical scrolling */
+  max-height: calc(100vh - 350px); /* Adjust this value based on header, pagination, and overall layout space */
+  padding-bottom: 24px;
+  flex: 1; /* Allow it to grow */
+}
+
+table {
+  width: 100%; /* Take full width of .table-container */
+  min-width: 1000px; /* Increased minimum width for better desktop layout */
+  border-collapse: collapse;
+  border: 1px solid #ddd; /* Lighter overall table border */
+  table-layout: fixed; /* Ensures column widths are respected */
+  font-size: 15px; /* Slightly increased base font size */
+  border-radius: 8px; /* Rounded corners for the table */
+  overflow: hidden; /* Ensures rounded corners are visible */
+}
+
+table th, table td {
+  padding: 14px 10px; /* Adjusted padding */
+  font-size: 15px; /* Consistent font size */
+  text-align: center;
+  border: 1px solid #eee; /* Lighter cell borders */
+  word-wrap: break-word; /* Allow text to wrap */
+  white-space: normal; /* Ensure text wraps within cells */
+}
+
+table thead th {
+  font-weight: 600; /* Slightly less bold than before, more modern */
+  text-align: center;
+  padding: 16px 12px;
+  background-color: #e9ecef; /* Light gray background */
+  color: #495057;
+  border-top: none; /* Remove top border */
+  border-bottom: 2px solid #ccc; /* Stronger bottom border for header row */
+  position: sticky; /* Make header sticky */
+  top: 0; /* Stick to the top of the scrolling container */
+  z-index: 1; /* Ensure it stays above scrolling content */
+}
+
+/* Remove side borders from header cells */
+table thead th:first-child {
+  border-left: none;
+}
+table thead th:last-child {
+  border-right: none;
+}
+
+table tbody td {
+  border-left: none; /* Remove side borders from body cells */
+  border-right: none;
+  vertical-align: top; /* Align content to top */
+}
+
+table tbody tr:last-child td {
+  border-bottom: none; /* Remove bottom border for last row */
+}
+
+/* Column Widths - Adjusted for practical attendance table */
+table th:nth-child(1),
+table td:nth-child(1) {
+  width: 8%; /* Week No. */
+}
+
+table th:nth-child(2),
+table td:nth-child(2) {
+  width: 10%!important; /* Batch */
+}
+
+table th:nth-child(3),
+table td:nth-child(3) {
+  width:  22% !important; /* Experiment No. */
+}
+
+table th:nth-child(4),
+table td:nth-child(4) {
+  width: 22% !important; /* Experiment Name */
+}
+
+table th:nth-child(5),
+table td:nth-child(5) {
+  width: 12%; /* Planned Date */
+}
+
+table th:nth-child(6),
+table td:nth-child(6) {
+  width: 12%; /* Actual Date */
+}
+
+table th:nth-child(7),
+table td:nth-child(7) {
+  width: 15%; /* Remark */
+}
+
+table th:nth-child(8),
+table td:nth-child(8) {
+  width: 15%; /* Mark Attendance */
+}
+
+/* Enhanced button styling to match TheoryEdit */
+.mark-attendance-btn {
+  background-color: var(--app-header-bg, #28a745); /* Use theme variable */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+
+.mark-attendance-btn:hover {
+  background-color: var(--primary-accent-dark, #218838); /* Use theme dark variable */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.mark-attendance-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+
+.mark-attendance-btn.disabled,
+.mark-attendance-btn:disabled {
+  background-color: #6c757d;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.mark-attendance-btn.disabled:hover,
+.mark-attendance-btn:disabled:hover {
+  background-color: #6c757d;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Status indicators */
+.status-completed {
+  color: var(--app-header-bg, #28a745); /* Use theme variable */
+  font-weight: 600;
+}
+
+.status-pending {
+  color: #ffc107;
+  font-weight: 600;
+}
+
+.status-dash {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px; /* Slightly smaller gap */
+  padding: 20px; /* More padding */
+  background-color: #f6f8fa;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 30px;
+}
+
+.pagination button {
+  padding: 8px 18px; /* Adjusted padding */
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  background-color: #ffffff;
+  border: 1px solid #dcdcdc; /* Softer border */
+  border-radius: 8px; /* More rounded */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  margin-top: -25px;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #e8f5e9; /* Light green hover */
+  color: var(--app-header-bg, #28a745); /* Use theme variable */
+  border-color: #a5d6a7;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.pagination button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f0f0f0;
+  color: #999;
+  box-shadow: none;
+}
+
+.pagination button.active { /* Added active state for current page button */
+  background-color: #4caf50;
+  color: white;
+  border-color: #4caf50;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.pagination button.active:hover {
+  background-color: #43a047;
+  border-color: #43a047;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 1024px) {
+  .theory-attendance-container {
+    padding: 30px 20px;
+    width: 98%;
+    margin: 0px auto 20px auto; /* Adjusted for smaller screens */
+  }
+  table {
+    min-width: 900px; /* Adjust table min-width for better tablet fit */
+  }
+  table th, table td {
+    font-size: 14px;
+    padding: 12px 8px;
+  }
+  .header-row h3 {
+    font-size: 1.7rem;
+  }
+  .table-container {
+    max-height: calc(100vh - 300px); /* Adjusted for smaller screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .timetable-main-content {
+    padding-left: 0;
+    padding: 20px;
+  }
+  
+  .theory-attendance-container {
+    width: 100%;
+    margin: 0px auto 10px auto; /* Adjusted for smaller screens */
+    padding: 20px 15px;
+    border-radius: 8px;
+    box-shadow: none;
+  }
+  .table-container {
+    overflow-x: auto; /* Keep horizontal scroll for mobile if needed */
+    max-height: calc(100vh - 250px); /* Adjusted for mobile screens */
+  }
+  table {
+    min-width: unset; /* Allow table to collapse on mobile */
+    border: none;
+    border-radius: 0;
+  }
+  table thead {
+    display: none; /* Hide headers on mobile */
+  }
+  table, tbody, tr, td {
+    display: block;
+    width: 100%;
+  }
+  tr {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Add shadow to individual rows */
+  }
+  td {
+    text-align: left;
+    border: none;
+    padding: 10px 15px; /* Adjusted padding */
+    position: relative;
+    white-space: normal;
+    font-size: 15px;
+  }
+  td::before {
+    content: attr(data-label);
+    font-weight: 600; /* Bolder label */
+    display: block;
+    margin-bottom: 6px; /* More space below label */
+    color: #555;
+    font-size: 14px;
+  }
+  /* Reset min-widths for mobile block display */
+  table th, table td {
+    min-width: unset;
+  }
+  .pagination {
+    justify-content: center;
+    padding: 15px;
+    gap: 6px;
+  }
+  .pagination button {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  .mark-attendance-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  
+  .mark-attendance-btn.disabled,
+  .mark-attendance-btn:disabled {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .theory-attendance-container {
+    padding: 15px 10px;
+    margin: 0px auto 10px auto; /* Adjusted for smaller screens */
+  }
+  .header-row h3 {
+    font-size: 1.5rem;
+  }
+  table th, table td {
+    font-size: 14px;
+    padding: 10px 8px;
+  }
+  td::before {
+    font-size: 13px;
+  }
+  .pagination button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .mark-attendance-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  
+  .mark-attendance-btn.disabled,
+  .mark-attendance-btn:disabled {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}
+
+/* Force narrower Batch column on mobile */
+@media (max-width: 768px) {
+  .table-container table th:nth-child(2),
+  .table-container table td:nth-child(2) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    white-space: nowrap; /* prevent wrapping that increases height */
+  }
+
+  /* Optional: slightly reduce padding so it fits better on small screens */
+  .table-container th,
+  .table-container td {
+    padding: 6px 8px !important;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Week No. column */
+  .table-container table th:nth-child(1),
+  .table-container table td:nth-child(1) {
+    width: 70px !important;
+    min-width: 70px !important;
+    max-width: 70px !important;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Week No. column */
+  .table-container table th:nth-child(3),
+  .table-container table td:nth-child(3) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Week No. column */
+  .table-container table th:nth-child(4),
+  .table-container table td:nth-child(4) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Week No. column */
+  .table-container table th:nth-child(5),
+  .table-container table td:nth-child(5) {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Week No. column */
+  .table-container table th:nth-child(6),
+  .table-container table td:nth-child(6) {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Week No. column */
+  .table-container table th:nth-child(7),
+  .table-container table td:nth-child(7) {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Week No. column */
+  .table-container table th:nth-child(8),
+  .table-container table td:nth-child(8) {
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+    white-space: nowrap;
+  }
+}

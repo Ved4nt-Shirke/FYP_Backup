@@ -1,0 +1,451 @@
+/* EditIndividualAttendance.css */
+
+/* General Body/Page Container */
+.edit-attendance-page-container {
+  min-height: 100vh;
+  background-color: #f8f9fa; /* Simple light background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: "Inter", sans-serif;
+  box-sizing: border-box;
+}
+
+/* Main Card Container */
+.edit-attendance-card {
+  background-color: #ffffff;
+  border-radius: 8px; /* Simpler rounded corners */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Lighter shadow */
+  padding: 30px;
+  max-width: 768px;
+  width: 100%;
+  position: relative;
+  border: 1px solid #e0e0e0;
+}
+
+/* Heading */
+.edit-attendance-heading {
+  font-size: 28px;
+  font-weight: 700; /* Bold */
+  color: #333333;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+/* Message Display (Success/Error) */
+.message-display {
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.message-display.success {
+  background-color: #d4edda; /* Light green */
+  color: #155724; /* Darker green */
+  border-color: #c3e6cb;
+}
+
+.message-display.error {
+  background-color: #f8d7da; /* Light red */
+  color: #721c24; /* Darker red */
+  border-color: #f5c6cb;
+}
+
+/* Form Layout */
+.edit-attendance-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .edit-attendance-form {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 25px;
+    row-gap: 20px;
+  }
+}
+
+/* Context Fields Container (Display-only Teaching Plan details) */
+.context-fields-container {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 20px;
+  background-color: #e9f5ff; /* Very light blue background */
+  border-radius: 8px;
+  border: 1px solid #cce5ff;
+}
+
+@media (min-width: 640px) {
+  .context-fields-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.context-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6c757d; /* Medium gray */
+  margin-bottom: 4px;
+}
+
+.context-value {
+  color: #343a40; /* Dark gray */
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Form Labels */
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #343a40;
+  margin-bottom: 8px;
+}
+
+/* Form Inputs (Text, Date) */
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 16px;
+  color: #495057;
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.student-status-select:focus {
+  outline: none;
+  border-color: #80bdff; /* Light blue on focus */
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Subtle blue glow */
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Students Section */
+.students-section {
+  grid-column: 1 / -1;
+  margin-top: 20px;
+}
+
+.students-heading {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 12px;
+}
+
+/* Table Wrapper for Students */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.attendance-table {
+  width: 100%;
+  min-width: 500px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.875rem;
+}
+
+.attendance-table thead {
+  background-color: #e9ecef;
+  color: #495057;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.attendance-table th {
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.attendance-table th:nth-child(1) {
+  width: 20%;
+}
+.attendance-table th:nth-child(2) {
+  width: 60%;
+}
+.attendance-table th:nth-child(3) {
+  width: 20%;
+}
+
+.attendance-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.attendance-table tbody tr:nth-of-type(even) {
+  background-color: #f7fafc;
+}
+
+.attendance-table tbody tr:hover {
+  background-color: #edf2f7;
+}
+
+.attendance-table td {
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: #4a5568;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.attendance-table td:nth-child(2) {
+  text-align: left;
+}
+
+/* Custom Checkbox Styles */
+.custom-checkbox {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: relative;
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  background-color: #fff;
+  border: 2px solid #cbd5e0;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-checkbox:hover input ~ .checkmark {
+  border-color: #4299e1;
+  background-color: #ebf8ff;
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+  background-color: #4299e1;
+  border-color: #4299e1;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Legacy styles removed - now using table layout */
+
+/* Action Buttons */
+.action-buttons-container {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.button-base {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent; /* Ensure consistent border */
+}
+
+.button-base:hover {
+  /* No transform/shadow animations */
+}
+
+.button-base:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button-primary {
+  background-color: #2e7d32; /* Your desired header color */
+  color: #ffffff;
+}
+
+.button-primary:hover {
+  background-color: #1b5e20; /* Darker shade on hover */
+}
+
+.button-secondary {
+  background-color: #ffffff;
+  color: #495057;
+  border-color: #ced4da;
+}
+
+.button-secondary:hover {
+  background-color: #e9ecef;
+}
+
+/* Error Message for no record selected */
+.error-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.error-message-box {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 350px;
+  width: 100%;
+}
+
+.error-heading {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.error-link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.error-link-button:hover {
+  color: #0056b3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .edit-attendance-page-container {
+    padding: 10px;
+  }
+
+  .edit-attendance-card {
+    padding: 20px;
+  }
+
+  .edit-attendance-heading {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .table-wrapper {
+    /* Keep table structure on mobile */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+  }
+
+  .table-wrapper::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .table-wrapper::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 4px;
+  }
+
+  .table-wrapper::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 4px;
+  }
+
+  .table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
+
+  /* Ensure table maintains structure on mobile */
+  .attendance-table,
+  .attendance-table thead,
+  .attendance-table tbody,
+  .attendance-table th,
+  .attendance-table td,
+  .attendance-table tr {
+    display: table !important;
+  }
+
+  .attendance-table thead {
+    display: table-header-group !important;
+  }
+
+  .attendance-table tbody {
+    display: table-row-group !important;
+  }
+
+  .attendance-table tr {
+    display: table-row !important;
+  }
+
+  .attendance-table th,
+  .attendance-table td {
+    display: table-cell !important;
+    padding: 0.5rem 0.3rem;
+    font-size: 0.8rem;
+  }
+
+  .attendance-table {
+    min-width: 450px; /* Ensure horizontal scroll on small screens */
+    font-size: 0.8rem;
+  }
+
+  .action-buttons-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .button-base {
+    width: 100%;
+    justify-content: center;
+  }
+}

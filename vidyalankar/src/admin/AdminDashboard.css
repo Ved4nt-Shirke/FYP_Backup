@@ -1,0 +1,181 @@
+/* AdminDashboard.css — Admin Dashboard Cards Layout */
+@import "./AdminTheme.css";
+
+/* ─────────────────────────────────────────────────────────────────────
+   DASHBOARD CARD LAYOUT
+   ───────────────────────────────────────────────────────────────────── */
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--admin-space-xl);
+  margin-top: var(--admin-space-xl);
+}
+
+.card-item {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-space-xl);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--admin-space-md);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.card-item:hover:not(.coming-soon) {
+  transform: translateY(-4px);
+  box-shadow: var(--admin-shadow-lg);
+  border-color: var(--admin-primary);
+}
+
+.card-item:hover:not(.coming-soon) .card-icon-wrap {
+  background: var(--admin-primary);
+  color: var(--admin-text-on-primary);
+  transform: scale(1.08);
+}
+
+/* Icon Container */
+.card-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--admin-radius-md);
+  background: var(--admin-primary-light);
+  color: var(--admin-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.card-icon {
+  font-size: 1.5rem;
+}
+
+/* Card Label with Underline */
+.card-label {
+  font-size: var(--admin-text-lg);
+  font-weight: var(--admin-font-bold);
+  color: var(--admin-primary-dark);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  position: relative;
+  padding-bottom: var(--admin-space-md);
+}
+
+.card-label::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 48px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--admin-primary),
+    var(--admin-primary-dark)
+  );
+}
+
+/* Card Description */
+.card-description {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  flex-grow: 1;
+}
+
+/* Coming Soon State */
+.card-item.coming-soon {
+  opacity: 0.65;
+  background: var(--admin-bg-secondary);
+  cursor: default;
+}
+
+.card-item.coming-soon:hover {
+  transform: none;
+  box-shadow: var(--admin-shadow-sm);
+  border-color: var(--admin-border);
+}
+
+.card-item.coming-soon .card-icon-wrap {
+  background: var(--admin-bg-tertiary);
+  color: var(--admin-text-tertiary);
+}
+
+/* Coming Soon Badge */
+.coming-soon-badge {
+  position: absolute;
+  top: var(--admin-space-lg);
+  right: var(--admin-space-lg);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--admin-info);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-font-bold);
+  padding: var(--admin-space-sm) var(--admin-space-md);
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Info Banner */
+.info-banner {
+  background: #fef3c7;
+  border-left: 4px solid var(--admin-warning);
+  color: #92400e;
+  padding: var(--admin-space-lg);
+  border-radius: var(--admin-radius-md);
+  margin-bottom: var(--admin-space-lg);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--admin-space-md);
+  box-shadow: var(--admin-shadow-xs);
+}
+
+.info-banner i {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.banner-title {
+  font-weight: var(--admin-font-bold);
+  font-size: var(--admin-text-sm);
+  margin-bottom: var(--admin-space-xs);
+}
+
+.banner-text {
+  font-size: var(--admin-text-sm);
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card-container {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--admin-space-lg);
+  }
+}
+
+@media (max-width: 600px) {
+  .card-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Remove green line from card labels */
+.card-label::after {
+  display: none !important;
+  border: none !important;
+}
+
+.card-label {
+  border-bottom: none !important;
+}

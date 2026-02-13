@@ -1,0 +1,154 @@
+/* --- GREEN HEADER STYLES --- */
+.view-header {
+  background-color: #198754; /* Green color similar to Bootstrap success */
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  width: 100%;
+}
+
+.view-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+/* Main page wrapper */
+.course-diary-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section containing the table */
+.attendance-section {
+  width: 100%;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+/* This wrapper creates the horizontal scrollbar */
+.attendance-table-wrapper {
+  width: 100%;
+  min-height: 640px;
+  overflow-x: auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+/* The Table itself */
+.attendance-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Table Cells & Header */
+.attendance-table th,
+.attendance-table td {
+  border: 1px solid #ccc;
+  padding: 4px 6px;              /* Smaller padding */
+  font-size: 10px;
+  white-space: nowrap;           /* Prevents line break */
+  text-align: center;
+  width: 60px;                   /* Fixed width for all date columns */
+  min-width: 60px;
+  max-width: 60px;
+}
+
+.attendance-table thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  width: auto;
+}
+
+/* First column styling - ROLL NO. column */
+.attendance-table .first-col {
+  background-color: #f8f9fa;
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+}
+
+/* Ensure the top-left header cell is above everything */
+.attendance-table thead .first-col {
+    z-index: 3;
+}
+
+/* Ensure all date columns have equal width */
+.attendance-table th:not(.first-col),
+.attendance-table td:not(.first-col) {
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+}
+
+/* Print button styling */
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+/* --- Print-Specific Styles --- */
+@media print {
+  /* Hide elements you don't want on the printed page */
+  .view-header, .mt-4 .btn-secondary, .btn {
+    display: none !important;
+  }
+
+  /*
+   * THE KEY FIX: Reset sticky positioning for print.
+   * This is what's causing the out-of-order page printing.
+  */
+  .attendance-table thead th,
+  .attendance-table .first-col {
+    position: static !important; /* CRITICAL: Disables sticky behavior for print */
+    background-color: #fff !important; /* Optional: remove grey background for print */
+  }
+
+  /* Reset layout for the main containers to ensure normal document flow */
+  body, .course-diary-wrapper, .attendance-section {
+    display: block !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Ensure the table itself can flow across pages correctly */
+  .attendance-table-wrapper {
+    overflow: visible !important; /* Show all content, don't scroll */
+    border: none !important;      /* Optional: remove the border for a cleaner print */
+  }
+
+  .attendance-table {
+    width: 100% !important; /* Allow table to use full page width */
+  }
+
+  tr, td {
+    page-break-inside: avoid !important; /* Try not to split a single row across two pages */
+  }
+
+  /* Add a print-only title */
+  .course-diary-wrapper::before {
+    content: "Theory Attendance";
+    display: block;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    border-bottom: 2px solid #000;
+  }
+
+  @page {
+    size: auto;
+    margin: 15mm;
+  }
+}

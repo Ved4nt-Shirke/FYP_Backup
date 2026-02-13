@@ -1,0 +1,140 @@
+.page-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+}
+
+/* Container styling to match the image */
+.attendance-container {
+  width: 90%;
+  max-width: 800px;
+  margin: 40px auto;
+  background-color: #fff;
+  padding: 20px 25px;
+  border-radius: 8px;
+  /* Enhanced shadow to match the floating card look */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header text */
+.section-header {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+/* Table styling */
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 15px;
+}
+
+/* Remove cell borders and add a bottom border to rows for separation */
+.attendance-table th,
+.attendance-table td {
+  border: none;
+  padding: 12px 15px;
+}
+
+.attendance-table tbody tr {
+  border-bottom: 1px solid #eee; /* Light line between rows */
+}
+
+/* Align first two columns to the left as in the image */
+.attendance-table th:not(:last-child),
+.attendance-table td:not(:last-child) {
+  text-align: left;
+}
+
+/* Header row styling */
+.attendance-table thead tr {
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.table-header {
+  color: #000;
+  font-weight: 600;
+}
+
+/* Center the checkbox in the "Mark" column */
+.mark-column {
+  text-align: center;
+}
+
+/* Submit Button */
+.submit-btn-wrapper {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.submit-btn {
+  background-color: #029e4c;
+  color: white;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #027b3b;
+}
+
+/* Icons Toolbar */
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.inline-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.inline-toolbar button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #555;
+}
+
+.dropdown-wrapper {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  width: 120px;
+}
+
+.dropdown label {
+  display: block;
+  padding: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.dropdown label:hover {
+  background-color: #f5f5f5;
+}

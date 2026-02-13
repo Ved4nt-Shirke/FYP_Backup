@@ -1,0 +1,274 @@
+/* === Global font styling === */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #111;
+}
+
+.student-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.student-main-row {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+/* offset the fixed primary sidebar (220px) so content starts after it */
+.student-main-row {
+  margin-left: 220px; /* same as .sidebar width */
+}
+
+.student-secondary-sidebar-wrapper {
+  width: 200px;
+  flex-shrink: 0;
+  padding-right: 10px;
+  box-sizing: border-box;
+}
+
+.student-main-content {
+  margin-top: 8px;
+  padding-top: 8px;
+  max-width: 2500px;
+  padding-left: 15px;
+  flex: 1 1 auto; /* take remaining horizontal space */
+  width: auto;
+  box-sizing: border-box;
+}
+
+.studentlist-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-height: 600px;
+  position: relative;
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.header-with-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.btn-add-student {
+  background-color: green;
+  color: white;
+  padding: 8px 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* =================== TABLE STYLES =================== */
+.table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.table th {
+  text-align: center;
+}
+
+.table td {
+  border: 0.5px solid #cccccc;
+  padding: 8px 6px;
+  vertical-align: middle;
+  text-align: left;
+  font-size: 12px !important;
+}
+
+.table thead th {
+  font-weight: 600;
+  background-color: #e9edf2;
+  font-size: 13px !important;
+  height: 35px !important;
+  border: 0.5px solid #cccccc;
+}
+
+/* ============ PAGINATION BUTTONS STYLE ============ */
+.pagination-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 1rem;
+}
+
+.pagination-buttons button {
+  font-weight: 600;
+  font-size: 14px;
+  padding: 6px 12px;
+  border: 1.5px solid #ccc;
+  border-radius: 10px;
+  background-color: white;
+  color: black;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-buttons button:hover {
+  background-color: green;
+  border-color: green;
+  color: white;
+}
+
+/* ==== Desktop specific widths ==== */
+.table td:first-child,
+.table td:nth-child(2),
+.table td:nth-child(3),
+.table td:nth-child(4),
+.table tr td:last-child {
+  min-width: 315px;
+  text-align: center;
+  background-color: #ffffff;
+  border: white;
+}
+
+/* .table td:first-child,
+.table td:nth-child(2) {
+  min-width: 315px;
+  text-align: center;
+  background-color: #ffffff;
+  border: white;
+  padding-left: 140px;
+} */
+
+/* =================== MOBILE RESPONSIVENESS =================== */
+@media (max-width: 768px) {
+  /* --- General Layout --- */
+  .student-main-row {
+    flex-direction: column;
+  }
+  .student-secondary-sidebar-wrapper {
+    width: 100%;
+    padding-right: 0;
+  }
+  .student-main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 10px;
+  }
+  .studentlist-container {
+    padding: 10px;
+  }
+  .header-with-button {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  /* --- Table transforms into card layout --- */
+  .table thead {
+    display: none;
+  }
+
+  .table, 
+  .table tbody, 
+  .table tr, 
+  .table td {
+    display: block;
+    width: 100% !important; /* prevent horizontal scroll */
+    min-width: auto !important;
+  }
+
+  .table tr {
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .table td {
+    display: flex;
+    flex-wrap: wrap;   /* allow wrapping to prevent overlap */
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 10px;
+    border: none;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    background: #ffffff;
+    width: 100% !important;
+  }
+
+  .table tr td:last-child {
+    border-bottom: none;
+  }
+
+  /* Label (before) */
+  .table td::before {
+    content: attr(data-label) ": ";
+    font-weight: 600;
+    color: #222;
+    flex: 1 1 40%;   /* responsive share */
+    text-align: left;
+    white-space: normal; /* allow wrapping */
+    padding-right: 5px;
+  }
+
+  /* Value (span) */
+  .table td span {
+    flex: 1 1 60%;
+    font-weight: 400;
+    color: #000;
+    text-align: left;
+    width: auto !important;
+    display: inline-block;
+    word-wrap: break-word;
+  }
+
+  /* Action button row */
+  .table td[data-label="Action"] {
+    background: transparent;
+    border-top: 1px solid #ddd;
+    text-align: right;
+    justify-content: flex-end;
+  }
+
+  .table td[data-label="Action"]::before {
+    display: none;
+  }
+
+  .table td[data-label="Action"] .btn {
+    font-size: 14px;
+    padding: 6px 14px;
+    background-color: #6c757d;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .table td[data-label="Action"] .btn:hover {
+    background-color: red;
+  }
+}
+
+/* =========== EXTRA SMALL SCREENS (stack label above value) =========== */
+/* @media (max-width: 480px) {
+  .table td {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .table td::before {
+    flex: 100%;
+    margin-bottom: 4px;
+  }
+  .table td span {
+    flex: 100%;
+  }
+} */

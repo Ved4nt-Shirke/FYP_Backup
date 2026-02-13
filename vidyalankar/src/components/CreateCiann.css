@@ -1,0 +1,204 @@
+/* Create CIANN — polished, consistent with EditCiann visuals */
+
+/* Page wrapper */
+.create-ciann-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin-top: 80px;
+  background-color: #f8f9fa;
+}
+
+/* Header */
+.create-ciann-header {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto 20px auto;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.create-ciann-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  background-color: var(--app-header-bg, #28a745); /* Use theme variable */
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(40, 167, 69, 0.25);
+}
+
+/* Form card */
+.create-ciann-form {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto 32px auto;
+  padding: 24px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  animation: fadeSlideIn 0.35s ease-out both;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Grid layout */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 18px 20px; /* row gap, column gap */
+  margin-bottom: 8px;
+}
+
+/* Form group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 6px;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  color: #212529;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  appearance: none; /* cleaner native select */
+}
+
+.form-group select:hover {
+  border-color: #c7ccd1;
+}
+
+.form-group select:focus {
+  border-color: var(--primary-accent, #28a745); /* Use theme variable */
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15);
+}
+
+.form-group select.disabled,
+.form-group select:disabled {
+  background-color: #f1f3f5;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Submit area */
+.form-submit {
+  grid-column: 1 / -1; /* span all columns */
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #ffffff;
+  background: linear-gradient(180deg, var(--primary-accent, #34c759) 0%, var(--app-header-bg, #28a745) 100%); /* Use theme variables */
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(40, 167, 69, 0.25), inset 0 -2px 0 rgba(0,0,0,0.06);
+  transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.btn-submit:hover {
+  filter: brightness(1.03);
+  box-shadow: 0 10px 20px rgba(40, 167, 69, 0.28), inset 0 -2px 0 rgba(0,0,0,0.08);
+}
+
+.btn-submit:active {
+  transform: translateY(1px);
+}
+
+.btn-submit:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.3);
+}
+
+.btn-submit:disabled {
+  background: #a8ddba;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .create-ciann-header {
+    max-width: 95vw;
+  }
+  .create-ciann-form {
+    max-width: 95vw;
+    padding: 18px;
+  }
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(240px, 1fr));
+    gap: 14px 16px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .create-ciann-page {
+    margin-top: 64px;
+  }
+  .create-ciann-header h2 {
+    font-size: 1.2rem;
+    padding: 10px 12px;
+    border-radius: 8px;
+  }
+  .create-ciann-form {
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr; /* stack */
+    gap: 12px;
+  }
+  .form-submit {
+    margin-top: 12px;
+  }
+  .btn-submit {
+    width: 100%;
+    padding: 12px 10px;
+  }
+}
+
+/* Extra small */
+@media (max-width: 420px) {
+  .create-ciann-header h2 {
+    font-size: 1rem;
+    padding: 8px 10px;
+  }
+  .btn-submit {
+    font-size: 0.98rem;
+  }
+}

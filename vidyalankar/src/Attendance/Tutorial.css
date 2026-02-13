@@ -1,0 +1,234 @@
+/* Main content area within the layout - original for timetable compatibility */
+.timetable-main-content {
+  flex: 1; /* Allows it to grow and take available space */
+  display: flex;
+  justify-content: center; /* Center content horizontally within itself */
+  align-items: flex-start; /* Align content to the top */
+  padding: 20px; /* Add consistent padding */
+  box-sizing: border-box; /* Include padding in width */
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  min-height: calc(100vh - 60px); /* Account for header height */
+}
+
+/* Fixed version for attendance pages - works with sidebar layout */
+.attendance-main-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  min-height: calc(100vh - 60px);
+}
+
+/* Specific container for the Tutorial Attendance form and controls */
+.theory-attendance-container {
+  width: 100%; /* Take full width of parent */
+  max-width: 1200px; /* Reasonable max-width to match TheoryEdit */
+  margin: 0 auto; /* Center horizontally */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 400px; /* Ensure a minimum height for the container */
+  height: fit-content; /* Allow container to shrink to content if less than min-height */
+  box-sizing: border-box;
+}
+
+.header-row {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 32px;
+  border-bottom: 2px solid #e0e0e0; /* Subtle separator */
+  padding-bottom: 15px;
+}
+
+.header-row h3 {
+  font-size: 2rem; /* Larger title */
+  color: var(--app-header-bg, #28a745); /* Use theme variable */
+  font-weight: 700; /* Bolder */
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.ciann-info {
+  width: 100%;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid var(--app-header-bg, #28a745); /* Use theme variable */
+  font-size: 14px;
+  color: #495057;
+}
+
+/* Main form container */
+.form-wrapper {
+  width: 100%;
+  max-width: 800px; /* Increased width to match TheoryEdit styling */
+  margin: 0 auto;
+}
+
+/* The box containing the input fields */
+.form-box {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden; /* Ensures the green label bars fit perfectly */
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* The green bar used as a label */
+.label-bar {
+  background-color: var(--app-header-bg, #28a745); /* Use theme variable */
+  color: white;
+  padding: 14px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  text-align: left;
+  margin: 0;
+}
+
+/* Wrapper for the input fields for proper padding */
+.ea-input-wrapper {
+  padding: 16px;
+  background-color: #fff;
+}
+
+.ea-input-wrapper input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 15px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.ea-input-wrapper input:focus {
+  outline: none;
+  border-color: var(--app-header-bg, #28a745); /* Use theme variable */
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.ea-input-wrapper input::placeholder {
+  color: #6c757d;
+}
+
+/* Wrapper for the submit button */
+.ea-submit-wrapper {
+  margin-top: 32px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Submit button styling to match TheoryEdit */
+.submit-btn {
+  background-color: var(--app-header-bg, #28a745); /* Use theme variable */
+  color: white;
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 5px rgba(40, 167, 69, 0.2);
+}
+
+.submit-btn:hover {
+  background-color: var(--primary-accent-dark, #218838); /* Use theme dark variable */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(40, 167, 69, 0.2);
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 1024px) {
+  .theory-attendance-container {
+    padding: 30px 20px;
+    width: 98%;
+    margin: 0px auto 20px auto;
+  }
+  .form-wrapper {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .timetable-main-content {
+    padding-left: 0;
+    padding: 20px;
+  }
+  
+  .theory-attendance-container {
+    width: 100%;
+    margin: 0px auto 10px auto;
+    padding: 20px 15px;
+    border-radius: 8px;
+    box-shadow: none;
+  }
+  
+  .header-row h3 {
+    font-size: 1.7rem;
+  }
+  
+  .form-box {
+    margin-bottom: 16px;
+  }
+  
+  .label-bar {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  
+  .ea-input-wrapper {
+    padding: 14px;
+  }
+  
+  .ea-input-wrapper input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  /* Submit should only appear at end; keep it above site footer */
+  .ea-submit-wrapper {
+    position: static;
+    margin-bottom: 80px; /* ensure visible above fixed footer */
+  }
+}
+
+@media (max-width: 480px) {
+  .theory-attendance-container {
+    padding: 15px 10px;
+    margin: 0px auto 10px auto;
+  }
+  
+  .header-row h3 {
+    font-size: 1.5rem;
+  }
+  
+  .ciann-info {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+  
+  .submit-btn {
+    padding: 10px 24px;
+    font-size: 15px;
+  }
+}

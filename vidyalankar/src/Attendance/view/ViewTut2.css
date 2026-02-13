@@ -1,0 +1,158 @@
+/* Add these new styles to your existing ViewT2.css file */
+
+/* --- STYLES FOR THE NEW HEADER --- */
+.view-header {
+  background-color: #198754; /* A green color similar to the image */
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  width: 100%;
+}
+
+.view-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+/* --- EXISTING STYLES BELOW --- */
+
+/* Main page wrapper */
+.course-diary-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section containing the table */
+.attendance-section {
+  width: 100%;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+/* This wrapper creates the horizontal scrollbar */
+.attendance-table-wrapper {
+  width: 100%;
+  max-height: 500px; /* Set max height to enable vertical scroll */
+  overflow-y: auto;  /* Enables vertical scrollbar */
+  overflow-x: auto;  /* Keeps existing horizontal scroll */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+
+/* The Table itself */
+.attendance-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Table Cells & Header */
+.attendance-table th,
+.attendance-table td {
+  border: 1px solid #ccc;
+  padding: 4px 6px;
+  font-size: 10px;
+  white-space: nowrap;
+  text-align: center;
+  width: 60px;                   /* Fixed width for all date columns */
+  min-width: 60px;
+  max-width: 60px;
+}
+
+.attendance-table thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  width: auto;
+}
+
+/* First column styling - ROLL NO. column */
+.attendance-table .first-col {
+  background-color: #f8f9fa;
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+}
+
+/* Ensure the top-left header cell is above everything */
+.attendance-table thead .first-col {
+    z-index: 3;
+}
+
+/* Ensure all date columns have equal width */
+.attendance-table th:not(.first-col),
+.attendance-table td:not(.first-col) {
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+}
+
+/* Print button styling */
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  color: #fff;
+  background-color: #6c757d;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+@media print {
+  /* Hide elements you don't want on the printed page */
+  .view-header,
+  .btn {
+    display: none !important;
+  }
+
+  /* Remove height and overflow restrictions from the table wrapper */
+  .attendance-table-wrapper {
+    max-height: none;
+    overflow: visible; /* Allows content to flow naturally */
+    border: none;
+  }
+
+  /* Reset sticky positioning which is not needed for print */
+  .attendance-table thead th,
+  .attendance-table .first-col {
+    position: static; /* Resets the 'sticky' behavior */
+  }
+
+  /* (Recommended) Prevent table rows from being split across pages */
+  .attendance-table tr {
+    page-break-inside: avoid;
+  }
+
+  /* Add a print-only title */
+  .course-diary-wrapper::before {
+    content: "Tutorial Attendance";
+    display: block;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    border-bottom: 2px solid #000;
+  }
+
+  /* Reset body and wrapper styles for better print layout */
+  body, .course-diary-wrapper {
+    background-color: white;
+    padding: 0;
+    margin: 0;
+  }
+}

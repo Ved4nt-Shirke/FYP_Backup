@@ -1,0 +1,260 @@
+:root {
+  --primary-dark: #1b4332; /* Dark Forest */
+  --primary-main: #2d6a4f; /* Emerald */
+  --primary-light: #40916c; /* Leaf */
+  --primary-soft: #d8f3dc; /* Mint background */
+  --text-dark: #1f2937;
+  --text-muted: #6b7280;
+  --white: #ffffff;
+  --bg-page: #f0f7f4; /* Very pale green/grey background */
+  --danger: #dc2626;
+  --info: #0ea5e9;
+}
+
+.institutions-container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.institutions-header {
+  margin-bottom: 25px;
+}
+
+.institutions-header h2 {
+  font-weight: 800;
+  color: var(--primary-dark);
+  margin: 0 0 5px;
+  font-size: 1.8rem;
+}
+
+.institutions-header .muted {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* Search Bar Area */
+.search-refresh-container {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.search-input-group {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.search-input-group:focus-within {
+  border-color: var(--primary-main);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+}
+
+.search-icon {
+  padding: 0 16px;
+  color: var(--primary-light);
+  font-size: 1rem;
+}
+
+.search-input {
+  border: none;
+  padding: 12px 0;
+  font-size: 1rem;
+  width: 100%;
+  outline: none;
+  color: var(--text-dark);
+}
+
+.btn-clear {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  padding: 0 16px;
+  cursor: pointer;
+}
+.btn-clear:hover {
+  color: var(--primary-dark);
+}
+
+/* Buttons */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.create-btn {
+  height: 44px;
+  background-color: var(--primary-main);
+  color: white;
+  border: none;
+  padding: 0 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.create-btn:hover {
+  background-color: var(--primary-dark);
+  color: white !important;
+}
+
+.refresh-btn {
+  height: 44px;
+  background-color: var(--white);
+  color: var(--primary-main);
+  border: 1px solid var(--primary-main);
+  padding: 0 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.refresh-btn:hover {
+  background-color: var(--primary-soft);
+  color: var(--primary-main) !important;
+  border-color: var(--primary-main);
+}
+
+/* Grid for Cards */
+.institutions-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+/* Individual Card */
+.institution-item {
+  background: var(--white);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.institution-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-light);
+}
+
+.institution-item .card-body {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+}
+
+/* Logo Circle */
+.logo-circle {
+  width: 50px;
+  height: 50px;
+  background-color: #d8f3dc; /* Mint */
+  color: var(--primary-dark);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: 1px solid rgba(45, 106, 79, 0.1);
+}
+
+.institution-name {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--text-dark);
+  margin-bottom: 5px;
+}
+
+.institution-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meta-pill {
+  font-size: 0.75rem;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.palette-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eef2ff;
+  color: #374151;
+}
+.palette-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: inline-block;
+}
+
+.chev {
+  margin-left: auto;
+  color: #d1d5db;
+}
+
+.institution-item:hover .chev {
+  color: var(--primary-main);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+.empty-icon {
+  font-size: 3rem;
+  color: #d1d5db;
+  margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+  .institutions-list {
+    grid-template-columns: 1fr;
+  }
+  .search-refresh-container {
+    flex-direction: column;
+  }
+  .btn-row {
+    width: 100%;
+  }
+  .create-btn,
+  .refresh-btn {
+    flex: 1;
+    height: 44px;
+  }
+}

@@ -1,0 +1,55 @@
+.superadmin-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1b4332; /* Deep Forest Green */
+  color: white;
+  padding: 0 24px;
+  height: 60px;          /* Fixed height */
+  min-height: 60px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1060;         /* Higher than sidebar */
+  width: 100%;
+  box-sizing: border-box; /* Ensures padding doesn't add to width */
+}
+
+.navbar-left h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.logout-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.logout-button:hover {
+  background-color: #dc2626; /* Red on hover */
+  border-color: #dc2626;
+  transform: translateY(-1px);
+}
+
+.logout-button i {
+  font-size: 0.9rem;
+}

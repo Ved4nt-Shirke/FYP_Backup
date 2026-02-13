@@ -1,0 +1,351 @@
+/* Scoped to Teaching Plan modal to avoid affecting other pages */
+.tps-modal .plan-container {
+  margin: 20px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Old generic modal-header kept for backward compatibility (scoped) */
+.tps-modal .modal-header {
+  background: #fff;
+  color: #333;
+  padding: 16px 20px 12px;
+  font-size: 20px;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb; /* subtle underline */
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
+/* Dedicated header style for Teaching Plan modal */
+.tps-modal-header {
+  background: #fff;
+  color: #333;
+  padding: 20px 22px 12px;
+  font-size: 28px;
+  font-weight: 700;
+  border-bottom: 1px solid #e5e7eb;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+/* Ensure modal content is positioning context for the close btn */
+.tps-modal { position: relative; }
+
+/* Close button for Teaching Plan modal */
+.tps-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: #888; /* currentColor used by pseudo lines */
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0; /* hide the × glyph in markup to avoid shifting */
+  transition: transform 0.25s ease, background-color 0.2s ease, color 0.2s ease;
+}
+/* draw an "X" with two centered lines to avoid font baseline drift */
+.tps-close-btn::before,
+.tps-close-btn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 2px;
+  background-color: currentColor;
+  border-radius: 1px;
+  transform-origin: center;
+}
+.tps-close-btn::before { transform: translate(-50%, -50%) rotate(45deg); }
+.tps-close-btn::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+
+.tps-close-btn:hover {
+  background-color: #f1f3f5;
+  color: red; /* updates pseudo line color */
+  transform: rotate(90deg);
+}
+.tps-close-btn:focus-visible {
+  outline: 3px solid rgba(76, 175, 80, 0.35);
+  outline-offset: 2px;
+}
+
+/* Form grid container (scoped) */
+.tps-modal .form-grid {
+  display: block;
+  overflow-x: auto; /* horizontal scrolling when needed */
+  overflow-y: hidden; /* hide vertical inside grid area */
+  border: 1px solid #cfd4da; /* table-like outer border */
+  border-radius: 10px; /* rounded corners like screenshot */
+  background: #fff; /* white background */
+  margin-top: 30px;
+  margin-bottom: 0px;
+  background-clip: padding-box; /* keep rounded corners clean */
+  width: 95%;
+  margin-left: 18px;
+  text-align: center;
+}
+/* Make inner content wider than container so X-scrollbar appears */
+.tps-modal .form-grid > .form-labels,
+.tps-modal .form-grid > .form-row {
+  min-width: 900px; /* adjust as needed to trigger horizontal scroll */
+}
+/* Scrollbar styling (WebKit) */
+.tps-modal .form-grid::-webkit-scrollbar {
+  height: 10px;
+}
+.tps-modal .form-grid::-webkit-scrollbar-track {
+  background: #e9ecef;
+  border-radius: 8px;
+}
+.tps-modal .form-grid::-webkit-scrollbar-thumb {
+  background: #bdbdbd;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+/* Firefox */
+.tps-modal .form-grid {
+  scrollbar-color: #bdbdbd #e9ecef;
+  scrollbar-width: thin;
+}
+
+/* Header labels row (scoped) */
+.tps-modal .form-labels {
+  display: grid;
+  grid-template-columns: 1.3fr 1.6fr 1fr 1fr 1.2fr; /* Chapter, Sub-Topic, Week, Start, Methods */
+  column-gap: 12px;
+  background-color: #eef2f7; /* light header bg */
+  color: #495057;
+  padding: 10px 14px; /* reduced height */
+  font-weight: 600;
+  position: sticky;
+  top: 0; /* in case container scrolls vertically later */
+  z-index: 1;
+  border-bottom: 1px solid #e1e5ea;
+  /* vertical separators between columns */
+  background-image:
+    linear-gradient(#e1e5ea, #e1e5ea),
+    linear-gradient(#e1e5ea, #e1e5ea),
+    linear-gradient(#e1e5ea, #e1e5ea),
+    linear-gradient(#e1e5ea, #e1e5ea);
+  background-size: 1px 100%, 1px 100%, 1px 100%, 1px 100%;
+  background-repeat: no-repeat;
+  background-position: 21.31% 0, 47.54% 0, 63.93% 0, 80.33% 0; /* based on 1.3fr 1.6fr 1fr 1fr 1.2fr */
+}
+
+/* Form row (scoped) */
+.tps-modal .form-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1.6fr 1fr 1fr 1.2fr; /* align with header */
+  column-gap: 12px;
+  padding: 10px 14px; /* reduced height */
+  border-bottom: 1px solid #eef1f4;
+  justify-items: center; /* center items horizontally in their cells */
+  align-items: center; /* center items vertically */
+  /* match header vertical separators */
+  background-image:
+    linear-gradient(#eef1f4, #eef1f4),
+    linear-gradient(#eef1f4, #eef1f4),
+    linear-gradient(#eef1f4, #eef1f4),
+    linear-gradient(#eef1f4, #eef1f4);
+  background-size: 1px 100%, 1px 100%, 1px 100%, 1px 100%;
+  background-repeat: no-repeat;
+  background-position: 21.31% 0, 47.54% 0, 63.93% 0, 80.33% 0; /* aligns with columns */
+}
+
+/* Remove duplicate old .form-labels block */
+
+/* Input/select styling (scoped) */
+.tps-modal input,
+.tps-modal select,
+.tps-modal .weekwise-form-container .form-input {
+  padding: 8px 10px; /* slightly slimmer inputs */
+  border: 1px solid #dde3ea;
+  border-radius: 8px; /* rounded like screenshot */
+  width: 80%!important;
+  box-sizing: border-box;
+  background: #f8fbff; /* light bluish background to match card-like inputs */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+/* Make all form inputs a bit narrower than their grid cell and center them */
+.tps-modal .weekwise-form-container .form-row .form-input,
+.tps-modal .weekwise-form-container .form-row input.form-input,
+.tps-modal .weekwise-form-container .form-row select.form-input,
+.tps-modal .weekwise-form-container .form-row textarea.form-input {
+  width: 90% !important;
+  justify-self: center !important; /* center horizontally within grid cell */
+  align-self: center !important; /* center vertically within grid cell */
+  padding: 6px 8px !important;
+  margin-right: -10px;
+}
+
+.tps-modal .weekwise-form-container .form-input:focus,
+.tps-modal .weekwise-form-container select:focus,
+.tps-modal .weekwise-form-container input:focus {
+  outline: none;
+  border-color: #81c784;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+/* Week select narrower height like screenshot */
+.tps-modal .week-select {
+  padding: 6px 10px;
+}
+
+/* Button group (scoped) */
+.tps-modal .button-group {
+  display: flex;
+  flex-direction: row-reverse; /* render Submit visually on the left, Cancel on the right */
+  justify-content: space-between; /* push to far edges */
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
+  margin-top: 0;
+  width: 100%;
+}
+.tps-modal .button-group .btn {
+  margin: 0;
+}
+
+/* Buttons (scoped) */
+.tps-modal .btn {
+  /* Taller and slightly narrower */
+  padding: 14px 22px; /* increase height, reduce width */
+  font-weight: 700;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  min-width: 100px; /* slightly narrower baseline */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 0.2s ease, transform 0.02s ease,
+    background-color 0.2s ease;
+  margin-bottom: -10px !important;
+}
+.tps-modal .btn:hover {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+}
+.tps-modal .btn:active {
+  transform: translateY(1px);
+}
+
+/* Ensure consistent padding for Submit and Cancel buttons inside the action area */
+.tps-modal .button-group .btn,
+.tps-modal .action-buttons-container .btn,
+.tps-modal .button-group .btn.submit,
+.tps-modal .button-group .btn.cancel {
+  padding: 12px 14px !important; /* requested */
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.tps-modal .btn.cancel {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.tps-modal .btn.submit,
+.tps-modal .action-buttons-container button:first-child {
+  background-color: #2e7d32;
+  color: white;
+}
+
+/* Place Submit to left, Cancel to right like screenshot */
+.tps-modal .button-group .btn.submit {
+  margin-right: auto;
+}
+.tps-modal .button-group .btn.cancel {
+  margin-left: auto;
+}
+
+/* Force Cancel button to red and keep it across states */
+.tps-modal .button-group .btn.cancel,
+.tps-modal .action-buttons-container .btn.cancel {
+  background-color: #d32f2f !important;
+  border-color: #d32f2f !important;
+  color: #fff !important;
+}
+.tps-modal .button-group .btn.cancel:hover,
+.tps-modal .button-group .btn.cancel:focus,
+.tps-modal .action-buttons-container .btn.cancel:hover,
+.tps-modal .action-buttons-container .btn.cancel:focus {
+  background-color: #b58f8f !important; /* muted mauve hover */
+  border-color: #b58f8f !important;
+}
+.tps-modal .button-group .btn.cancel:disabled,
+.tps-modal .action-buttons-container .btn.cancel:disabled {
+  background-color: #e57373 !important; /* readable even when disabled */
+  border-color: #e57373 !important;
+  color: #fff !important;
+  opacity: 1 !important; /* avoid faded look if Bootstrap applies opacity */
+}
+
+/* Mobile responsive tweaks for weekwise table and modal */
+@media (max-width: 576px) {
+  /* Limit overall modal height and keep layout same as desktop */
+  .tps-modal { max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Keep desktop table widths; enable horizontal scroll inside content */
+  .tps-modal .weekwise-form-container .form-grid {
+    width: 90%;
+    margin-left: 15px;          /* reset base left margin */
+    margin-right: 70px;      /* push a bit more to the left (was 50px) */
+    max-height: calc(85vh - 160px) !important; /* previously 80vh */
+    margin-top: 20px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #cfd4da;
+    border-radius: 12px;
+    background: #fff;
+    background-clip: padding-box;
+    padding-bottom: 0;
+  }
+
+  /* Compact table content for mobile */
+  .tps-modal .weekwise-form-container .form-labels { padding: 8px 10px; font-size: 13px; column-gap: 8px; }
+  .tps-modal .weekwise-form-container .form-row { padding: 8px 10px; column-gap: 8px; justify-items: start; min-height: 56px; }
+  .tps-modal .weekwise-form-container .form-input,
+  .tps-modal .weekwise-form-container .form-row .form-input,
+  .tps-modal .weekwise-form-container .form-row input.form-input,
+  .tps-modal .weekwise-form-container .form-row select.form-input,
+  .tps-modal .weekwise-form-container .form-row textarea.form-input { font-size: 13px; padding: 6px 8px; width: 92%; }
+
+  /* Buttons area compact on mobile: smaller and pinned to corners */
+  .tps-modal .button-group {
+    padding: 8px 10px; /* fixed typo */
+    gap: 8px;
+    position: sticky; /* sticks to bottom of modal content area */
+    bottom: 0;
+    background: #f8f9fa;
+    z-index: 2;
+    display: flex;            /* ensure flex on mobile */
+    flex-direction: row;      /* normal order */
+    flex-wrap: nowrap;        /* keep on one line */
+    justify-content: space-between; /* push to corners */
+    align-items: center;      /* keep same vertical level */
+    width: 100%;
+  }
+  .tps-modal .button-group .btn {
+    padding: 8px 10px !important;
+    font-size: 13px;
+    min-width: 80px !important;  /* override desktop min-width:100px */
+    width: auto;                 /* allow natural width */
+    flex: 0 0 auto;              /* don't stretch */
+    border-radius: 8px;
+    margin: 0 !important;     /* avoid accidental shifts */
+  }
+  /* Explicit order: Submit left, Cancel right */
+  .tps-modal .button-group .btn.submit { order: 1; padding: 8px 10px !important; width: 250px!important; }
+  .tps-modal .button-group .btn.cancel { order: 2; padding: 8px 10px !important; width: 250px!important; }
+}
