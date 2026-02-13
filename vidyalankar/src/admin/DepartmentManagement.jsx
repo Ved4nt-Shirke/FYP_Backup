@@ -415,7 +415,7 @@ const DepartmentManagement = () => {
               </button>
               <button
                 className="btn-primary"
-                onClick={handleTransferFaculty}
+                onClick={handleTransferStaff}
                 disabled={!transferTargetDepartment}
               >
                 Transfer

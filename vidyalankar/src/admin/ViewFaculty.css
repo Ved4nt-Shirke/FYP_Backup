@@ -27,6 +27,7 @@
   );
   min-height: 100vh;
   padding: 20px;
+  padding-bottom: 250px;
 }
 
 /* Page Header */
@@ -453,6 +454,7 @@
 @media (max-width: 768px) {
   .view-faculty-page {
     padding: 16px;
+    padding-bottom: 180px;
   }
 
   .page-header {

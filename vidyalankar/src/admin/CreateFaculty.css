@@ -21,6 +21,7 @@
   );
   min-height: 100vh;
   padding: 20px;
+  padding-bottom: 250px;
 }
 
 .minimal-loader {
@@ -733,6 +734,7 @@
 @media (max-width: 768px) {
   .create-faculty-page {
     padding: 16px;
+    padding-bottom: 180px;
   }
 
   .page-header {

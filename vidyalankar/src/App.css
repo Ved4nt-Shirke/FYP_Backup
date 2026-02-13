@@ -121,6 +121,14 @@ body {
 
 .admin-page .scrollable-content {
   padding-top: 0;
+  padding-bottom: 350px;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.admin-page.admin-dashboard-page .scrollable-content {
+  overflow-y: visible;
+  height: auto;
 }
 
 /* Office page specific styles */
@@ -201,7 +209,12 @@ body {
   }
 
   .admin-page .main-content-wrapper {
-    padding-top: 0 !important; /* Admin header removed, no padding needed */
+    padding-top: 80px !important; /* Keep content below fixed admin header */
+  }
+
+  .admin-page.admin-dashboard-page .scrollable-content {
+    height: auto !important;
+    overflow-y: visible !important;
   }
 
   /* Fix for editCiann components that use their own layout */

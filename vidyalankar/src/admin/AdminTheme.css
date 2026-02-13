@@ -104,6 +104,7 @@
 .scrollable-wrapper,
 .admin-content {
   padding: var(--admin-space-2xl);
+  padding-bottom: 250px;
   background-color: var(--admin-bg-main);
   min-height: 100vh;
   font-family: var(--admin-font-family);
@@ -595,6 +596,7 @@ textarea {
   .scrollable-wrapper,
   .admin-content {
     padding: var(--admin-space-lg);
+    padding-bottom: 180px;
   }
 
   .page-header {

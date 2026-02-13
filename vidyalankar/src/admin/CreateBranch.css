@@ -17,6 +17,7 @@
   );
   min-height: 100vh;
   padding: 30px 20px;
+  padding-bottom: 250px;
 }
 
 .page-header {
@@ -365,6 +366,7 @@
 @media (max-width: 768px) {
   .create-branch-page {
     padding: 16px;
+    padding-bottom: 180px;
   }
 
   .page-header {

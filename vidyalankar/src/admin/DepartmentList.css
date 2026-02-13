@@ -19,8 +19,9 @@
 
 .admin-content {
   padding: 32px;
+  padding-bottom: 250px;
   background: var(--bg-main);
-  min-height: calc(100vh - 75px);
+  min-height: 100vh;
   box-sizing: border-box;
 }
 
@@ -37,7 +38,7 @@
   );
   padding: 40px 32px;
   border-radius: 20px;
- box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-xl);
   position: relative;
   overflow: hidden;
 }
@@ -208,7 +209,8 @@
   outline: none;
   border-color: var(--primary);
   background: #ffffff;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent),
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent),
     var(--shadow-md);
 }
 
@@ -292,7 +294,11 @@
 }
 
 .department-small-card:hover .department-small-icon {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-hover) 100%
+  );
   color: var(--text-on-primary, #ffffff);
   transform: rotate(-8deg) scale(1.05);
   box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 40%, transparent);
@@ -598,6 +604,7 @@
 @media (max-width: 768px) {
   .admin-content {
     padding: 20px;
+    padding-bottom: 180px;
   }
 
   .page-header {

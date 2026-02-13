@@ -11,7 +11,6 @@ import {
 // Layout & Basic Components
 import Header from "./basic/Header";
 import Sidebar from "./basic/Sidebar";
-import Footer from "./basic/Footer";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 
@@ -220,6 +219,8 @@ const AppContent = () => {
 
   const userRole = localStorage.getItem("role") || "faculty";
   const college = localStorage.getItem("college") || "VP";
+  const isAdminDashboard =
+    userRole === "admin" && location.pathname === "/admin-dashboard";
 
   // Auth Guard
   useEffect(() => {
@@ -310,7 +311,7 @@ const AppContent = () => {
 
   return (
     <div
-      className={`app-container ${isSidebarVisible ? "sidebar-visible" : "sidebar-collapsed"} ${userRole}-page`}
+      className={`app-container ${isSidebarVisible ? "sidebar-visible" : "sidebar-collapsed"} ${userRole}-page ${isAdminDashboard ? "admin-dashboard-page" : ""}`}
     >
       {/* Sidebar logic */}
       {userRole === "superadmin" ? (
@@ -650,7 +651,6 @@ const AppContent = () => {
             <Route path="/test-students" element={<TestStudents />} />
             <Route path="*" element={<div>404 - Page Not Found</div>} />
           </Routes>
-          {userRole !== "office" && <Footer />}
         </div>
       </div>
     </div>
