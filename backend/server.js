@@ -12,7 +12,7 @@ app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173", // Your frontend
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -78,7 +78,7 @@ app.use("/api/extra-pract", require("./routes/extraPract"));
 app.use("/api/attendance", require("./routes/viewTheory"));
 app.use(
   "/api/view-practical-attendance",
-  require("./routes/viewPracticalAttendance")
+  require("./routes/viewPracticalAttendance"),
 );
 app.use("/api/view-extra-practical", require("./routes/viewExtraPractical"));
 
@@ -112,6 +112,26 @@ app.use("/api/ct-marks", require("./routes/ctMarks"));
 // Admin Routes
 const { authenticate, authorizeAdmin } = require("./middleware/auth");
 app.use("/api/admin", authenticate, authorizeAdmin, require("./routes/admin"));
+
+// Course, Division, Subject Routes (Admin)
+app.use(
+  "/api/courses",
+  authenticate,
+  authorizeAdmin,
+  require("./routes/courses"),
+);
+app.use(
+  "/api/divisions",
+  authenticate,
+  authorizeAdmin,
+  require("./routes/divisions"),
+);
+app.use(
+  "/api/subjects",
+  authenticate,
+  authorizeAdmin,
+  require("./routes/subjects"),
+);
 
 // Office Staff Routes (NEW)
 app.use("/api/office", require("./routes/office"));

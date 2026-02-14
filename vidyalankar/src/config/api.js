@@ -104,6 +104,29 @@ export const config = {
       `${API_BASE_URL}/admin/office-staff/${id}/transfer`,
   },
 
+  // Courses, divisions, subjects (Admin)
+  courses: {
+    create: `${API_BASE_URL}/courses`,
+    listByDepartment: (departmentId) =>
+      `${API_BASE_URL}/courses/${departmentId}`,
+    update: (id) => `${API_BASE_URL}/courses/${id}`,
+    delete: (id) => `${API_BASE_URL}/courses/${id}`,
+  },
+  divisions: {
+    create: `${API_BASE_URL}/divisions`,
+    listByCourse: (courseId) => `${API_BASE_URL}/divisions/${courseId}`,
+    update: (id) => `${API_BASE_URL}/divisions/${id}`,
+    delete: (id) => `${API_BASE_URL}/divisions/${id}`,
+  },
+  subjects: {
+    create: `${API_BASE_URL}/subjects`,
+    list: `${API_BASE_URL}/subjects`,
+    update: (id) => `${API_BASE_URL}/subjects/${id}`,
+    delete: (id) => `${API_BASE_URL}/subjects/${id}`,
+    bulkImport: `${API_BASE_URL}/subjects/bulk-import`,
+    deleteAll: `${API_BASE_URL}/subjects/delete-all`,
+  },
+
   // Office Staff Panel Endpoints
   office: {
     dashboardSummary: `${API_BASE_URL}/office/dashboard-summary`,

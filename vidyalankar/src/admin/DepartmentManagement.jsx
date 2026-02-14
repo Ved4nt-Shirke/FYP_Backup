@@ -237,6 +237,15 @@ const DepartmentManagement = () => {
             </p>
           </div>
         </div>
+        <div className="header-right">
+          <button
+            className="btn-primary"
+            onClick={() => navigate(`/admin/departments/${id}/courses`)}
+          >
+            <i className="bi bi-journal-bookmark"></i>
+            Manage Courses & Divisions
+          </button>
+        </div>
       </div>
 
       {/* View Tabs */}

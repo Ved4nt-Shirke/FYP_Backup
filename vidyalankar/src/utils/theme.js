@@ -179,9 +179,7 @@ const hashPalette = (p) => {
 };
 
 export const attachAdminThemeAutoRefresh = (college) => {
-  if (_autoRefreshAttached) return;
-  _autoRefreshAttached = true;
-
+  // Allow multiple attachments for different roles
   const refresh = async () => {
     const resp = await axios.get("/admin/theme").catch(() => null);
     const pal = resp?.data?.institution?.palette;

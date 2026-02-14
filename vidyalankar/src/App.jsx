@@ -109,16 +109,18 @@ import ViewT2 from "./Attendance/view/ViewTut2";
 import AdminPanel from "./admin/AdminPanel";
 import AdminDashboard from "./admin/AdminDashboard";
 import AdminSidebar from "./admin/AdminSidebar";
-import AdminHeader from "./admin/AdminHeader";
 import DepartmentList from "./admin/DepartmentList";
 import DepartmentForm from "./admin/DepartmentForm";
 import DepartmentManagement from "./admin/DepartmentManagement";
+import DepartmentCourses from "./admin/departments/DepartmentCourses";
 import FacultyList from "./admin/FacultyList";
 import FacultyForm from "./admin/FacultyForm";
 import CreateFaculty from "./admin/CreateFaculty";
 import OfficeStaffList from "./admin/OfficeStaffList";
 import OfficeStaffForm from "./admin/OfficeStaffForm";
 import CreateOfficeStaff from "./admin/CreateOfficeStaff";
+import SubjectManagement from "./admin/subjects/SubjectManagement";
+import SubjectsView from "./admin/subjects/SubjectsView";
 
 import OfficeDashboard from "./office/OfficeDashboard";
 import OfficeSidebar from "./office/OfficeSidebar";
@@ -345,18 +347,16 @@ const AppContent = () => {
       {/* Header logic */}
       {userRole === "superadmin" ? (
         <SuperAdminNavbar />
-      ) : userRole === "admin" ? (
-        <AdminHeader onMenuToggle={handleMenuToggle} />
       ) : userRole === "office" ? (
         <OfficeHeader onMenuToggle={handleMenuToggle} />
-      ) : (
+      ) : userRole !== "admin" ? (
         <Header
           onMenuToggle={handleMenuToggle}
           showUserDropdown={showUserDropdown}
           setShowUserDropdown={setShowUserDropdown}
           userDropdownRef={userDropdownRef}
         />
-      )}
+      ) : null}
 
       <div className="main-content-wrapper">
         <div className="scrollable-content">
@@ -617,6 +617,10 @@ const AppContent = () => {
               path="/admin-department-management/:id"
               element={<DepartmentManagement />}
             />
+            <Route
+              path="/admin/departments/:id/courses"
+              element={<DepartmentCourses />}
+            />
             <Route path="/admin-faculty" element={<FacultyList />} />
             <Route path="/admin-create-faculty" element={<CreateFaculty />} />
             <Route path="/admin-edit-faculty/:id" element={<FacultyForm />} />
@@ -629,6 +633,8 @@ const AppContent = () => {
               path="/admin-edit-office-staff/:id"
               element={<OfficeStaffForm />}
             />
+            <Route path="/admin/subjects" element={<SubjectManagement />} />
+            <Route path="/admin/subjects-view" element={<SubjectsView />} />
 
             {/* SuperAdmin Routes */}
             <Route

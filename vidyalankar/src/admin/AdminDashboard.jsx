@@ -52,18 +52,11 @@ const AdminDashboard = () => {
       available: true,
     },
     {
-      label: "VIEW INSTITUTION STATS",
-      icon: "bi-bar-chart",
-      message: "View institution statistics (coming soon)",
-      description: "See usage statistics for your institution",
-      available: false,
-    },
-    {
-      label: "SYSTEM LOGS",
+      label: "MANAGE COURSES & SUBJECTS",
       icon: "bi-journal-text",
-      message: "View system logs (coming soon)",
-      description: "Monitor system activity and login attempts",
-      available: false,
+      path: "/admin-departments",
+      description: "Create and manage courses, divisions, and subjects",
+      available: true,
     },
   ];
 

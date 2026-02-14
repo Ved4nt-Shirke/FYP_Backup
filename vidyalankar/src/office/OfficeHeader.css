@@ -1,13 +1,10 @@
+@import './OfficeTheme.css';
+
 /* Office Header Styles */
-:root {
-  --office-header-bg: var(--app-header-bg, #1e40af);
-  --office-header-dark: var(--primary-accent-dark, #1e3a8a);
-  --office-accent: var(--primary-accent, #1e40af);
-}
 
 .office-header-container {
-  background: linear-gradient(135deg, var(--office-header-bg) 0%, var(--office-header-dark) 100%);
-  border-bottom: 3px solid var(--office-header-dark);
+  background: linear-gradient(135deg, var(--office-primary) 0%, var(--office-primary-dark) 100%);
+  border-bottom: 3px solid var(--office-primary-dark);
   padding: 12px 24px;
   position: fixed;
   top: 0;
@@ -194,7 +191,7 @@
 .user-avatar-large {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, var(--office-accent) 0%, var(--office-header-dark) 100%);
+  background: linear-gradient(135deg, var(--office-primary) 0%, var(--office-primary-dark) 100%);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -240,7 +237,7 @@
 
 .user-menu-item:hover {
   background: #f3f4f6;
-  color: var(--office-accent);
+  color: var(--office-primary);
 }
 
 .user-menu-item.logout:hover {

@@ -27,7 +27,6 @@ const Login = () => {
   const [institutions, setInstitutions] = useState([]);
   const [loadingInstitutions, setLoadingInstitutions] = useState(false);
 
-  // Fetch institutions when component mounts
   useEffect(() => {
     fetchInstitutions();
   }, []);
@@ -40,7 +39,6 @@ const Login = () => {
 
       if (data.success) {
         setInstitutions(data.institutions);
-        // Set the first institution as default if current college is not in the list
         if (
           data.institutions.length > 0 &&
           !data.institutions.find((inst) => inst.code === college) &&
@@ -49,7 +47,6 @@ const Login = () => {
           setCollege(data.institutions[0].code);
         }
       } else {
-        // Fallback to hardcoded institutions
         const hardcodedInstitutions = [
           { code: "VP", name: "Vidyalankar Polytechnic" },
           { code: "VIT", name: "Vidyalankar Institute of Technology" },
@@ -62,7 +59,6 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Error fetching institutions:", error);
-      // Fallback to hardcoded institutions
       const hardcodedInstitutions = [
         { code: "VP", name: "Vidyalankar Polytechnic" },
         { code: "VIT", name: "Vidyalankar Institute of Technology" },
@@ -81,7 +77,6 @@ const Login = () => {
     }
 
     try {
-      // For superadmin, always use 'ALL' as college regardless of the state value
       const requestData = {
         username,
         password,
@@ -103,21 +98,18 @@ const Login = () => {
           .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
           .join(" ");
 
-        // Use secure token manager
         TokenManager.setToken(data.token, 24 * 60 * 60 * 1000);
 
-        // Set session with secure manager
         SessionManager.setSession({
           user: data.userName || formattedName,
           role: data.role || role,
           college: data.college || requestData.college,
         });
 
-        // Apply theme immediately after successful login
         applyTheme(data.college || requestData.college);
 
         showSuccessAlert("Login successful");
-        // Redirect to appropriate dashboard based on user role
+
         let redirectPath;
         if ((data.role || role) === "admin") {
           redirectPath = "/admin-dashboard";
@@ -138,99 +130,101 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      <div className="login-box">
-        <div className="login-header">
+      <div className="login-container">
+        {/* Left Branding Section */}
+        <div className="login-brand">
           <img src={loginImage} alt="Vidyalankar Logo" className="logo" />
           <h1 className="login-title">Management Information System</h1>
-          <div className="subheading">Secure access to your account</div>
+          <p className="subheading">Secure access to your account</p>
         </div>
 
-        <div className="login-form">
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              type="text"
-              placeholder="firstname.lastname"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="form-input"
-            />
-            <p className="hint">Enter your registered username</p>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              placeholder="Your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="form-input"
-            />
-            <p className="hint">Enter your password</p>
-          </div>
-
-          {/* Hide college selection when superadmin is selected */}
-          {role !== "superadmin" && (
+        {/* Right Form Section */}
+        <div className="login-box">
+          <div className="login-form">
             <div className="form-group">
-              <label htmlFor="college">Select the College</label>
-              <select
-                id="college"
-                value={college}
-                onChange={(e) => setCollege(e.target.value)}
+              <label htmlFor="username">Username</label>
+              <input
+                id="username"
+                type="text"
+                placeholder="firstname.lastname"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="form-input"
-                disabled={loadingInstitutions}
+              />
+              <p className="hint">Enter your registered username</p>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="form-input"
+              />
+              <p className="hint">Enter your password</p>
+            </div>
+
+            {role !== "superadmin" && (
+              <div className="form-group">
+                <label htmlFor="college">Select College</label>
+                <select
+                  id="college"
+                  value={college}
+                  onChange={(e) => setCollege(e.target.value)}
+                  className="form-input"
+                  disabled={loadingInstitutions}
+                >
+                  {loadingInstitutions ? (
+                    <option value="">Loading institutions...</option>
+                  ) : (
+                    <>
+                      {institutions.map((inst) => (
+                        <option key={inst.code} value={inst.code}>
+                          {inst.code}
+                        </option>
+                      ))}
+                      <option value="ALL">ALL</option>
+                    </>
+                  )}
+                </select>
+              </div>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="role">Select Role</label>
+              <select
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="form-input"
               >
-                {loadingInstitutions ? (
-                  <option value="">Loading institutions...</option>
-                ) : (
-                  <>
-                    {institutions.map((inst) => (
-                      <option key={inst.code} value={inst.code}>
-                        {inst.code}
-                      </option>
-                    ))}
-                    <option value="ALL">ALL</option>
-                  </>
-                )}
+                <option value="faculty">Faculty</option>
+                <option value="student">Student</option>
+                <option value="office">Office Staff</option>
+                <option value="admin">Admin</option>
+                <option value="superadmin">Super Admin</option>
               </select>
             </div>
-          )}
 
-          <div className="form-group">
-            <label htmlFor="role">Select Role</label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="form-input"
-            >
-              <option value="faculty">Faculty</option>
-              <option value="student">Student</option>
-              <option value="office">Office Staff</option>
-              <option value="admin">Admin</option>
-              <option value="superadmin">Super Admin</option>
-            </select>
+            <div className="form-group remember-section">
+              <input type="checkbox" id="remember" />
+              <label htmlFor="remember">Remember me</label>
+            </div>
+
+            <button className="login-button" onClick={handleLogin}>
+              Login
+            </button>
           </div>
 
-          <div className="form-group remember-section">
-            <input type="checkbox" id="remember" />
-            <label htmlFor="remember">Remember me</label>
-            <span className="hint">(if this is a private computer)</span>
+          <div className="footer-content">
+            <p>
+              © 2019 All rights reserved. Template by{" "}
+              <a href="#">Vidyalankar Polytechnic</a>
+            </p>
           </div>
-
-          <button className="login-button" onClick={handleLogin}>
-            Login
-          </button>
-        </div>
-
-        <div className="footer-content">
-          <p>
-            © 2019 All rights reserved. Template by{" "}
-            <a href="#">Vidyalankar Polytechnic</a>
-          </p>
         </div>
       </div>
     </div>

@@ -1,77 +1,46 @@
 const mongoose = require("mongoose");
 
-const CourseSchema = new mongoose.Schema({
-  institutionCode: {
-    type: String,
-    required: true,
-    ref: "Institution"
+const CourseSchema = new mongoose.Schema(
+  {
+    departmentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+      required: true,
+    },
+    semester: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 8,
+    },
+    scheme: {
+      type: String,
+      required: true,
+      trim: true,
+      uppercase: true,
+    },
+    courseCode: {
+      type: String,
+      required: true,
+      trim: true,
+      uppercase: true,
+    },
+    institution: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
-  courseId: {
-    type: String,
-    required: true,
-    unique: true
+  {
+    timestamps: true,
   },
-  courseName: {
-    type: String,
-    required: true
-  },
-  abbreviation: {
-    type: String,
-    required: false
-  },
-  department: {
-    type: String,
-    required: false,
-    enum: ["CO", "IF", "EJ", ""]
-  },
-  courseNumbers: [
-    {
-      number: {
-        type: String,
-        required: false
-      },
-      branch: {
-        type: String,
-        required: false
-      },
-      semester: {
-        type: Number,
-        required: false
-      }
-    }
-  ],
-  credits: {
-    type: Number,
-    required: false
-  },
-  description: {
-    type: String,
-    required: false
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  isDeleteable: {
-    type: Boolean,
-    default: false
-  },
-  createdBy: {
-    type: String,
-    required: true,
-    ref: "User"
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+);
 
-// Compound index for unique course per institution
-CourseSchema.index({ institutionCode: 1, courseId: 1 }, { unique: true });
+CourseSchema.index({ institution: 1, courseCode: 1 }, { unique: true });
 
 module.exports = mongoose.model("Course", CourseSchema);

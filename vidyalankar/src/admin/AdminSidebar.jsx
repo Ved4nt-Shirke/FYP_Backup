@@ -72,6 +72,16 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
     }
   };
 
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to logout?")) {
+      localStorage.clear();
+      navigate("/");
+    }
+  };
+
+  const adminUsername = localStorage.getItem("username") || "Admin";
+  const adminInstitution = localStorage.getItem("college") || "Institution";
+
   const sidebarItems = [
     {
       path: "/admin-dashboard",
@@ -95,6 +105,18 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
       path: "/admin-office-staff",
       icon: "bi-person-badge",
       label: "Manage Office Staff",
+      available: true,
+    },
+    {
+      path: "/admin/subjects",
+      icon: "bi-plus-circle",
+      label: "Add Subjects",
+      available: true,
+    },
+    {
+      path: "/admin/subjects-view",
+      icon: "bi-list-ul",
+      label: "View Subjects",
       available: true,
     },
   ];
@@ -125,6 +147,19 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
             </button>
           </div>
         )}
+
+        <div className="admin-sidebar-top">
+          <div className="admin-info">
+            <div className="admin-icon">
+              <i className="bi bi-person-circle"></i>
+            </div>
+            <div className="admin-details">
+              <p className="admin-label">Administrator</p>
+              <p className="admin-college">{adminInstitution}</p>
+            </div>
+          </div>
+        </div>
+
         <ul className="admin-sidebar-menu">
           {sidebarItems.map((item, index) => (
             <li
@@ -149,20 +184,16 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
           ))}
         </ul>
 
-        {/* <div className="admin-sidebar-footer">
-          <div className="profile">
-            <div className="avatar">
-              <img
-                src="https://ui-avatars.com/api/?name=Admin&background=10b981&color=fff"
-                alt="Admin"
-              />
-            </div>
-            <div className="meta">
-              <span className="name">Administrator</span>
-              <span className="role">Super User</span>
-            </div>
-          </div>
-        </div> */}
+        <div className="admin-sidebar-footer">
+          <button
+            className="logout-btn"
+            onClick={handleLogout}
+            aria-label="Logout"
+          >
+            <i className="bi bi-box-arrow-right"></i>
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
     </>
   );

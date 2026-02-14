@@ -90,7 +90,7 @@
 
 .filter-group input:focus {
   outline: none;
-  border-color: var(--office-manage-primary);
+  border-color: var(--office-primary);
   box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
 }
 
@@ -118,12 +118,12 @@
 }
 
 .btn-primary {
-  background-color: var(--office-manage-primary);
+  background-color: var(--office-primary);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--office-manage-dark);
+  background-color: var(--office-primary-dark);
 }
 
 .btn-primary:disabled {
@@ -226,7 +226,7 @@
 .edit-row input {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid var(--office-manage-primary);
+  border: 1px solid var(--office-primary);
   border-radius: 4px;
   font-size: 14px;
   font-family: inherit;
@@ -265,12 +265,12 @@
 }
 
 .btn-edit {
-  background-color: var(--office-manage-primary);
+  background-color: var(--office-primary);
   color: white;
 }
 
 .btn-edit:hover:not(:disabled) {
-  background-color: var(--office-manage-dark);
+  background-color: var(--office-primary-dark);
 }
 
 .btn-edit:disabled {
@@ -344,8 +344,8 @@
 
 .btn-nav:hover:not(:disabled) {
   background-color: #f0f0f0;
-  border-color: var(--office-manage-primary);
-  color: var(--office-manage-primary);
+  border-color: var(--office-primary);
+  color: var(--office-primary);
 }
 
 .btn-nav:disabled {
@@ -544,7 +544,7 @@
 
 .password-display {
   background-color: #f5f5f5;
-  border: 2px solid var(--office-manage-primary);
+  border: 2px solid var(--office-primary);
   border-radius: 6px;
   padding: 16px;
   margin: 16px 0;
@@ -557,14 +557,14 @@
   font-family: "Courier New", monospace;
   font-size: 16px;
   font-weight: bold;
-  color: var(--office-manage-primary);
+  color: var(--office-primary);
   flex: 1;
   word-break: break-all;
 }
 
 .btn-copy {
   padding: 8px 12px;
-  background-color: var(--office-manage-primary);
+  background-color: var(--office-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -576,7 +576,7 @@
 }
 
 .btn-copy:hover:not(:disabled) {
-  background-color: var(--office-manage-dark);
+  background-color: var(--office-primary-dark);
 }
 
 .btn-copy:disabled {

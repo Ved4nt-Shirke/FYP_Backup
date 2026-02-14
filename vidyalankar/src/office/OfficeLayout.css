@@ -1,3 +1,5 @@
+@import './OfficeTheme.css';
+
 /* Office Layout Styles */
 .office-layout-container {
   display: flex;

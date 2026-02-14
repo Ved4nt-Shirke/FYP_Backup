@@ -115,7 +115,7 @@ body {
 
 /* Admin page specific styles */
 .admin-page .main-content-wrapper {
-  margin-top: 70px; /* Account for fixed admin header height */
+  margin-top: 0; /* No header for admin pages */
   padding-top: 0;
 }
 
@@ -209,7 +209,7 @@ body {
   }
 
   .admin-page .main-content-wrapper {
-    padding-top: 80px !important; /* Keep content below fixed admin header */
+    padding-top: 0 !important; /* No header for admin pages */
   }
 
   .admin-page.admin-dashboard-page .scrollable-content {

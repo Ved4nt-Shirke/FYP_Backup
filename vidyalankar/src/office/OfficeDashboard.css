@@ -1,8 +1,6 @@
+@import './OfficeTheme.css';
+
 /* ===== OFFICE DASHBOARD MAIN ===== */
-:root {
-  --office-primary: var(--primary-accent, #1e40af);
-  --office-primary-dark: var(--primary-accent-dark, #1e3a8a);
-}
 
 .office-page {
   padding: 20px 24px;
