@@ -1,10 +1,85 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
 const Institution = require("../models/Institution");
 const User = require("../models/user");
+const Department = require("../models/Department");
+const Branch = require("../models/Branch");
+const Course = require("../models/Course");
+const Division = require("../models/Division");
+const Subject = require("../models/Subject");
+const Faculty = require("../models/Faculty");
+const OfficeStaff = require("../models/OfficeStaff");
+const Student = require("../models/Student");
+const StudentResult = require("../models/StudentResult");
+const Ciann = require("../models/Ciann");
+const Notice = require("../models/Notice");
+const LoginLog = require("../models/LoginLog");
+const PracticalExam = require("../models/PracticalExam");
+const Assessment = require("../models/Assessment");
+const CTMarks = require("../models/CTMarks");
+const TeachingPlan = require("../models/TeachingPlan");
+const TheoryAttendance = require("../models/TheoryAttendance");
+const PracticalAttendance = require("../models/PracticalAttendance");
+const TutorialAttendance = require("../models/TutorialAttendance");
+const ExtraAttendance = require("../models/ExtraAttendance");
+const ExtraPract = require("../models/ExtraPract");
+const KnowledgeMap = require("../models/KnowledgeMap");
+const LabPlanning = require("../models/LabPlanning");
+const MoocCourse = require("../models/MoocCourse");
+const CourseOutcome = require("../models/CourseOutcome");
+const SubjectObjective = require("../models/SubjectObjective");
+const BookResource = require("../models/BookResource");
+const WebResource = require("../models/WebResource");
+const AuditLog = require("../models/AuditLog");
 const { authenticate, authorizeSuperAdmin } = require("../middleware/auth");
 const enhancedSecurity = require("../middleware/enhancedSecurity");
+
+const institutionLogoDir = path.join(__dirname, "../uploads/institution-logos");
+if (!fs.existsSync(institutionLogoDir)) {
+  fs.mkdirSync(institutionLogoDir, { recursive: true });
+}
+
+const institutionLogoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, institutionLogoDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname || "").toLowerCase() || ".png";
+    const name = (req.body.name || req.body.code || "institution")
+      .toString()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .slice(0, 40)
+      .replace(/^-+|-+$/g, "");
+    cb(null, `${name || "institution"}-${Date.now()}${ext}`);
+  },
+});
+
+const institutionLogoUpload = multer({
+  storage: institutionLogoStorage,
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/png", "image/jpeg"];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+      return;
+    }
+    cb(new Error("Only PNG and JPEG logos are allowed"));
+  },
+  limits: { fileSize: 2 * 1024 * 1024 },
+});
+
+const deleteUploadedLogoIfExists = (file) => {
+  if (!file?.path) return;
+  fs.unlink(file.path, (err) => {
+    if (err) {
+      console.warn("Failed to delete uploaded institution logo:", err.message);
+    }
+  });
+};
 
 // Apply authentication middleware to all routes
 router.use(authenticate, authorizeSuperAdmin);
@@ -32,7 +107,9 @@ router.get("/debug/institution/:id", async (req, res) => {
       name: institution.name,
       code: institution.code,
       adminUsername: institution.adminUsername,
+      isActive: institution.isActive,
       palette: institution.palette,
+      logoUrl: institution.logoUrl,
       createdAt: institution.createdAt,
     };
 
@@ -70,7 +147,9 @@ router.get("/institution/:id", async (req, res) => {
       name: institution.name,
       code: institution.code,
       adminUsername: institution.adminUsername,
+      isActive: institution.isActive,
       palette: institution.palette,
+      logoUrl: institution.logoUrl,
       createdAt: institution.createdAt,
     };
 
@@ -89,9 +168,17 @@ router.get("/institution/:id", async (req, res) => {
 });
 
 // Create a new institution with admin credentials
-router.post("/create-institution", async (req, res) => {
+router.post("/create-institution", institutionLogoUpload.single("logo"), async (req, res) => {
   try {
     const { name, code, adminUsername, adminPassword, palette } = req.body;
+    let parsedPalette = palette;
+    if (typeof parsedPalette === "string") {
+      try {
+        parsedPalette = JSON.parse(parsedPalette);
+      } catch {
+        parsedPalette = undefined;
+      }
+    }
 
     // Check if institution already exists
     const existingInstitution = await Institution.findOne({
@@ -99,6 +186,7 @@ router.post("/create-institution", async (req, res) => {
     });
 
     if (existingInstitution) {
+      deleteUploadedLogoIfExists(req.file);
       return res.status(400).json({
         success: false,
         message: "Institution with this name or code already exists",
@@ -126,7 +214,13 @@ router.post("/create-institution", async (req, res) => {
       code,
       adminUsername: finalAdminUsername,
       adminPassword: hashedPassword,
-      ...(palette ? { palette } : {}),
+      ...(parsedPalette ? { palette: parsedPalette } : {}),
+      ...(req.file
+        ? {
+            logoUrl: `/uploads/institution-logos/${req.file.filename}`,
+            logoMimeType: req.file.mimetype,
+          }
+        : {}),
     });
 
     await newInstitution.save();
@@ -149,12 +243,15 @@ router.post("/create-institution", async (req, res) => {
         name: newInstitution.name,
         code: newInstitution.code,
         adminUsername: newInstitution.adminUsername,
+        isActive: newInstitution.isActive,
         palette: newInstitution.palette,
+        logoUrl: newInstitution.logoUrl,
         adminPassword: finalAdminPassword, // Send unhashed password only once
       },
       message: "Institution and admin user created successfully",
     });
   } catch (error) {
+    deleteUploadedLogoIfExists(req.file);
     console.error("Error creating institution:", error);
     res.status(500).json({
       success: false,
@@ -265,6 +362,7 @@ router.put(
           name: institution.name,
           code: institution.code,
           adminUsername: institution.adminUsername,
+          isActive: institution.isActive,
           palette: institution.palette,
         },
         message: "Institution details updated successfully",
@@ -431,6 +529,56 @@ router.put(
   },
 );
 
+// Update institution active status
+router.put(
+  "/update-institution-status/:id",
+  enhancedSecurity("UPDATE_INSTITUTION_STATUS"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { isActive } = req.body;
+
+      if (typeof isActive !== "boolean") {
+        return res.status(400).json({
+          success: false,
+          message: "isActive must be a boolean",
+        });
+      }
+
+      const institution = await Institution.findById(id);
+      if (!institution) {
+        return res.status(404).json({
+          success: false,
+          message: "Institution not found",
+        });
+      }
+
+      institution.isActive = isActive;
+      await institution.save();
+
+      res.json({
+        success: true,
+        institution: {
+          _id: institution._id,
+          name: institution.name,
+          code: institution.code,
+          adminUsername: institution.adminUsername,
+          isActive: institution.isActive,
+          palette: institution.palette,
+        },
+        message: `Institution ${isActive ? "enabled" : "disabled"} successfully`,
+      });
+    } catch (error) {
+      console.error("Error updating institution status:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error updating institution status",
+        error: error.message,
+      });
+    }
+  },
+);
+
 // Delete an institution
 router.delete(
   "/delete-institution/:id",
@@ -448,19 +596,112 @@ router.delete(
         });
       }
 
-      // Delete the institution
-      await Institution.findByIdAndDelete(id);
+      const institutionCode = institution.code;
+      const institutionName = institution.name;
 
-      // Also delete the corresponding admin user
-      await User.findOneAndDelete({
-        username: institution.adminUsername,
-        college: institution.code,
-        role: "admin",
-      });
+      const [departmentDocs, courseDocs, divisionDocs, userDocs, ciannDocs] =
+        await Promise.all([
+          Department.find({ institution: institutionCode }).select("_id"),
+          Course.find({ institution: institutionCode }).select("_id"),
+          Division.find({ institution: institutionCode }).select("_id"),
+          User.find({ college: institutionCode }).select("_id"),
+          Ciann.find({ college: institutionCode }).select("ciannId"),
+        ]);
+
+      const departmentIds = departmentDocs.map((doc) => doc._id);
+      const courseIds = courseDocs.map((doc) => doc._id);
+      const divisionIds = divisionDocs.map((doc) => doc._id);
+      const userIds = userDocs.map((doc) => doc._id);
+      const ciannIds = ciannDocs.map((doc) => doc.ciannId);
+
+      const studentQueryParts = [];
+      if (departmentIds.length > 0) {
+        studentQueryParts.push({ departmentId: { $in: departmentIds } });
+      }
+      if (courseIds.length > 0) {
+        studentQueryParts.push({ courseId: { $in: courseIds } });
+      }
+      if (divisionIds.length > 0) {
+        studentQueryParts.push({ divisionId: { $in: divisionIds } });
+      }
+
+      let studentIds = [];
+      if (studentQueryParts.length > 0) {
+        const studentDocs = await Student.find({
+          $or: studentQueryParts,
+        }).select("_id");
+        studentIds = studentDocs.map((doc) => doc._id);
+      }
+
+      const deleteByCiannIds = async (Model) => {
+        if (ciannIds.length === 0) {
+          return;
+        }
+
+        await Model.deleteMany({ ciannId: { $in: ciannIds } });
+      };
+
+      if (studentIds.length > 0) {
+        await StudentResult.deleteMany({ studentId: { $in: studentIds } });
+      }
+
+      await Promise.all([
+        deleteByCiannIds(Assessment),
+        deleteByCiannIds(CTMarks),
+        deleteByCiannIds(TeachingPlan),
+        deleteByCiannIds(TheoryAttendance),
+        deleteByCiannIds(PracticalAttendance),
+        deleteByCiannIds(TutorialAttendance),
+        deleteByCiannIds(ExtraAttendance),
+        deleteByCiannIds(ExtraPract),
+        deleteByCiannIds(KnowledgeMap),
+        deleteByCiannIds(LabPlanning),
+        deleteByCiannIds(MoocCourse),
+        deleteByCiannIds(CourseOutcome),
+        deleteByCiannIds(SubjectObjective),
+        deleteByCiannIds(BookResource),
+        deleteByCiannIds(WebResource),
+      ]);
+
+      await Promise.all([
+        Faculty.deleteMany({ institution: institutionCode }),
+        OfficeStaff.deleteMany({ institution: institutionCode }),
+        Branch.deleteMany({ institution: institutionCode }),
+        Subject.deleteMany({ institution: institutionCode }),
+        Division.deleteMany({ institution: institutionCode }),
+        Course.deleteMany({ institution: institutionCode }),
+        Department.deleteMany({ institution: institutionCode }),
+        Ciann.deleteMany({ college: institutionCode }),
+        Notice.deleteMany({ college: institutionCode }),
+        LoginLog.deleteMany({ college: institutionCode }),
+        PracticalExam.deleteMany({
+          $or: [
+            { college: institutionCode },
+            { institution: institutionCode },
+            { institution: institutionName },
+          ],
+        }),
+      ]);
+
+      if (studentQueryParts.length > 0) {
+        await Student.deleteMany({ $or: studentQueryParts });
+      }
+
+      if (userIds.length > 0 || id) {
+        const auditLogQuery = { $or: [] };
+        if (userIds.length > 0) {
+          auditLogQuery.$or.push({ userId: { $in: userIds } });
+        }
+        auditLogQuery.$or.push({ resourceId: id });
+        await AuditLog.deleteMany(auditLogQuery);
+      }
+
+      await User.deleteMany({ college: institutionCode });
+      await Institution.findByIdAndDelete(id);
 
       res.json({
         success: true,
-        message: `Institution '${institution.name}' and its admin user deleted successfully`,
+        message: `Institution '${institution.name}' and all related data deleted successfully`,
       });
     } catch (error) {
       console.error("Error deleting institution:", error);

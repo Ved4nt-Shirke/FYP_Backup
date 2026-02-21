@@ -32,7 +32,9 @@
 }
 
 /* Ensure modal content is positioning context for the close btn */
-.tps-modal { position: relative; }
+.tps-modal {
+  position: relative;
+}
 
 /* Close button for Teaching Plan modal */
 .tps-close-btn {
@@ -50,7 +52,10 @@
   align-items: center;
   justify-content: center;
   font-size: 0; /* hide the × glyph in markup to avoid shifting */
-  transition: transform 0.25s ease, background-color 0.2s ease, color 0.2s ease;
+  transition:
+    transform 0.25s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 /* draw an "X" with two centered lines to avoid font baseline drift */
 .tps-close-btn::before,
@@ -65,8 +70,12 @@
   border-radius: 1px;
   transform-origin: center;
 }
-.tps-close-btn::before { transform: translate(-50%, -50%) rotate(45deg); }
-.tps-close-btn::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+.tps-close-btn::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.tps-close-btn::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
 
 .tps-close-btn:hover {
   background-color: #f1f3f5;
@@ -82,21 +91,22 @@
 .tps-modal .form-grid {
   display: block;
   overflow-x: auto; /* horizontal scrolling when needed */
-  overflow-y: hidden; /* hide vertical inside grid area */
+  overflow-y: visible; /* Allow content to flow naturally */
   border: 1px solid #cfd4da; /* table-like outer border */
   border-radius: 10px; /* rounded corners like screenshot */
   background: #fff; /* white background */
-  margin-top: 30px;
-  margin-bottom: 0px;
+  margin-top: 20px;
+  margin-bottom: 15px;
   background-clip: padding-box; /* keep rounded corners clean */
   width: 95%;
-  margin-left: 18px;
+  margin-left: auto;
+  margin-right: auto;
   text-align: center;
 }
 /* Make inner content wider than container so X-scrollbar appears */
 .tps-modal .form-grid > .form-labels,
 .tps-modal .form-grid > .form-row {
-  min-width: 900px; /* adjust as needed to trigger horizontal scroll */
+  min-width: 750px; /* adjusted for 4 columns to allow horizontal scroll on smaller screens */
 }
 /* Scrollbar styling (WebKit) */
 .tps-modal .form-grid::-webkit-scrollbar {
@@ -120,7 +130,7 @@
 /* Header labels row (scoped) */
 .tps-modal .form-labels {
   display: grid;
-  grid-template-columns: 1.3fr 1.6fr 1fr 1fr 1.2fr; /* Chapter, Sub-Topic, Week, Start, Methods */
+  grid-template-columns: 1.3fr 1.8fr 1.2fr 1.5fr; /* Chapter, Sub-Topic, Start Date, Methods */
   column-gap: 12px;
   background-color: #eef2f7; /* light header bg */
   color: #495057;
@@ -132,19 +142,23 @@
   border-bottom: 1px solid #e1e5ea;
   /* vertical separators between columns */
   background-image:
-    linear-gradient(#e1e5ea, #e1e5ea),
-    linear-gradient(#e1e5ea, #e1e5ea),
-    linear-gradient(#e1e5ea, #e1e5ea),
+    linear-gradient(#e1e5ea, #e1e5ea), linear-gradient(#e1e5ea, #e1e5ea),
     linear-gradient(#e1e5ea, #e1e5ea);
-  background-size: 1px 100%, 1px 100%, 1px 100%, 1px 100%;
+  background-size:
+    1px 100%,
+    1px 100%,
+    1px 100%;
   background-repeat: no-repeat;
-  background-position: 21.31% 0, 47.54% 0, 63.93% 0, 80.33% 0; /* based on 1.3fr 1.6fr 1fr 1fr 1.2fr */
+  background-position:
+    23.21% 0,
+    55.36% 0,
+    76.79% 0; /* adjusted for 4 columns */
 }
 
 /* Form row (scoped) */
 .tps-modal .form-row {
   display: grid;
-  grid-template-columns: 1.3fr 1.6fr 1fr 1fr 1.2fr; /* align with header */
+  grid-template-columns: 1.3fr 1.8fr 1.2fr 1.5fr; /* align with header */
   column-gap: 12px;
   padding: 10px 14px; /* reduced height */
   border-bottom: 1px solid #eef1f4;
@@ -152,13 +166,17 @@
   align-items: center; /* center items vertically */
   /* match header vertical separators */
   background-image:
-    linear-gradient(#eef1f4, #eef1f4),
-    linear-gradient(#eef1f4, #eef1f4),
-    linear-gradient(#eef1f4, #eef1f4),
+    linear-gradient(#eef1f4, #eef1f4), linear-gradient(#eef1f4, #eef1f4),
     linear-gradient(#eef1f4, #eef1f4);
-  background-size: 1px 100%, 1px 100%, 1px 100%, 1px 100%;
+  background-size:
+    1px 100%,
+    1px 100%,
+    1px 100%;
   background-repeat: no-repeat;
-  background-position: 21.31% 0, 47.54% 0, 63.93% 0, 80.33% 0; /* aligns with columns */
+  background-position:
+    23.21% 0,
+    55.36% 0,
+    76.79% 0; /* aligns with columns */
 }
 
 /* Remove duplicate old .form-labels block */
@@ -170,10 +188,39 @@
   padding: 8px 10px; /* slightly slimmer inputs */
   border: 1px solid #dde3ea;
   border-radius: 8px; /* rounded like screenshot */
-  width: 80%!important;
+  width: 80% !important;
   box-sizing: border-box;
   background: #f8fbff; /* light bluish background to match card-like inputs */
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+/* Enhanced select dropdown styling */
+.tps-modal select.form-input {
+  appearance: auto;
+  -webkit-appearance: menulist;
+  -moz-appearance: menulist;
+  cursor: pointer;
+  min-height: 38px;
+  line-height: 1.5;
+}
+
+.tps-modal select.form-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: #e9ecef;
+}
+
+.tps-modal select.form-input option {
+  padding: 8px;
+  background: white;
+  color: #333;
+}
+
+.tps-modal select.form-input option:disabled {
+  color: #999;
+  font-style: italic;
 }
 /* Make all form inputs a bit narrower than their grid cell and center them */
 .tps-modal .weekwise-form-container .form-row .form-input,
@@ -200,6 +247,55 @@
   padding: 6px 10px;
 }
 
+/* Weekwise form container - scrollable content area */
+.tps-modal .weekwise-form-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 20px 20px 20px;
+  min-height: 0; /* Important for proper flexbox scrolling */
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar styling for container */
+.tps-modal .weekwise-form-container::-webkit-scrollbar {
+  width: 8px;
+}
+.tps-modal .weekwise-form-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+.tps-modal .weekwise-form-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+.tps-modal .weekwise-form-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Submission message styling */
+.tps-modal .submission-message {
+  margin: 15px auto 0;
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  max-width: 95%;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Button group (scoped) */
 .tps-modal .button-group {
   display: flex;
@@ -212,6 +308,10 @@
   border-top: 1px solid #eee;
   margin-top: 0;
   width: 100%;
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+  position: sticky; /* Keep buttons visible */
+  bottom: 0;
+  z-index: 10;
 }
 .tps-modal .button-group .btn {
   margin: 0;
@@ -228,7 +328,9 @@
   cursor: pointer;
   min-width: 100px; /* slightly narrower baseline */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-  transition: box-shadow 0.2s ease, transform 0.02s ease,
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.02s ease,
     background-color 0.2s ease;
   margin-bottom: -10px !important;
 }
@@ -294,13 +396,18 @@
 /* Mobile responsive tweaks for weekwise table and modal */
 @media (max-width: 576px) {
   /* Limit overall modal height and keep layout same as desktop */
-  .tps-modal { max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+  .tps-modal {
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
   /* Keep desktop table widths; enable horizontal scroll inside content */
   .tps-modal .weekwise-form-container .form-grid {
     width: 90%;
-    margin-left: 15px;          /* reset base left margin */
-    margin-right: 70px;      /* push a bit more to the left (was 50px) */
+    margin-left: 15px; /* reset base left margin */
+    margin-right: 70px; /* push a bit more to the left (was 50px) */
     max-height: calc(85vh - 160px) !important; /* previously 80vh */
     margin-top: 20px;
     overflow-y: auto;
@@ -313,13 +420,26 @@
   }
 
   /* Compact table content for mobile */
-  .tps-modal .weekwise-form-container .form-labels { padding: 8px 10px; font-size: 13px; column-gap: 8px; }
-  .tps-modal .weekwise-form-container .form-row { padding: 8px 10px; column-gap: 8px; justify-items: start; min-height: 56px; }
+  .tps-modal .weekwise-form-container .form-labels {
+    padding: 8px 10px;
+    font-size: 13px;
+    column-gap: 8px;
+  }
+  .tps-modal .weekwise-form-container .form-row {
+    padding: 8px 10px;
+    column-gap: 8px;
+    justify-items: start;
+    min-height: 56px;
+  }
   .tps-modal .weekwise-form-container .form-input,
   .tps-modal .weekwise-form-container .form-row .form-input,
   .tps-modal .weekwise-form-container .form-row input.form-input,
   .tps-modal .weekwise-form-container .form-row select.form-input,
-  .tps-modal .weekwise-form-container .form-row textarea.form-input { font-size: 13px; padding: 6px 8px; width: 92%; }
+  .tps-modal .weekwise-form-container .form-row textarea.form-input {
+    font-size: 13px;
+    padding: 6px 8px;
+    width: 92%;
+  }
 
   /* Buttons area compact on mobile: smaller and pinned to corners */
   .tps-modal .button-group {
@@ -329,23 +449,31 @@
     bottom: 0;
     background: #f8f9fa;
     z-index: 2;
-    display: flex;            /* ensure flex on mobile */
-    flex-direction: row;      /* normal order */
-    flex-wrap: nowrap;        /* keep on one line */
+    display: flex; /* ensure flex on mobile */
+    flex-direction: row; /* normal order */
+    flex-wrap: nowrap; /* keep on one line */
     justify-content: space-between; /* push to corners */
-    align-items: center;      /* keep same vertical level */
+    align-items: center; /* keep same vertical level */
     width: 100%;
   }
   .tps-modal .button-group .btn {
     padding: 8px 10px !important;
     font-size: 13px;
-    min-width: 80px !important;  /* override desktop min-width:100px */
-    width: auto;                 /* allow natural width */
-    flex: 0 0 auto;              /* don't stretch */
+    min-width: 80px !important; /* override desktop min-width:100px */
+    width: auto; /* allow natural width */
+    flex: 0 0 auto; /* don't stretch */
     border-radius: 8px;
-    margin: 0 !important;     /* avoid accidental shifts */
+    margin: 0 !important; /* avoid accidental shifts */
   }
   /* Explicit order: Submit left, Cancel right */
-  .tps-modal .button-group .btn.submit { order: 1; padding: 8px 10px !important; width: 250px!important; }
-  .tps-modal .button-group .btn.cancel { order: 2; padding: 8px 10px !important; width: 250px!important; }
+  .tps-modal .button-group .btn.submit {
+    order: 1;
+    padding: 8px 10px !important;
+    width: 250px !important;
+  }
+  .tps-modal .button-group .btn.cancel {
+    order: 2;
+    padding: 8px 10px !important;
+    width: 250px !important;
+  }
 }

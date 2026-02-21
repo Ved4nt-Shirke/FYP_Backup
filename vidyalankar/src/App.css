@@ -1,6 +1,6 @@
 :root {
   --header-height: 60px;
-  --sidebar-width: 280px; /* Updated to match AdminSidebar width */
+  --sidebar-width: 280px; /* Default for admin/office */
   --page-bg: #f8f9fa;
   --surface-color: #ffffff;
   --border-color: #dee2e6;
@@ -9,6 +9,10 @@
   --app-header-bg: #2e7d32;
   --primary-accent: #10b981;
   --primary-accent-dark: #059669;
+}
+
+.faculty-page {
+  --sidebar-width: 220px;
 }
 
 /* Global palette-aware button/text helpers (keeps superadmin colors intact) */
@@ -115,7 +119,7 @@ body {
 
 /* Admin page specific styles */
 .admin-page .main-content-wrapper {
-  margin-top: 0; /* No header for admin pages */
+  margin-top: 0;
   padding-top: 0;
 }
 
@@ -133,7 +137,7 @@ body {
 
 /* Office page specific styles */
 .office-page .main-content-wrapper {
-  margin-top: 70px; /* Account for fixed office header height */
+  /* margin-top: 70px; Account for fixed office header height */
   padding-top: 0;
 }
 
@@ -190,6 +194,13 @@ body {
   }
 }
 
+@media (min-width: 769px) and (max-width: 1024px) {
+  .faculty-page .main-content-wrapper {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .main-content-wrapper {
     margin-left: 0 !important;
@@ -209,7 +220,12 @@ body {
   }
 
   .admin-page .main-content-wrapper {
-    padding-top: 0 !important; /* No header for admin pages */
+    margin-top: 56px !important;
+    padding-top: 0 !important;
+  }
+
+  .admin-page .scrollable-content {
+    height: calc(100vh - 56px) !important;
   }
 
   .admin-page.admin-dashboard-page .scrollable-content {
@@ -257,6 +273,33 @@ table:not(.timetable) {
 /* Ensure proper spacing for assessment pages */
 .scrollable-content > * {
   margin-left: 0 !important;
+}
+
+@media print {
+  html,
+  body {
+    overflow: visible !important;
+    height: auto !important;
+    background: #fff !important;
+  }
+
+  .app-container,
+  .main-content-wrapper,
+  .scrollable-content,
+  .content-area {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .main-content-wrapper {
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+  }
 }
 
 /* Fix specific attendance pages spacing - use specific classes */
@@ -399,4 +442,36 @@ h6 {
 
 .app-container.student-layout .header .menu-toggle {
   display: none;
+}
+
+/* Faculty module-specific responsive normalization */
+@media (max-width: 1024px) {
+  .faculty-page .ciann-header-wrapper,
+  .faculty-page .assessment-header,
+  .faculty-page .assessment-header-card,
+  .faculty-page .header-actions,
+  .faculty-page .controls-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .faculty-page .ciann-header-wrapper,
+  .faculty-page .assessment-header,
+  .faculty-page .assessment-header-card,
+  .faculty-page .header-actions,
+  .faculty-page .controls-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .faculty-page .ciann-header-wrapper button,
+  .faculty-page .assessment-header button,
+  .faculty-page .header-actions button,
+  .faculty-page .controls-container button {
+    width: 100%;
+  }
 }

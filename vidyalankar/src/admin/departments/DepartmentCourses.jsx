@@ -99,7 +99,7 @@ const DepartmentCourses = () => {
 
     try {
       const response = await axios.post(config.courses.create, {
-        semester: newCourseSemester,
+        semester: Number(newCourseSemester),
         scheme: newCourseScheme.trim(),
         departmentId: id,
       });
@@ -119,7 +119,12 @@ const DepartmentCourses = () => {
         showErrorAlert(response.data.message || "Failed to add course");
       }
     } catch (error) {
-      showErrorAlert("Failed to add course");
+      const errorMsg =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to add course";
+      console.error("Course creation error:", errorMsg);
+      showErrorAlert(errorMsg);
     }
   };
 
@@ -286,8 +291,8 @@ const DepartmentCourses = () => {
   };
 
   return (
-    <div className="admin-content">
-      <div className="page-header">
+    <div className="admin-content dc-page">
+      <div className="dc-header">
         <div>
           <h2>Courses & Divisions</h2>
           <p>
@@ -297,7 +302,7 @@ const DepartmentCourses = () => {
           </p>
         </div>
         <button
-          className="btn-secondary"
+          className="dc-btn dc-btn-secondary"
           onClick={() => navigate("/admin-departments")}
         >
           <i className="bi bi-arrow-left"></i>
@@ -305,9 +310,9 @@ const DepartmentCourses = () => {
         </button>
       </div>
 
-      <div className="course-add-card">
-        <div className="course-add-title">Add Course</div>
-        <div className="course-add-row">
+      <div className="dc-add-card">
+        <div className="dc-add-title">Add Course</div>
+        <div className="dc-add-row">
           <select
             value={newCourseSemester}
             onChange={(e) => setNewCourseSemester(e.target.value)}
@@ -336,7 +341,7 @@ const DepartmentCourses = () => {
             value={buildCourseCode(newCourseSemester, newCourseScheme)}
             placeholder="Course code"
           />
-          <button className="btn-primary" onClick={handleAddCourse}>
+          <button className="dc-btn dc-btn-primary" onClick={handleAddCourse}>
             <i className="bi bi-plus-lg"></i>
             Add Course
           </button>
@@ -349,20 +354,20 @@ const DepartmentCourses = () => {
           <p>Loading courses...</p>
         </div>
       ) : courses.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">
+        <div className="dc-empty-state">
+          <div className="dc-empty-icon">
             <i className="bi bi-journal-bookmark"></i>
           </div>
           <h3>No Courses Yet</h3>
           <p>Add your first course to start managing divisions.</p>
         </div>
       ) : (
-        <div className="course-grid">
+        <div className="dc-grid">
           {courses.map((course) => (
-            <div key={course._id} className="course-card">
-              <div className="course-card-header">
+            <div key={course._id} className="dc-card">
+              <div className="dc-card-header">
                 {editingCourseId === course._id ? (
-                  <div className="course-edit-grid">
+                  <div className="dc-edit-grid">
                     <select
                       value={editingCourseSemester}
                       onChange={(e) => setEditingCourseSemester(e.target.value)}
@@ -398,22 +403,22 @@ const DepartmentCourses = () => {
                 ) : (
                   <div>
                     <h3>{course.courseCode}</h3>
-                    <p className="course-meta">
+                    <p className="dc-meta">
                       Semester {course.semester} • Scheme {course.scheme}
                     </p>
                   </div>
                 )}
-                <div className="course-actions">
+                <div className="dc-actions">
                   {editingCourseId === course._id ? (
                     <>
                       <button
-                        className="btn-secondary"
+                        className="dc-btn dc-btn-secondary"
                         onClick={() => handleUpdateCourse(course._id)}
                       >
                         Save
                       </button>
                       <button
-                        className="btn-ghost"
+                        className="dc-btn dc-btn-ghost"
                         onClick={() => {
                           setEditingCourseId(null);
                           setEditingCourseSemester("");
@@ -426,13 +431,13 @@ const DepartmentCourses = () => {
                   ) : (
                     <>
                       <button
-                        className="btn-ghost"
+                        className="dc-btn dc-btn-ghost"
                         onClick={() => handleEditCourse(course)}
                       >
                         Edit
                       </button>
                       <button
-                        className="btn-danger-outline"
+                        className="dc-btn dc-btn-danger"
                         onClick={() => handleDeleteCourse(course._id)}
                       >
                         Delete
@@ -442,11 +447,11 @@ const DepartmentCourses = () => {
                 </div>
               </div>
 
-              <div className="division-section">
-                <div className="division-header">Divisions</div>
-                <ul className="division-list">
+              <div className="dc-division-section">
+                <div className="dc-division-header">Divisions</div>
+                <ul className="dc-division-list">
                   {(divisionsByCourse[course._id] || []).map((division) => (
-                    <li key={division._id} className="division-item">
+                    <li key={division._id} className="dc-division-item">
                       {editingDivisionId === division._id ? (
                         <input
                           type="text"
@@ -458,11 +463,11 @@ const DepartmentCourses = () => {
                       ) : (
                         <span>{division.name}</span>
                       )}
-                      <div className="division-actions">
+                      <div className="dc-actions">
                         {editingDivisionId === division._id ? (
                           <>
                             <button
-                              className="btn-secondary"
+                              className="dc-btn dc-btn-secondary"
                               onClick={() =>
                                 handleUpdateDivision(course._id, division._id)
                               }
@@ -470,7 +475,7 @@ const DepartmentCourses = () => {
                               Save
                             </button>
                             <button
-                              className="btn-ghost"
+                              className="dc-btn dc-btn-ghost"
                               onClick={() => {
                                 setEditingDivisionId(null);
                                 setEditingDivisionName("");
@@ -482,13 +487,13 @@ const DepartmentCourses = () => {
                         ) : (
                           <>
                             <button
-                              className="btn-ghost"
+                              className="dc-btn dc-btn-ghost"
                               onClick={() => handleEditDivision(division)}
                             >
                               Edit
                             </button>
                             <button
-                              className="btn-danger-outline"
+                              className="dc-btn dc-btn-danger"
                               onClick={() =>
                                 handleDeleteDivision(course._id, division._id)
                               }
@@ -502,7 +507,7 @@ const DepartmentCourses = () => {
                   ))}
                 </ul>
 
-                <div className="division-add-row">
+                <div className="dc-division-add-row">
                   <input
                     type="text"
                     placeholder="Division name"
@@ -515,7 +520,7 @@ const DepartmentCourses = () => {
                     }
                   />
                   <button
-                    className="btn-secondary"
+                    className="dc-btn dc-btn-secondary"
                     onClick={() => handleAddDivision(course._id)}
                   >
                     <i className="bi bi-plus-lg"></i>

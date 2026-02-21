@@ -1,10 +1,7 @@
-// Attendance/PracticalAttendanceForm.jsx
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PracticalAttendanceForm.css";
 
-// Helper function to get today's date in YYYY-MM-DD format
 const getTodayDateString = () => {
   const today = new Date();
   const offset = today.getTimezoneOffset();
@@ -19,8 +16,9 @@ const PracticalAttendanceForm = ({
   exptNo,
   exptName,
   plannedDate,
+  ciannData,
   onClose,
-  ciannData, // Optional, pass if needed for nav
+  onSubmitSuccess,
 }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -30,13 +28,11 @@ const PracticalAttendanceForm = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Handle change for form inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Submit the form - update actual date and remark in the lab plan
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.actualDate) {
@@ -54,7 +50,7 @@ const PracticalAttendanceForm = ({
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -62,7 +58,6 @@ const PracticalAttendanceForm = ({
         throw new Error(errorRes.message || "Update failed");
       }
 
-      // On success, navigate to the final attendance page with all necessary data
       navigate("/PracticalFinalAtt", {
         state: {
           ciannId,
@@ -75,6 +70,10 @@ const PracticalAttendanceForm = ({
           ciannData,
         },
       });
+
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -83,16 +82,35 @@ const PracticalAttendanceForm = ({
   };
 
   return (
-    <div className="modal-overlay">
-      <form className="form-container" onSubmit={handleSubmit}>
-        <div className="p">Practical Attendance</div>
-        <div className="form-field">
-          <strong>Experiment:</strong> <span>{exptName} (Exp. No: {exptNo})</span>
+    <div className="practical-modal-overlay">
+      <form className="practical-modal" onSubmit={handleSubmit}>
+        <header>
+          <h2>Practical Attendance</h2>
+          <p>Confirm completion before marking attendance.</p>
+        </header>
+
+        <div className="practical-modal-grid">
+          <div>
+            <span>Experiment</span>
+            <strong>
+              Exp {exptNo}: {exptName}
+            </strong>
+          </div>
+          <div>
+            <span>Week</span>
+            <strong>{weekNo}</strong>
+          </div>
+          <div>
+            <span>Batch</span>
+            <strong>{batch}</strong>
+          </div>
+          <div>
+            <span>Planned Date</span>
+            <strong>{plannedDate}</strong>
+          </div>
         </div>
-        <div className="form-field">
-          <strong>Planned Date:</strong> <span>{plannedDate}</span>
-        </div>
-        <div className="form-field">
+
+        <div className="practical-modal-field">
           <label htmlFor="actualDate">Actual Date of Completion</label>
           <input
             type="date"
@@ -104,7 +122,8 @@ const PracticalAttendanceForm = ({
             required
           />
         </div>
-        <div className="form-field">
+
+        <div className="practical-modal-field">
           <label htmlFor="remark">Remark</label>
           <input
             type="text"
@@ -115,13 +134,15 @@ const PracticalAttendanceForm = ({
             placeholder="Optional"
           />
         </div>
-        {error && <div style={{ color: "red", marginTop: 6 }}>{error}</div>}
-        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-          <button className="button1" type="submit" disabled={loading}>
-            {loading ? "Saving..." : "Save"}
-          </button>
-          <button className="button1" type="button" onClick={onClose}>
+
+        {error && <div className="practical-modal-error">{error}</div>}
+
+        <div className="practical-modal-actions">
+          <button type="button" onClick={onClose} className="ghost">
             Cancel
+          </button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Saving..." : "Proceed"}
           </button>
         </div>
       </form>

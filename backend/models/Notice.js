@@ -13,6 +13,10 @@ const NoticeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  division: {
+    type: String,
+    required: false,
+  },
   college: {
     type: String,
     required: true,

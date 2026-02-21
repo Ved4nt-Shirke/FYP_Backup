@@ -142,8 +142,7 @@ const OfficeStaffList = () => {
     }
   };
 
-  const handleCreateStaff = () =>
-    navigate("/admin-panel", { state: { activeTab: "office" } });
+  const handleCreateStaff = () => navigate("/admin-create-office-staff");
   const handleEditStaff = (staffMember) =>
     navigate(`/admin-edit-office-staff/${staffMember._id}`, {
       state: { staff: staffMember },

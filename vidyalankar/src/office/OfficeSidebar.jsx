@@ -2,7 +2,14 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./OfficeSidebar.css";
 
-const OfficeSidebar = ({ isVisible, setIsVisible, onLogout, staffName = "Office Staff", currentTab, onTabChange }) => {
+const OfficeSidebar = ({
+  isVisible,
+  setIsVisible,
+  onLogout,
+  staffName = "Office Staff",
+  currentTab,
+  onTabChange,
+}) => {
   const navigate = useNavigate();
 
   const menuItems = [
@@ -11,32 +18,25 @@ const OfficeSidebar = ({ isVisible, setIsVisible, onLogout, staffName = "Office 
       label: "Upload Students",
       icon: "📤",
       tab: "upload",
-      section: "Student Management"
+      section: "Student Management",
     },
     {
       id: "manage",
       label: "Manage Students",
       icon: "👥",
       tab: "manage",
-      section: "Student Management"
-    },
-    {
-      id: "credentials",
-      label: "Division Credentials",
-      icon: "🔑",
-      tab: "credentials",
-      section: "Student Management"
+      section: "Student Management",
     },
     {
       id: "divider1",
-      type: "divider"
+      type: "divider",
     },
     {
       id: "help",
       label: "Help & Info",
       icon: "📚",
       tab: "help",
-      section: "Support"
+      section: "Support",
     },
   ];
 
@@ -60,14 +60,7 @@ const OfficeSidebar = ({ isVisible, setIsVisible, onLogout, staffName = "Office 
 
       {/* Sidebar */}
       <aside className={`office-sidebar ${isVisible ? "visible" : ""}`}>
-        <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <div className="sidebar-logo-icon">🏢</div>
-            <div className="sidebar-logo-text">
-              <p className="sidebar-title">Office Portal</p>
-              <p className="sidebar-subtitle">Management</p>
-            </div>
-          </div>
+        <div className="sidebar-user-info">
           <button
             className="sidebar-close"
             onClick={() => setIsVisible(false)}
@@ -75,10 +68,9 @@ const OfficeSidebar = ({ isVisible, setIsVisible, onLogout, staffName = "Office 
           >
             ✕
           </button>
-        </div>
-
-        <div className="sidebar-user-info">
-          <div className="sidebar-user-avatar">{staffName.charAt(0).toUpperCase()}</div>
+          <div className="sidebar-user-avatar">
+            {staffName.charAt(0).toUpperCase()}
+          </div>
           <div className="sidebar-user-details">
             <p className="sidebar-user-name">{staffName}</p>
             <p className="sidebar-user-role">Office Staff</p>
@@ -91,7 +83,8 @@ const OfficeSidebar = ({ isVisible, setIsVisible, onLogout, staffName = "Office 
               return <div key={item.id} className="sidebar-divider"></div>;
             }
 
-            const showSectionLabel = index === 0 || menuItems[index - 1].type === "divider";
+            const showSectionLabel =
+              index === 0 || menuItems[index - 1].type === "divider";
 
             const isActive = currentTab && item.tab && currentTab === item.tab;
 
@@ -100,8 +93,8 @@ const OfficeSidebar = ({ isVisible, setIsVisible, onLogout, staffName = "Office 
                 {showSectionLabel && item.section && (
                   <div className="sidebar-section-label">{item.section}</div>
                 )}
-                <button 
-                  className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+                <button
+                  className={`sidebar-nav-item ${isActive ? "active" : ""}`}
                   onClick={() => handleNavigation(item)}
                 >
                   <span className="sidebar-icon">{item.icon}</span>
@@ -113,9 +106,6 @@ const OfficeSidebar = ({ isVisible, setIsVisible, onLogout, staffName = "Office 
         </nav>
 
         <div className="sidebar-footer">
-          <button className="sidebar-footer-btn logout-btn" onClick={onLogout}>
-            <span>🚪</span> Logout
-          </button>
           <div className="sidebar-footer-info">
             <p className="info-label">Version</p>
             <p className="info-value">1.0.0</p>

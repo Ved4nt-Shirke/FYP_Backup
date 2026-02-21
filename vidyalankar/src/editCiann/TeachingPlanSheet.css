@@ -6,16 +6,16 @@
   overflow-x: hidden; /* hide horizontal scroll on outer container */
   background-color: #fefefe;
   border: 1px solid #ccc;
-  border-radius: 0px!important;
+  border-radius: 0px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 18px; /* Reduced padding for more compact look */
-height: auto !important;
+  height: auto !important;
   /* Account for -185px top margin */
   min-height: calc(60vh + 183px) !important;
-  
 }
-.teaching-layout{
-  padding-left: 120px;;
+.teaching-layout {
+  padding-left: 120px;
+  padding-top: var(--header-height, 60px);
 }
 /* ----------- HEADER TITLE + BUTTONS ---------- */
 .teaching-main-content.syllabus-main-content .header-row {
@@ -26,7 +26,6 @@ height: auto !important;
   gap: 0px; /* for wrapping on narrow screens */
   margin-bottom: 0 !important;
 }
-
 
 .teaching-main-content.syllabus-main-content .plan-actions-top-right {
   display: flex;
@@ -84,7 +83,7 @@ height: auto !important;
   display: flex;
   gap: 10px;
   margin-bottom: 18px;
-   margin-top: -8px;
+  margin-top: -8px;
 }
 .teaching-main-content.syllabus-main-content .tab {
   background-color: #f5f5f5;
@@ -94,7 +93,9 @@ height: auto !important;
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .teaching-main-content .tabs button:hover {
@@ -113,7 +114,9 @@ height: auto !important;
   width: 100%;
   overflow-x: auto; /* keep horizontal scroll for table */
   overflow-y: auto; /* add vertical scroll for table only */
-  max-height: calc(100% - 220px); /* ensure table area gets its own vertical scroll within container */
+  max-height: calc(
+    100% - 220px
+  ); /* ensure table area gets its own vertical scroll within container */
   padding-bottom: 8px;
   border: 2px solid #000 !important; /* outer border same shade as inner borders */
   border-radius: 8px; /* keep slight curve */
@@ -236,9 +239,10 @@ height: auto !important;
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   margin-left: 10px;
-  
 }
 
 .teaching-main-content.syllabus-main-content
@@ -303,7 +307,7 @@ height: auto !important;
   }
 
   .teaching-main-content.syllabus-main-content .teaching .table-container {
-    overflow-x: auto;  /* allow horizontal scroll */
+    overflow-x: auto; /* allow horizontal scroll */
     overflow-y: auto;
   }
 
@@ -343,10 +347,10 @@ height: auto !important;
   .teaching-main-content.syllabus-main-content .teaching th {
     text-align: center !important;
     padding: 8px 4px !important;
-    border-top: 1px solid #ccc !important;    /* lighter horizontal lines */
+    border-top: 1px solid #ccc !important; /* lighter horizontal lines */
     border-bottom: 1px solid #ccc !important; /* lighter horizontal lines */
-    border-left: 2px solid #000 !important;   /* darker vertical separators */
-    border-right: 2px solid #000 !important;  /* darker vertical separators */
+    border-left: 2px solid #000 !important; /* darker vertical separators */
+    border-right: 2px solid #000 !important; /* darker vertical separators */
     position: static !important;
     white-space: normal !important;
   }
@@ -363,7 +367,11 @@ height: auto !important;
   .teaching-main-content.syllabus-main-content .teaching tbody td:last-child {
     border-right: 2px solid #000 !important;
   }
-  .teaching-main-content.syllabus-main-content .teaching tbody tr:last-child td {
+  .teaching-main-content.syllabus-main-content
+    .teaching
+    tbody
+    tr:last-child
+    td {
     border-bottom: 2px solid #000 !important;
   }
   .teaching-main-content.syllabus-main-content .teaching td::before {
@@ -380,7 +388,7 @@ height: auto !important;
   .teaching-main-content.syllabus-main-content .ciann-details {
     font-size: 14px !important; /* smaller text, keep layout */
   }
-  
+
   .teaching-main-content.syllabus-main-content .ciann-details strong {
     font-size: 15px !important; /* emphasize but smaller than desktop */
   }
@@ -388,34 +396,35 @@ height: auto !important;
   .teaching-main-content.syllabus-main-content .pagination {
     display: flex !important;
     flex-wrap: nowrap !important;
-    gap: 6px !important;           /* use gap instead of margins */
+    gap: 6px !important; /* use gap instead of margins */
     justify-content: flex-end !important;
-    overflow-x: auto !important;   /* allow horizontal scroll if very narrow */
-    scrollbar-width: none;          /* Firefox: hide scrollbar (optional) */
+    overflow-x: auto !important; /* allow horizontal scroll if very narrow */
+    scrollbar-width: none; /* Firefox: hide scrollbar (optional) */
   }
-  .teaching-main-content.syllabus-main-content .pagination::-webkit-scrollbar { /* Chrome/Safari */
+  .teaching-main-content.syllabus-main-content .pagination::-webkit-scrollbar {
+    /* Chrome/Safari */
     display: none;
   }
   .teaching-main-content.syllabus-main-content .pagination-btn {
-    flex: 0 0 auto !important;     /* prevent wrapping/shrinking issues */
-    margin-left: 0 !important;     /* rely on gap */
-    padding: 6px 10px !important;  /* compact */
-    font-size: 12px !important;    /* slightly smaller text */
+    flex: 0 0 auto !important; /* prevent wrapping/shrinking issues */
+    margin-left: 0 !important; /* rely on gap */
+    padding: 6px 10px !important; /* compact */
+    font-size: 12px !important; /* slightly smaller text */
   }
 
   /* Keep tabs (Page 1-4) in one line on mobile */
   .teaching-main-content.syllabus-main-content .tabs {
     display: flex !important;
-    flex-wrap: nowrap !important;  /* force single line */
+    flex-wrap: nowrap !important; /* force single line */
     gap: 6px !important;
     justify-content: center !important; /* keep visual position */
     align-items: center !important;
   }
   .teaching-main-content.syllabus-main-content .tab {
-    flex: 0 1 auto !important;     /* allow slight shrink but no wrap */
-    padding: 6px 10px !important;  /* compact */
-    font-size: 12px !important;    /* compact */
-    margin-right: 0 !important;    /* use gap instead */
+    flex: 0 1 auto !important; /* allow slight shrink but no wrap */
+    padding: 6px 10px !important; /* compact */
+    font-size: 12px !important; /* compact */
+    margin-right: 0 !important; /* use gap instead */
   }
 
   /* Remove desktop left padding that pushes content off-screen on mobile */
@@ -464,11 +473,16 @@ height: auto !important;
     flex-wrap: nowrap !important; /* keep buttons on one line */
   }
   .teaching-main-content.syllabus-main-content .plan-actions-top-right .btn,
-  .teaching-main-content.syllabus-main-content .plan-actions-top-right .start-btn,
-  .teaching-main-content.syllabus-main-content .plan-actions-top-right .action-buttons .start-btn {
+  .teaching-main-content.syllabus-main-content
+    .plan-actions-top-right
+    .start-btn,
+  .teaching-main-content.syllabus-main-content
+    .plan-actions-top-right
+    .action-buttons
+    .start-btn {
     padding: 18px 14px !important; /* compact */
-    font-size: 12px !important;   /* compact */
-    height: 30px !important;      /* compact */
+    font-size: 12px !important; /* compact */
+    height: 30px !important; /* compact */
     line-height: 1.1 !important;
     border-radius: 6px !important;
     white-space: nowrap !important; /* prevent text wrap */
@@ -496,8 +510,8 @@ height: auto !important;
   .teaching-main-content.syllabus-main-content .pagination-btn {
     padding: 7px 10px;
     font-size: 13px;
-      margin-bottom: 30px;
-   margin-top: -10px;
+    margin-bottom: 30px;
+    margin-top: -10px;
   }
 }
 /* CIAAN Details Hover Effect */
@@ -506,7 +520,9 @@ height: auto !important;
   text-align: left;
   margin-top: 5px;
   padding: 5px 0; /* Added for hover effect */
-  transition: background-color 0.3s ease, color 0.3s ease; /* Added for smooth transition */
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease; /* Added for smooth transition */
   cursor: default; /* Added to indicate non-clickable */
 }
 
@@ -621,7 +637,9 @@ height: auto !important;
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 /* Disabled state for Previous */
@@ -638,7 +656,7 @@ height: auto !important;
 /* --- ADD THIS CODE TO CONTROL THE GREEN LINE --- */
 /* --- CORRECTED CODE FOR THE GREEN LINE --- */
 .teaching-main-content.syllabus-main-content .plan-title::after {
-  content: '';
+  content: "";
   display: block;
   height: 2.5px; /* Controls the thickness */
   background-color: #28a745; /* The color */
@@ -654,10 +672,185 @@ height: auto !important;
   font-size: 32px;
   color: #000000;
   font-weight: 700;
-  line-height: 1.2 ;
+  line-height: 1.2;
   margin: -40px 80px 0 -10px;
   padding: 0;
 
   /* This is the new line that removes the old underline */
-  border-bottom: none !important; 
+  border-bottom: none !important;
+}
+
+/* ===== FINAL HEADER OVERLAP FIX (keep at end) ===== */
+.teaching-layout {
+  padding-top: var(--header-height, 60px) !important;
+}
+
+.teaching-main-content.syllabus-main-content,
+.teaching-main-content.syllabus-main-content.has-secondary-sidebar {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.teaching-main-content.syllabus-main-content .plan-container {
+  margin: 0 0 0 70px !important;
+  min-height: 60vh !important;
+}
+
+.teaching-main-content.syllabus-main-content .plan-title {
+  margin: 0 !important;
+  font-size: 32px !important;
+}
+
+.teaching-main-content.syllabus-main-content .plan-title::after {
+  margin-top: 10px !important;
+  margin-left: 0 !important;
+  width: 55% !important;
+}
+
+.teaching-main-content.syllabus-main-content .plan-actions-top-right .btn {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .teaching-main-content.syllabus-main-content .plan-container {
+    margin: 0 auto !important;
+  }
+}
+
+/* ===== TYPOGRAPHY-ONLY IMPROVEMENTS (no width/boundary changes) ===== */
+.teaching-main-content.syllabus-main-content .plan-title {
+  font-size: 28px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+}
+
+.teaching-main-content.syllabus-main-content .ciann-details {
+  font-size: 16px !important;
+  font-weight: 500;
+  line-height: 1.4 !important;
+}
+
+.teaching-main-content.syllabus-main-content .ciann-details strong {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+.teaching-main-content.syllabus-main-content .tab {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.2;
+}
+
+.teaching-main-content.syllabus-main-content .plan-actions-top-right .btn,
+.teaching-main-content.syllabus-main-content .plan-actions-top-right .start-btn,
+.teaching-main-content.syllabus-main-content
+  .plan-actions-top-right
+  .action-buttons
+  .start-btn {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+.teaching-main-content.syllabus-main-content .teaching thead th {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+}
+
+.teaching-main-content.syllabus-main-content .teaching tbody td {
+  font-size: 14px !important;
+  font-weight: 400;
+  line-height: 1.35 !important;
+}
+
+.teaching-main-content.syllabus-main-content .teaching td[rowspan] {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+.teaching-main-content.syllabus-main-content .pagination-btn,
+.teaching-main-content.syllabus-main-content .prev-btn,
+.teaching-main-content.syllabus-main-content .forward-btn {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.2;
+}
+
+@media (max-width: 1024px) {
+  .teaching-main-content.syllabus-main-content .plan-title {
+    font-size: 24px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .ciann-details {
+    font-size: 15px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .ciann-details strong {
+    font-size: 16px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .tab {
+    font-size: 13px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .teaching thead th {
+    font-size: 12px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .teaching tbody td {
+    font-size: 13px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .teaching td[rowspan] {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .teaching-main-content.syllabus-main-content .plan-title {
+    font-size: 20px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .ciann-details {
+    font-size: 14px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .ciann-details strong {
+    font-size: 15px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .tab {
+    font-size: 12px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .plan-actions-top-right .btn,
+  .teaching-main-content.syllabus-main-content
+    .plan-actions-top-right
+    .start-btn,
+  .teaching-main-content.syllabus-main-content
+    .plan-actions-top-right
+    .action-buttons
+    .start-btn {
+    font-size: 12px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .teaching thead th {
+    font-size: 11px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .teaching tbody td {
+    font-size: 12px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .teaching td[rowspan] {
+    font-size: 14px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .pagination-btn,
+  .teaching-main-content.syllabus-main-content .prev-btn,
+  .teaching-main-content.syllabus-main-content .forward-btn {
+    font-size: 11px !important;
+  }
 }

@@ -1,6 +1,6 @@
 // Attendance/Theory.jsx
-import React, { useState } from 'react';
-import './Theory.css';
+import React, { useState } from "react";
+import "./Theory.css";
 
 /**
  * A helper function to get today's date in 'YYYY-MM-DD' format,
@@ -10,17 +10,31 @@ import './Theory.css';
 const getTodayDateString = () => {
   const today = new Date();
   const offset = today.getTimezoneOffset();
-  const todayWithOffset = new Date(today.getTime() - (offset * 60 * 1000));
-  return todayWithOffset.toISOString().split('T')[0];
+  const todayWithOffset = new Date(today.getTime() - offset * 60 * 1000);
+  return todayWithOffset.toISOString().split("T")[0];
 };
 
-const AttendanceForm = ({ chapterNo, chapterName, endDate, onClose, onSubmit }) => {
+const AttendanceForm = ({
+  chapterNo,
+  chapterName,
+  endDate,
+  ciannData,
+  onClose,
+  onSubmit,
+}) => {
   // Get today's date for defaults and validation
   const today = getTodayDateString();
 
   const [actualDate, setActualDate] = useState(today);
-  const [remark, setRemark] = useState('');
-  const [error, setError] = useState('');
+  const [remark, setRemark] = useState("");
+  const [error, setError] = useState("");
+
+  console.log("📝 Modal opened with:", {
+    chapterNo,
+    chapterName,
+    endDate,
+    ciannData,
+  });
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -28,7 +42,7 @@ const AttendanceForm = ({ chapterNo, chapterName, endDate, onClose, onSubmit }) 
       setError("Please select the actual date.");
       return;
     }
-    setError(''); // Clear any existing errors
+    setError(""); // Clear any existing errors
     onSubmit(actualDate, remark); // Pass data back to parent
   };
 
@@ -36,20 +50,51 @@ const AttendanceForm = ({ chapterNo, chapterName, endDate, onClose, onSubmit }) 
     <div className="theory-attendance-modal-overlay">
       <div className="theory-attendance-form">
         <h2>Theory Attendance Form</h2>
-        <button className="close-btn" onClick={onClose}>×</button>
+        <button className="close-btn" onClick={onClose}>
+          ×
+        </button>
+
+        {/* Subject Context Header */}
+        {ciannData && (
+          <div
+            style={{
+              backgroundColor: "#e8f5e9",
+              padding: "12px",
+              marginBottom: "15px",
+              borderRadius: "6px",
+              borderLeft: "4px solid #4CAF50",
+            }}
+          >
+            <p
+              style={{
+                margin: "0 0 5px 0",
+                fontSize: "14px",
+                fontWeight: "bold",
+                color: "#2e7d32",
+              }}
+            >
+              {ciannData.subject?.name} ({ciannData.subject?.code})
+            </p>
+            <p style={{ margin: "0", fontSize: "12px", color: "#555" }}>
+              Division: {ciannData.division} | Department:{" "}
+              {ciannData.department?.name || "N/A"}
+            </p>
+          </div>
+        )}
+
         <div className="form-content">
           <form onSubmit={handleSubmit}>
             <div className="theory-form-group">
               <label>Chapter No.</label>
-              <input type="text" value={chapterNo || ''} readOnly />
+              <input type="text" value={chapterNo || ""} readOnly />
             </div>
             <div className="theory-form-group">
               <label>Sub Topic</label>
-              <input type="text" value={chapterName || ''} readOnly />
+              <input type="text" value={chapterName || ""} readOnly />
             </div>
             <div className="theory-form-group">
               <label>Planned Date</label>
-              <input type="text" value={endDate || ''} readOnly />
+              <input type="text" value={endDate || ""} readOnly />
             </div>
             <div className="theory-form-group">
               <label>Actual Date</label>
@@ -58,7 +103,7 @@ const AttendanceForm = ({ chapterNo, chapterName, endDate, onClose, onSubmit }) 
                 value={actualDate}
                 onChange={(e) => {
                   setActualDate(e.target.value);
-                  if (e.target.value) setError('');
+                  if (e.target.value) setError("");
                 }}
                 max={today}
                 required
@@ -74,8 +119,12 @@ const AttendanceForm = ({ chapterNo, chapterName, endDate, onClose, onSubmit }) 
               />
             </div>
             <div className="button-group">
-              <button type="button" className="btn cancel" onClick={onClose}>Cancel</button>
-              <button type="submit" className="btn submit">Proceed to Mark Attendance</button>
+              <button type="button" className="btn cancel" onClick={onClose}>
+                Cancel
+              </button>
+              <button type="submit" className="btn submit">
+                Proceed to Mark Attendance
+              </button>
             </div>
           </form>
         </div>

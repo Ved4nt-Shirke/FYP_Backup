@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
+import {
+  buildInstitutionLogoUrl,
+  getInstitutionInitials,
+} from "../utils/institutionBranding";
 import "./StudentLayout.css";
 
 const StudentLayout = () => {
@@ -9,11 +13,22 @@ const StudentLayout = () => {
   const dropdownRefs = {
     elibrary: useRef(null),
     mockTest: useRef(null),
+    practicalExam: useRef(null),
   };
 
   // Get student info from localStorage
-  const studentName = localStorage.getItem("username") || "Student";
-  const college = localStorage.getItem("college") || "VP";
+  const studentName =
+    localStorage.getItem("studentName") ||
+    localStorage.getItem("username") ||
+    "Student";
+  const institutionCode = (
+    localStorage.getItem("institutionCode") || localStorage.getItem("college") || "VP"
+  ).toUpperCase();
+  const institutionName = localStorage.getItem("institutionName") || institutionCode;
+  const institutionLogoUrl = buildInstitutionLogoUrl(
+    localStorage.getItem("institutionLogoUrl") || "",
+  );
+  const institutionFallback = getInstitutionInitials(institutionName, institutionCode);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -85,7 +100,17 @@ const StudentLayout = () => {
       {/* Sidebar */}
       <div className="student-sidebar" ref={sidebarRef}>
         <div className="sidebar-header">
-          <h2 className="sidebar-title">Student Portal</h2>
+          <div className="student-brand">
+            {institutionLogoUrl ? (
+              <img src={institutionLogoUrl} alt={institutionName} className="student-brand-logo" />
+            ) : (
+              <span className="student-brand-fallback">{institutionFallback}</span>
+            )}
+            <div>
+              <h2 className="sidebar-title">{institutionName}</h2>
+              <p className="student-brand-subtitle">Student Portal</p>
+            </div>
+          </div>
         </div>
         <ul className="sidebar-menu">
           <li className="sidebar-item">
@@ -198,6 +223,14 @@ const StudentLayout = () => {
             </div>
           </li>
           
+          {/* Practical Exams */}
+          <li className="sidebar-item">
+            <div className="menu-item" onClick={() => handleNavigation("/practical-exams")}>
+              <i className="bi bi-file-earmark-check"></i>
+              <span>Practical Exams</span>
+            </div>
+          </li>
+          
           {/* Results */}
           <li className="sidebar-item">
             <div className="menu-item" onClick={() => handleNavigation("/results")}>
@@ -236,12 +269,19 @@ const StudentLayout = () => {
             }}>
               <i className="bi bi-list"></i>
             </button>
-            <h1>Student Portal</h1>
+            <div className="student-header-brand">
+              {institutionLogoUrl ? (
+                <img src={institutionLogoUrl} alt={institutionName} className="student-header-logo" />
+              ) : (
+                <span className="student-header-fallback">{institutionFallback}</span>
+              )}
+              <h1>{institutionName}</h1>
+            </div>
           </div>
           <div className="header-right">
             <div className="user-info">
               <span className="user-name">{studentName}</span>
-              <span className="college-info">({college})</span>
+              <span className="college-info">({institutionCode})</span>
             </div>
             <button className="logout-btn" onClick={handleLogout}>
               <i className="bi bi-box-arrow-right"></i>

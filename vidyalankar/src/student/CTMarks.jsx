@@ -25,12 +25,12 @@ const CTMarks = () => {
       const enrollmentNo = localStorage.getItem("enrollmentNo");
 
       const response = await fetch(
-        `${config.API_URL}/api/ct-marks/student/${enrollmentNo}`,
+        `${config.API_URL}/api/ct-marks/student-marks/${enrollmentNo}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await response.json();
@@ -162,7 +162,9 @@ const CTMarks = () => {
             const ct1Grade = mark.ct1 ? getGrade(mark.ct1) : null;
             const ct2Grade = mark.ct2 ? getGrade(mark.ct2) : null;
             const average =
-              mark.ct1 && mark.ct2 ? ((mark.ct1 + mark.ct2) / 2).toFixed(2) : null;
+              mark.ct1 && mark.ct2
+                ? ((mark.ct1 + mark.ct2) / 2).toFixed(2)
+                : null;
 
             return (
               <div key={`${mark._id}-${index}`} className="mark-card">

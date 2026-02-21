@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 const modalStyles = {
   overlay: {
@@ -42,6 +44,7 @@ const WeekwisePlan = ({
   initialWeek,
   existingData = [],
   onCancel,
+  ciannData,
 }) => {
   const [week, setWeek] = useState(initialWeek ? `Week ${initialWeek}` : "");
   const [plans, setPlans] = useState([
@@ -50,6 +53,55 @@ const WeekwisePlan = ({
     { batch: "B3", exptNo: "", exptName: "", date: "" },
   ]);
   const [message, setMessage] = useState("");
+  const [experiments, setExperiments] = useState([]);
+  const [loadingExperiments, setLoadingExperiments] = useState(false);
+
+  // Fetch experiments based on ciann data
+  useEffect(() => {
+    const fetchExperiments = async () => {
+      if (!ciannData) return;
+
+      setLoadingExperiments(true);
+      try {
+        const payload = {
+          program: ciannData.department?.name || ciannData.department,
+          className: ciannData.class || "",
+          course: ciannData.subject?.name || ciannData.subject,
+        };
+
+        console.log("Fetching experiments with payload:", payload);
+
+        let response;
+        try {
+          response = await axios.post(
+            `${config.course.experiments}/get-experiments`,
+            payload,
+          );
+        } catch (primaryError) {
+          if (primaryError?.response?.status === 404) {
+            response = await axios.post(config.course.experiments, payload);
+          } else {
+            throw primaryError;
+          }
+        }
+
+        if (response.data.success && response.data.experiments) {
+          setExperiments(response.data.experiments);
+          console.log("Fetched experiments:", response.data.experiments);
+        } else {
+          setExperiments([]);
+          console.log("No experiments found");
+        }
+      } catch (error) {
+        console.error("Error fetching experiments:", error);
+        setExperiments([]);
+      } finally {
+        setLoadingExperiments(false);
+      }
+    };
+
+    fetchExperiments();
+  }, [ciannData]);
 
   useEffect(() => {
     if (initialWeek) {
@@ -78,7 +130,20 @@ const WeekwisePlan = ({
 
   const handleChange = (index, field, value) => {
     const updatedPlans = [...plans];
-    updatedPlans[index][field] = value;
+
+    if (field === "exptNo") {
+      // When experiment number changes, auto-fill the experiment name
+      const selectedExperiment = experiments.find(
+        (exp) => String(exp.practicalNo) === String(value),
+      );
+      updatedPlans[index].exptNo = value;
+      updatedPlans[index].exptName = selectedExperiment
+        ? selectedExperiment.practicalName
+        : "";
+    } else {
+      updatedPlans[index][field] = value;
+    }
+
     setPlans(updatedPlans);
   };
 
@@ -192,6 +257,7 @@ const WeekwisePlan = ({
           box-sizing: border-box;
           box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          background-color: white;
         }
         .plan-table input:focus,
         .plan-table select:focus,
@@ -199,6 +265,23 @@ const WeekwisePlan = ({
           outline: none;
           border-color: #81c784;
           box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+        }
+        
+        .plan-table textarea[readonly] {
+          background-color: #f5f5f5;
+          cursor: default;
+        }
+        
+        .plan-table select {
+          cursor: pointer;
+        }
+        
+        .plan-table select:disabled,
+        .plan-table input:disabled,
+        .plan-table textarea:disabled {
+          background-color: #f5f5f5;
+          cursor: not-allowed;
+          opacity: 0.7;
         }
 
         .week-select {
@@ -292,6 +375,35 @@ const WeekwisePlan = ({
           </button>
         </div>
         <div className="weekwise-container flip-animate">
+          {loadingExperiments && (
+            <div
+              style={{
+                padding: "10px",
+                background: "#e3f2fd",
+                borderRadius: "5px",
+                marginBottom: "10px",
+                textAlign: "center",
+                color: "#1976d2",
+              }}
+            >
+              Loading experiments...
+            </div>
+          )}
+          {!loadingExperiments && experiments.length === 0 && ciannData && (
+            <div
+              style={{
+                padding: "10px",
+                background: "#fff3cd",
+                borderRadius: "5px",
+                marginBottom: "10px",
+                textAlign: "center",
+                color: "#856404",
+              }}
+            >
+              No experiments found for this subject. Please add experiments
+              first.
+            </div>
+          )}
           <div className="plan-table-wrapper">
             <table className="plan-table">
               <thead>
@@ -326,14 +438,23 @@ const WeekwisePlan = ({
                     )}
                     <td>{plan.batch}</td>
                     <td>
-                      <input
-                        type="text"
+                      <select
                         value={plan.exptNo}
                         onChange={(e) =>
                           handleChange(i, "exptNo", e.target.value)
                         }
-                        disabled={!week}
-                      />
+                        disabled={!week || loadingExperiments}
+                      >
+                        <option value="">Select Experiment</option>
+                        {experiments.map((exp) => (
+                          <option
+                            key={exp.practicalNo}
+                            value={String(exp.practicalNo)}
+                          >
+                            {exp.practicalNo}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td>
                       <textarea
@@ -342,6 +463,7 @@ const WeekwisePlan = ({
                           handleChange(i, "exptName", e.target.value)
                         }
                         disabled={!week}
+                        readOnly
                       />
                     </td>
                     <td>

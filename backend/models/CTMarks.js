@@ -1,43 +1,67 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const ctMarksSchema = new mongoose.Schema({
-  // CT Test info
-  ctName: { type: String, required: true }, // e.g., "CT1", "CT2", "Mid-term", etc.
-  ctNumber: { type: Number, required: true }, // 1, 2, 3, etc.
+const ctMarksSchema = new mongoose.Schema(
+  {
+    // CT Test info
+    ctName: { type: String, required: true }, // e.g., "CT1", "CT2"
+    ctNumber: { type: Number, required: true, enum: [1, 2] },
 
-  // Student info
-  studentName: { type: String, required: true },
-  rollNo: { type: String, required: false },
+    // Student info
+    studentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Student",
+      required: false,
+    },
+    studentName: { type: String, required: true },
+    rollNo: { type: String, required: false },
+    enrollmentNo: { type: String, required: false, trim: true },
 
-  // Marks (typically out of 20 for CT)
-  marks: { type: Number, required: true, min: 0, max: 20 },
-  totalMarks: { type: Number, default: 20 }, // Maximum marks for the CT
+    // Marks (CT is out of 30)
+    marks: { type: Number, required: true, min: 0, max: 30 },
+    totalMarks: { type: Number, default: 30 },
 
-  // Context (to allow correct loading per CIANN/Course)
-  program: { type: String, required: false },
-  className: { type: String, required: false },
-  course: { type: String, required: false },
-  ciannId: { type: Number, required: true }, // Required for CT marks
-  batch: { type: String, required: false },
-  division: { type: String, required: false },
+    // Context (to allow correct loading per CIANN/Course)
+    program: { type: String, required: false },
+    className: { type: String, required: false },
+    course: { type: String, required: false },
+    ciannId: { type: Number, required: true }, // Required for CT marks
+    batch: { type: String, required: false },
+    division: { type: String, required: false },
 
-  // Additional fields for CT
-  ctDate: { type: Date, required: false }, // When the CT was conducted
-  subject: { type: String, required: false }, // Subject name
-  subjectCode: { type: String, required: false }, // Subject code
+    // Additional fields for CT
+    ctDate: { type: Date, required: false }, // When the CT was conducted
+    subject: { type: String, required: false }, // Subject name
+    subjectCode: { type: String, required: false }, // Subject code
+    subjectId: { type: String, required: false },
 
-  // Meta data
-  markedBy: { type: String, required: false }, // Teacher who marked
-  remarks: { type: String, required: false } // Any additional remarks
-}, {
-  timestamps: true
-});
+    // Meta data
+    facultyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
+    markedBy: { type: String, required: false }, // Teacher who marked
+    remarks: { type: String, required: false }, // Any additional remarks
+  },
+  {
+    timestamps: true,
+  },
+);
 
-// Create unique index for CT per student per CIANN
-ctMarksSchema.index({ 
-  ctNumber: 1, 
-  studentName: 1,
-  ciannId: 1 
-}, { unique: true });
+// Unique CT entry per CIANN + CT number + student enrollment number
+ctMarksSchema.index(
+  {
+    ciannId: 1,
+    ctNumber: 1,
+    enrollmentNo: 1,
+  },
+  {
+    unique: true,
+    partialFilterExpression: { enrollmentNo: { $type: "string" } },
+  },
+);
 
-module.exports = mongoose.model('CTMarks', ctMarksSchema);
+ctMarksSchema.index({ ciannId: 1, ctNumber: 1 });
+ctMarksSchema.index({ enrollmentNo: 1 });
+
+module.exports = mongoose.model("CTMarks", ctMarksSchema);

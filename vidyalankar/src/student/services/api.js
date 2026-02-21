@@ -36,12 +36,17 @@ const apiRequest = async (endpoint, options = {}) => {
 export const resultsService = {
   // Get student results
   getResults: async () => {
-    return await apiRequest('/students/results');
+    return await apiRequest('/results');
+  },
+
+  // Get CT marks for logged-in student
+  getCtMarks: async () => {
+    return await apiRequest('/ct-marks');
   },
   
   // Get specific result by ID
   getResultById: async (id) => {
-    return await apiRequest(`/students/results/${id}`);
+    return await apiRequest(`/results/${id}`);
   }
 };
 
@@ -49,17 +54,17 @@ export const resultsService = {
 export const noticesService = {
   // Get all notices
   getNotices: async () => {
-    return await apiRequest('/students/notices');
+    return await apiRequest('/notices');
   },
   
   // Get notice by ID
   getNoticeById: async (id) => {
-    return await apiRequest(`/students/notices/${id}`);
+    return await apiRequest(`/notices/${id}`);
   },
   
   // Mark notice as read
   markAsRead: async (id) => {
-    return await apiRequest(`/students/notices/${id}/read`, {
+    return await apiRequest(`/notices/${id}/read`, {
       method: 'POST'
     });
   }
@@ -69,17 +74,17 @@ export const noticesService = {
 export const studyMaterialsService = {
   // Get all study materials
   getMaterials: async () => {
-    return await apiRequest('/students/study-materials');
+    return await apiRequest('/study-materials');
   },
   
   // Get materials by subject
   getMaterialsBySubject: async (subject) => {
-    return await apiRequest(`/students/study-materials?subject=${subject}`);
+    return await apiRequest(`/study-materials?subject=${subject}`);
   },
   
   // Download material
   downloadMaterial: async (id) => {
-    return await apiRequest(`/students/study-materials/${id}/download`);
+    return await apiRequest(`/study-materials/${id}/download`);
   }
 };
 
@@ -87,24 +92,24 @@ export const studyMaterialsService = {
 export const mockTestsService = {
   // Get all available tests
   getTests: async () => {
-    return await apiRequest('/students/mock-tests');
+    return await apiRequest('/mock-tests');
   },
   
   // Get test by ID
   getTestById: async (id) => {
-    return await apiRequest(`/students/mock-tests/${id}`);
+    return await apiRequest(`/mock-tests/${id}`);
   },
   
   // Start a test
   startTest: async (testId) => {
-    return await apiRequest(`/students/mock-tests/${testId}/start`, {
+    return await apiRequest(`/mock-tests/${testId}/start`, {
       method: 'POST'
     });
   },
   
   // Submit test answers
   submitTest: async (testId, answers) => {
-    return await apiRequest(`/students/mock-tests/${testId}/submit`, {
+    return await apiRequest(`/mock-tests/${testId}/submit`, {
       method: 'POST',
       body: JSON.stringify({ answers })
     });
@@ -115,17 +120,17 @@ export const mockTestsService = {
 export const elibraryService = {
   // Search resources
   searchResources: async (query) => {
-    return await apiRequest(`/students/elibrary/search?q=${query}`);
+    return await apiRequest(`/elibrary/search?q=${query}`);
   },
   
   // Get resources by course
   getResourcesByCourse: async (courseId) => {
-    return await apiRequest(`/students/elibrary/course/${courseId}`);
+    return await apiRequest(`/elibrary/course/${courseId}`);
   },
   
   // Get all courses
   getCourses: async () => {
-    return await apiRequest('/students/elibrary/courses');
+    return await apiRequest('/elibrary/courses');
   }
 };
 

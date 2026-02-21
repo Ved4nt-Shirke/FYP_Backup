@@ -1,288 +1,217 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; 
+import { config } from "../config/api";
 import "./Course1.css";
 
 const CourseForm = () => {
-  const data = {
-    "Computer Engineering": {
-      classes: ["CO1K", "CO2K", "CO3K", "CO4K", "CO5K", "CO6K"],
-      courses: {
-        CO1K: [
-          "COMMUNICATION SKILLS (ENGLISH)",
-          "BASIC MATHEMATICS",
-          "ENGINEERING GRAPHICS",
-          "ENGINEERING WORKSHOP PRACTICE",
-          "FUNDAMENTALS OF ICT",
-          "BASIC SCIENCE (PHYSICS)",
-          "BASIC SCIENCE (CHEMISTRY)",
-          "YOGA AND MEDITATION",
-        ],
-        CO2K: [
-          "Linux Basics",
-          "Professional Communication",
-          "Social and Life Skills",
-          "Web Page Designing",
-          "Applied Mathematics",
-          "Basic Electrical and Electronics Engineering (Electrical)",
-          "Programming in C",
-          "Basic Electrical and Electronics Engineering (Electronics)",
-        ],
-        CO3K: [
-          "Data Structure using C",
-          "Database management System",
-          "Digital Techniques",
-          "Object Oriented Programming using C++",
-          "Computer Graphics",
-          "Essence of Indian Constitution",
-        ],
-        CO4K: [
-          "Environmental Education and Sustainability",
-          "Java Programming",
-          "Data Communication and Computer Networks",
-          "Microprocessor Programming",
-          "Python Programming",
-          "UI/UX Design",
-        ],
-        CO5K: [
-          "OPERATING SYSTEM",
-          "SOFTWARE ENGINEERING",
-          "ENTREPRENEURSHIP DEVELOPMENT AND STARTUPS",
-          "SEMINAR AND PROJECT INITIATION COURSE",
-          "INTERNSHIP",
-          "CLOUD COMPUTING",
-        ],
-        // CO6K: ["NOT AVAILABLE"],
-      },
-    },
-    "Electronics and Telecommunication Engineering": {
-      classes: ["EJ1K", "EJ2K", "EJ3K", "EJ4K", "EJ5K", "EJ6K"],
-      courses: {
-        EJ1K: [
-          "COMMUNICATION SKILLS (ENGLISH)",
-          "BASIC MATHEMATICS",
-          "ENGINEERING GRAPHICS",
-          "ENGINEERING WORKSHOP PRACTICE",
-          "FUNDAMENTALS OF ICT",
-          "BASIC SCIENCE (PHYSICS)",
-          "BASIC SCIENCE (CHEMISTRY)",
-        ],
-        EJ2K: [
-          "Professional Communication",
-          "Social And Life Skills",
-          "Electronics Workshop Practice",
-          "Programming in C Language",
-          "Applied Mathematics",
-          "Basic Electronics",
-          "Elements of Electrical Engineering",
-          "Electronics Materials & Components",
-        ],
-        EJ3K: [
-          "Digital Techniques",
-          "Analog Electronics",
-          "Circuits & Networks",
-          "Principles of Electronics Communication",
-          "Essence of Indian Constitution",
-          "Basic Python Programming",
-          "Electronic Measurements & Instrumentation",
-        ],
-        EJ4K: [
-          "Environmental Education and Sustainability",
-          "Digital Communication System",
-          "Consumer Electronic System",
-          "Microcontroller & Applications",
-          "Basic Power Electronics",
-          "Electronic Equipment Maintenance & Simulation",
-        ],
-        EJ5K: [
-          "Embedded System",
-          "Mobile & Wireless Communication",
-          "Entrepreneurship Development and Startups",
-          "Seminar and Project Initiation Course",
-          "Internship",
-          "IOT Applications",
-        ],
-        // EJ6K: [
-        //   "NOT AVAILABLE",
-        // ],
-      },
-    },
-    "Information Technology": {
-      classes: ["IF1K", "IF2K", "IF3K", "IF4K", "IF5K", "IF6K"],
-      courses: {
-        IF1K: [
-          "COMMUNICATION SKILLS (ENGLISH)",
-          "BASIC MATHEMATICS",
-          "ENGINEERING GRAPHICS",
-          "ENGINEERING WORKSHOP PRACTICE",
-          "FUNDAMENTALS OF ICT",
-          "BASIC SCIENCE (PHYSICS)",
-          "BASIC SCIENCE (CHEMISTRY)",
-          "YOGA AND MEDITATION",
-        ],
-        IF2K: [
-          "Linux Basics",
-          "Professional Communication",
-          "Social and Life Skills",
-          "Web Page Designing",
-          "Applied Mathematics",
-          "Basic Electrical and Electronics Engineering (Electrical)",
-          "Programming in C",
-          "Basic Electrical and Electronics Engineering (Electronics)",
-        ],
-        IF3K: [
-          "Data Structure using C",
-          "Database management System",
-          "Object Oriented Programming using C++",
-          "Digital Techniques and Microprocessor",
-          "Essence of Indian Constitution",
-          "Applied Multimedia Techniques",
-        ],
-        IF4K: [
-          "Environmental Education and Sustainability",
-          "Java Programming",
-          "Data Communication and Computer Networks",
-          "Python Programming",
-          "Information Security",
-          "Internet of Things",
-        ],
-        IF5K: [
-          "OPERATING SYSTEM",
-          "SOFTWARE ENGINEERING AND TESTING",
-          "ENTREPRENEURSHIP DEVELOPMENT AND STARTUPS",
-          "SEMINAR AND PROJECT INITIATION COURSE",
-          "INTERNSHIP",
-          "DATA ANALYTICS",
-        ],
-        // IF6K: [
-        //     "NOT AVAILABLE",
-        // ],
-      },
-    },
-    "Electronics and Computer Engineering": {
-      classes: ["TE1K", "TE2K", "TE3K", "TE4K", "TE5K", "TE6K"],
-      courses: {
-        TE1K: [
-          "COMMUNICATION SKILLS (ENGLISH)",
-          "BASIC SCIENCE (PHYSICS)",
-          "BASIC SCIENCE (CHEMISTRY)",
-          "BASIC MATHEMATICS",
-          "ENGINEERING GRAPHICS",
-          "FUNDAMENTALS OF ICT",
-          "WORKSHOP PRACTICE",
-          "YOGA AND MEDITATION",
-        ],
-        TE2K: [
-          "Applied Mathematics",
-          "Basic Electronics",
-          "Elements of Electrical Engineering",
-          "Professional Communication",
-          "Social and Life Skills",
-          "Electronics Workshop Practice",
-          "Programming in 'C' Language",
-          "Web Page Design",
-        ],
-        TE3K: [
-          "Database management System",
-          "Digital Techniques",
-          "Object Oriented Programming using C++",
-          "Analog Electronics",
-          "Essence of Indian Constitution",
-          "EDA Tools",
-        ],
-        // TE4K: [
-        //     "NOT AVAILABLE",
-        // ],
-        // TE5K: [
-        //     "NOT AVAILABLE",
-        // ],
-        // TE6K: [
-        //     "NOT AVAILABLE",
-        // ],
-      },
-    },
-  };
+  const navigate = useNavigate();
 
-  const [program, setProgram] = useState("");
-  const [className, setClassName] = useState("");
-  const [course, setCourse] = useState("");
-  const [experiments, setExperiments] = useState([]);
-   const navigate = useNavigate();
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
 
-   const handleProgramChange = (e) => {
-    const selectedProgram = e.target.value;
-    setProgram(selectedProgram);
-    setClassName("");
-    setCourse("");
-  };
+  // CIANN data
+  const [cianns, setCianns] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleClassChange = (e) => {
-    setClassName(e.target.value);
-    setCourse("");
+  // Fetch CIANNs on mount
+  useEffect(() => {
+    fetchCianns();
+  }, []);
+
+  // Extract unique departments from CIANNs
+  useEffect(() => {
+    if (cianns.length > 0) {
+      const uniqueDepts = [];
+      const deptMap = new Map();
+
+      cianns.forEach((ciann) => {
+        if (
+          ciann.department &&
+          ciann.department._id &&
+          !deptMap.has(ciann.department._id)
+        ) {
+          deptMap.set(ciann.department._id, {
+            _id: ciann.department._id,
+            name: ciann.department.name,
+            code: ciann.department.code,
+          });
+        }
+      });
+
+      setDepartments(Array.from(deptMap.values()));
+    }
+  }, [cianns]);
+
+  // Filter courses when department changes
+  useEffect(() => {
+    if (selectedDepartment && cianns.length > 0) {
+      const deptCianns = cianns.filter(
+        (c) => c.department?._id === selectedDepartment,
+      );
+      const uniqueCourses = [];
+      const courseMap = new Map();
+
+      deptCianns.forEach((ciann) => {
+        const key = `${ciann.semester}-${ciann.class}`;
+        if (!courseMap.has(key)) {
+          courseMap.set(key, {
+            _id: key,
+            semester: ciann.semester,
+            class: ciann.class,
+            semesterType: ciann.semesterType,
+          });
+        }
+      });
+
+      setCourses(Array.from(courseMap.values()));
+      setSelectedCourse("");
+      setSelectedSubject("");
+    } else {
+      setCourses([]);
+      setSubjects([]);
+    }
+  }, [selectedDepartment, cianns]);
+
+  // Filter subjects when course changes
+  useEffect(() => {
+    if (selectedDepartment && cianns.length > 0) {
+      let filteredCianns = cianns.filter(
+        (c) => c.department?._id === selectedDepartment,
+      );
+
+      if (selectedCourse) {
+        filteredCianns = filteredCianns.filter(
+          (c) => `${c.semester}-${c.class}` === selectedCourse,
+        );
+      }
+
+      const uniqueSubjects = [];
+      const subjectMap = new Map();
+
+      filteredCianns.forEach((ciann) => {
+        if (
+          ciann.subject &&
+          ciann.subject._id &&
+          !subjectMap.has(ciann.subject._id)
+        ) {
+          subjectMap.set(ciann.subject._id, {
+            _id: ciann.subject._id,
+            name: ciann.subject.name,
+            code: ciann.subject.code,
+          });
+        }
+      });
+
+      setSubjects(Array.from(subjectMap.values()));
+      if (selectedCourse) {
+        setSelectedSubject("");
+      }
+    } else {
+      setSubjects([]);
+    }
+  }, [selectedCourse, selectedDepartment, cianns]);
+
+  const fetchCianns = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Session expired. Please login again.");
+        return;
+      }
+
+      const res = await fetch(config.cianns, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch CIANNs");
+      }
+
+      const data = await res.json();
+      setCianns(data || []);
+    } catch (err) {
+      console.error("Error fetching CIANNs:", err);
+      setError("Failed to load your courses. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (program && className && course) {
-      // Navigate to Course2 with state
-      const queryParams = new URLSearchParams({
-        program,
-        className,
-        course,
-      }).toString();
-      navigate(`/course2?${queryParams}`);
-    } else {
+    if (!selectedDepartment || !selectedCourse || !selectedSubject) {
       alert("Please select all fields before submitting.");
+      return;
     }
-  };
 
-  const classOptions = program ? data[program]?.classes || [] : [];
-  const courseOptions =
-    program && className ? data[program]?.courses[className] || [] : [];
+    const selectedDept = departments.find((d) => d._id === selectedDepartment);
+    const selectedCourseObj = courses.find((c) => c._id === selectedCourse);
+    const selectedSubj = subjects.find((s) => s._id === selectedSubject);
+
+    // Navigate to Course2 with state
+    const queryParams = new URLSearchParams({
+      program: selectedDept.name,
+      className: `${selectedCourseObj.class}`,
+      course: selectedSubj.name,
+    }).toString();
+    navigate(`/course2?${queryParams}`);
+  };
 
   return (
     <div className="course-form-container">
       <h1>Select Course To Find Experiments</h1>
+      {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Select Program</label>
-          <select value={program} onChange={handleProgramChange}>
-            <option value="">--- Select Program ---</option>
-            {Object.keys(data).map((prog) => (
-              <option key={prog} value={prog}>
-                {prog}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label>Select Class</label>
+          <label>Select Department</label>
           <select
-            value={className}
-            onChange={handleClassChange}
-            disabled={!program}
+            value={selectedDepartment}
+            onChange={(e) => setSelectedDepartment(e.target.value)}
+            disabled={loading}
           >
-            <option value="">--- Select Class ---</option>
-            {classOptions.map((cls) => (
-              <option key={cls} value={cls}>
-                {cls}
+            <option value="">--- Select Department ---</option>
+            {departments.map((dept) => (
+              <option key={dept._id} value={dept._id}>
+                {dept.name} ({dept.code})
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label>Select Course</label>
+          <label>Select Course (Semester)</label>
           <select
-            value={course}
-            onChange={(e) => setCourse(e.target.value)}
-            disabled={!className}
+            value={selectedCourse}
+            onChange={(e) => setSelectedCourse(e.target.value)}
+            disabled={!selectedDepartment || loading}
           >
             <option value="">--- Select Course ---</option>
-            {courseOptions.map((crs) => (
-              <option key={crs} value={crs}>
-                {crs}
+            {courses.map((course) => (
+              <option key={course._id} value={course._id}>
+                Semester {course.semester} - {course.class}
+                {course.scheme})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label>Select Subject</label>
+          <select
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            disabled={!selectedDepartment || loading}
+          >
+            <option value="">--- Select Subject ---</option>
+            {subjects.map((subject) => (
+              <option key={subject._id} value={subject._id}>
+                {subject.name} ({subject.code})
               </option>
             ))}
           </select>
@@ -290,17 +219,18 @@ const CourseForm = () => {
 
         <button
           type="submit"
+          disabled={loading}
           style={{
             width: "100%",
             padding: "10px",
-            backgroundColor: "green",
+            backgroundColor: loading ? "#ccc" : "green",
             color: "white",
             border: "none",
             borderRadius: "5px",
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
           }}
         >
-          Submit
+          {loading ? "Loading..." : "Submit"}
         </button>
       </form>
     </div>

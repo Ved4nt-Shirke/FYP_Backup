@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import Header from "../basic/Header";
-import { config } from "../config/api";
-import { TokenManager } from "../utils/authUtils.js";
-import "./EditCiann.css";
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Header from '../basic/Header';
+import { config } from '../config/api';
+import './EditCiann.css';
 
 const EditCiann = () => {
   const [ciannDataList, setCiannDataList] = useState([]);
@@ -13,32 +12,31 @@ const EditCiann = () => {
   useEffect(() => {
     const fetchCianns = async () => {
       try {
-        const token = TokenManager.getToken();
+        const token = localStorage.getItem('token');
         if (!token) {
-          alert("Session expired. Please login again.");
-          window.location.href = "/login";
+          alert('Authentication required. Please login first.');
+          setLoading(false);
           return;
         }
 
         const response = await fetch(config.cianns, {
+          method: 'GET',
+          credentials: 'include',
           headers: {
-            Authorization: `Bearer ${token}`,
-          },
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
         });
 
         if (!response.ok) {
-          if (response.status === 401) {
-            alert("Session expired. Please login again.");
-            window.location.href = "/login";
-            return;
-          }
-          throw new Error("Failed to fetch CIANNs");
+          throw new Error(`Failed to fetch CIANNs: ${response.status}`);
         }
 
         const data = await response.json();
         setCiannDataList(data);
       } catch (err) {
-        alert("Failed to fetch CIANNs: " + err.message);
+        console.error('Fetch CIANNs error:', err);
+        alert('Failed to fetch CIANNs: ' + err.message);
       } finally {
         setLoading(false);
       }
@@ -76,31 +74,23 @@ const EditCiann = () => {
                 state={{ ciannData: ciannData }}
                 className="ciann-dashboard-card-link"
                 onClick={() => {
-                  console.log("Selected CIAAN:", ciannData);
+                  console.log('Selected CIAAN:', ciannData);
                   setSelectedCiannData(ciannData);
                   // Store CIAAN data in both sessionStorage and localStorage
-                  sessionStorage.setItem(
-                    "currentCiannData",
-                    JSON.stringify(ciannData)
-                  );
-                  localStorage.setItem("ciannData", JSON.stringify(ciannData));
+                  sessionStorage.setItem('currentCiannData', JSON.stringify(ciannData));
+                  localStorage.setItem('ciannData', JSON.stringify(ciannData));
                 }}
               >
                 <div className="ciann-dashboard-card">
                   <div className="card-content">
                     <i className="bi bi-journal-text ciann-icon"></i>
-                    <div className="ciann-id">
-                      CIAAN ID: {ciannData.ciannId}
-                    </div>
+                    <div className="ciann-id">CIAAN ID: {ciannData.ciannId}</div>
                     <div className="card-text">
                       <strong>{ciannData.subject?.name}</strong>
-                      <span className="subject-code">
-                        ({ciannData.subject?.code})
-                      </span>
+                      <span className="subject-code">({ciannData.subject?.code})</span>
                     </div>
                     <div className="card-text">
-                      <span className="division-label">Division:</span>{" "}
-                      <strong>{ciannData.division}</strong>
+                      <span className="division-label">Division:</span> <strong>{ciannData.division}</strong>
                     </div>
                   </div>
                   <div className="card-hover-text">Click to Edit</div>
@@ -108,9 +98,7 @@ const EditCiann = () => {
               </Link>
             ))
           ) : (
-            <p className="text-center">
-              No CIAAN data available. Create one to see it here.
-            </p>
+            <p className="text-center">No CIAAN data available. Create one to see it here.</p>
           )}
         </div>
       </div>

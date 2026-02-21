@@ -5,9 +5,33 @@ const studentSchema = new mongoose.Schema({
   enrollmentNo: { type: String, required: true },
   studentName: { type: String, required: true },
   batch: { type: String, required: true },
+
+  // Old text-based division (kept for backward compatibility)
   division: { type: String, default: "" },
+
+  // New references to Admin Panel entities
+  departmentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Department"
+  },
+  courseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course"
+  },
+  divisionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Division"
+  },
+
   username: { type: String },
-  plainPassword: { type: String },
+  password: { type: String }, // Hashed password
+  plainPassword: { type: String }, // Plain password for display (set once during import)
+  passwordGeneratedAt: { type: Date }, // Track when password was generated
+  aadhaarNo: { type: String, default: '' }, // Encrypted Aadhaar card number
+  aadhaarLastFour: { type: String, default: '' }, // Last 4 digits for masked display
+  createdAt: { type: Date, default: Date.now }
+}, {
+  timestamps: true,
 });
 
 module.exports = mongoose.model("Student", studentSchema);

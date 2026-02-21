@@ -11,7 +11,7 @@ const { authenticate, authorizeOffice } = require("../middleware/auth");
 router.get("/", async (req, res) => {
   try {
     console.log("GET /api/students - Request received");
-    const { batch, division } = req.query;
+    const { batch, division, divisionId, courseId, departmentId } = req.query;
     console.log("Query params:", req.query);
 
     // Build query object
@@ -19,15 +19,45 @@ router.get("/", async (req, res) => {
     if (batch) {
       query.batch = batch;
     }
-    if (division) {
+    if (divisionId) {
+      query.divisionId = divisionId;
+    } else if (division) {
       query.division = division;
+    }
+    if (courseId) {
+      query.courseId = courseId;
+    }
+    if (departmentId) {
+      query.departmentId = departmentId;
     }
 
     console.log("Database query:", query);
-    const students = await Student.find(query);
+
+    // Fetch students with populated related data
+    const students = await Student.find(query)
+      .populate("departmentId", "name code")
+      .populate("courseId", "name semester class")
+      .populate("divisionId", "name")
+      .select(
+        "rollNo studentName enrollmentNo batch division departmentId courseId divisionId",
+      )
+      .lean()
+      .exec();
+
     console.log("Students found:", students.length);
 
-    res.json(students);
+    // Enrich response with flattened data for easier frontend consumption
+    const enrichedStudents = students.map((student) => ({
+      ...student,
+      departmentName: student.departmentId?.name || "",
+      departmentCode: student.departmentId?.code || "",
+      courseName: student.courseId?.name || "",
+      semester: student.courseId?.semester || "",
+      className: student.courseId?.class || "",
+      divisionName: student.divisionId?.name || student.division,
+    }));
+
+    res.json(enrichedStudents);
   } catch (err) {
     console.error("Error fetching students:", err);
     res.status(500).json({ message: err.message });
@@ -128,7 +158,7 @@ router.put("/:id", authenticate, authorizeOffice, async (req, res) => {
     const updatedStudent = await Student.findByIdAndUpdate(
       req.params.id,
       { rollNo, enrollmentNo, studentName, batch, division: division || "" },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedStudent) {

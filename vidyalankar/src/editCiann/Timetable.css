@@ -71,6 +71,32 @@
   z-index: 1001;
 }
 
+/* Mobile responsive: Hide secondary sidebar by default on mobile */
+@media (max-width: 768px) {
+  .timetable-secondary-sidebar-wrapper {
+    position: fixed;
+    left: -100%;
+    top: 50px;
+    width: 100%;
+    height: calc(100vh - 50px);
+    z-index: 1100;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+  }
+  
+  /* Show secondary sidebar when visible class is added */
+  .timetable-secondary-sidebar-wrapper.visible {
+    left: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .timetable-secondary-sidebar-wrapper {
+    width: 140px;
+    left: 140px;
+  }
+}
+
 /* Override App.css plan-container styles specifically for timetable */
 .timetable-layout .plan-container {
   margin: 10px 24px !important;
@@ -177,24 +203,45 @@
 
 .pagination {
   display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 8px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .pagination button {
-  background: #198754;
+  background: var(--app-header-bg, #198754);
   color: #fff;
   border: 1px solid #157347;
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .pagination button:hover {
   background: #157347;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pagination button:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 768px) {
+  .pagination {
+    flex-direction: column;
+    margin-top: 20px;
+  }
+
+  .pagination button {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+  }
 }
 
 .popup-overlay {

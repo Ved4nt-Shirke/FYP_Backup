@@ -1,0 +1,132 @@
+/* Faculty-specific responsive stabilization layer
+   Scoped to faculty role only to avoid affecting admin/office/superadmin screens. */
+
+.faculty-page .scrollable-content {
+  overflow-x: hidden;
+}
+
+.faculty-page .scrollable-content > * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.faculty-page .attendance-main-content,
+.faculty-page .assessment-page-container,
+.faculty-page .view-assessment-page-wrapper,
+.faculty-page .view-assessment-container,
+.faculty-page .assessment-container,
+.faculty-page .progressive-assessment-container,
+.faculty-page .theory-attendance-container,
+.faculty-page .attendance-container,
+.faculty-page .course-diary-wrapper,
+.faculty-page .plan-container,
+.faculty-page .teaching-main-content,
+.faculty-page .labplanning-main-content,
+.faculty-page .student-list-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box;
+}
+
+.faculty-page .attendance-main-content,
+.faculty-page .assessment-page-container,
+.faculty-page .view-assessment-page-wrapper,
+.faculty-page .view-assessment-container,
+.faculty-page .assessment-container,
+.faculty-page .progressive-assessment-container,
+.faculty-page .theory-attendance-container,
+.faculty-page .attendance-container,
+.faculty-page .plan-container,
+.faculty-page .teaching-main-content,
+.faculty-page .labplanning-main-content {
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+}
+
+.faculty-page .table-container,
+.faculty-page .attendance-table-wrapper,
+.faculty-page .assessment-table-responsive,
+.faculty-page .assessment-table-wrapper,
+.faculty-page .practical-table-container,
+.faculty-page .teaching .table-container,
+.faculty-page .labplanning-main-content .table-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.faculty-page .table-container table,
+.faculty-page .attendance-table,
+.faculty-page .assessment-table,
+.faculty-page .teaching table,
+.faculty-page .labplanning-main-content table {
+  min-width: 700px !important;
+}
+
+.faculty-page .form-group,
+.faculty-page .input-group,
+.faculty-page .filters-row,
+.faculty-page .controls-row,
+.faculty-page .button-group,
+.faculty-page .actions-row {
+  flex-wrap: wrap !important;
+}
+
+.faculty-page input,
+.faculty-page select,
+.faculty-page textarea,
+.faculty-page button {
+  max-width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .faculty-page .content-area,
+  .faculty-page .scrollable-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .faculty-page .attendance-main-content,
+  .faculty-page .assessment-page-container,
+  .faculty-page .view-assessment-page-wrapper,
+  .faculty-page .view-assessment-container,
+  .faculty-page .assessment-container,
+  .faculty-page .progressive-assessment-container,
+  .faculty-page .theory-attendance-container,
+  .faculty-page .attendance-container,
+  .faculty-page .plan-container,
+  .faculty-page .teaching-main-content,
+  .faculty-page .labplanning-main-content {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .faculty-page .attendance-main-content,
+  .faculty-page .assessment-page-container,
+  .faculty-page .view-assessment-page-wrapper,
+  .faculty-page .view-assessment-container,
+  .faculty-page .assessment-container,
+  .faculty-page .progressive-assessment-container,
+  .faculty-page .theory-attendance-container,
+  .faculty-page .attendance-container,
+  .faculty-page .plan-container,
+  .faculty-page .teaching-main-content,
+  .faculty-page .labplanning-main-content {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .faculty-page .table-container table,
+  .faculty-page .attendance-table,
+  .faculty-page .assessment-table,
+  .faculty-page .teaching table,
+  .faculty-page .labplanning-main-content table {
+    min-width: 620px !important;
+  }
+}

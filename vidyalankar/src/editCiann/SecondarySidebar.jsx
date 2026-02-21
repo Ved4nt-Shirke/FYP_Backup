@@ -16,7 +16,7 @@ const SecondarySidebar = ({
 
   useEffect(() => {
     const checkMobile = () => {
-      const mobile = window.innerWidth < 769;
+      const mobile = window.innerWidth <= 1024;
       setIsMobile(mobile);
     };
     checkMobile();
@@ -58,11 +58,9 @@ const SecondarySidebar = ({
     const routes = {
       "Front Page": "/course-diary",
       "Time Table & Load": "/timetable",
-      "Syllabus Contents": "/syllabus",
       "Teaching Plan (TP)": "/teaching-plan",
       "Laboratory Plan (LP)": "/laboratory-plan",
       "Students List": "/student-list",
-      "Subject Details": "/subject-details",
     };
     const route = routes[label];
     if (!route) {
@@ -108,18 +106,30 @@ const SecondarySidebar = ({
     isMobile ? (isSecondarySidebarVisible ? "visible" : "") : "visible"
   } ${isMobile ? "mobile" : ""}`;
 
+  if (isMobile && !isSecondarySidebarVisible) {
+    return (
+      <>
+        {showCiannSelector && (
+          <CiannSelector
+            onSelect={handleCiannSelect}
+            onCancel={handleCiannCancel}
+          />
+        )}
+      </>
+    );
+  }
+
   const sidebarContent = (
     <>
-      {isMobile && isSecondarySidebarVisible && (
-        <div
-          className="secondary-sidebar-overlay"
-          onClick={() => setIsSecondarySidebarVisible(false)}
-        ></div>
-      )}
       <div
         className={`secondary-sidebar-wrapper ${
           isMobile && isSecondarySidebarVisible ? "visible" : ""
         }`}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            setIsSecondarySidebarVisible(false);
+          }
+        }}
       >
         <div className={sidebarClasses}>
           <div className="secondary-sidebar-header">
@@ -137,8 +147,6 @@ const SecondarySidebar = ({
             {[
               "Front Page",
               "Time Table & Load",
-              "Syllabus Contents",
-              "Subject Details",
               "Students List",
               "Teaching Plan (TP)",
               "Laboratory Plan (LP)",
@@ -157,7 +165,10 @@ const SecondarySidebar = ({
     <>
       {isMobile ? createPortal(sidebarContent, document.body) : sidebarContent}
       {showCiannSelector && (
-        <CiannSelector onSelect={handleCiannSelect} onCancel={handleCiannCancel} />
+        <CiannSelector
+          onSelect={handleCiannSelect}
+          onCancel={handleCiannCancel}
+        />
       )}
     </>
   );

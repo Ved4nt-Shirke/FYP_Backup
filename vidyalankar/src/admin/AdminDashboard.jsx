@@ -78,31 +78,21 @@ const AdminDashboard = () => {
 
   return (
     <div className="scrollable-wrapper">
-      <div className="page-header">
+      <div className="admin-dash-header">
         <h2>Admin Dashboard</h2>
         <p>Manage {adminInstitution} Institution Settings</p>
       </div>
 
       {alertMessage && (
-        <div className="info-banner">
+        <div className="admin-dash-banner">
           <i className="bi bi-exclamation-circle"></i>
           <div>
-            <div className="banner-title">Notice</div>
-            <div className="banner-text">{alertMessage}</div>
+            <div className="admin-dash-banner-title">Notice</div>
+            <div className="admin-dash-banner-text">{alertMessage}</div>
           </div>
           <button
             onClick={closeAlert}
-            style={{
-              marginLeft: "auto",
-              background: "none",
-              border: "none",
-              color: "inherit",
-              fontSize: "1.2rem",
-              cursor: "pointer",
-              padding: "0",
-              display: "flex",
-              alignItems: "center",
-            }}
+            className="admin-dash-banner-close"
             aria-label="Close alert"
           >
             ✕
@@ -110,11 +100,11 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      <div className="card-container">
+      <div className="admin-dash-grid">
         {adminCardsData.map((card, index) => (
           <div
             key={index}
-            className={`card-item ${!card.available ? "coming-soon" : ""}`}
+            className={`admin-dash-card ${!card.available ? "coming-soon" : ""}`}
             onClick={() => handleCardClick(card)}
             role={card.available ? "button" : "presentation"}
             tabIndex={card.available ? 0 : -1}
@@ -125,14 +115,14 @@ const AdminDashboard = () => {
             }}
             aria-disabled={!card.available}
           >
-            <div className="card-icon-wrap">
-              <i className={`bi ${card.icon} card-icon`}></i>
+            <div className="admin-dash-icon-wrap">
+              <i className={`bi ${card.icon} admin-dash-icon`}></i>
             </div>
-            <h3 className="card-label">{card.label}</h3>
+            <h3 className="admin-dash-label">{card.label}</h3>
 
-            <p className="card-description">{card.description}</p>
+            <p className="admin-dash-description">{card.description}</p>
             {!card.available && (
-              <span className="coming-soon-badge">COMING SOON</span>
+              <span className="admin-dash-badge">COMING SOON</span>
             )}
           </div>
         ))}

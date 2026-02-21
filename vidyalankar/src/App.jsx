@@ -63,6 +63,7 @@ import PracticalCiannCards from "./Attendance/PracticalCiannCards";
 import PracticalAttendance from "./Attendance/PracticalAttendance";
 import PracticalAttendanceForm from "./Attendance/PracticalAttendanceForm";
 import PracticalFinalAtt from "./Attendance/PracticalFinalAtt";
+import PracticalBatchDistribution from "./Attendance/PracticalBatchDistribution";
 import TheoryEdit from "./Attendance/TheoryEdit";
 import AttendanceForm from "./Attendance/Theory";
 import FinalAttendance from "./Attendance/FinalAtt";
@@ -108,11 +109,13 @@ import ViewT2 from "./Attendance/view/ViewTut2";
 // Admin & Office Components
 import AdminPanel from "./admin/AdminPanel";
 import AdminDashboard from "./admin/AdminDashboard";
+import AdminHeader from "./admin/AdminHeader";
 import AdminSidebar from "./admin/AdminSidebar";
 import DepartmentList from "./admin/DepartmentList";
 import DepartmentForm from "./admin/DepartmentForm";
 import DepartmentManagement from "./admin/DepartmentManagement";
 import DepartmentCourses from "./admin/departments/DepartmentCourses";
+import DepartmentPracticalExams from "./admin/DepartmentPracticalExams";
 import FacultyList from "./admin/FacultyList";
 import FacultyForm from "./admin/FacultyForm";
 import CreateFaculty from "./admin/CreateFaculty";
@@ -144,11 +147,32 @@ import EditProgAssess from "./Assessment/EditProgAssess";
 import EditBatchSelect from "./Assessment/edit/EditBatchSelect";
 import EditCard from "./Assessment/edit/EditCard";
 import EditAssessedStudentList from "./Assessment/edit/EditAssessedStudentList";
+import EditAssessmentOverview from "./Assessment/edit/EditAssessmentOverview";
 import ViewAssessmentCard from "./Assessment/view/ViewAssessmentCard";
 import ViewAssessmentBatchSelect from "./Assessment/view/ViewAssessmentBatchSelect";
+import ViewAssessmentOverview from "./Assessment/view/ViewAssessmentOverview";
+import ViewAssessedStudentList from "./Assessment/view/ViewAssessedStudentList";
 import ViewPA1 from "./Assessment/view/ViewPA1";
 import ViewPA2 from "./Assessment/view/ViewPA2";
 import ViewPA3 from "./Assessment/view/ViewPA3";
+
+// Practical Exam Components
+import PracticalExamSection from "./PracticalExam/PracticalExamSection";
+import PracticalExamDashboard from "./PracticalExam/PracticalExamDashboard";
+import AddPractical from "./PracticalExam/AddPractical";
+import ManagePractical from "./PracticalExam/ManagePractical";
+import EnableDisablePractical from "./PracticalExam/EnableDisablePractical";
+import ManagePracticalQuestions from "./PracticalExam/ManagePracticalQuestions";
+import ViewStudentResponses from "./PracticalExam/ViewStudentResponses";
+import EditPractical from "./PracticalExam/EditPractical";
+import PublicPracticalExam from "./PracticalExam/PublicPracticalExam";
+
+// MSBTE Formats Pages
+import FAPRK3Generate from "./pages/msbte/FAPRK3Generate";
+import SAPRK4Generate from "./pages/msbte/SAPRK4Generate";
+import SAPRK4Edit from "./pages/msbte/SAPRK4Edit";
+import SAPRK4Print from "./pages/msbte/SAPRK4Print";
+import AttendanceReport from "./pages/msbte/AttendanceReport";
 
 // CT / PT / Course Components
 import CTCiannCards from "./CT/CTCiannCards";
@@ -181,9 +205,14 @@ import SuperAdminNavbar from "./superadmin/SuperAdminNavbar";
 
 import TestStudents from "./TestStudents";
 import "./App.css";
+import "./styles/faculty-responsive.css";
 import {
+  applyPalette,
   loadAndApplyAdminTheme,
+  loadAndApplyOfficeTheme,
   attachAdminThemeAutoRefresh,
+  attachFacultyThemeAutoRefresh,
+  attachOfficeThemeAutoRefresh,
 } from "./utils/theme";
 
 // Merged Theme Application Logic
@@ -194,6 +223,26 @@ const applyTheme = async (college, role) => {
   if (role === "admin") {
     await loadAndApplyAdminTheme(college);
     return;
+  }
+
+  if (role === "office") {
+    await loadAndApplyOfficeTheme(college);
+    return;
+  }
+
+  if (role === "faculty") {
+    try {
+      const cachedPalette = localStorage.getItem(`palette:${college}`);
+      const loginPalette = localStorage.getItem("institutionPalette");
+      const paletteSource = cachedPalette || loginPalette;
+
+      if (paletteSource) {
+        applyPalette(JSON.parse(paletteSource));
+        return;
+      }
+    } catch (error) {
+      console.warn("Failed to apply faculty institution palette:", error);
+    }
   }
 
   const themeMap = {
@@ -212,14 +261,17 @@ const applyTheme = async (college, role) => {
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const userRole = localStorage.getItem("role") || "faculty";
+  const sidebarCollapseBreakpoint = userRole === "faculty" ? 1024 : 768;
+  const isMobileViewport = window.innerWidth <= sidebarCollapseBreakpoint;
   const [isSidebarVisible, setIsSidebarVisible] = useState(
-    window.innerWidth >= 769,
+    window.innerWidth > sidebarCollapseBreakpoint,
   );
+  const [isMobileView, setIsMobileView] = useState(isMobileViewport);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [currentTab, setCurrentTab] = useState("upload");
   const userDropdownRef = useRef(null);
 
-  const userRole = localStorage.getItem("role") || "faculty";
   const college = localStorage.getItem("college") || "VP";
   const isAdminDashboard =
     userRole === "admin" && location.pathname === "/admin-dashboard";
@@ -241,28 +293,56 @@ const AppContent = () => {
 
   // Responsive Sidebar Toggle
   useEffect(() => {
-    const handleResize = () => setIsSidebarVisible(window.innerWidth >= 769);
+    const handleResize = () => {
+      const shouldCollapseSidebar =
+        window.innerWidth <= sidebarCollapseBreakpoint;
+      setIsSidebarVisible(!shouldCollapseSidebar);
+      setIsMobileView(shouldCollapseSidebar);
+    };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [sidebarCollapseBreakpoint]);
 
   // Theme Application
   useEffect(() => {
     applyTheme(college, userRole);
-    if (userRole === "admin") attachAdminThemeAutoRefresh(college);
-  }, [location.pathname, college, userRole]);
+    if (userRole !== "admin" && userRole !== "office" && userRole !== "faculty") return;
+
+    const cleanup =
+      userRole === "admin"
+        ? attachAdminThemeAutoRefresh(college)
+        : userRole === "office"
+          ? attachOfficeThemeAutoRefresh(college)
+          : attachFacultyThemeAutoRefresh(college);
+    return () => {
+      if (typeof cleanup === "function") cleanup();
+    };
+  }, [college, userRole]);
 
   const handleMenuToggle = () => setIsSidebarVisible((prev) => !prev);
 
-  const isSpecialPage = [
-    "/login",
-    "/view-attend2",
-    "/view-practical3",
-    "/view-extra-practical3",
-    "/view-extra-theory-attend2",
-    "/view-tutorial-attendance2",
-    "/summary-pages",
-  ].includes(location.pathname);
+  useEffect(() => {
+    const onGlobalMenuToggle = () => {
+      setIsSidebarVisible((prev) => !prev);
+    };
+
+    window.addEventListener("app:toggle-sidebar", onGlobalMenuToggle);
+    return () => {
+      window.removeEventListener("app:toggle-sidebar", onGlobalMenuToggle);
+    };
+  }, []);
+
+  const isSpecialPage =
+    [
+      "/login",
+      "/view-attend2",
+      "/view-practical3",
+      "/view-extra-practical3",
+      "/view-extra-theory-attend2",
+      "/view-tutorial-attendance2",
+      "/summary-pages",
+    ].includes(location.pathname) ||
+    location.pathname.match(/^\/public\/practical-exam\/.*/);
 
   if (isSpecialPage) {
     return (
@@ -280,6 +360,10 @@ const AppContent = () => {
         />
         <Route path="/view-tutorial-attendance2" element={<ViewT2 />} />
         <Route path="/summary-pages" element={<SummaryPage />} />
+        <Route
+          path="/public/practical-exam/:publicLink"
+          element={<PublicPracticalExam />}
+        />
       </Routes>
     );
   }
@@ -347,6 +431,8 @@ const AppContent = () => {
       {/* Header logic */}
       {userRole === "superadmin" ? (
         <SuperAdminNavbar />
+      ) : userRole === "admin" && isMobileView ? (
+        <AdminHeader onMenuToggle={handleMenuToggle} />
       ) : userRole === "office" ? (
         <OfficeHeader onMenuToggle={handleMenuToggle} />
       ) : userRole !== "admin" ? (
@@ -379,7 +465,6 @@ const AppContent = () => {
                 )
               }
             />
-
             {/* General Routes */}
             <Route path="/create-ciann" element={<CreateCiann />} />
             <Route path="/edit-ciann" element={<EditCiann />} />
@@ -390,7 +475,6 @@ const AppContent = () => {
             <Route path="/laboratory-plan" element={<LabPlanningSheet />} />
             <Route path="/teaching-plan" element={<TeachingPlanSheet />} />
             <Route path="/student-list" element={<Studentlist />} />
-
             {/* Subject Details Sub-routes */}
             <Route path="/subject-details" element={<SubjectDetails />}>
               <Route path="lecture-schedule" element={<LectureSchedule />} />
@@ -406,7 +490,6 @@ const AppContent = () => {
               <Route path="rubric" element={<Rubric />} />
               <Route index element={<Navigate to="lecture-schedule" />} />
             </Route>
-
             {/* Attendance Routes */}
             <Route path="/mark-attendance" element={<MarkAttendance />} />
             <Route path="/view-attendance" element={<ViewAttendance />} />
@@ -434,6 +517,10 @@ const AppContent = () => {
             />
             <Route path="/PracticalFinalAtt" element={<PracticalFinalAtt />} />
             <Route
+              path="/practical-batch-distribution"
+              element={<PracticalBatchDistribution />}
+            />
+            <Route
               path="/prac-form/:ciannId/:weekNo/:batch/:exptNo"
               element={<PracticalAttendanceForm />}
             />
@@ -453,7 +540,6 @@ const AppContent = () => {
             />
             <Route path="/extrapattend" element={<StudentAttendancePage />} />
             <Route path="/student-attendance" element={<StudentAttendance />} />
-
             {/* Edit Attendance */}
             <Route path="/edit-attendance1" element={<EditAttendance1 />} />
             <Route path="/edit-attendance2" element={<EditAttendance2 />} />
@@ -513,7 +599,6 @@ const AppContent = () => {
               path="/edit-individual-extra-practical-attendance"
               element={<EditIndividualExtraPracticalAttendance />}
             />
-
             {/* View Attendance */}
             <Route path="/view-attend1" element={<ViewAttend1 />} />
             <Route path="/view-practical1" element={<ViewPractical1 />} />
@@ -531,7 +616,6 @@ const AppContent = () => {
               element={<ViewExtraTheory1 />}
             />
             <Route path="/view-tutorial-attendance" element={<ViewT1 />} />
-
             {/* Assessment Routes */}
             <Route path="/summary-cards" element={<SummaryCards />} />
             <Route path="/assess-ciann" element={<AssismentCiaanCards />} />
@@ -563,14 +647,26 @@ const AppContent = () => {
               element={<ExperimentAttendance />}
             />
             <Route path="/edit-assess" element={<EditAssess />} />
+            <Route
+              path="/edit-assessment-overview"
+              element={<EditAssessmentOverview />}
+            />
             <Route path="/assessment/edit-prog" element={<EditProgAssess />} />
             <Route path="/edit-batch-select" element={<EditBatchSelect />} />
             <Route path="/edit-card" element={<EditCard />} />
             <Route
-              path="/edit-assessed-student-list"
+              path="/edit-assessed-students"
               element={<EditAssessedStudentList />}
             />
-            <Route path="/view-assessment" element={<ViewAssessmentCard />} />
+            <Route path="/view-assessment" element={<ViewAssessmentCard />} />{" "}
+            <Route
+              path="/view-assessment-overview"
+              element={<ViewAssessmentOverview />}
+            />
+            <Route
+              path="/view-assessed-students"
+              element={<ViewAssessedStudentList />}
+            />{" "}
             <Route
               path="/view-batch-select"
               element={<ViewAssessmentBatchSelect />}
@@ -578,14 +674,45 @@ const AppContent = () => {
             <Route path="/view-pa/b1" element={<ViewPA1 />} />
             <Route path="/view-pa/b2" element={<ViewPA2 />} />
             <Route path="/view-pa/b3" element={<ViewPA3 />} />
-
+            {/* Practical Exams Routes */}
+            <Route
+              path="/faculty/practical-exams"
+              element={<PracticalExamSection />}
+            />
+            <Route
+              path="/faculty/practical-exams/dashboard"
+              element={<PracticalExamDashboard />}
+            />
+            <Route
+              path="/faculty/practical-exams/add"
+              element={<AddPractical />}
+            />
+            <Route
+              path="/faculty/practical-exams/manage"
+              element={<ManagePractical />}
+            />
+            <Route
+              path="/faculty/practical-exams/status"
+              element={<EnableDisablePractical />}
+            />
+            <Route
+              path="/faculty/practical-exams/edit/:examId"
+              element={<EditPractical />}
+            />
+            <Route
+              path="/faculty/practical-exams/questions/:examId"
+              element={<ManagePracticalQuestions />}
+            />
+            <Route
+              path="/faculty/practical-exams/:examId/responses"
+              element={<ViewStudentResponses />}
+            />
             {/* Defaulter Routes */}
             <Route path="/defaulter" element={<Defaulter />} />
             <Route path="/studentwise-defaulters" element={<DefaulterCard />} />
             <Route path="/studentwise-select" element={<StudentWiseSelect />} />
             <Route path="/studentwise-assess" element={<StudentWiseAssess />} />
             <Route path="/studentwise-setup" element={<StudentAssessSetup />} />
-
             {/* CT & PT Routes */}
             <Route path="/ct-cianns" element={<CTCiannCards />} />
             <Route path="/ct-dashboard/:ciannId" element={<CTDashboard />} />
@@ -595,7 +722,6 @@ const AppContent = () => {
               path="/pt-microproject/microproject"
               element={<Microproject />}
             />
-
             {/* Course Management */}
             <Route path="/chapters" element={<ManageChapters1 />} />
             <Route path="/add-chapters" element={<ManageChapters2 />} />
@@ -604,7 +730,18 @@ const AppContent = () => {
             <Route path="/course2" element={<Course2 />} />
             <Route path="/course3" element={<Course3 />} />
             <Route path="/course4" element={<Course4 />} />
-
+            {/* MSBTE Formats Routes */}
+            <Route
+              path="/msbte/fa-pr-k3/generate"
+              element={<FAPRK3Generate />}
+            />
+            <Route
+              path="/msbte/sa-pr-k4/generate"
+              element={<SAPRK4Generate />}
+            />
+            <Route path="/msbte/sa-pr-k4/edit" element={<SAPRK4Edit />} />
+            <Route path="/msbte/sa-pr-k4/print" element={<SAPRK4Print />} />
+            <Route path="/msbte/attendance" element={<AttendanceReport />} />
             {/* Admin/Panel Routes */}
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/admin-panel" element={<AdminPanel />} />
@@ -621,6 +758,10 @@ const AppContent = () => {
               path="/admin/departments/:id/courses"
               element={<DepartmentCourses />}
             />
+            <Route
+              path="/admin/departments/:id/practical-exams"
+              element={<DepartmentPracticalExams />}
+            />
             <Route path="/admin-faculty" element={<FacultyList />} />
             <Route path="/admin-create-faculty" element={<CreateFaculty />} />
             <Route path="/admin-edit-faculty/:id" element={<FacultyForm />} />
@@ -635,7 +776,6 @@ const AppContent = () => {
             />
             <Route path="/admin/subjects" element={<SubjectManagement />} />
             <Route path="/admin/subjects-view" element={<SubjectsView />} />
-
             {/* SuperAdmin Routes */}
             <Route
               path="/superadmin-dashboard"
@@ -653,7 +793,6 @@ const AppContent = () => {
               path="/superadmin-manage-institution/:id"
               element={<ManageInstitution />}
             />
-
             <Route path="/test-students" element={<TestStudents />} />
             <Route path="*" element={<div>404 - Page Not Found</div>} />
           </Routes>

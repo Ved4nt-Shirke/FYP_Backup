@@ -4,6 +4,8 @@ import { resultsService } from "./services/api";
 
 const Results = () => {
   const [results, setResults] = useState([]);
+  const [ctMarks, setCtMarks] = useState([]);
+  const [studentInfo, setStudentInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState("all");
@@ -15,8 +17,14 @@ const Results = () => {
   const fetchResults = async () => {
     try {
       setLoading(true);
-      const data = await resultsService.getResults();
-      setResults(data);
+      const [resultData, ctData] = await Promise.all([
+        resultsService.getResults(),
+        resultsService.getCtMarks(),
+      ]);
+
+      setResults(Array.isArray(resultData) ? resultData : []);
+      setCtMarks(Array.isArray(ctData?.marks) ? ctData.marks : []);
+      setStudentInfo(ctData?.student || null);
       setError(null);
     } catch (err) {
       console.error("Failed to fetch results:", err);
@@ -73,6 +81,53 @@ const Results = () => {
       <div className="content-header">
         <h1>Academic Results</h1>
         <p>View your exam results and performance analytics</p>
+        {studentInfo?.studentName && (
+          <p>
+            Student: <strong>{studentInfo.studentName}</strong> ({studentInfo.rollNo || "-"})
+          </p>
+        )}
+      </div>
+
+      <div className="performance-summary" style={{ marginBottom: "20px" }}>
+        <h2>CT Marks</h2>
+        {ctMarks.length === 0 ? (
+          <div className="no-results">
+            <i className="bi bi-journal-x"></i>
+            <p>No CT marks available yet for your account.</p>
+          </div>
+        ) : (
+          <div className="results-grid">
+            {ctMarks.map((ct) => (
+              <div key={ct._id} className="result-card">
+                <div className="result-header">
+                  <h3>{ct.subject || "Subject"}</h3>
+                  <span className="grade-badge" style={{ backgroundColor: "#10b981" }}>
+                    CT {ct.ctNumber}
+                  </span>
+                </div>
+                <div className="result-details">
+                  <div className="detail-row">
+                    <span className="detail-label">CT Name:</span>
+                    <span className="detail-value">{ct.ctName}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Date:</span>
+                    <span className="detail-value">{new Date(ct.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+                <div className="marks-section">
+                  <div className="marks-display">
+                    <span className="marks">{ct.marks}</span>
+                    <span className="max-marks">/{ct.totalMarks || 20}</span>
+                  </div>
+                  <div className="percentage">
+                    {calculatePercentage(ct.marks, ct.totalMarks || 20)}%
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="results-controls">

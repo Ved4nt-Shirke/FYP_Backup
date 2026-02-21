@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../basic/Header";
 import Sidebar from "../basic/Sidebar";
 import SecondarySidebar from "./SecondarySidebar";
@@ -78,6 +78,7 @@ const labs = [
 
 const TimeTable = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [ciannData, setCiannData] = useState(location.state?.ciannData || null);
   const [slots, setSlots] = useState({});
   const [showPopup, setShowPopup] = useState(false);
@@ -122,7 +123,7 @@ const TimeTable = () => {
             // Also store in sessionStorage for consistency
             sessionStorage.setItem(
               "currentCiannData",
-              JSON.stringify(parsedData)
+              JSON.stringify(parsedData),
             );
             return;
           }
@@ -168,7 +169,7 @@ const TimeTable = () => {
 
         if (!response || !response.ok) {
           throw new Error(
-            `HTTP error! Status: ${response ? response.status : "Unknown"}`
+            `HTTP error! Status: ${response ? response.status : "Unknown"}`,
           );
         }
         const data = await response.json();
@@ -207,7 +208,7 @@ const TimeTable = () => {
 
       if (!response || !response.ok) {
         throw new Error(
-          `HTTP error! Status: ${response ? response.status : "Unknown"}`
+          `HTTP error! Status: ${response ? response.status : "Unknown"}`,
         );
       }
       setSlots((prev) => ({ ...prev, [key]: value }));
@@ -269,12 +270,12 @@ const TimeTable = () => {
                 // Ignore network errors on retries for exponential backoff
               }
               await new Promise((res) =>
-                setTimeout(res, Math.pow(2, i) * 1000)
+                setTimeout(res, Math.pow(2, i) * 1000),
               );
             }
             reject(new Error("Failed after retries"));
           });
-        })
+        }),
       );
 
       if (!responses[0].ok || !responses[1].ok) {
@@ -313,7 +314,7 @@ const TimeTable = () => {
 
       if (!response || !response.ok) {
         throw new Error(
-          `HTTP error! Status: ${response ? response.status : "Unknown"}`
+          `HTTP error! Status: ${response ? response.status : "Unknown"}`,
         );
       }
       setSlots((prev) => ({ ...prev, [key]: value }));
@@ -334,7 +335,7 @@ const TimeTable = () => {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ weekday: day, time }),
-        })
+        }),
       );
 
       const responses = await Promise.all(
@@ -351,18 +352,18 @@ const TimeTable = () => {
                 // Ignore network errors on retries for exponential backoff
               }
               await new Promise((res) =>
-                setTimeout(res, Math.pow(2, i) * 1000)
+                setTimeout(res, Math.pow(2, i) * 1000),
               );
             }
             reject(new Error("Failed after retries"));
           });
-        })
+        }),
       );
 
       const allOk = responses.every((res) => res.ok);
       if (!allOk) {
         const errorData = await Promise.all(
-          responses.map((res) => res.json())
+          responses.map((res) => res.json()),
         ).catch(() => null);
         console.error("Delete failed for one or more slots:", errorData);
         // Use a custom message box instead of alert
@@ -388,19 +389,33 @@ const TimeTable = () => {
     setShowDeletePopup(false);
   };
 
+  // Navigation handlers for previous/forward buttons
+  const handlePrevious = () => {
+    navigate("/course-dairy", { state: { ciannData } });
+  };
+
+  const handleForward = () => {
+    navigate("/syllabus", { state: { ciannData } });
+  };
+
   return (
     <div className="timetable-layout">
       <Header
         showSearch={false}
         onMenuToggle={() => setIsSidebarVisible((v) => !v)}
         onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
+        hidePrimaryMenuToggleOnCompact={true}
+        mobileHomePath="/dashboard"
       />
       <div className="timetable-main-row">
         <Sidebar
           isSidebarVisible={isSidebarVisible}
           setIsSidebarVisible={setIsSidebarVisible}
+          disableOnCompact={true}
         />
-        <div className="timetable-secondary-sidebar-wrapper">
+        <div
+          className={`timetable-secondary-sidebar-wrapper ${isSecondarySidebarVisible ? "visible" : ""}`}
+        >
           <SecondarySidebar
             ciannData={ciannData}
             isSecondarySidebarVisible={isSecondarySidebarVisible}
@@ -709,7 +724,7 @@ const TimeTable = () => {
                               if (!value) continue;
 
                               const typeMatch = value.match(
-                                /(Theory|Practical|Tutorial)/i
+                                /(Theory|Practical|Tutorial)/i,
                               );
                               const type = typeMatch
                                 ? typeMatch[0].slice(0, 2).toUpperCase()
@@ -838,8 +853,8 @@ const TimeTable = () => {
               </tbody>
             </table>
             <div className="pagination">
-              <button>← Previous</button>
-              <button>Forward →</button>
+              <button onClick={handlePrevious}>← Previous</button>
+              <button onClick={handleForward}>Forward →</button>
             </div>
           </div>
         </div>

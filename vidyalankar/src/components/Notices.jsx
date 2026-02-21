@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { config } from "../config/api";
 import "./Notices.css";
 
 const Notices = () => {
@@ -22,8 +21,13 @@ const Notices = () => {
   const fetchNotices = async () => {
     try {
       setLoading(true);
+      if (!facultyUsername) {
+        setNotices([]);
+        return;
+      }
+
       const response = await fetch(
-        `http://localhost:5000/api/faculty/notices?faculty=${facultyUsername}`,
+        `${config.apiBaseUrl}/faculty/notices?faculty=${encodeURIComponent(facultyUsername)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -50,8 +54,8 @@ const Notices = () => {
       setLoading(true);
       const method = editingId ? "PUT" : "POST";
       const endpoint = editingId
-        ? `http://localhost:5000/api/faculty/notices/${editingId}`
-        : "http://localhost:5000/api/faculty/notices";
+        ? `${config.apiBaseUrl}/faculty/notices/${editingId}`
+        : `${config.apiBaseUrl}/faculty/notices`;
 
       const response = await fetch(endpoint, {
         method,
@@ -91,7 +95,7 @@ const Notices = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:5000/api/faculty/notices/${noticeId}`,
+        `${config.apiBaseUrl}/faculty/notices/${noticeId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -123,18 +127,6 @@ const Notices = () => {
     setNoticeTitle("");
     setNoticeContent("");
     setEditingId(null);
-  };
-
-  const modules = {
-    toolbar: [
-      [{ header: [1, 2, 3, false] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["blockquote", "code-block"],
-      [{ color: [] }, { background: [] }],
-      ["link", "image"],
-      ["clean"],
-    ],
   };
 
   return (
@@ -173,14 +165,13 @@ const Notices = () => {
 
           <div className="form-group">
             <label>Notice Content</label>
-            <ReactQuill
+            <textarea
               value={noticeContent}
-              onChange={setNoticeContent}
-              modules={modules}
-              theme="snow"
+              onChange={(e) => setNoticeContent(e.target.value)}
               placeholder="Write your notice here..."
-              readOnly={loading}
-              className="notice-editor"
+              disabled={loading}
+              className="form-input notice-editor"
+              rows={8}
             />
           </div>
 

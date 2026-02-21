@@ -5,7 +5,7 @@ const User = require("../models/user");
 const Department = require("../models/Department");
 const Faculty = require("../models/Faculty");
 const OfficeStaff = require("../models/OfficeStaff");
-const { authenticate, authorizeAdmin, authorizeOffice } = require("../middleware/auth");
+const { authenticate, authorizeAdmin } = require("../middleware/auth");
 const Institution = require("../models/Institution");
 
 // Institution and department mappings
@@ -20,7 +20,7 @@ router.get("/departments/:institution", (req, res) => {
 });
 
 // Get current admin's institution theme/palette
-router.get("/theme", authenticate, authorizeOffice, async (req, res) => {
+router.get("/theme", authenticate, authorizeAdmin, async (req, res) => {
   try {
     const code = req.user.college;
     const institution = await Institution.findOne(

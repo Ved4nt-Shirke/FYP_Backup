@@ -2,20 +2,57 @@ const express = require('express');
 const router = express.Router();
 const StudentResult = require('../models/StudentResult');
 const Student = require('../models/Student');
+const CTMarks = require('../models/CTMarks');
+const Notice = require('../models/Notice');
+const { authenticate } = require('../middleware/auth');
+
+const normalizeUsername = (value = '') =>
+  String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const exactRegex = (value = '') => new RegExp(`^${escapeRegex(String(value || '').trim())}$`, 'i');
+
+const getStudentFromRequest = async (user) => {
+  const normalized = normalizeUsername(user.username || '');
+
+  let student = await Student.findOne({
+    username: { $regex: exactRegex(normalized) },
+  });
+
+  if (!student && user.enrollmentNo) {
+    student = await Student.findOne({ enrollmentNo: user.enrollmentNo });
+  }
+
+  if (!student && normalized) {
+    student = await Student.findOne({ enrollmentNo: normalized });
+  }
+
+  return student;
+};
 
 // Middleware to verify student authentication
 const verifyStudent = (req, res, next) => {
-  // In a real implementation, you would verify the JWT token here
-  // For now, we'll just pass through
-  next();
+  authenticate(req, res, () => {
+    if (!req.user || req.user.role !== 'student') {
+      return res.status(403).json({ message: 'Access denied. Students only.' });
+    }
+    next();
+  });
 };
 
 // GET student results
 router.get('/results', verifyStudent, async (req, res) => {
   try {
-    // In a real implementation, you would get the student ID from the verified token
-    // For now, we'll return all results as a demo
-    const results = await StudentResult.find().sort({ date: -1 });
+    const student = await getStudentFromRequest(req.user);
+    if (!student) {
+      return res.status(404).json({ message: 'Student record not found' });
+    }
+
+    const results = await StudentResult.find({ studentId: student._id }).sort({ date: -1 });
     res.json(results);
   } catch (err) {
     console.error('Error fetching student results:', err);
@@ -26,7 +63,16 @@ router.get('/results', verifyStudent, async (req, res) => {
 // GET specific result by ID
 router.get('/results/:id', verifyStudent, async (req, res) => {
   try {
-    const result = await StudentResult.findById(req.params.id);
+    const student = await getStudentFromRequest(req.user);
+    if (!student) {
+      return res.status(404).json({ message: 'Student record not found' });
+    }
+
+    const result = await StudentResult.findOne({
+      _id: req.params.id,
+      studentId: student._id,
+    });
+
     if (!result) {
       return res.status(404).json({ message: 'Result not found' });
     }
@@ -37,43 +83,80 @@ router.get('/results/:id', verifyStudent, async (req, res) => {
   }
 });
 
+// GET student CT marks
+router.get('/ct-marks', verifyStudent, async (req, res) => {
+  try {
+    const student = await getStudentFromRequest(req.user);
+    if (!student) {
+      return res.status(404).json({ message: 'Student record not found' });
+    }
+
+    const marks = await CTMarks.find({
+      $or: [
+        { rollNo: String(student.rollNo || '').trim() },
+        { studentName: { $regex: exactRegex(student.studentName || '') } },
+      ],
+    }).sort({ createdAt: -1, ctNumber: 1 });
+
+    res.json({
+      success: true,
+      student: {
+        studentName: student.studentName,
+        rollNo: student.rollNo,
+        enrollmentNo: student.enrollmentNo,
+      },
+      marks,
+    });
+  } catch (err) {
+    console.error('Error fetching student CT marks:', err);
+    res.status(500).json({ message: 'Failed to fetch CT marks' });
+  }
+});
+
 // GET student notices
 router.get('/notices', verifyStudent, async (req, res) => {
   try {
-    // Mock data for notices - in a real app, this would come from a database
-    const notices = [
-      {
-        _id: '1',
-        title: 'Exam Schedule Announcement',
-        content: 'The final examination schedule for Semester 1 has been published. Please check your email for detailed timings.',
-        date: new Date('2025-12-15'),
-        category: 'examination',
-        priority: 'high',
-        author: 'Examination Department',
-        read: false
-      },
-      {
-        _id: '2',
-        title: 'Library Holiday Notice',
-        content: 'The library will remain closed on December 25th and 26th for Christmas holidays. Regular services will resume on December 27th.',
-        date: new Date('2025-12-10'),
-        category: 'library',
-        priority: 'medium',
-        author: 'Library Administration',
-        read: false
-      },
-      {
-        _id: '3',
-        title: 'Workshop on Career Development',
-        content: 'A career development workshop will be conducted on January 5th, 2026. All students are encouraged to participate.',
-        date: new Date('2025-12-05'),
-        category: 'events',
-        priority: 'high',
-        author: 'Placement Cell',
-        read: true
-      }
+    const normalizedUsername = String(req.user.username || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
+
+    const student = await Student.findOne({
+      username: { $regex: new RegExp(`^${normalizedUsername}$`, 'i') },
+    }).select('division');
+
+    const studentDivision = String(student?.division || '').trim();
+    const college = String(req.user.college || '').toUpperCase();
+
+    const divisionScope = [
+      { division: { $exists: false } },
+      { division: null },
+      { division: '' },
     ];
-    res.json(notices);
+
+    if (studentDivision) {
+      divisionScope.push({
+        division: { $regex: new RegExp(`^${studentDivision}$`, 'i') },
+      });
+    }
+
+    const notices = await Notice.find({
+      college,
+      $or: divisionScope,
+    }).sort({ createdAt: -1 });
+
+    const formattedNotices = notices.map((notice) => ({
+      _id: notice._id,
+      title: notice.title,
+      content: notice.content,
+      date: notice.createdAt,
+      category: 'administration',
+      priority: 'medium',
+      author: notice.faculty,
+      read: false,
+    }));
+
+    res.json(formattedNotices);
   } catch (err) {
     console.error('Error fetching student notices:', err);
     res.status(500).json({ message: 'Failed to fetch notices' });

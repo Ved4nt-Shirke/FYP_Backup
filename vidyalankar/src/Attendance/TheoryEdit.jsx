@@ -1,112 +1,113 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./TheoryEdit.css";
-import AttendanceForm from "./Theory"; 
+import AttendanceForm from "./Theory";
 
 const TheoryAt = () => {
-  const [view, setView] = useState("sheet");
-  const [week, setWeek] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [teachingPlans, setTeachingPlans] = useState([]);
-  const [attendanceRecords, setAttendanceRecords] = useState([]);
-  const [planningStarted, setPlanningStarted] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const selectedCiann = location.state?.ciannData;
+
+  const [teachingPlans, setTeachingPlans] = useState([]);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
 
   useEffect(() => {
     if (!selectedCiann) return;
 
     const fetchData = async () => {
+      setLoading(true);
       try {
         const ciannId = selectedCiann.ciannId;
-        const planRes = await fetch(`http://localhost:5000/api/teaching-plan/${ciannId}`);
+        const planRes = await fetch(
+          `http://localhost:5000/api/teaching-plan/${ciannId}`,
+        );
 
         if (planRes.status === 404) {
           setTeachingPlans([]);
-          setPlanningStarted(false);
         } else if (!planRes.ok) {
-          throw new Error(`HTTP error fetching plans! status: ${planRes.status}`);
+          throw new Error(
+            `HTTP error fetching plans! status: ${planRes.status}`,
+          );
         } else {
           const planData = await planRes.json();
           setTeachingPlans(Array.isArray(planData) ? planData : []);
-          setPlanningStarted(Array.isArray(planData) && planData.length > 0);
         }
 
-        const attRes = await fetch(`http://localhost:5000/api/theory-attendance?ciannId=${ciannId}`);
+        const attRes = await fetch(
+          `http://localhost:5000/api/theory-attendance?ciannId=${ciannId}`,
+        );
 
         if (attRes.status === 404) {
           setAttendanceRecords([]);
         } else if (!attRes.ok) {
-          throw new Error(`HTTP error fetching attendance! status: ${attRes.status}`);
+          throw new Error(
+            `HTTP error fetching attendance! status: ${attRes.status}`,
+          );
         } else {
           const attData = await attRes.json();
           setAttendanceRecords(Array.isArray(attData) ? attData : []);
         }
-
       } catch (err) {
         console.error("Error fetching data:", err);
         setTeachingPlans([]);
         setAttendanceRecords([]);
-        setPlanningStarted(false);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, [selectedCiann]);
 
-  if (!selectedCiann) {
-    return (
-      <div className="timetable-main-content">
-        <div className="theory-attendance-container">
-          <h3>No CIAAN selected. Please select a CIAAN card first.</h3>
-        </div>
-      </div>
-    );
-  }
-
-  const allRows = teachingPlans.flatMap((weekPlan) =>
-    (weekPlan.plans || []).map((plan) => {
-      let chapterNo = "";
-      let chapterName = plan.chapter || "";
-      if (plan.chapter && plan.chapter.startsWith("Unit - ")) {
-        const parts = plan.chapter.split(". ");
-        if (parts.length > 1) {
-          chapterNo = parts[0].replace("Unit - ", "");
-          chapterName = parts.slice(1).join(". ");
+  const allRows = useMemo(() => {
+    return teachingPlans.flatMap((weekPlan) =>
+      (weekPlan.plans || []).map((plan) => {
+        let chapterNo = "";
+        let chapterName = plan.chapter || "";
+        if (plan.chapter && plan.chapter.startsWith("Unit - ")) {
+          const parts = plan.chapter.split(". ");
+          if (parts.length > 1) {
+            chapterNo = parts[0].replace("Unit - ", "");
+            chapterName = parts.slice(1).join(". ");
+          }
         }
-      }
-      
-      // ✅ CORRECTED LOGIC: Find a match based on the topic only.
-      const attendance = attendanceRecords.find(
-        (att) => att.topic === plan.subTopic
-      );
 
-      return {
-        chapterNo,
-        chapterName,
-        endDate: plan.startDate || "",
-        attendance: !!attendance,
-        subTopic: plan.subTopic || "",
-      };
-    })
+        const attendance = attendanceRecords.find(
+          (att) => att.topic === plan.subTopic,
+        );
+
+        return {
+          chapterNo,
+          chapterName,
+          endDate: plan.startDate || "",
+          attendance: !!attendance,
+          subTopic: plan.subTopic || "",
+          teachingMethod: plan.teachingMethod || "Lecture",
+        };
+      }),
+    );
+  }, [teachingPlans, attendanceRecords]);
+
+  const itemsPerPage = 8;
+  const totalPages = Math.ceil(allRows.length / itemsPerPage) || 1;
+  const paginatedRows = allRows.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
   );
 
-  const itemsPerPage = 5;
-  const totalPages = Math.ceil(allRows.length / itemsPerPage);
-  const paginatedRows = allRows.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
   const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
   };
 
-  const handleCheckboxClick = (row) => {
-    if (!row.attendance) {
-      setSelectedRow(row);
-      setIsModalOpen(true);
-    }
+  const handleOpenModal = (row) => {
+    if (row.attendance) return;
+    setSelectedRow(row);
+    setIsModalOpen(true);
   };
 
   const closeModal = () => {
@@ -114,100 +115,138 @@ const TheoryAt = () => {
     setSelectedRow(null);
   };
 
-  const renderTable = () => {
-    if (!planningStarted || !teachingPlans.length) {
-      return (
-        <table>
-          <thead>
-            <tr>
-              <th>Chapter No.</th>
-              <th>Name of Chapter</th>
-              <th>Date of Completion of Topic</th>
-              <th>Mark Attendance</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colSpan="4" style={{ textAlign: "center" }}>
-                No data available
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      );
-    }
+  if (!selectedCiann) {
     return (
-      <table>
-        <thead>
-          <tr>
-            <th>Chapter No.</th>
-            <th>Name of Chapter</th>
-            <th>Date of Completion of Topic</th>
-            <th>Mark Attendance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedRows.map((row, index) => (
-            <tr key={index} style={{ borderBottom: index === paginatedRows.length - 1 ? "2px solid black" : "1px solid #ccc" }}>
-              <td data-label="Chapter No.">{row.chapterNo ? `Unit - ${row.chapterNo}` : ""}</td>
-              <td data-label="Name of Chapter">{row.chapterName || ""}</td>
-              <td data-label="Date of Completion of Topic">{row.endDate || ""}</td>
-              <td data-label="Mark Attendance">
-                <label
-                  className={`custom-checkbox ${row.attendance ? 'is-locked' : ''}`}
-                  onClick={() => { if (!row.attendance) handleCheckboxClick(row); }}
-                  title={row.attendance ? 'Attendance already marked' : 'Click to mark attendance'}
-                >
-                  <input
-                    type="checkbox"
-                    checked={!!row.attendance}
-                    readOnly
-                  />
-                  <span className="checkmark" />
-                </label>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
-  };
-
-  if (view === "add" || view === "edit") {
-    return (
-      <div className="timetable-main-content">
-        {/* Content for add/edit view would go here if implemented */}
+      <div className="theory-page">
+        <div className="theory-card">
+          <h2 className="theory-title">Theory Attendance</h2>
+          <p className="theory-subtitle">
+            No CIAAN selected. Please choose a CIAAN card first.
+          </p>
+        </div>
       </div>
     );
   }
 
+  const markedCount = allRows.filter((row) => row.attendance).length;
+  const pendingCount = allRows.length - markedCount;
+
   return (
-    <div className="timetable-main-content">
-      <div className="theory-attendance-container">
-        <div className="header-row">
-          <h3>Theory Attendance</h3>
-        </div>
-        <div className="table-container">{renderTable()}</div>
+    <div className="theory-page">
+      <div className="theory-card">
+        <header className="theory-header">
+          <div className="theory-header-main">
+            <p className="theory-eyebrow">Attendance Console</p>
+            <h2 className="theory-title">Theory Attendance</h2>
+            <p className="theory-subtitle">
+              {selectedCiann.subject?.name} ({selectedCiann.subject?.code})
+            </p>
+          </div>
+          <div className="theory-header-meta">
+            <div>
+              <span>Division</span>
+              <strong>{selectedCiann.division || "N/A"}</strong>
+            </div>
+            <div>
+              <span>Department</span>
+              <strong>{selectedCiann.department?.name || "N/A"}</strong>
+            </div>
+            <div>
+              <span>Semester</span>
+              <strong>{selectedCiann.semester || "N/A"}</strong>
+            </div>
+          </div>
+        </header>
+
+        <section className="theory-metrics">
+          <div className="metric-card">
+            <span>Topics</span>
+            <strong>{allRows.length}</strong>
+          </div>
+          <div className="metric-card success">
+            <span>Marked</span>
+            <strong>{markedCount}</strong>
+          </div>
+          <div className="metric-card warning">
+            <span>Pending</span>
+            <strong>{pendingCount}</strong>
+          </div>
+        </section>
+
+        <section className="theory-table-section">
+          <div className="theory-table-head">
+            <div>
+              <h3>Topics Overview</h3>
+              <p>Click the checkbox to mark attendance for a topic.</p>
+            </div>
+            <div className="theory-badge">CIAAN ID {selectedCiann.ciannId}</div>
+          </div>
+
+          <div className="theory-table-container">
+            {loading ? (
+              <div className="theory-loading">Loading topics...</div>
+            ) : allRows.length === 0 ? (
+              <div className="theory-empty">
+                <h4>No teaching plan data yet</h4>
+                <p>Add a teaching plan first to start marking attendance.</p>
+              </div>
+            ) : (
+              <table className="theory-table">
+                <thead>
+                  <tr>
+                    <th>Unit</th>
+                    <th>Chapter</th>
+                    <th>Planned Date</th>
+                    <th>Attendance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedRows.map((row, index) => (
+                    <tr key={`${row.subTopic}-${index}`}>
+                      <td data-label="Unit">
+                        {row.chapterNo ? `Unit ${row.chapterNo}` : "-"}
+                      </td>
+                      <td data-label="Chapter">
+                        {row.chapterName || row.subTopic || "-"}
+                      </td>
+                      <td data-label="Planned Date">{row.endDate || "-"}</td>
+                      <td data-label="Attendance">
+                        <label
+                          className={`checkbox-pill ${row.attendance ? "is-locked" : ""}`}
+                          onClick={() => handleOpenModal(row)}
+                          title={
+                            row.attendance
+                              ? "Attendance already marked"
+                              : "Click to mark attendance"
+                          }
+                        >
+                          <input
+                            type="checkbox"
+                            checked={row.attendance}
+                            readOnly
+                          />
+                          <span>{row.attendance ? "Marked" : "Mark"}</span>
+                        </label>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </section>
+
         {allRows.length > 0 && (
-          <div className="pagination">
+          <div className="theory-pagination">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
               Previous
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                style={{
-                  backgroundColor: currentPage === page ? "#4caf50" : "white",
-                  color: currentPage === page ? "white" : "black",
-                }}
-              >
-                {page}
-              </button>
-            ))}
+            <div className="page-indicator">
+              Page {currentPage} of {totalPages}
+            </div>
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
@@ -216,30 +255,35 @@ const TheoryAt = () => {
             </button>
           </div>
         )}
-        {isModalOpen && selectedRow && (
-          <AttendanceForm
-            chapterNo={selectedRow.chapterNo ? `Unit - ${selectedRow.chapterNo}` : ""}
-            chapterName={selectedRow.subTopic}
-            endDate={selectedRow.endDate}
-            onClose={closeModal}
-            onSubmit={(actualDate, remark) => {
-              navigate('/final-attendance', {
-                state: {
-              ciannId: selectedCiann.ciannId, // ✅ ADD THIS LINE
-              ciannData: selectedCiann,      // ✅ Also pass the full ciannData for navigation back
-               topic: selectedRow.subTopic,
-             date: actualDate,
-             remark: remark,
-             chapter: selectedRow.chapterName,
-      startDate: selectedRow.endDate, // Note: Your code aliases startDate as endDate
-      teachingMethod: selectedRow.teachingMethod || 'Lecture'
-  },
-              });
-              closeModal();
-            }}
-          />
-        )}
       </div>
+
+      {isModalOpen && selectedRow && (
+        <AttendanceForm
+          chapterNo={
+            selectedRow.chapterNo ? `Unit - ${selectedRow.chapterNo}` : ""
+          }
+          chapterName={selectedRow.subTopic}
+          endDate={selectedRow.endDate}
+          ciannData={selectedCiann}
+          onClose={closeModal}
+          onSubmit={(actualDate, remark) => {
+            navigate("/final-attendance", {
+              state: {
+                ciannId: selectedCiann.ciannId,
+                ciannData: selectedCiann,
+                topic: selectedRow.subTopic,
+                date: actualDate,
+                remark: remark,
+                chapter: selectedRow.chapterNo,
+                chapterName: selectedRow.chapterName,
+                startDate: selectedRow.endDate,
+                teachingMethod: selectedRow.teachingMethod || "Lecture",
+              },
+            });
+            closeModal();
+          }}
+        />
+      )}
     </div>
   );
 };

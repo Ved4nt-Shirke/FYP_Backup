@@ -1,225 +1,305 @@
-:root {
-  --primary-dark: #1b4332;    /* Dark Forest */
-  --primary-main: #2d6a4f;    /* Emerald */
-  --primary-light: #40916c;   /* Leaf */
-  --primary-soft: #d8f3dc;    /* Mint background */
-  --text-dark: #1f2937;
-  --text-muted: #6b7280;
-  --white: #ffffff;
-  --bg-page: #f0f7f4;         /* Very pale green/grey background */
-  --danger: #dc2626;
-  --info: #0ea5e9;
-}
+@import "./SuperAdmin.css";
 
 .create-institution-container {
-  padding: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 84px 24px 24px;
+  max-width: 1100px;
+  margin-left: 260px;
+  margin-top: 0;
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--sa-bg);
 }
 
 .create-institution-container .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e5e7eb;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
+  margin-bottom: 18px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+.create-institution-container .page-header::before {
+  content: none !important;
 }
 
 .create-institution-container .page-header h2 {
-  color: var(--primary-dark);
-  font-weight: 800;
   margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--sa-text);
 }
 
-.grid-layout {
+.create-institution-container .text-muted {
+  margin: 4px 0 0;
+  color: var(--sa-muted);
+}
+
+.create-institution-container .grid-layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 25px;
-}
-@media (min-width: 992px) {
-  .grid-layout { grid-template-columns: 2fr 1fr; }
 }
 
-.card {
-  background: var(--white);
+.create-institution-container .section-card {
+  background: #ffffff;
+  border: 1px solid var(--sa-border);
   border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-  border: 1px solid #e5e7eb;
   overflow: hidden;
 }
 
-.card-header {
-  padding: 18px 24px;
-  background-color: #f8fafc;
-  border-bottom: 1px solid #e5e7eb;
+.create-institution-container .card-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--sa-border);
+  background: #f8fafc;
 }
-.card-header h5 { margin: 0; color: var(--primary-dark); font-weight: 700; }
 
-.card-body { padding: 24px; }
+.create-institution-container .card-header h5 {
+  margin: 0;
+  color: var(--sa-text);
+  font-size: 1rem;
+}
 
-/* Forms */
-.form-label {
+.create-institution-container .card-body {
+  padding: 18px;
+}
+
+.create-institution-container .form-label {
+  display: block;
+  margin-bottom: 6px;
   font-weight: 600;
-  color: #374151;
+  color: #334155;
+}
+
+.create-institution-container .form-label.required::after {
+  content: "*";
+  color: #dc2626;
+  margin-left: 4px;
+}
+
+.create-institution-container .form-control {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--sa-border);
+  border-radius: 10px;
+  font-size: 0.92rem;
+  color: var(--sa-text);
+  background: #ffffff;
+}
+
+.create-institution-container .form-control:focus {
+  outline: none;
+  border-color: #99f6e4;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12);
+}
+
+.create-institution-container .form-text,
+.create-institution-container .small {
+  margin-top: 5px;
+  font-size: 0.82rem;
+  color: var(--sa-muted);
+}
+
+.create-institution-container .mb-2 {
   margin-bottom: 8px;
 }
-.form-label.required::after { content: "*"; color: #dc2626; margin-left: 4px; }
 
-.form-control {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  transition: all 0.2s;
-  box-sizing: border-box;
-}
-.form-control:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+.create-institution-container .mb-3 {
+  margin-bottom: 14px;
 }
 
-.form-text { font-size: 0.85rem; color: #6b7280; margin-top: 6px; }
-
-/* Advanced Section */
-.advanced-block {
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
-  padding: 20px;
-  margin-top: 15px;
+.create-institution-container .mb-4 {
+  margin-bottom: 18px;
 }
 
-.toggle-adv {
-  color: var(--primary);
-  text-decoration: none;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  padding: 0;
+.create-institution-container .mt-3 {
+  margin-top: 14px;
+}
+
+.create-institution-container .text-end {
+  text-align: right;
+}
+
+.create-institution-container .advanced-block {
+  border: 1px solid #ccfbf1;
+  background: #f0fdfa;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.create-institution-container .toggle-adv {
   border: none;
-  background: none;
+  background: transparent;
+  color: var(--sa-primary);
+  font-weight: 600;
   cursor: pointer;
+  padding: 0;
 }
 
-/* Success Box */
-.success-box {
-  background-color: #ecfdf5;
-  border: 1px solid #6ee7b7;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
+.create-institution-container .success-box {
+  border: 1px solid #86efac;
+  background: #f0fdf4;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 14px;
 }
 
-.success-header {
+.create-institution-container .success-header {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #065f46;
-  margin-bottom: 20px;
-}
-.success-header i { font-size: 1.5rem; }
-
-.credentials-display {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  color: #166534;
 }
 
-.credential-row {
+.create-institution-container .credentials-display {
   display: grid;
-  grid-template-columns: 140px 1fr;
+  gap: 8px;
+}
+
+.create-institution-container .credential-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 8px;
   align-items: center;
+}
+
+.create-institution-container .credential-label {
+  font-size: 0.86rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.create-institution-container .credential-box {
+  min-height: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--sa-border);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 10px;
+  font-size: 0.88rem;
+}
+
+.create-institution-container .created-logo-preview {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.create-institution-container .logo-file-name {
+  margin-top: 6px;
+  font-size: 0.84rem;
+  color: #334155;
+}
+
+.create-institution-container .alert {
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
 }
 
-.credential-box {
-  background: white;
-  padding: 10px 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-family: monospace;
-  color: #1f2937;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.create-institution-container .alert-danger {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
 }
 
-/* Buttons */
-.form-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 25px;
-  flex-wrap: wrap;
-  align-items: center;
+.create-institution-container .alert-warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
 }
 
-.btn-primary {
-  height: 44px;
-  background-color: var(--primary-main);
-  color: white;
+.create-institution-container .btn-close {
   border: none;
-  padding: 0 24px;
-  border-radius: 10px;
-  font-weight: 700;
-  transition: all 0.2s ease;
-  font-size: 0.95rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: transparent;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.btn-primary:hover { background-color: var(--primary-dark); color: white !important; }
-
-.btn-outline {
-  height: 44px;
-  background: white;
-  border: 1px solid #d1d5db;
-  color: var(--text-dark);
-  padding: 0 24px;
-  border-radius: 10px;
-  font-weight: 700;
-  transition: all 0.2s ease;
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.btn-outline:hover { background-color: #f9fafb; border-color: #9ca3af; color: var(--text-dark) !important; }
-
-.btn-sm {
-  height: 36px;
-  padding: 0 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
 }
 
-/* Recent Items in Sidebar */
-.recent-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid #f3f4f6;
+.create-institution-container .btn-close::before {
+  content: "✕";
+  font-size: 0.8rem;
 }
-.icon-round {
-  width: 40px;
+
+.create-institution-container .form-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.create-institution-container .btn {
   height: 40px;
-  border-radius: 50%;
-  display: flex;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
 }
-.bg-soft { background-color: #f3f4f6; }
+
+.create-institution-container .btn-primary {
+  background: var(--sa-primary) !important;
+  color: #ffffff !important;
+}
+
+.create-institution-container .btn-primary:hover {
+  background: var(--sa-primary-dark) !important;
+}
+
+.create-institution-container .btn-outline {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: var(--sa-border) !important;
+}
+
+.create-institution-container .btn-outline:hover {
+  background: #f8fafc !important;
+}
+
+.create-institution-container .btn-sm {
+  height: 30px;
+  padding: 0 8px;
+  font-size: 0.8rem;
+}
+
+.create-institution-container .me-2 {
+  margin-right: 8px;
+}
+
+@media (max-width: 992px) {
+  .create-institution-container {
+    margin-left: 0;
+    padding: 76px 16px 16px;
+  }
+}
 
 @media (max-width: 768px) {
-  .credential-row { grid-template-columns: 1fr; gap: 4px; }
-  .form-actions { flex-direction: column; }
-  .btn { width: 100%; }
+  .create-institution-container .credential-row {
+    grid-template-columns: 1fr;
+  }
+
+  .create-institution-container .form-actions .btn {
+    width: 100%;
+  }
 }

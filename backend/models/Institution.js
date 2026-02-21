@@ -21,6 +21,18 @@ const InstitutionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  logoUrl: {
+    type: String,
+    default: "",
+  },
+  logoMimeType: {
+    type: String,
+    default: "",
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
   // Theme/Color Palette per-institution (applies to Admin UI initially)
   palette: {
     name: { type: String, default: "emerald" },

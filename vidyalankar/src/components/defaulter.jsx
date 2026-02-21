@@ -241,9 +241,18 @@ const Defaulter = () => {
   };
 
   const handlePrint = () => {
-    // Add a small delay to ensure all styles are loaded
+    const className = "printing-defaulter";
+    const cleanup = () => {
+      document.body.classList.remove(className);
+      window.removeEventListener("afterprint", cleanup);
+    };
+
+    document.body.classList.add(className);
+    window.addEventListener("afterprint", cleanup, { once: true });
+
     setTimeout(() => {
       window.print();
+      setTimeout(cleanup, 1000);
     }, 100);
   };
 

@@ -1,6 +1,10 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../basic/Header";
+import {
+  buildInstitutionLogoUrl,
+  getInstitutionInitials,
+} from "../utils/institutionBranding";
 
 const CiannDetailPage = () => {
   const navigate = useNavigate();
@@ -18,6 +22,14 @@ const CiannDetailPage = () => {
   }
 
   const username = localStorage.getItem("username") || "Mr. Test User";
+  const institutionCode = (
+    localStorage.getItem("institutionCode") || localStorage.getItem("college") || "VP"
+  ).toUpperCase();
+  const institutionName = localStorage.getItem("institutionName") || institutionCode;
+  const institutionLogoUrl = buildInstitutionLogoUrl(
+    localStorage.getItem("institutionLogoUrl") || "",
+  );
+  const institutionFallback = getInstitutionInitials(institutionName, institutionCode);
 
   return (
     <div className="ciann-detail-page-container">
@@ -84,14 +96,30 @@ const CiannDetailPage = () => {
         {/* Main Detail Area */}
         <div className="main-detail-area">
           <div className="college-logo-header">
-            <img
-              src="/public/vite.svg"
-              alt="College Logo"
-              style={{ height: "50px", marginRight: "10px" }}
-            />
-            <span style={{ fontWeight: "bold" }}>
-              VP Vidyanlankar Polytechnic
-            </span>
+            {institutionLogoUrl ? (
+              <img
+                src={institutionLogoUrl}
+                alt="College Logo"
+                style={{ height: "40px", width: "40px", borderRadius: "8px", objectFit: "cover", marginRight: "10px" }}
+              />
+            ) : (
+              <span
+                style={{
+                  height: "40px",
+                  width: "40px",
+                  borderRadius: "8px",
+                  marginRight: "10px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "#e5e7eb",
+                  fontWeight: "bold",
+                }}
+              >
+                {institutionFallback}
+              </span>
+            )}
+            <span style={{ fontWeight: "bold" }}>{institutionName}</span>
             <span style={{ marginLeft: "auto", fontWeight: "bold" }}>
               COURSE DIARY
             </span>

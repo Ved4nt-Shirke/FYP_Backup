@@ -85,7 +85,57 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const filter = buildScopedFilter(req.user);
-    const cianns = await Ciann.find(filter).sort({ createdAt: -1 });
+    let cianns = await Ciann.find(filter).sort({ createdAt: -1 });
+
+    // Populate courseCode from Course reference
+    const Course = require("../models/Course");
+    cianns = await Promise.all(
+      cianns.map(async (ciann) => {
+        const ciannObj = ciann.toObject();
+        if (!ciannObj.courseCode) {
+          try {
+            let course = null;
+
+            // Try to find by courseId first (for new CIANNs)
+            if (ciannObj.courseId) {
+              course = await Course.findById(ciannObj.courseId).select(
+                "courseCode",
+              );
+            }
+
+            // If not found, try to find by semester and department (for old CIANNs)
+            if (!course && ciannObj.semester && ciannObj.department) {
+              const deptId = ciannObj.department._id || ciannObj.department;
+              course = await Course.findOne({
+                semester: parseInt(ciannObj.semester),
+                departmentId: deptId,
+              }).select("courseCode _id");
+
+              // Store the courseId for future use
+              if (course) {
+                ciannObj.courseId = course._id;
+              }
+            }
+
+            if (course) {
+              ciannObj.courseCode = course.courseCode;
+              console.log(
+                `✓ CIANN ${ciannObj.ciannId}: Found courseCode ${course.courseCode}`,
+              );
+            } else {
+              console.log(`✗ CIANN ${ciannObj.ciannId}: Could not find course`);
+            }
+          } catch (err) {
+            console.error(
+              `Error fetching course for CIANN ${ciannObj.ciannId}:`,
+              err.message,
+            );
+          }
+        }
+        return ciannObj;
+      }),
+    );
+
     res.status(200).json(cianns);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -102,7 +152,7 @@ router.get("/:ciannId", async (req, res) => {
       return res.status(400).json({ message: "Invalid ciannId format" });
     }
 
-    const ciann = await Ciann.findOne({ ciannId: numericCiannId });
+    let ciann = await Ciann.findOne({ ciannId: numericCiannId });
     if (!ciann) {
       return res.status(404).json({ message: "CIANN not found" });
     }
@@ -111,7 +161,45 @@ router.get("/:ciannId", async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    res.status(200).json(ciann);
+    // Populate courseCode if it doesn't exist
+    const ciannObj = ciann.toObject();
+    if (!ciannObj.courseCode) {
+      try {
+        const Course = require("../models/Course");
+        let course = null;
+
+        // Try to find by courseId first
+        if (ciannObj.courseId) {
+          course = await Course.findById(ciannObj.courseId).select(
+            "courseCode",
+          );
+        }
+
+        // If not found, try by semester and department
+        if (!course && ciannObj.semester && ciannObj.department) {
+          const deptId = ciannObj.department._id || ciannObj.department;
+          course = await Course.findOne({
+            semester: parseInt(ciannObj.semester),
+            departmentId: deptId,
+          }).select("courseCode _id");
+
+          if (course) {
+            ciannObj.courseId = course._id;
+          }
+        }
+
+        if (course) {
+          ciannObj.courseCode = course.courseCode;
+        }
+      } catch (err) {
+        console.error(
+          `Could not find course for CIANN ${ciannObj.ciannId}:`,
+          err.message,
+        );
+      }
+    }
+
+    res.status(200).json(ciannObj);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -147,7 +235,7 @@ router.put("/:ciannId", async (req, res) => {
     const updatedCiann = await Ciann.findOneAndUpdate(
       { ciannId: numericCiannId },
       safeBody,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     res.status(200).json(updatedCiann);
@@ -156,10 +244,11 @@ router.put("/:ciannId", async (req, res) => {
   }
 });
 
-// Delete CIANN
+// Delete CIANN with password authentication and cascade delete all related data
 router.delete("/:ciannId", async (req, res) => {
   try {
     const { ciannId } = req.params;
+    const { password } = req.body;
     const numericCiannId = parseInt(ciannId);
 
     if (isNaN(numericCiannId)) {
@@ -175,12 +264,116 @@ router.delete("/:ciannId", async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
+    // Verify password only if user is faculty
+    if (req.user.role === "faculty") {
+      if (!password) {
+        return res.status(400).json({
+          message: "Password is required to delete CIANN",
+          requiresPassword: true,
+        });
+      }
+
+      // Get faculty details and verify password
+      const Faculty = require("../models/Faculty");
+      const User = require("../models/user");
+      const bcryptjs = require("bcryptjs");
+
+      const user = await User.findById(req.user._id);
+      if (!user || !user.passwordHash) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Verify password
+      const isPasswordValid = await bcryptjs.compare(
+        password,
+        user.passwordHash,
+      );
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          message: "Invalid password. CIANN not deleted.",
+          success: false,
+        });
+      }
+    }
+
+    // Delete all related data for this CIANN
+    console.log(`🗑️ Deleting CIANN ${ciannId} and all related data...`);
+
+    // Import models for cascade delete
+    const Assessment = require("../models/Assessment");
+    const CTMarks = require("../models/CTMarks");
+    const StudentResult = require("../models/StudentResult");
+    const TheoryAttendance = require("../models/TheoryAttendance");
+    const PracticalAttendance = require("../models/PracticalAttendance");
+    const TutorialAttendance = require("../models/TutorialAttendance");
+    const ExtraAttendance = require("../models/ExtraAttendance");
+    const ExtraPract = require("../models/ExtraPract");
+    const PracticalExam = require("../models/PracticalExam");
+    const PTMicroProject = require("../models/PTMicroProject");
+    const AuditLog = require("../models/AuditLog");
+
+    // Step 1: Delete all assessments related to this CIANN
+    await Assessment.deleteMany({ ciannId: existing._id });
+    console.log("   ✓ Deleted assessments");
+
+    // Step 2: Delete all CT marks related to this CIANN
+    await CTMarks.deleteMany({ ciannId: existing._id });
+    console.log("   ✓ Deleted CT marks");
+
+    // Step 3: Delete all student results related to this CIANN
+    await StudentResult.deleteMany({ ciannId: existing._id });
+    console.log("   ✓ Deleted student results");
+
+    // Step 4: Delete all theory attendance records for this CIANN
+    await TheoryAttendance.deleteMany({ ciannId: existing._id });
+    console.log("   ✓ Deleted theory attendance");
+
+    // Step 5: Delete all practical attendance records for this CIANN
+    await PracticalAttendance.deleteMany({ ciannId: existing._id });
+    console.log("   ✓ Deleted practical attendance");
+
+    // Step 6: Delete all tutorial attendance records for this CIANN
+    await TutorialAttendance.deleteMany({ ciannId: existing._id });
+    console.log("   ✓ Deleted tutorial attendance");
+
+    // Step 7: Delete all extra attendance records for this CIANN
+    await ExtraAttendance.deleteMany({ ciannId: existing._id });
+    console.log("   ✓ Deleted extra attendance");
+
+    // Step 8: Delete all PT microproject marks for this CIANN
+    await PTMicroProject.deleteMany({ ciannId: existing.ciannId });
+    console.log("   ✓ Deleted PT microproject marks");
+
+    // Step 8: Delete all extra practical records for this CIANN
+    await ExtraPract.deleteMany({ ciannId: existing._id });
+    console.log("   ✓ Deleted extra practical");
+
+    // Step 9: Delete all practical exams for this CIANN
+    await PracticalExam.deleteMany({ ciannId: existing._id });
+    console.log("   ✓ Deleted practical exams");
+
+    // Step 10: Delete audit logs related to this CIANN
+    await AuditLog.deleteMany({
+      resourceId: existing._id,
+      resourceType: "Ciann",
+    });
+    console.log("   ✓ Deleted audit logs");
+
+    // Step 11: Finally delete the CIANN record itself
     await Ciann.deleteOne({ _id: existing._id });
-    res
-      .status(200)
-      .json({ message: "CIANN deleted successfully", deletedCiann: existing });
+    console.log("   ✓ Deleted CIANN record");
+
+    res.status(200).json({
+      message: "CIANN and all related data deleted successfully",
+      deletedCiann: existing,
+      success: true,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Error deleting CIANN:", err);
+    res.status(500).json({
+      message: "Failed to delete CIANN",
+      error: err.message,
+    });
   }
 });
 

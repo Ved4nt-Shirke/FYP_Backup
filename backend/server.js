@@ -20,8 +20,58 @@ app.use(express.urlencoded({ extended: true }));
 // --- Database Connection ---
 mongoose
   .connect(process.env.MONGO_URI || "mongodb://localhost:27017/vidyalankarDB")
-  .then(() => console.log("MongoDB Connected Successfully"))
+  .then(() => {
+    console.log("MongoDB Connected Successfully");
+    // Initialize superadmin user
+    initializeSuperAdmin();
+  })
   .catch((err) => console.error("MongoDB Connection Error:", err));
+
+// --- Initialize Superadmin User ---
+async function initializeSuperAdmin() {
+  try {
+    const bcrypt = require("bcryptjs");
+    const User = require("./models/user");
+
+    const superadminUsername = process.env.SUPERADMIN_USERNAME || "superadmin";
+    const superadminPassword =
+      process.env.SUPERADMIN_PASSWORD || "superadmin123";
+
+    // Check if superadmin exists
+    const existingSuperAdmin = await User.findOne({
+      username: superadminUsername,
+      college: "ALL",
+      role: "superadmin",
+    });
+
+    if (!existingSuperAdmin) {
+      console.log(
+        "Superadmin user not found. Creating superadmin user from .env...",
+      );
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(superadminPassword, 10);
+
+      // Create superadmin user
+      const superadmin = new User({
+        username: superadminUsername,
+        password: hashedPassword,
+        college: "ALL",
+        role: "superadmin",
+      });
+
+      await superadmin.save();
+      console.log("✓ Superadmin user created successfully");
+      console.log(`  Username: ${superadminUsername}`);
+      console.log(`  College: ALL`);
+      console.log(`  Role: superadmin`);
+    } else {
+      console.log("✓ Superadmin user already exists in database");
+    }
+  } catch (error) {
+    console.error("Error initializing superadmin user:", error.message);
+  }
+}
 
 // --- Public Routes ---
 
@@ -29,7 +79,10 @@ mongoose
 app.get("/api/institutions", async (req, res) => {
   try {
     const Institution = require("./models/Institution");
-    const institutions = await Institution.find({}, "name code"); // Only fetch name and code
+    const institutions = await Institution.find(
+      {},
+      "name code isActive logoUrl palette",
+    );
     res.json({
       success: true,
       institutions,
@@ -106,6 +159,12 @@ app.use("/api/course-chapters", require("./routes/courseChapters"));
 // Assessment Routes
 app.use("/api/assessments", require("./routes/assessments"));
 
+// PT Microproject Routes
+app.use("/api/pt-microproject", require("./routes/ptMicroProject"));
+
+// Practical Exams Routes
+app.use("/api/practical-exams", require("./routes/practicalExams"));
+
 // CT Marks Routes
 app.use("/api/ct-marks", require("./routes/ctMarks"));
 
@@ -135,6 +194,9 @@ app.use(
 
 // Office Staff Routes (NEW)
 app.use("/api/office", require("./routes/office"));
+
+// Catalog Routes (for fetching departments, courses, divisions, subjects)
+app.use("/api/catalog", require("./routes/catalog"));
 
 // Super Admin Routes
 app.use("/api/superadmin", require("./routes/superadmin"));

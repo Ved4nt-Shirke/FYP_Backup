@@ -231,52 +231,13 @@ const bulkImportSubjects = async (req, res) => {
       });
     }
 
-    const results = {
-      inserted: 0,
-      skipped: 0,
-      errors: [],
-      createdSubjects: [],
-    };
-
-    for (const subjectData of subjects) {
-      const name = subjectData?.name?.toString().trim();
-      const code = subjectData?.code?.toString().trim().toUpperCase();
-
-      if (!name || !code) {
-        results.skipped++;
-        results.errors.push({ code, error: "Missing name or code" });
-        continue;
-      }
-
-      try {
-        const existing = await Subject.findOne({
-          institution,
-          departmentId,
-          code,
-        });
-
-        if (existing) {
-          results.skipped++;
-          results.errors.push({ code, error: "Subject code already exists" });
-          continue;
-        }
-
-        const created = await Subject.create({
-          name,
-          code,
-          departmentId,
-          courseId,
-          institution,
-          createdBy: req.user._id,
-        });
-
-        results.inserted++;
-        results.createdSubjects.push(created);
-      } catch (error) {
-        results.skipped++;
-        results.errors.push({ code, error: error.message });
-      }
-    }
+    const results = await createSubjectsBatch({
+      subjects,
+      departmentId,
+      courseId,
+      institution,
+      userId: req.user._id,
+    });
 
     res.json({
       success: true,

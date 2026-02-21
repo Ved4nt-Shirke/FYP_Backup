@@ -1,79 +1,211 @@
 import React, { useEffect, useState } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { config } from "../config/api";
 import "./ManageStudents.css";
+
+// Generate batch options (2024-25 onwards for next 6 years)
+const generateBatchOptions = () => {
+  const options = [];
+  const startYear = 2024;
+
+  for (let i = 0; i < 6; i++) {
+    const year = startYear + i;
+    const nextYear = year + 1;
+    const shortYear = nextYear.toString().slice(-2);
+    options.push(`${year}-${shortYear}`);
+  }
+  return options;
+};
 
 const ManageStudents = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  
-  // Filters
-  const [filterDivision, setFilterDivision] = useState("");
-  const [filterBatch, setFilterBatch] = useState("");
+
+  // Cascading filters
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedDivision, setSelectedDivision] = useState("");
+  const [selectedBatch, setSelectedBatch] = useState("");
+
+  // Dropdown data
+  const [departments, setDepartments] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [divisions, setDivisions] = useState([]);
+
+  // Search
   const [filterSearch, setFilterSearch] = useState("");
-  
+
   // Edit mode
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
-  
+
   // Delete confirmation
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
-  // Password display (view only - no generation on click)
+  // Password modal
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [generatedPasswordStudent, setGeneratedPasswordStudent] = useState("");
 
+  // Initial load
   useEffect(() => {
-    fetchStudents();
-    
-    // Log user info for debugging
+    fetchDepartments();
+
     const token = localStorage.getItem("token");
     if (token) {
       try {
-        const decoded = JSON.parse(atob(token.split('.')[1]));
-        console.log('Current user from token:', decoded);
+        const decoded = JSON.parse(atob(token.split(".")[1]));
+        console.log("Current user from token:", decoded);
       } catch (e) {
-        console.log('Could not decode token:', e.message);
+        console.log("Could not decode token:", e.message);
       }
     }
   }, []);
+
+  const fetchDepartments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.office.departments, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) setDepartments(data.departments || []);
+    } catch (err) {
+      console.error("Failed to fetch departments", err);
+    }
+  };
+
+  const fetchCourses = async (departmentId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.office.courses(departmentId), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) setCourses(data.courses || []);
+    } catch (err) {
+      console.error("Failed to fetch courses", err);
+    }
+  };
+
+  const fetchDivisions = async (courseId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.office.courseDivisions(courseId), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) setDivisions(data.divisions || []);
+    } catch (err) {
+      console.error("Failed to fetch divisions", err);
+    }
+  };
+
+  const handleDepartmentChange = async (e) => {
+    const deptId = e.target.value;
+    setSelectedDepartment(deptId);
+    setSelectedCourse("");
+    setSelectedDivision("");
+    setSelectedBatch("");
+    setCourses([]);
+    setDivisions([]);
+    setStudents([]);
+    setError("");
+
+    if (deptId) await fetchCourses(deptId);
+  };
+
+  const handleCourseChange = async (e) => {
+    const courseId = e.target.value;
+    setSelectedCourse(courseId);
+    setSelectedDivision("");
+    setSelectedBatch("");
+    setDivisions([]);
+    setStudents([]);
+    setError("");
+
+    if (courseId) await fetchDivisions(courseId);
+  };
+
+  const handleDivisionChange = (e) => {
+    setSelectedDivision(e.target.value);
+    setStudents([]);
+    setError("");
+  };
+
+  const handleBatchChange = (e) => {
+    setSelectedBatch(e.target.value);
+    setStudents([]);
+    setError("");
+  };
 
   const fetchStudents = async () => {
     try {
       setLoading(true);
       setError("");
-      
-      let url = config.students;
+
+      let url = config.office.students;
       const params = new URLSearchParams();
-      
-      if (filterDivision.trim()) {
-        params.append("division", filterDivision.trim());
-      }
-      if (filterBatch.trim()) {
-        params.append("batch", filterBatch.trim());
-      }
-      
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
-      
+
+      if (selectedDepartment) params.append("departmentId", selectedDepartment);
+      if (selectedCourse) params.append("courseId", selectedCourse);
+      if (selectedDivision) params.append("divisionId", selectedDivision);
+      if (selectedBatch) params.append("batch", selectedBatch.trim());
+
+      if (params.toString()) url += `?${params.toString()}`;
+
+      console.log("=== FETCH STUDENTS DEBUG ===");
+      console.log("Filters:", {
+        department: selectedDepartment,
+        course: selectedCourse,
+        division: selectedDivision,
+        batch: selectedBatch,
+      });
+      console.log("Fetching URL:", url);
+
       const token = localStorage.getItem("token");
       const res = await fetch(url, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      
+
+      console.log("Response status:", res.status);
+
       const data = await res.json();
-      setStudents(Array.isArray(data) ? data : []);
+      console.log("Full response data:", data);
+      console.log("Is data.students array?", Array.isArray(data.students));
+      console.log("Is data.students populated?", data.students?.length);
+
+      // Handle both direct array and object with students property
+      let studentList = [];
+      if (Array.isArray(data)) {
+        studentList = data;
+      } else if (data.students && Array.isArray(data.students)) {
+        studentList = data.students;
+      } else if (data.data && Array.isArray(data.data)) {
+        studentList = data.data;
+      }
+
+      console.log("Setting students to array with length:", studentList.length);
+      if (studentList.length > 0) {
+        console.log("First student:", studentList[0]);
+      }
+      setStudents(studentList);
+
+      if (studentList.length === 0) {
+        setError("No students found for the selected filters.");
+      }
     } catch (err) {
       console.error("Failed to fetch students", err);
       setError("Could not load students. Please try again.");
+      setStudents([]);
     } finally {
       setLoading(false);
     }
@@ -81,13 +213,22 @@ const ManageStudents = () => {
 
   const handleFilterApply = () => {
     setCurrentPage(1);
+    if (!selectedDepartment) {
+      setError("Please select a Department first.");
+      return;
+    }
     fetchStudents();
   };
 
   const handleFilterClear = () => {
-    setFilterDivision("");
-    setFilterBatch("");
+    setSelectedDepartment("");
+    setSelectedCourse("");
+    setSelectedDivision("");
+    setSelectedBatch("");
     setFilterSearch("");
+    setCourses([]);
+    setDivisions([]);
+    setStudents([]);
     setCurrentPage(1);
   };
 
@@ -104,62 +245,30 @@ const ManageStudents = () => {
   };
 
   const handleEditChange = (field, value) => {
-    setEditData({
-      ...editData,
-      [field]: value,
-    });
+    setEditData({ ...editData, [field]: value });
   };
 
   const handleEditSave = async () => {
-    if (!editData.studentName?.trim()) {
-      setError("Student name is required.");
-      return;
-    }
-    if (!editData.rollNo?.trim()) {
-      setError("Roll number is required.");
-      return;
-    }
-    if (!editData.enrollmentNo?.trim()) {
-      setError("Enrollment number is required.");
-      return;
-    }
-    if (!editData.batch?.trim()) {
-      setError("Batch is required.");
+    if (
+      !editData.studentName?.trim() ||
+      !editData.rollNo?.trim() ||
+      !editData.enrollmentNo?.trim() ||
+      !editData.batch?.trim()
+    ) {
+      setError("All required fields must be filled.");
       return;
     }
 
     try {
       setLoading(true);
-      setError("");
-      
       const token = localStorage.getItem("token");
-      
-      if (!token) {
-        setError("You are not authenticated. Please login again.");
-        setLoading(false);
-        return;
-      }
-      
       const url = `${config.students}/${editingId}`;
-      
-      console.log('=== PUT Request Debug ===');
-      console.log('URL:', url);
-      console.log('Student ID:', editingId);
-      console.log('Token present:', !!token);
-      console.log('Token preview:', token?.substring(0, 20) + '...');
-      console.log('Payload:', {
-        rollNo: editData.rollNo.trim(),
-        enrollmentNo: editData.enrollmentNo.trim(),
-        studentName: editData.studentName.trim(),
-        batch: editData.batch.trim(),
-        division: editData.division?.trim() || "",
-      });
-      
+
       const res = await fetch(url, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           rollNo: editData.rollNo.trim(),
@@ -167,40 +276,30 @@ const ManageStudents = () => {
           studentName: editData.studentName.trim(),
           batch: editData.batch.trim(),
           division: editData.division?.trim() || "",
+          aadhaarNo: editData.aadhaarNo?.trim() || "",
         }),
       });
 
       const result = await res.json();
-      
-      console.log('=== PUT Response ===');
-      console.log('Status:', res.status);
-      console.log('Response:', result);
-      
+
       if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error("Unauthorized: Your session may have expired. Please login again.");
-        } else if (res.status === 403) {
-          throw new Error("Forbidden: You do not have permission to edit students. Please ensure you are logged in as office staff.");
-        } else if (res.status === 404) {
-          throw new Error("Student not found or route not found. Please refresh and try again.");
-        } else {
-          throw new Error(result.message || `Failed to update student (Error ${res.status})`);
-        }
+        if (res.status === 401)
+          throw new Error("Session expired. Please login again.");
+        if (res.status === 403)
+          throw new Error("You don't have permission to edit students.");
+        throw new Error(result.message || "Failed to update student");
       }
 
-      setSuccess(`Student "${editData.studentName}" updated successfully.`);
+      setSuccess(`"${editData.studentName}" updated successfully.`);
       setEditingId(null);
       setEditData({});
-      
-      // Update the student in the list
       setStudents(
-        students.map((s) => (s._id === editingId ? result.student : s))
+        students.map((s) => (s._id === editingId ? result.student : s)),
       );
-      
+
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error("Edit error:", err);
-      setError(err.message || "Failed to update student");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -209,144 +308,230 @@ const ManageStudents = () => {
   const handleDeleteConfirm = (student) => {
     setDeleteConfirmId(student._id);
     setDeleteConfirmName(student.studentName);
-    setError("");
-    setSuccess("");
-  };
-
-  const handleDeleteCancel = () => {
-    setDeleteConfirmId(null);
-    setDeleteConfirmName("");
   };
 
   const handleDeleteConfirmed = async () => {
     try {
       setLoading(true);
-      setError("");
-      
       const token = localStorage.getItem("token");
-      
-      if (!token) {
-        setError("You are not authenticated. Please login again.");
-        setLoading(false);
-        return;
-      }
-      
-      const url = `${config.students}/${deleteConfirmId}`;
-      
-      console.log('=== DELETE Request Debug ===');
-      console.log('URL:', url);
-      console.log('Student ID:', deleteConfirmId);
-      console.log('Token present:', !!token);
-      
-      const res = await fetch(url, {
+      const res = await fetch(`${config.students}/${deleteConfirmId}`, {
         method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      const result = await res.json();
-      
-      console.log('=== DELETE Response ===');
-      console.log('Status:', res.status);
-      console.log('Response:', result);
-      
-      if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error("Unauthorized: Your session may have expired. Please login again.");
-        } else if (res.status === 403) {
-          throw new Error("Forbidden: You do not have permission to delete students. Please ensure you are logged in as office staff.");
-        } else if (res.status === 404) {
-          throw new Error("Student not found or route not found. Please refresh and try again.");
-        } else {
-          throw new Error(result.message || `Failed to delete student (Error ${res.status})`);
-        }
-      }
+      if (!res.ok) throw new Error("Failed to delete student");
 
-      setSuccess(`Student "${deleteConfirmName}" deleted successfully.`);
-      setDeleteConfirmId(null);
-      setDeleteConfirmName("");
-      
-      // Remove from list
+      setSuccess(`"${deleteConfirmName}" deleted successfully.`);
       setStudents(students.filter((s) => s._id !== deleteConfirmId));
-      
+      setDeleteConfirmId(null);
+
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error("Delete error:", err);
-      setError(err.message || "Failed to delete student");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleViewPassword = (student) => {
-    // IMPORTANT: Just display the stored password - never regenerate
     if (!student.plainPassword) {
-      setError("Password not available for this student. Please import the student again.");
+      setError("Password not available for this student.");
       return;
     }
-
     setGeneratedPassword(student.plainPassword);
     setGeneratedPasswordStudent(student.studentName);
     setShowPasswordModal(true);
     setError("");
   };
 
-  // Filter students based on search
+  const handleDownloadPdf = () => {
+    if (filteredStudents.length === 0) {
+      setError("No students available to export.");
+      return;
+    }
+
+    const departmentName =
+      departments.find((dept) => dept._id === selectedDepartment)?.name ||
+      "All";
+    const courseLabel =
+      courses.find((course) => course._id === selectedCourse)?.courseCode ||
+      "All";
+    const divisionLabel =
+      divisions.find((div) => div._id === selectedDivision)?.name || "All";
+    const batchLabel = selectedBatch || "All";
+
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt" });
+    doc.setFontSize(16);
+    doc.text("Student Credentials Report", 40, 40);
+    doc.setFontSize(11);
+    doc.text(
+      `Department: ${departmentName} | Course: ${courseLabel} | Division: ${divisionLabel} | Batch: ${batchLabel}`,
+      40,
+      60,
+    );
+
+    const rows = filteredStudents.map((student) => [
+      student.rollNo || "",
+      student.enrollmentNo || "",
+      student.studentName || "",
+      student.username || "—",
+      student.plainPassword || "—",
+      student.batch || "",
+      student.division || "—",
+    ]);
+
+    autoTable(doc, {
+      startY: 80,
+      head: [
+        [
+          "Roll No",
+          "Enrollment No",
+          "Name",
+          "Username",
+          "Password",
+          "Batch",
+          "Division",
+        ],
+      ],
+      body: rows,
+      styles: { fontSize: 9, cellPadding: 6 },
+      headStyles: { fillColor: [30, 64, 175] },
+      columnStyles: {
+        0: { cellWidth: 70 },
+        1: { cellWidth: 95 },
+        2: { cellWidth: 140 },
+        3: { cellWidth: 120 },
+        4: { cellWidth: 100 },
+        5: { cellWidth: 70 },
+        6: { cellWidth: 70 },
+      },
+    });
+
+    const fileSafeBatch = batchLabel.replace(/\s+/g, "-");
+    doc.save(`students-${fileSafeBatch}-credentials.pdf`);
+  };
+
+  // Client-side search filter
   const filteredStudents = students.filter((student) => {
-    const searchTerm = filterSearch.toLowerCase();
+    const term = filterSearch.toLowerCase();
     return (
-      student.studentName.toLowerCase().includes(searchTerm) ||
-      student.rollNo.toLowerCase().includes(searchTerm) ||
-      student.enrollmentNo.toLowerCase().includes(searchTerm)
+      student.studentName?.toLowerCase().includes(term) ||
+      student.rollNo?.toLowerCase().includes(term) ||
+      student.enrollmentNo?.toLowerCase().includes(term)
     );
   });
 
-  // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentStudents = filteredStudents.slice(indexOfFirstItem, indexOfLastItem);
+  const currentStudents = filteredStudents.slice(
+    indexOfFirstItem,
+    indexOfLastItem,
+  );
   const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
 
   return (
     <div className="manage-students-page">
+      {/* Header */}
       <div className="manage-header">
-        <h1>Manage Students</h1>
-        <p>View, edit, and delete student records.</p>
+        <h1>👥 Manage Students</h1>
+        <p>
+          Filter, view, edit, and manage student records with full cascading
+          controls.
+        </p>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
 
+      {/* Filters */}
       <div className="manage-controls">
         <div className="filter-group">
-          <input
-            type="text"
-            placeholder="Filter by division"
-            value={filterDivision}
-            onChange={(e) => setFilterDivision(e.target.value)}
-            disabled={loading}
-          />
-          <input
-            type="text"
-            placeholder="Filter by batch"
-            value={filterBatch}
-            onChange={(e) => setFilterBatch(e.target.value)}
-            disabled={loading}
-          />
-          <input
-            type="text"
-            placeholder="Search by name, roll no, or enrollment"
-            value={filterSearch}
-            onChange={(e) => setFilterSearch(e.target.value)}
-            disabled={loading}
-          />
+          <div className="form-row">
+            <label>
+              Department <span className="required">*</span>
+            </label>
+            <select
+              value={selectedDepartment}
+              onChange={handleDepartmentChange}
+              disabled={loading}
+            >
+              <option value="">-- Select Department --</option>
+              {departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name} ({dept.code})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-row">
+            <label>Course</label>
+            <select
+              value={selectedCourse}
+              onChange={handleCourseChange}
+              disabled={!selectedDepartment || loading}
+            >
+              <option value="">-- Select Course --</option>
+              {courses.map((course) => (
+                <option key={course._id} value={course._id}>
+                  Semester {course.semester} - {course.courseCode} (
+                  {course.scheme})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-row">
+            <label>Division</label>
+            <select
+              value={selectedDivision}
+              onChange={handleDivisionChange}
+              disabled={!selectedCourse || loading}
+            >
+              <option value="">-- Select Division --</option>
+              {divisions.map((div) => (
+                <option key={div._id} value={div._id}>
+                  {div.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-row">
+            <label>Batch</label>
+            <select
+              value={selectedBatch}
+              onChange={handleBatchChange}
+              disabled={loading}
+            >
+              <option value="">-- Select Batch --</option>
+              {generateBatchOptions().map((batch) => (
+                <option key={batch} value={batch}>
+                  {batch}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-row">
+            <label>
+              Search <span className="hint">(optional)</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Name, roll no, or enrollment..."
+              value={filterSearch}
+              onChange={(e) => setFilterSearch(e.target.value)}
+              disabled={loading}
+            />
+          </div>
         </div>
+
         <div className="filter-buttons">
           <button
             className="btn-primary"
             onClick={handleFilterApply}
-            disabled={loading}
+            disabled={loading || !selectedDepartment}
           >
             {loading ? "Loading..." : "Apply Filters"}
           </button>
@@ -355,19 +540,33 @@ const ManageStudents = () => {
             onClick={handleFilterClear}
             disabled={loading}
           >
-            Clear Filters
+            Clear All
           </button>
         </div>
       </div>
 
+      {/* Table Section */}
       <div className="manage-table-wrapper">
         <div className="table-info">
           <span className="pill">{filteredStudents.length} students found</span>
+          <div className="table-actions">
+            <button
+              className="btn-secondary"
+              onClick={handleDownloadPdf}
+              disabled={filteredStudents.length === 0 || loading}
+            >
+              Download PDF
+            </button>
+          </div>
         </div>
 
         {currentStudents.length === 0 ? (
           <div className="empty-state">
-            <p>{loading ? "Loading students..." : "No students found."}</p>
+            <p>
+              {loading
+                ? "Loading students..."
+                : "No students match the selected filters."}
+            </p>
           </div>
         ) : (
           <>
@@ -380,6 +579,7 @@ const ManageStudents = () => {
                   <th>Username</th>
                   <th>Batch</th>
                   <th>Division</th>
+                  <th>Aadhaar</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -387,69 +587,66 @@ const ManageStudents = () => {
                 {currentStudents.map((student) => (
                   <React.Fragment key={student._id}>
                     {editingId === student._id ? (
-                      // Edit mode
+                      // Edit Row
                       <tr className="edit-row">
                         <td>
                           <input
-                            type="text"
                             value={editData.rollNo || ""}
                             onChange={(e) =>
                               handleEditChange("rollNo", e.target.value)
                             }
-                            disabled={loading}
                           />
                         </td>
                         <td>
                           <input
-                            type="text"
                             value={editData.enrollmentNo || ""}
                             onChange={(e) =>
                               handleEditChange("enrollmentNo", e.target.value)
                             }
-                            disabled={loading}
                           />
                         </td>
                         <td>
                           <input
-                            type="text"
                             value={editData.studentName || ""}
                             onChange={(e) =>
                               handleEditChange("studentName", e.target.value)
                             }
-                            disabled={loading}
                           />
                         </td>
                         <td>
-                          <span className="credential-display">{editData.username || "-"}</span>
+                          <span className="credential-display">
+                            {editData.username || "—"}
+                          </span>
                           {editData.username && (
                             <button
                               className="btn-regenerate"
                               onClick={() => handleViewPassword(editData)}
-                              disabled={loading}
-                              title="View password"
                             >
                               👁️
                             </button>
                           )}
                         </td>
                         <td>
-                          <input
-                            type="text"
+                          <select
                             value={editData.batch || ""}
                             onChange={(e) =>
                               handleEditChange("batch", e.target.value)
                             }
-                            disabled={loading}
-                          />
+                          >
+                            <option value="">-- Select Batch --</option>
+                            {generateBatchOptions().map((b) => (
+                              <option key={b} value={b}>
+                                {b}
+                              </option>
+                            ))}
+                          </select>
                         </td>
                         <td>
                           <input
-                            type="text"
                             value={editData.division || ""}
                             onChange={(e) =>
                               handleEditChange("division", e.target.value)
                             }
-                            disabled={loading}
                           />
                         </td>
                         <td>
@@ -457,14 +654,12 @@ const ManageStudents = () => {
                             <button
                               className="btn-save"
                               onClick={handleEditSave}
-                              disabled={loading}
                             >
                               Save
                             </button>
                             <button
                               className="btn-cancel"
                               onClick={handleEditCancel}
-                              disabled={loading}
                             >
                               Cancel
                             </button>
@@ -472,47 +667,38 @@ const ManageStudents = () => {
                         </td>
                       </tr>
                     ) : (
-                      // View mode
-                      <tr className="view-row">
+                      // View Row
+                      <tr>
                         <td>{student.rollNo}</td>
                         <td>{student.enrollmentNo}</td>
                         <td>{student.studentName}</td>
                         <td className="credential-cell">
-                          <span className="credential-display">{student.username || "-"}</span>
+                          <span className="credential-display">
+                            {student.username || "—"}
+                          </span>
                           {student.username && (
                             <button
                               className="btn-regenerate"
                               onClick={() => handleViewPassword(student)}
-                              disabled={loading}
-                              title="View password"
                             >
                               👁️
                             </button>
                           )}
                         </td>
                         <td>{student.batch}</td>
-                        <td>{student.division || "-"}</td>
+                        <td>{student.division || "—"}</td>
+                        <td>{student.aadhaarMasked || "—"}</td>
                         <td>
                           <div className="action-buttons">
                             <button
                               className="btn-edit"
                               onClick={() => handleEditStart(student)}
-                              disabled={loading || editingId !== null}
-                              title="Edit student"
                             >
                               Edit
                             </button>
                             <button
                               className="btn-delete"
-                              onClick={() =>
-                                handleDeleteConfirm(student)
-                              }
-                              disabled={
-                                loading ||
-                                editingId !== null ||
-                                deleteConfirmId !== null
-                              }
-                              title="Delete student"
+                              onClick={() => handleDeleteConfirm(student)}
                             >
                               Delete
                             </button>
@@ -529,8 +715,8 @@ const ManageStudents = () => {
               <div className="pagination">
                 <button
                   className="btn-nav"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1 || loading}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
                 >
                   Previous
                 </button>
@@ -540,9 +726,9 @@ const ManageStudents = () => {
                 <button
                   className="btn-nav"
                   onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }
-                  disabled={currentPage === totalPages || loading}
+                  disabled={currentPage === totalPages}
                 >
                   Next
                 </button>
@@ -552,27 +738,22 @@ const ManageStudents = () => {
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       {deleteConfirmId && (
-        <div className="modal-overlay" onClick={handleDeleteCancel}>
+        <div className="modal-overlay" onClick={() => setDeleteConfirmId(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Confirm Deletion</h2>
             <p>
-              Are you sure you want to delete student <strong>{deleteConfirmName}</strong>?
+              Delete <strong>{deleteConfirmName}</strong>?
             </p>
             <p className="warning">This action cannot be undone.</p>
             <div className="modal-buttons">
-              <button
-                className="btn-delete"
-                onClick={handleDeleteConfirmed}
-                disabled={loading}
-              >
-                {loading ? "Deleting..." : "Delete"}
+              <button className="btn-delete" onClick={handleDeleteConfirmed}>
+                Delete
               </button>
               <button
                 className="btn-cancel"
-                onClick={handleDeleteCancel}
-                disabled={loading}
+                onClick={() => setDeleteConfirmId(null)}
               >
                 Cancel
               </button>
@@ -581,13 +762,19 @@ const ManageStudents = () => {
         </div>
       )}
 
-      {/* Password Display Modal */}
+      {/* Password Modal */}
       {showPasswordModal && (
-        <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
-          <div className="modal-content password-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Generated Password</h2>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowPasswordModal(false)}
+        >
+          <div
+            className="modal-content password-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>Student Password</h2>
             <p>
-              New password for <strong>{generatedPasswordStudent}</strong>:
+              For <strong>{generatedPasswordStudent}</strong>
             </p>
             <div className="password-display">
               <code>{generatedPassword}</code>
@@ -597,22 +784,21 @@ const ManageStudents = () => {
                   navigator.clipboard.writeText(generatedPassword);
                   alert("Password copied to clipboard!");
                 }}
-                title="Copy to clipboard"
               >
                 📋 Copy
               </button>
             </div>
-            <div className="modal-buttons">
-              <button
-                className="btn-primary"
-                onClick={() => setShowPasswordModal(false)}
-              >
-                OK
-              </button>
-            </div>
+            <button
+              className="btn-primary"
+              onClick={() => setShowPasswordModal(false)}
+              style={{ width: "100%" }}
+            >
+              Close
+            </button>
           </div>
         </div>
-      )}    </div>
+      )}
+    </div>
   );
 };
 

@@ -119,9 +119,6 @@ const MockTestExamList = () => {
                 <option key={subject} value={subject}>{subject}</option>
               ))}
             </select>
-            <button className="btn-primary">
-              <i className="bi bi-plus-circle"></i> Create Custom Test
-            </button>
           </div>
         </div>
         

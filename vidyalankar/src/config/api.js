@@ -140,6 +140,10 @@ export const config = {
     bulkImport: `${API_BASE_URL}/office/bulk-import`,
     updateStudent: (studentId) => `${API_BASE_URL}/office/student/${studentId}`,
     deleteStudent: (studentId) => `${API_BASE_URL}/office/student/${studentId}`,
+    // New endpoints for department/course/division selection
+    departments: `${API_BASE_URL}/office/departments`,
+    courses: (departmentId) => `${API_BASE_URL}/office/courses/${departmentId}`,
+    courseDivisions: (courseId) => `${API_BASE_URL}/office/course-divisions/${courseId}`,
   },
 };
 

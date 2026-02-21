@@ -1,20 +1,29 @@
-/* Header.css */
+/* Header.css (fixed & cleaned) */
+:root {
+  --app-header-bg: #2e7d32;
+  --header-height: 60px; /* used by other pages */
+}
+
+/* top fixed header */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  /* Use CSS variable for quick theme switching */
-  background-color: var(--app-header-bg, #2e7d32); /* default dark green */
-  
+  background-color: var(--app-header-bg, #2e7d32);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  height: 60px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: var(--header-height);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* optional: subtle translucency */
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
 /* Left Section */
@@ -22,20 +31,29 @@
   display: flex;
   align-items: center;
   gap: 15px;
+  min-width: 0;
 }
 
 .menu-toggle {
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   color: #ffffff;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   cursor: pointer;
-  padding: 5px;
-  transition: color 0.3s ease;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .menu-toggle:hover {
-  color: #dcedc8;
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .secondary-menu-toggle {
@@ -54,11 +72,55 @@
 }
 
 .logo {
-  font-size: 22px;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  min-width: 0;
+}
+
+.institution-logo-image,
+.institution-logo-fallback {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.institution-logo-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.85rem;
+  font-weight: 700;
   color: #ffffff;
   text-transform: uppercase;
-  letter-spacing: 1px;
+}
+
+.institution-name-text {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
 
 /* Center Section */
@@ -90,7 +152,9 @@
 }
 
 .search-input:focus {
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 5px rgba(139, 195, 74, 0.3);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.2),
+    0 0 5px rgba(139, 195, 74, 0.3);
 }
 
 /* Search Dropdown */
@@ -169,7 +233,7 @@
 }
 
 .search-loading::after {
-  content: '';
+  content: "";
   display: inline-block;
   width: 16px;
   height: 16px;
@@ -181,8 +245,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Category grouping */
@@ -205,6 +273,50 @@
 .header-right {
   display: flex;
   align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.faculty-logout-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #2e7d32;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.faculty-logout-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.faculty-logout-button i {
+  font-size: 14px;
+}
+
+.mobile-home-button {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #2e7d32;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 10px;
+  height: 34px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .user-section {
@@ -235,17 +347,12 @@
 
 .user-name {
   font-weight: 500;
-}
-
-/* Ensure username doesn't overflow: truncate with ellipsis */
-.user-name {
   max-width: 140px;
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
-  /* Prevent the username from forcing the header to expand */
   flex-shrink: 1;
 }
 
@@ -274,8 +381,14 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdown-item {
@@ -306,13 +419,16 @@
 
 /* Responsive Styles */
 @media (max-width: 768px) {
+  :root {
+    --header-height: 50px;
+  }
   .header {
     padding: 8px 12px;
-    height: 50px;
+    height: var(--header-height);
   }
 
   .header-center {
-    max-width: 250px; /* Show search on mobile but smaller */
+    max-width: 250px;
   }
 
   .search-input {
@@ -345,16 +461,35 @@
     font-size: 18px;
   }
 
+  .header-left {
+    gap: 8px;
+  }
+
+  .institution-name-text {
+    max-width: 110px;
+    font-size: 13px;
+  }
+
+  .faculty-page .header .logo {
+    gap: 6px;
+  }
+
+  .faculty-page .header .institution-name-text,
+  .faculty-page .header .role-chip {
+    display: none;
+  }
+
   .menu-toggle {
-    font-size: 1.3rem;
+    width: 34px;
+    height: 34px;
+    font-size: 1.05rem;
   }
 
   .secondary-menu-toggle {
-    display: inline-block; /* Show on mobile */
+    display: inline-block;
     font-size: 1.2rem;
   }
 
-  /* Hide debug/test button on mobile to keep header clean */
   .test-dropdown-btn {
     display: none !important;
   }
@@ -365,33 +500,131 @@
   }
 
   .user-dropdown-menu {
-    min-width: 120px; /* Smaller dropdown on mobile */
+    min-width: 120px;
   }
 
-  /* On small screens, keep the user icon but reduce username prominence */
+  .faculty-logout-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    height: 34px;
+  }
+
   .user-name {
     max-width: 90px;
     font-size: 13px;
-    /* keep truncation strong on small screens */
-    display: inline-block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 1024px) {
+  .faculty-page .header {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .faculty-page .header-left,
+  .faculty-page .header-right {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    width: auto !important;
+  }
+
+  .faculty-page .header-right {
+    margin-left: auto;
+  }
+
+  .faculty-page .header .logo {
+    display: none;
+  }
+
+  .header {
+    padding: 8px 12px;
+  }
+
+  .menu-toggle.hide-on-compact {
+    display: none !important;
+  }
+
+  .secondary-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .header-center {
+    display: none;
+  }
+
+  .mobile-home-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-home-button span {
+    display: none;
+  }
+
+  .institution-name-text {
+    max-width: 150px;
+  }
+
+  .faculty-logout-button span {
+    display: none;
+  }
+
+  .faculty-logout-button {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    padding: 0;
+    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
+  .faculty-page .header-left,
+  .faculty-page .header-right {
+    gap: 8px;
+  }
+
+  .mobile-home-button {
+    width: 34px;
+    min-width: 34px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
   .header-center {
     max-width: 200px;
   }
-  
+
   .search-input {
     font-size: 11px;
     padding: 5px 8px;
   }
 
-  /* On very small screens hide the username text, show only icon */
   .user-name {
+    display: none;
+  }
+
+  .faculty-logout-button span {
+    display: none;
+  }
+
+  .faculty-logout-button {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .role-chip {
     display: none;
   }
 }

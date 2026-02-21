@@ -1,24 +1,46 @@
 /* AdminDashboard.css — Admin Dashboard Cards Layout */
 @import "./AdminTheme.css";
 
-/* ─────────────────────────────────────────────────────────────────────
-   DASHBOARD CARD LAYOUT
-   ───────────────────────────────────────────────────────────────────── */
+.admin-dash-header {
+  margin-bottom: var(--admin-space-xl);
+  padding: var(--admin-space-xl);
+  background: linear-gradient(
+    135deg,
+    var(--admin-primary) 0%,
+    var(--admin-primary-dark) 100%
+  );
+  border-radius: var(--admin-radius-lg);
+  box-shadow: var(--admin-shadow-md);
+}
 
-.card-container {
+.admin-dash-header h2 {
+  margin: 0;
+  color: var(--admin-text-on-primary);
+  font-size: var(--admin-text-2xl);
+  font-weight: var(--admin-font-bold);
+}
+
+.admin-dash-header p {
+  margin: 4px 0 0;
+  color: color-mix(in srgb, var(--admin-text-on-primary) 90%, transparent);
+  font-size: var(--admin-text-sm);
+}
+
+/* Dashboard container */
+.admin-dash-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--admin-space-xl);
   margin-top: var(--admin-space-xl);
 }
 
-.card-item {
+.admin-dash-card {
   background: var(--admin-bg-card);
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-lg);
   padding: var(--admin-space-xl);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -28,20 +50,18 @@
   box-shadow: var(--admin-shadow-sm);
 }
 
-.card-item:hover:not(.coming-soon) {
-  transform: translateY(-4px);
-  box-shadow: var(--admin-shadow-lg);
+.admin-dash-card:hover:not(.coming-soon) {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-md);
   border-color: var(--admin-primary);
 }
 
-.card-item:hover:not(.coming-soon) .card-icon-wrap {
+.admin-dash-card:hover:not(.coming-soon) .admin-dash-icon-wrap {
   background: var(--admin-primary);
   color: var(--admin-text-on-primary);
-  transform: scale(1.08);
 }
 
-/* Icon Container */
-.card-icon-wrap {
+.admin-dash-icon-wrap {
   width: 56px;
   height: 56px;
   border-radius: var(--admin-radius-md);
@@ -50,42 +70,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
-.card-icon {
+.admin-dash-icon {
   font-size: 1.5rem;
 }
 
-/* Card Label with Underline */
-.card-label {
+.admin-dash-label {
   font-size: var(--admin-text-lg);
   font-weight: var(--admin-font-bold);
-  color: var(--admin-primary-dark);
+  color: var(--admin-text-primary);
   margin: 0;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.3px;
-  position: relative;
-  padding-bottom: var(--admin-space-md);
 }
 
-.card-label::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 48px;
-  height: 3px;
-  border-radius: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--admin-primary),
-    var(--admin-primary-dark)
-  );
-}
-
-/* Card Description */
-.card-description {
+.admin-dash-description {
   font-size: var(--admin-text-sm);
   color: var(--admin-text-secondary);
   line-height: 1.6;
@@ -93,44 +94,42 @@
   flex-grow: 1;
 }
 
-/* Coming Soon State */
-.card-item.coming-soon {
+.admin-dash-card.coming-soon {
   opacity: 0.65;
   background: var(--admin-bg-secondary);
   cursor: default;
 }
 
-.card-item.coming-soon:hover {
+.admin-dash-card.coming-soon:hover {
   transform: none;
   box-shadow: var(--admin-shadow-sm);
   border-color: var(--admin-border);
 }
 
-.card-item.coming-soon .card-icon-wrap {
+.admin-dash-card.coming-soon .admin-dash-icon-wrap {
   background: var(--admin-bg-tertiary);
   color: var(--admin-text-tertiary);
 }
 
-/* Coming Soon Badge */
-.coming-soon-badge {
+.admin-dash-badge {
   position: absolute;
   top: var(--admin-space-lg);
   right: var(--admin-space-lg);
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--admin-info);
+  background: color-mix(in srgb, var(--admin-primary-light) 80%, #ffffff);
+  color: var(--admin-primary-dark);
   font-size: var(--admin-text-xs);
   font-weight: var(--admin-font-bold);
   padding: var(--admin-space-sm) var(--admin-space-md);
   border-radius: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  border: 1px solid color-mix(in srgb, var(--admin-primary) 20%, transparent);
 }
 
-/* Info Banner */
-.info-banner {
-  background: #fef3c7;
-  border-left: 4px solid var(--admin-warning);
-  color: #92400e;
+.admin-dash-banner {
+  background: color-mix(in srgb, var(--admin-warning) 14%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--admin-warning) 30%, #ffffff);
+  color: var(--admin-text-primary);
   padding: var(--admin-space-lg);
   border-radius: var(--admin-radius-md);
   margin-bottom: var(--admin-space-lg);
@@ -140,42 +139,49 @@
   box-shadow: var(--admin-shadow-xs);
 }
 
-.info-banner i {
+.admin-dash-banner i {
   font-size: 1.25rem;
   flex-shrink: 0;
+  color: var(--admin-warning);
 }
 
-.banner-title {
+.admin-dash-banner-title {
   font-weight: var(--admin-font-bold);
   font-size: var(--admin-text-sm);
   margin-bottom: var(--admin-space-xs);
 }
 
-.banner-text {
+.admin-dash-banner-text {
   font-size: var(--admin-text-sm);
   line-height: 1.5;
 }
 
+.admin-dash-banner-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-  .card-container {
+  .admin-dash-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: var(--admin-space-lg);
   }
 }
 
 @media (max-width: 600px) {
-  .card-container {
+  .admin-dash-grid {
     grid-template-columns: 1fr;
   }
-}
 
-/* Remove green line from card labels */
-.card-label::after {
-  display: none !important;
-  border: none !important;
-}
-
-.card-label {
-  border-bottom: none !important;
+  .admin-dash-card {
+    padding: var(--admin-space-lg);
+  }
 }

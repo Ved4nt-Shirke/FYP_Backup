@@ -1,0 +1,195 @@
+.public-exam-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+.exam-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 900px;
+  width: 100%;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 40px;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-state p {
+  color: #666;
+  font-size: 16px;
+}
+
+/* Error State */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.error-icon {
+  width: 80px;
+  height: 80px;
+  background: #fee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  font-size: 40px;
+  color: #d32f2f;
+}
+
+.error-state h2 {
+  color: #d32f2f;
+  margin: 0 0 10px 0;
+  font-size: 24px;
+}
+
+.error-state p {
+  color: #666;
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.error-hint {
+  color: #999;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+/* Simple Header */
+.simple-header {
+  padding: 30px 40px;
+  border-bottom: 2px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.course-info {
+  margin: 0;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  font-size: 16px;
+}
+
+.course-code {
+  background: #667eea;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.course-name {
+  color: #333;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+/* Question Display */
+.question-display {
+  padding: 40px;
+}
+
+.question-content {
+  margin: 20px 0 0 0;
+}
+
+.question-text {
+  margin: 0;
+  padding: 0;
+}
+
+.question-text p {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #333;
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .public-exam-container {
+    padding: 20px 10px;
+  }
+
+  .exam-wrapper {
+    border-radius: 8px;
+  }
+
+  .simple-header {
+    padding: 20px;
+  }
+
+  .course-info {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .question-display {
+    padding: 20px;
+  }
+
+  .question-text p {
+    font-size: 15px;
+  }
+}

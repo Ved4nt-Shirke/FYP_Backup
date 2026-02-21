@@ -1,14 +1,12 @@
-// Attendance/PracticalFinalAtt.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import "./TheoryEdit.css"; // This CSS file contains the styles for the custom checkbox
+import "./PracticalAttendance.css";
 
 const PracticalFinalAtt = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Extract required state params
   const {
     ciannId,
     weekNo,
@@ -17,6 +15,7 @@ const PracticalFinalAtt = () => {
     exptName,
     actualDate,
     remark,
+    ciannData,
   } = location.state || {};
 
   const [students, setStudents] = useState([]);
@@ -24,21 +23,61 @@ const PracticalFinalAtt = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [selectedBatch, setSelectedBatch] = useState("");
 
-  // Fetch students from backend filtered by batch
+  // Generate batch options (academic years)
+  const generateBatchOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const batches = [];
+    for (let i = 0; i < 5; i++) {
+      const startYear = currentYear - i;
+      const endYear = startYear + 1;
+      batches.push(`${startYear}-${endYear.toString().slice(-2)}`);
+    }
+    return batches;
+  };
+
+  const batchOptions = generateBatchOptions();
+
   useEffect(() => {
     if (!ciannId || !weekNo || !batch || !exptNo) {
       setIsLoading(false);
       return;
     }
-    
+
+    const params = {};
+    const divisionId = ciannData?.divisionId?._id || ciannData?.divisionId;
+    if (divisionId) {
+      params.divisionId = divisionId;
+    } else if (ciannData?.division) {
+      params.division = ciannData.division;
+    }
+    // Use selectedBatch (academic year like 2025-26) for filtering students
+    if (selectedBatch) {
+      params.batch = selectedBatch;
+    }
+
     axios
-      .get("http://localhost:5000/api/students", { params: { batch } })
+      .get("http://localhost:5000/api/students", { params })
       .then((res) => {
-        setStudents(res.data);
-        // Default all to absent (unchecked)
+        const allStudents = Array.isArray(res.data)
+          ? res.data
+          : res.data.students || [];
+
+        // Divide students into B1, B2, B3 batches
+        const batchSize = Math.ceil(allStudents.length / 3);
+        const batches = {
+          B1: allStudents.slice(0, batchSize),
+          B2: allStudents.slice(batchSize, batchSize * 2),
+          B3: allStudents.slice(batchSize * 2),
+        };
+
+        // Filter students based on the practical batch (B1, B2, or B3)
+        const batchStudents = batches[batch] || allStudents;
+
+        setStudents(batchStudents);
         const initAttendance = {};
-        res.data.forEach((stu) => {
+        batchStudents.forEach((stu) => {
           initAttendance[stu.rollNo] = false;
         });
         setAttendance(initAttendance);
@@ -48,17 +87,12 @@ const PracticalFinalAtt = () => {
         setSubmitError("Failed to fetch students. Please try again.");
       })
       .finally(() => setIsLoading(false));
-  }, [ciannId, weekNo, batch, exptNo]);
-
-  const handleCheckboxChange = (rollNo) => {
-    setAttendance((prev) => ({
-      ...prev,
-      [rollNo]: !prev[rollNo],
-    }));
-  };
+  }, [ciannId, weekNo, batch, exptNo, ciannData, selectedBatch]);
 
   const handleSubmit = async () => {
-    if (!window.confirm("Are you sure you want to submit the attendance?")) return;
+    if (!window.confirm("Are you sure you want to submit the attendance?")) {
+      return;
+    }
 
     setSubmitLoading(true);
     setSubmitError("");
@@ -79,16 +113,18 @@ const PracticalFinalAtt = () => {
     };
 
     try {
-      await axios.post("http://localhost:5000/api/practical-attendance", attendanceData);
+      await axios.post(
+        "http://localhost:5000/api/practical-attendance",
+        attendanceData,
+      );
       alert("Attendance submitted successfully!");
       navigate("/dashboard");
     } catch (err) {
       setSubmitError(
         err.response?.data?.error ||
           err.response?.data?.message ||
-          "Failed to submit attendance. Please try again."
+          "Failed to submit attendance. Please try again.",
       );
-      console.error("Error submitting attendance:", err);
     } finally {
       setSubmitLoading(false);
     }
@@ -96,23 +132,13 @@ const PracticalFinalAtt = () => {
 
   if (!ciannId || !weekNo || !batch || !exptNo) {
     return (
-      <div className="timetable-main-content">
-        <div className="theory-attendance-container">
-          <h3 style={{ color: "red" }}>
-            Error: Missing required data (CIAAN ID, week, batch or experiment)
-          </h3>
-          <p>
-            <strong>Debug Info:</strong>
-            <br />
-            CIAAN ID: {ciannId || "Missing"}
-            <br />
-            Week No: {weekNo || "Missing"}
-            <br />
-            Batch: {batch || "Missing"}
-            <br />
-            Experiment No: {exptNo || "Missing"}
+      <div className="practical-page">
+        <div className="practical-card">
+          <h2 className="practical-title">Missing data</h2>
+          <p className="practical-subtitle">
+            CIAAN ID, week, batch, or experiment is missing.
           </p>
-          <button className="submit-button" onClick={() => navigate(-1)}>
+          <button className="action-pill" onClick={() => navigate(-1)}>
             Go Back
           </button>
         </div>
@@ -120,81 +146,171 @@ const PracticalFinalAtt = () => {
     );
   }
 
+  const presentCount = Object.values(attendance).filter(Boolean).length;
+  const absentCount = students.length - presentCount;
+
   return (
-    <div className="timetable-main-content">
-      <div className="theory-attendance-container">
-        <div className="header-row">
-          <h3>Practical Attendance &mdash; {exptName} (Exp. No: {exptNo})</h3>
-        </div>
-        <div className="toolbar">
-          <p><strong>CIAAN ID:</strong> {ciannId}</p>
-          <p><strong>Week:</strong> {weekNo}</p>
-          <p><strong>Batch:</strong> {batch}</p>
-          <p><strong>Date:</strong> {actualDate}</p>
-          {remark && <p><strong>Remark:</strong> {remark}</p>}
+    <div className="practical-page">
+      <div className="practical-card">
+        <header className="practical-header">
+          <div className="practical-header-main">
+            <p className="practical-eyebrow">Lab Attendance</p>
+            <h2 className="practical-title">Practical Attendance</h2>
+            <p className="practical-subtitle">
+              {ciannData?.subject?.name} - Experiment {exptNo}
+            </p>
+          </div>
+          <div className="practical-header-meta">
+            <div>
+              <span>Division</span>
+              <strong>{ciannData?.division || "N/A"}</strong>
+            </div>
+            <div>
+              <span>Batch</span>
+              <strong>{batch}</strong>
+            </div>
+            <div>
+              <span>Week</span>
+              <strong>{weekNo}</strong>
+            </div>
+          </div>
+        </header>
+
+        {/* Batch Filter */}
+        <div
+          style={{
+            padding: "1rem",
+            backgroundColor: "#f8f9fa",
+            borderRadius: "8px",
+            marginBottom: "1rem",
+          }}
+        >
+          <label
+            htmlFor="batch-filter"
+            style={{
+              display: "block",
+              marginBottom: "0.5rem",
+              fontWeight: 600,
+            }}
+          >
+            Filter by Academic Year Batch:
+          </label>
+          <select
+            id="batch-filter"
+            value={selectedBatch}
+            onChange={(e) => setSelectedBatch(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              borderRadius: "4px",
+              border: "1px solid #ddd",
+              fontSize: "1rem",
+            }}
+          >
+            <option value="">-- All Batches --</option>
+            {batchOptions.map((batchYear) => (
+              <option key={batchYear} value={batchYear}>
+                {batchYear}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {isLoading ? (
-          <div className="loading-spinner">Loading student list...</div>
-        ) : submitError && !students.length ? (
-          <div style={{ color: "red", marginTop: 20 }}>
-            <p>{submitError}</p>
-            <button className="submit-button" onClick={() => window.location.reload()}>
-              Retry
-            </button>
+        <section className="practical-metrics">
+          <div className="metric-card">
+            <span>Total Students</span>
+            <strong>{students.length}</strong>
           </div>
-        ) : (
-          <>
-            <div className="table-container">
-              <table>
+          <div className="metric-card success">
+            <span>Present</span>
+            <strong>{presentCount}</strong>
+          </div>
+          <div className="metric-card warning">
+            <span>Absent</span>
+            <strong>{absentCount}</strong>
+          </div>
+        </section>
+
+        <section className="practical-table-section">
+          <div className="practical-table-head">
+            <div>
+              <h3>Student List</h3>
+              <p>Mark attendance for {exptName}.</p>
+            </div>
+            <div className="practical-badge">CIAAN ID {ciannId}</div>
+          </div>
+
+          <div className="practical-table-container">
+            {isLoading ? (
+              <div className="practical-loading">Loading students...</div>
+            ) : submitError && !students.length ? (
+              <div className="practical-empty">
+                <h4>{submitError}</h4>
+                <p>Please try again.</p>
+              </div>
+            ) : (
+              <table className="practical-table">
                 <thead>
                   <tr>
                     <th>Roll No</th>
                     <th>Student Name</th>
-                    <th>Mark Present</th>
+                    <th>Enrollment No</th>
+                    <th>Batch</th>
+                    <th>Attendance</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {students.length === 0 && (
+                  {students.length === 0 ? (
                     <tr>
-                      <td colSpan={3} style={{ textAlign: "center" }}>
-                        No students found for this batch.
-                      </td>
+                      <td colSpan={5}>No students found for this batch.</td>
                     </tr>
+                  ) : (
+                    students.map((student) => (
+                      <tr key={student.rollNo}>
+                        <td>{student.rollNo}</td>
+                        <td>{student.studentName}</td>
+                        <td>{student.enrollmentNo || "N/A"}</td>
+                        <td>{student.batch || "N/A"}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className={`attendance-toggle ${
+                              attendance[student.rollNo] ? "present" : "absent"
+                            }`}
+                            onClick={() => {
+                              setAttendance((prev) => ({
+                                ...prev,
+                                [student.rollNo]: !prev[student.rollNo],
+                              }));
+                            }}
+                          >
+                            {attendance[student.rollNo] ? "PRESENT" : "ABSENT"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
                   )}
-                  {students.map((student) => (
-                    <tr key={student.rollNo}>
-                      <td>{student.rollNo}</td>
-                      <td>{student.studentName}</td>
-                      <td>
-                        <label className="custom-checkbox">
-                          <input
-                            type="checkbox"
-                            checked={attendance[student.rollNo] || false}
-                            onChange={() => handleCheckboxChange(student.rollNo)}
-                          />
-                          <span className="checkmark"></span>
-                        </label>
-                      </td>
-                    </tr>
-                  ))}
                 </tbody>
               </table>
-            </div>
-            {submitError && (
-              <div style={{ color: "red", marginTop: 12, textAlign: 'center' }}>{submitError}</div>
             )}
-            <div className="submit-wrapper">
-              <button
-                className="submit-button"
-                onClick={handleSubmit}
-                disabled={submitLoading || students.length === 0}
-              >
-                {submitLoading ? "Submitting..." : "Submit Attendance"}
-              </button>
-            </div>
-          </>
+          </div>
+        </section>
+
+        {submitError && students.length > 0 && (
+          <div className="practical-error">{submitError}</div>
         )}
+
+        <div className="practical-pagination">
+          <button
+            className="action-pill"
+            onClick={handleSubmit}
+            disabled={submitLoading || students.length === 0}
+          >
+            {submitLoading
+              ? "Submitting..."
+              : `Submit Attendance (${presentCount}/${students.length} Present)`}
+          </button>
+        </div>
       </div>
     </div>
   );

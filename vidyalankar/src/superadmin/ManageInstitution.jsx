@@ -39,6 +39,12 @@ const ManageInstitution = () => {
   });
   const [showPaletteModal, setShowPaletteModal] = useState(false);
 
+  const [statusForm, setStatusForm] = useState({
+    isActive: true,
+    superadminPassword: "",
+    confirmation: "",
+  });
+
   useEffect(() => {
     fetchInstitution();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -60,6 +66,11 @@ const ManageInstitution = () => {
         setUpdateAdminForm({
           adminUsername: response.data.institution.adminUsername,
           adminPassword: "",
+          superadminPassword: "",
+          confirmation: "",
+        });
+        setStatusForm({
+          isActive: response.data.institution.isActive !== false,
           superadminPassword: "",
           confirmation: "",
         });
@@ -294,6 +305,52 @@ const ManageInstitution = () => {
     }
   };
 
+  const handleUpdateInstitutionStatus = async (e) => {
+    e.preventDefault();
+
+    if (!statusForm.superadminPassword) {
+      showErrorAlert("Superadmin password is required");
+      return;
+    }
+
+    if (!statusForm.confirmation || statusForm.confirmation !== "CONFIRM") {
+      showErrorAlert('Please type "CONFIRM" to proceed');
+      return;
+    }
+
+    try {
+      const response = await axios.put(
+        `/superadmin/update-institution-status/${id}`,
+        {
+          isActive: statusForm.isActive,
+          superadminPassword: statusForm.superadminPassword,
+          confirmation: statusForm.confirmation,
+        },
+      );
+
+      if (response.data.success) {
+        setInstitution((prev) => ({
+          ...prev,
+          isActive: response.data.institution.isActive,
+        }));
+        setStatusForm({
+          isActive: response.data.institution.isActive,
+          superadminPassword: "",
+          confirmation: "",
+        });
+        showSuccessAlert(response.data.message || "Status updated");
+      } else {
+        showErrorAlert(response.data.message || "Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating institution status:", error);
+      showErrorAlert(
+        "Error updating status: " +
+          (error.response?.data?.message || error.message),
+      );
+    }
+  };
+
   const handleDeleteInstitution = async (e) => {
     e.preventDefault();
 
@@ -441,6 +498,20 @@ const ManageInstitution = () => {
                   <p className="info-value">{institution?.adminUsername}</p>
                 </div>
                 <div className="info-item">
+                  <label className="info-label">Status</label>
+                  <p className="info-value">
+                    <span
+                      className={`badge status-badge ${
+                        institution?.isActive === false
+                          ? "status-badge-inactive"
+                          : "status-badge-active"
+                      }`}
+                    >
+                      {institution?.isActive === false ? "Inactive" : "Active"}
+                    </span>
+                  </p>
+                </div>
+                <div className="info-item">
                   <label className="info-label">Created Date</label>
                   <p className="info-value">
                     {formatDate(institution?.createdAt)}
@@ -452,6 +523,114 @@ const ManageInstitution = () => {
         </div>
 
         <div className="management-sections">
+          {/* Institution Access Section */}
+          <div className="section-card card">
+            <div className="card-header">
+              <h5 className="mb-0">
+                <i className="fas fa-toggle-on me-2"></i>
+                Institution Access
+              </h5>
+            </div>
+            <div className="card-body">
+              <form onSubmit={handleUpdateInstitutionStatus}>
+                <div className="status-toggle-row">
+                  <div>
+                    <div className="status-title">Access Status</div>
+                    <div
+                      className={`status-text ${
+                        statusForm.isActive
+                          ? "status-text-active"
+                          : "status-text-inactive"
+                      }`}
+                    >
+                      {statusForm.isActive
+                        ? "Enabled for all users"
+                        : "Disabled for all users"}
+                    </div>
+                    <div className="status-note">
+                      Disabling blocks logins and panel access for this
+                      institute.
+                    </div>
+                  </div>
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={statusForm.isActive}
+                      onChange={(e) =>
+                        setStatusForm({
+                          ...statusForm,
+                          isActive: e.target.checked,
+                        })
+                      }
+                    />
+                    <span className="slider" />
+                  </label>
+                </div>
+
+                <div className="security-section">
+                  <h6 className="security-title">Security Verification</h6>
+                  <div className="grid-2">
+                    <div className="mb-3">
+                      <label className="form-label required">
+                        Superadmin Password
+                      </label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        value={statusForm.superadminPassword}
+                        onChange={(e) =>
+                          setStatusForm({
+                            ...statusForm,
+                            superadminPassword: e.target.value,
+                          })
+                        }
+                        placeholder="Enter superadmin password"
+                      />
+                      <div className="form-text">
+                        Required for security verification
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label required">
+                        Confirmation
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={statusForm.confirmation}
+                        onChange={(e) =>
+                          setStatusForm({
+                            ...statusForm,
+                            confirmation: e.target.value,
+                          })
+                        }
+                        placeholder="Type CONFIRM to proceed"
+                      />
+                      <div className="form-text">
+                        Type "CONFIRM" to proceed with the update
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-actions">
+                  <button
+                    type="submit"
+                    className={`btn ${
+                      statusForm.isActive ? "btn-success" : "btn-danger"
+                    }`}
+                  >
+                    <i
+                      className={`fas me-2 ${
+                        statusForm.isActive ? "fa-unlock" : "fa-lock"
+                      }`}
+                    ></i>
+                    {statusForm.isActive ? "Enable Access" : "Disable Access"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
           {/* Update Color Palette Section */}
           <div className="section-card card">
             <div className="card-header">
@@ -796,33 +975,11 @@ const ManageInstitution = () => {
               </div>
               <button
                 type="button"
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline btn-sm modal-close-btn"
                 title="Close modal"
                 onClick={() => {
                   setPaletteForm({ superadminPassword: "", confirmation: "" });
                   setShowPaletteModal(false);
-                }}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--primary-dark)",
-                  fontSize: "1.25rem",
-                  cursor: "pointer",
-                  padding: "4px 8px",
-                  lineHeight: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "6px",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(45,106,79,0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
                 }}
               >
                 <i className="fas fa-times" />

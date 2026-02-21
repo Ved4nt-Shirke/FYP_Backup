@@ -622,13 +622,13 @@ h2 {
     color: black !important;
   }
 
-  /* Hide everything except the content we want to print */
-  body * {
+  /* Hide everything except the content we want to print (only in defaulter print mode) */
+  body.printing-defaulter * {
     visibility: hidden !important;
   }
 
-  .defaulter-detail-page,
-  .defaulter-detail-page * {
+  body.printing-defaulter .defaulter-detail-page,
+  body.printing-defaulter .defaulter-detail-page * {
     visibility: visible !important;
   }
 

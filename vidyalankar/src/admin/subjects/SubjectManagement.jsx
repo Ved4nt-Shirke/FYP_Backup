@@ -171,6 +171,10 @@ const SubjectManagement = () => {
       courseId: formData.courseId,
     };
 
+    console.log("=== Submitting Subject ===");
+    console.log("Payload:", payload);
+    console.log("Form Data:", formData);
+
     try {
       if (isEditing) {
         const response = await axios.put(
@@ -179,7 +183,6 @@ const SubjectManagement = () => {
         );
         if (response.data.success) {
           showSuccessAlert("Subject updated successfully");
-          fetchSubjects();
           resetForm();
         } else {
           showErrorAlert(response.data.message || "Failed to update subject");
@@ -188,14 +191,18 @@ const SubjectManagement = () => {
         const response = await axios.post(config.subjects.create, payload);
         if (response.data.success) {
           showSuccessAlert("Subject added successfully");
-          fetchSubjects();
           resetForm();
         } else {
           showErrorAlert(response.data.message || "Failed to add subject");
         }
       }
     } catch (error) {
-      showErrorAlert("Failed to save subject");
+      console.error("Error saving subject:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to save subject";
+      showErrorAlert(errorMessage);
     }
   };
 

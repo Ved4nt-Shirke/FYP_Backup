@@ -9,7 +9,9 @@
   position: fixed;
   top: 0;
   left: 0;
-  transition: transform 0.3s ease, width 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    width 0.3s ease;
   z-index: 1001;
   transform: translateX(0);
   overflow-y: auto;
@@ -110,7 +112,7 @@
   white-space: nowrap; /* Prevents the title from wrapping prematurely */
   color: #000; /* Set color to black */
   line-height: 1.2;
-  margin-left: -8px; /* shift a bit more left as per feedback */
+  margin-left: 0;
 }
 
 .labplanning-main-content .button-group {
@@ -141,7 +143,9 @@
   /* ensure text centered */
   white-space: nowrap;
   /* keep label on one line */
-  transition: background-color 0.2s ease, box-shadow 0.15s ease,
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.15s ease,
     transform 0.02s ease;
 }
 /* Hover/active like TP buttons (scoped to LP) */
@@ -156,7 +160,10 @@
 
 /* Hover styles for tabs */
 .labplanning-main-content .tabs button {
-  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.2s ease,
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.2s ease,
     transform 0.02s ease;
 }
 .labplanning-main-content .tabs button:hover {
@@ -178,8 +185,12 @@
 /* Hover styles for pagination */
 .labplanning-main-content .pagination .prev-btn,
 .labplanning-main-content .pagination .forward-btn {
-  transition: background-color 0.2s ease, color 0.2s ease,
-    border-color 0.2s ease, box-shadow 0.15s ease, transform 0.02s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.15s ease,
+    transform 0.02s ease;
 }
 .labplanning-main-content .pagination .prev-btn:hover:not(:disabled),
 .labplanning-main-content .pagination .forward-btn:hover:not(:disabled) {
@@ -200,7 +211,9 @@
   margin-top: 10px;
   /* Added for hover effect */
   padding: 5px 0;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   cursor: default;
 }
 
@@ -318,7 +331,10 @@
   font-size: 15px; /* slightly smaller label */
   line-height: 1.1;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.2s ease,
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.2s ease,
     transform 0.02s ease;
 }
 
@@ -357,8 +373,12 @@
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.2s ease, color 0.2s ease,
-    border-color 0.2s ease, box-shadow 0.15s ease, transform 0.02s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.15s ease,
+    transform 0.02s ease;
 }
 
 .labplanning-main-content .forward-btn {
@@ -370,8 +390,12 @@
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.2s ease, color 0.2s ease,
-    border-color 0.2s ease, box-shadow 0.15s ease, transform 0.02s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.15s ease,
+    transform 0.02s ease;
 }
 
 .labplanning-main-content .pagination .prev-btn:hover:not(:disabled),
@@ -1038,4 +1062,222 @@
     font-weight: 700 !important;
   }
 }
-     
+
+/* LP page-specific desktop structure: keep content clear of secondary sidebar */
+@media (min-width: 1025px) {
+  .lab-layout .syllabus-secondary-sidebar-wrapper {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 220px;
+    height: 100vh;
+    z-index: 101;
+    background: #f8f9fa;
+  }
+
+  .lab-layout
+    .labplanning-main-content.syllabus-main-content.has-secondary-sidebar {
+    margin-left: 220px !important;
+    width: calc(100% - 220px) !important;
+    max-width: none !important;
+  }
+
+  .lab-layout
+    .labplanning-main-content.syllabus-main-content.has-secondary-sidebar
+    .plan-container {
+    margin: -5px 0 0 0 !important;
+    width: 100% !important;
+    max-width: 1200px !important;
+  }
+}
+
+/* Final alignment fix: mirror Teaching Plan horizontal geometry */
+.labplanning-main-content.syllabus-main-content {
+  margin-left: 220px !important;
+  width: calc(100% - 220px) !important;
+}
+
+.labplanning-main-content.syllabus-main-content .plan-container {
+  width: 95% !important;
+  max-width: 1110px !important;
+  margin: -5px 0 0 70px !important;
+}
+
+/* Final mobile geometry fix: keep LP panel fully visible like Teaching Plan */
+@media (max-width: 768px) {
+  .labplanning-main-content.syllabus-main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .lab-layout .teaching-main-row {
+    margin-left: 0 !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  .lab-layout .labplanning-main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  .lab-layout .labplanning-main-content .plan-container {
+    margin: -52px auto 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .lab-layout .syllabus-secondary-sidebar-wrapper {
+    position: static;
+    width: 0;
+    height: 0;
+  }
+
+  .lab-layout
+    .labplanning-main-content.syllabus-main-content.has-secondary-sidebar {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Header-overlap guardrails */
+.lab-layout {
+  padding-top: var(--header-height, 60px);
+}
+
+.labplanning-main-content .plan-container,
+.labplanning-main-content.syllabus-main-content .plan-container {
+  margin-top: 0 !important;
+}
+
+.labplanning-main-content .header-row {
+  margin-top: 0 !important;
+}
+
+/* ===== SIMPLE MODERN TYPOGRAPHY (no width/boundary changes) ===== */
+.labplanning-main-content .header-row h3,
+.labplanning-main-content .plan-title {
+  font-size: 28px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0;
+}
+
+.labplanning-main-content .ciann-details {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+.labplanning-main-content .ciann-details strong {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+.labplanning-main-content .button-group .start-btn,
+.labplanning-main-content .start-btn {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+.labplanning-main-content .tabs button,
+.labplanning-main-content .tab {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+}
+
+.labplanning-main-content .lab-table th {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+}
+
+.labplanning-main-content .lab-table td {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+}
+
+.labplanning-main-content .pagination .prev-btn,
+.labplanning-main-content .pagination .forward-btn,
+.labplanning-main-content .prev-btn,
+.labplanning-main-content .forward-btn {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+@media (max-width: 1024px) {
+  .labplanning-main-content .header-row h3,
+  .labplanning-main-content .plan-title {
+    font-size: 24px !important;
+  }
+
+  .labplanning-main-content .ciann-details {
+    font-size: 15px !important;
+  }
+
+  .labplanning-main-content .ciann-details strong {
+    font-size: 16px !important;
+  }
+
+  .labplanning-main-content .tabs button,
+  .labplanning-main-content .tab {
+    font-size: 13px !important;
+  }
+
+  .labplanning-main-content .lab-table th {
+    font-size: 12px !important;
+  }
+
+  .labplanning-main-content .lab-table td {
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .labplanning-main-content .header-row h3,
+  .labplanning-main-content .plan-title {
+    font-size: 20px !important;
+  }
+
+  .labplanning-main-content .ciann-details {
+    font-size: 14px !important;
+  }
+
+  .labplanning-main-content .ciann-details strong {
+    font-size: 15px !important;
+  }
+
+  .labplanning-main-content .button-group .start-btn,
+  .labplanning-main-content .start-btn,
+  .labplanning-main-content .tabs button,
+  .labplanning-main-content .tab {
+    font-size: 12px !important;
+  }
+
+  .labplanning-main-content .lab-table th {
+    font-size: 11px !important;
+  }
+
+  .labplanning-main-content .lab-table td {
+    font-size: 12px !important;
+  }
+
+  .labplanning-main-content .pagination .prev-btn,
+  .labplanning-main-content .pagination .forward-btn,
+  .labplanning-main-content .prev-btn,
+  .labplanning-main-content .forward-btn {
+    font-size: 11px !important;
+  }
+}

@@ -14,13 +14,11 @@ const headerOptions = [
   "enrollment_no",
   "student name",
   "name",
-  "batch",
-  "division",
 ];
 
 const normalizeValue = (value) => (value === undefined || value === null ? "" : value.toString().trim());
 
-const mapRow = (row, fallbackDivision, fallbackBatch) => {
+const mapRow = (row) => {
   const normalized = {};
   Object.entries(row).forEach(([key, value]) => {
     const safeKey = key.toLowerCase().replace(/\s+/g, "");
@@ -32,17 +30,25 @@ const mapRow = (row, fallbackDivision, fallbackBatch) => {
     normalized["enrollmentno"] || normalized["enrollment_no"] || normalized["enrollment"];
   const studentName =
     normalized["studentname"] || normalized["name"] || normalized["student"] || "";
-  const batch = normalized["batch"] || fallbackBatch;
-  const division = normalized["division"] || fallbackDivision || "";
 
-  return { rollNo, enrollmentNo, studentName, batch, division };
+  return { rollNo, enrollmentNo, studentName };
 };
 
 const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
   const [fileName, setFileName] = useState("");
   const [parsedRows, setParsedRows] = useState([]);
-  const [division, setDivision] = useState("");
+  
+  // Selection states for cascading dropdowns
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedDivision, setSelectedDivision] = useState("");
   const [batch, setBatch] = useState("");
+  
+  // Lists for dropdowns
+  const [departments, setDepartments] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [divisions, setDivisions] = useState([]);
+  
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -55,17 +61,94 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
 
   useEffect(() => {
     fetchStudents();
+    fetchDepartments();
   }, []);
+
+  const fetchDepartments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.office.departments, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDepartments(data.departments || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch departments", err);
+    }
+  };
+
+  const fetchCourses = async (departmentId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.office.courses(departmentId), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCourses(data.courses || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch courses", err);
+    }
+  };
+
+  const fetchDivisions = async (courseId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.office.courseDivisions(courseId), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDivisions(data.divisions || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch divisions", err);
+    }
+  };
+
+  const handleDepartmentChange = (e) => {
+    const deptId = e.target.value;
+    setSelectedDepartment(deptId);
+    setSelectedCourse("");
+    setSelectedDivision("");
+    setCourses([]);
+    setDivisions([]);
+    
+    if (deptId) {
+      fetchCourses(deptId);
+    }
+  };
+
+  const handleCourseChange = (e) => {
+    const courseId = e.target.value;
+    setSelectedCourse(courseId);
+    setSelectedDivision("");
+    setDivisions([]);
+    
+    if (courseId) {
+      fetchDivisions(courseId);
+    }
+  };
+
+  const handleDivisionChange = (e) => {
+    setSelectedDivision(e.target.value);
+  };
 
   const fetchStudents = async (divisionFilter = "") => {
     try {
       setLoading(true);
+      const token = localStorage.getItem("token");
       const url = divisionFilter
-        ? `${config.students}?division=${encodeURIComponent(divisionFilter)}`
-        : config.students;
-      const res = await fetch(url);
+        ? `${config.office.students}?division=${encodeURIComponent(divisionFilter)}`
+        : config.office.students;
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await res.json();
-      setStudents(Array.isArray(data) ? data : []);
+      setStudents(data.students || []);
     } catch (err) {
       console.error("Failed to fetch students", err);
       setError("Could not load students. Please try again.");
@@ -98,11 +181,11 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
         const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
         const mapped = json
-          .map((row) => mapRow(row, division, batch))
-          .filter((row) => row.rollNo && row.enrollmentNo && row.studentName && row.batch);
+          .map((row) => mapRow(row))
+          .filter((row) => row.rollNo && row.enrollmentNo && row.studentName);
 
         if (mapped.length === 0) {
-          setError("No valid rows found. Please check column headers: RollNo, EnrollmentNo, StudentName, Batch, Division(optional).");
+          setError("No valid rows found. Please check column headers: RollNo, EnrollmentNo, StudentName.");
           return;
         }
 
@@ -124,27 +207,34 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
       return;
     }
 
-    const payload = parsedRows
-      .map((row) => ({
-        rollNo: row.rollNo,
-        enrollmentNo: row.enrollmentNo,
-        studentName: row.studentName,
-        batch: row.batch || batch,
-        division: row.division || division || "",
-      }))
-      .filter((row) => row.rollNo && row.enrollmentNo && row.studentName && row.batch);
-
-    if (payload.length === 0) {
-      setError("No valid students to upload after validation.");
+    if (!selectedDepartment || !selectedCourse || !selectedDivision) {
+      setError("Please select Department, Course, and Division.");
       return;
     }
 
+    if (!batch.trim()) {
+      setError("Please enter the Batch.");
+      return;
+    }
+
+    const payload = {
+      students: parsedRows,
+      batch: batch.trim(),
+      departmentId: selectedDepartment,
+      courseId: selectedCourse,
+      divisionId: selectedDivision,
+    };
+
     try {
       setUploading(true);
-      const res = await fetch(`${config.students}/bulk`, {
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.office.bulkImport, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ students: payload }),
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -207,41 +297,112 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
             <div className="card-header">
               <div>
                 <h2>Upload Student List</h2>
-                <p>Excel/CSV with columns: RollNo, EnrollmentNo, StudentName, Batch, Division (optional)</p>
+                <p>Select Department → Course → Division, then upload Excel with columns: RollNo, EnrollmentNo, StudentName</p>
               </div>
             </div>
-            <div className="form-row">
-              <label>Division (applied when file has none)</label>
-              <input
-                type="text"
-                placeholder="e.g., A, B"
-                value={division}
-                onChange={(e) => setDivision(e.target.value)}
-              />
-            </div>
-            <div className="form-row">
-              <label>Batch (fallback)</label>
-              <input
-                type="text"
-                placeholder="e.g., CO-B1"
-                value={batch}
-                onChange={(e) => setBatch(e.target.value)}
-              />
-            </div>
-            <div className="upload-row">
-              <input type="file" accept=".xlsx,.xls,.csv,.pdf" onChange={handleFileChange} />
-              {fileName && <span className="file-chip">{fileName}</span>}
-            </div>
-            {hasPreview && (
-              <div className="preview-info">
-                <span>{parsedRows.length} rows ready</span>
-                {division && <span>Default Division: {division}</span>}
-                {batch && <span>Default Batch: {batch}</span>}
+            
+            <div className="form-section">
+              <h3>Step 1: Select Assignment</h3>
+              
+              <div className="form-row">
+                <label>Department <span className="required">*</span></label>
+                <select
+                  value={selectedDepartment}
+                  onChange={handleDepartmentChange}
+                  disabled={uploading}
+                  required
+                >
+                  <option value="">-- Select Department --</option>
+                  {departments.map((dept) => (
+                    <option key={dept._id} value={dept._id}>
+                      {dept.name} ({dept.code})
+                    </option>
+                  ))}
+                </select>
               </div>
-            )}
-            <button className="primary-btn" onClick={handleUpload} disabled={uploading}>
+
+              <div className="form-row">
+                <label>Course <span className="required">*</span></label>
+                <select
+                  value={selectedCourse}
+                  onChange={handleCourseChange}
+                  disabled={!selectedDepartment || uploading}
+                  required
+                >
+                  <option value="">-- Select Course --</option>
+                  {courses.map((course) => (
+                    <option key={course._id} value={course._id}>
+                      Semester {course.semester} - {course.courseCode} ({course.scheme})
+                    </option>
+                  ))}
+                </select>
+                {selectedDepartment && courses.length === 0 && (
+                  <small className="hint">No courses found for this department</small>
+                )}
+              </div>
+
+              <div className="form-row">
+                <label>Division <span className="required">*</span></label>
+                <select
+                  value={selectedDivision}
+                  onChange={handleDivisionChange}
+                  disabled={!selectedCourse || uploading}
+                  required
+                >
+                  <option value="">-- Select Division --</option>
+                  {divisions.map((div) => (
+                    <option key={div._id} value={div._id}>
+                      {div.name}
+                    </option>
+                  ))}
+                </select>
+                {selectedCourse && divisions.length === 0 && (
+                  <small className="hint">No divisions found for this course</small>
+                )}
+              </div>
+
+              <div className="form-row">
+                <label>Batch <span className="required">*</span></label>
+                <input
+                  type="text"
+                  placeholder="e.g., 2024-2025"
+                  value={batch}
+                  onChange={(e) => setBatch(e.target.value)}
+                  disabled={uploading}
+                  required
+                />
+                <small className="hint">Academic year or batch identifier</small>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <h3>Step 2: Upload Student Data</h3>
+              
+              <div className="upload-row">
+                <input 
+                  type="file" 
+                  accept=".xlsx,.xls,.csv" 
+                  onChange={handleFileChange}
+                  disabled={!selectedDepartment || !selectedCourse || !selectedDivision || !batch || uploading}
+                />
+                {fileName && <span className="file-chip">{fileName}</span>}
+              </div>
+              
+              {hasPreview && (
+                <div className="preview-info">
+                  <span>✓ {parsedRows.length} students ready to upload</span>
+                </div>
+              )}
+            </div>
+
+            <button 
+              className="primary-btn" 
+              onClick={handleUpload} 
+              disabled={uploading || !hasPreview}
+            >
               {uploading ? "Uploading..." : "Upload Students"}
             </button>
+            
             {error && <div className="alert error">{error}</div>}
             {success && <div className="alert success">{success}</div>}
             
@@ -313,14 +474,16 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                     <th>Roll No</th>
                     <th>Enrollment No</th>
                     <th>Name</th>
-                    <th>Batch</th>
+                    <th>Department</th>
+                    <th>Course</th>
                     <th>Division</th>
+                    <th>Batch</th>
                   </tr>
                 </thead>
                 <tbody>
                   {students.length === 0 && (
                     <tr>
-                      <td colSpan="5" className="empty">{loading ? "Loading..." : "No students yet"}</td>
+                      <td colSpan="7" className="empty">{loading ? "Loading..." : "No students yet"}</td>
                     </tr>
                   )}
                   {students.map((student) => (
@@ -328,8 +491,10 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                       <td>{student.rollNo}</td>
                       <td>{student.enrollmentNo}</td>
                       <td>{student.studentName}</td>
+                      <td>{student.departmentId?.name || "-"}</td>
+                      <td>{student.courseId ? `Sem ${student.courseId.semester} - ${student.courseId.courseCode}` : "-"}</td>
+                      <td>{student.divisionId?.name || student.division || "-"}</td>
                       <td>{student.batch}</td>
-                      <td>{student.division || "-"}</td>
                     </tr>
                   ))}
                 </tbody>

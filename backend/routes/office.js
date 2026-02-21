@@ -3,6 +3,11 @@ const router = express.Router();
 const Student = require("../models/Student");
 const User = require("../models/user");
 const OfficeStaff = require("../models/OfficeStaff");
+const Notice = require("../models/Notice");
+const Department = require("../models/Department");
+const Course = require("../models/Course");
+const Division = require("../models/Division");
+const Institution = require("../models/Institution");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { authenticate, authorizeOffice } = require("../middleware/auth");
@@ -11,42 +16,79 @@ const { authenticate, authorizeOffice } = require("../middleware/auth");
 // OFFICE STAFF ENDPOINTS - All require auth
 // ============================================
 
+router.get("/theme", authenticate, authorizeOffice, async (req, res) => {
+  try {
+    const college = req.user?.college;
+    if (!college || college === "ALL") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid institution context",
+      });
+    }
+
+    const institution = await Institution.findOne(
+      { code: college },
+      "name code palette logoUrl",
+    );
+
+    if (!institution) {
+      return res.status(404).json({
+        success: false,
+        message: "Institution not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      institution,
+    });
+  } catch (err) {
+    console.error("Error fetching office theme:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 /**
  * GET /api/office/dashboard-summary
  * Get summary statistics for office dashboard
  * Auth: Office staff or admin
  */
-router.get("/dashboard-summary", authenticate, authorizeOffice, async (req, res) => {
-  try {
-    const totalStudents = await Student.countDocuments();
-    const totalDivisions = await Student.distinct("division", {
-      division: { $ne: "", $exists: true },
-    }).then((divs) => divs.filter((d) => d).length);
-    const totalBatches = await Student.distinct("batch");
+router.get(
+  "/dashboard-summary",
+  authenticate,
+  authorizeOffice,
+  async (req, res) => {
+    try {
+      const totalStudents = await Student.countDocuments();
+      const totalDivisions = await Student.distinct("division", {
+        division: { $ne: "", $exists: true },
+      }).then((divs) => divs.filter((d) => d).length);
+      const totalBatches = await Student.distinct("batch");
 
-    res.json({
-      success: true,
-      stats: {
-        totalStudents,
-        totalDivisions,
-        totalBatches: totalBatches.length,
-      },
-    });
-  } catch (err) {
-    console.error("Error fetching dashboard summary:", err);
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
+      res.json({
+        success: true,
+        stats: {
+          totalStudents,
+          totalDivisions,
+          totalBatches: totalBatches.length,
+        },
+      });
+    } catch (err) {
+      console.error("Error fetching dashboard summary:", err);
+      res.status(500).json({ success: false, message: err.message });
+    }
+  },
+);
 
 /**
  * GET /api/office/students
  * Get all students for office staff (with auth)
  * Auth: Office staff or admin
- * Query: ?batch=value&division=value
+ * Query: ?batch=value&division=value&departmentId=value&courseId=value&divisionId=value
  */
 router.get("/students", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const { batch, division } = req.query;
+    const { batch, division, departmentId, courseId, divisionId } = req.query;
     let query = {};
 
     if (batch) {
@@ -55,8 +97,21 @@ router.get("/students", authenticate, authorizeOffice, async (req, res) => {
     if (division) {
       query.division = division;
     }
+    if (departmentId) {
+      query.departmentId = departmentId;
+    }
+    if (courseId) {
+      query.courseId = courseId;
+    }
+    if (divisionId) {
+      query.divisionId = divisionId;
+    }
 
-    const students = await Student.find(query);
+    const students = await Student.find(query)
+      .populate("departmentId", "name code")
+      .populate("courseId", "semester scheme courseCode")
+      .populate("divisionId", "name");
+
     res.json({ success: true, students });
   } catch (err) {
     console.error("Error fetching office students:", err);
@@ -103,46 +158,128 @@ router.get("/batches", authenticate, authorizeOffice, async (req, res) => {
 });
 
 /**
+ * GET /api/office/departments
+ * Get all departments from Admin Panel
+ * Auth: Office staff or admin
+ */
+router.get("/departments", authenticate, authorizeOffice, async (req, res) => {
+  try {
+    const departments = await Department.find({})
+      .sort({ name: 1 })
+      .select("_id name code");
+
+    res.json({
+      success: true,
+      departments,
+    });
+  } catch (err) {
+    console.error("Error fetching departments:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * GET /api/office/courses/:departmentId
+ * Get courses for a specific department
+ * Auth: Office staff or admin
+ */
+router.get(
+  "/courses/:departmentId",
+  authenticate,
+  authorizeOffice,
+  async (req, res) => {
+    try {
+      const { departmentId } = req.params;
+
+      const courses = await Course.find({ departmentId })
+        .sort({ semester: 1, courseCode: 1 })
+        .select("_id semester scheme courseCode departmentId");
+
+      res.json({
+        success: true,
+        courses,
+      });
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+      res.status(500).json({ success: false, message: err.message });
+    }
+  },
+);
+
+/**
+ * GET /api/office/course-divisions/:courseId
+ * Get divisions for a specific course
+ * Auth: Office staff or admin
+ */
+router.get(
+  "/course-divisions/:courseId",
+  authenticate,
+  authorizeOffice,
+  async (req, res) => {
+    try {
+      const { courseId } = req.params;
+
+      const divisions = await Division.find({ courseId })
+        .sort({ name: 1 })
+        .select("_id name courseId departmentId");
+
+      res.json({
+        success: true,
+        divisions,
+      });
+    } catch (err) {
+      console.error("Error fetching divisions:", err);
+      res.status(500).json({ success: false, message: err.message });
+    }
+  },
+);
+
+/**
  * POST /api/office/export-credentials
  * Export student credentials as data (for office staff use)
  * Auth: Office staff or admin
  * Body: { division?: string, batch?: string }
  */
-router.post("/export-credentials", authenticate, authorizeOffice, async (req, res) => {
-  try {
-    const { division, batch } = req.body;
-    let query = {};
+router.post(
+  "/export-credentials",
+  authenticate,
+  authorizeOffice,
+  async (req, res) => {
+    try {
+      const { division, batch } = req.body;
+      let query = {};
 
-    if (division) {
-      query.division = division;
+      if (division) {
+        query.division = division;
+      }
+      if (batch) {
+        query.batch = batch;
+      }
+
+      const students = await Student.find(query);
+
+      const credentials = students
+        .filter((s) => s.username && s.plainPassword)
+        .map((s) => ({
+          enrollmentNo: s.enrollmentNo,
+          studentName: s.studentName,
+          username: s.username,
+          plainPassword: s.plainPassword,
+          batch: s.batch,
+          division: s.division,
+        }));
+
+      res.json({
+        success: true,
+        count: credentials.length,
+        credentials,
+      });
+    } catch (err) {
+      console.error("Error exporting credentials:", err);
+      res.status(500).json({ success: false, message: err.message });
     }
-    if (batch) {
-      query.batch = batch;
-    }
-
-    const students = await Student.find(query);
-
-    const credentials = students
-      .filter((s) => s.username && s.plainPassword)
-      .map((s) => ({
-        enrollmentNo: s.enrollmentNo,
-        studentName: s.studentName,
-        username: s.username,
-        plainPassword: s.plainPassword,
-        batch: s.batch,
-        division: s.division,
-      }));
-
-    res.json({
-      success: true,
-      count: credentials.length,
-      credentials,
-    });
-  } catch (err) {
-    console.error("Error exporting credentials:", err);
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
+  },
+);
 
 /**
  * POST /api/office/regenerate-password/:studentId
@@ -158,7 +295,9 @@ router.post(
       const student = await Student.findById(req.params.studentId);
 
       if (!student) {
-        return res.status(404).json({ success: false, message: "Student not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Student not found" });
       }
 
       // Generate new password
@@ -166,8 +305,15 @@ router.post(
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 
       // Update student record
-      student.plainPassword = newPassword;
-      await student.save();
+      await Student.updateMany(
+        { username: student.username },
+        {
+          $set: {
+            plainPassword: newPassword,
+            passwordGeneratedAt: new Date(),
+          },
+        },
+      );
 
       // Update user account
       const user = await User.findOne({ username: student.username });
@@ -187,7 +333,7 @@ router.post(
       console.error("Error regenerating password:", err);
       res.status(500).json({ success: false, message: err.message });
     }
-  }
+  },
 );
 
 /**
@@ -200,7 +346,9 @@ router.get("/student/:id", authenticate, authorizeOffice, async (req, res) => {
     const student = await Student.findById(req.params.id);
 
     if (!student) {
-      return res.status(404).json({ success: false, message: "Student not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found" });
     }
 
     res.json({ success: true, student });
@@ -214,16 +362,99 @@ router.get("/student/:id", authenticate, authorizeOffice, async (req, res) => {
  * POST /api/office/bulk-import
  * Bulk import students with automatic credential generation
  * Auth: Office staff or admin
- * Body: { students: [{ rollNo, enrollmentNo, studentName, batch, division }] }
+ * Body: {
+ *   students: [{ rollNo, enrollmentNo, studentName }],
+ *   batch: string,
+ *   departmentId: ObjectId,
+ *   courseId: ObjectId,
+ *   divisionId: ObjectId
+ * }
  */
 router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const { students } = req.body;
+    const { students, batch, departmentId, courseId, divisionId, batchAllocations } = req.body;
 
     if (!Array.isArray(students) || students.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Invalid students array",
+      });
+    }
+
+    // Validate that department, course, and division are provided
+    if (!departmentId || !courseId || !divisionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Department, Course, and Division are required",
+      });
+    }
+
+    const hasAllocations = Array.isArray(batchAllocations) && batchAllocations.length > 0;
+
+    let normalizedAllocations = [];
+    if (hasAllocations) {
+      normalizedAllocations = batchAllocations.map((allocation) => ({
+        batch: (allocation?.batch || "").toString().trim(),
+        count: Number(allocation?.count || 0),
+      }));
+
+      const invalidAllocation = normalizedAllocations.find(
+        (allocation) => !allocation.batch || !Number.isInteger(allocation.count) || allocation.count <= 0,
+      );
+
+      if (invalidAllocation) {
+        return res.status(400).json({
+          success: false,
+          message: "Each batch allocation must include valid batch and positive integer count",
+        });
+      }
+
+      const totalAllocated = normalizedAllocations.reduce(
+        (sum, allocation) => sum + allocation.count,
+        0,
+      );
+
+      if (totalAllocated !== students.length) {
+        return res.status(400).json({
+          success: false,
+          message: `Batch allocation mismatch: allocated ${totalAllocated}, uploaded students ${students.length}`,
+        });
+      }
+    } else if (!batch || !batch.toString().trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Batch is required when custom batch allocations are not provided",
+      });
+    }
+
+    const expandedBatches = hasAllocations
+      ? normalizedAllocations.flatMap((allocation) =>
+          Array.from({ length: allocation.count }, () => allocation.batch),
+        )
+      : [];
+
+    // Verify that the department, course, and division exist and are properly related
+    const department = await Department.findById(departmentId);
+    if (!department) {
+      return res.status(404).json({
+        success: false,
+        message: "Department not found",
+      });
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course || course.departmentId.toString() !== departmentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid course for the selected department",
+      });
+    }
+
+    const division = await Division.findById(divisionId);
+    if (!division || division.courseId.toString() !== courseId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid division for the selected course",
       });
     }
 
@@ -234,22 +465,31 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
       generatedCredentials: [],
     };
 
-    for (const studentData of students) {
-      const { rollNo, enrollmentNo, studentName, batch, division } = studentData;
+    for (const [index, studentData] of students.entries()) {
+      const { rollNo, enrollmentNo, studentName } = studentData;
+      const assignedBatch = hasAllocations
+        ? expandedBatches[index]
+        : batch.toString().trim();
 
       // Validate required fields
-      if (!rollNo || !enrollmentNo || !studentName || !batch) {
+      if (!rollNo || !enrollmentNo || !studentName) {
         results.skipped++;
         results.errors.push({
           enrollmentNo,
-          error: "Missing required fields",
+          error:
+            "Missing required fields (RollNo, EnrollmentNo, or StudentName)",
         });
         continue;
       }
 
       try {
-        // Check if student already exists
+        // Check if student already exists in THIS batch/course/division combo
+        // (allows same student info in different batches/courses/divisions)
         const existingStudent = await Student.findOne({
+          departmentId,
+          courseId,
+          divisionId,
+          batch: assignedBatch,
           $or: [{ rollNo }, { enrollmentNo }],
         });
 
@@ -257,31 +497,64 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
           results.skipped++;
           results.errors.push({
             enrollmentNo,
-            error: "Student already exists",
+            error: "Student already exists in this batch/course/division",
           });
           continue;
         }
 
-        // Generate credentials
+        // Generate/reuse credentials (keep stable by username)
         const username = enrollmentNo.toLowerCase().replace(/[^a-z0-9]/g, "");
-        const plainPassword = Math.random().toString(36).slice(-8);
-        const hashedPassword = await bcrypt.hash(plainPassword, 10);
+        const existingUser = await User.findOne({ username });
+        let plainPassword = "";
+        let hashedPassword = "";
 
-        // Create student record
+        if (existingUser) {
+          if (existingUser.role !== "student") {
+            results.skipped++;
+            results.errors.push({
+              enrollmentNo,
+              error: "Username already exists for a non-student account",
+            });
+            continue;
+          }
+
+          const existingCredentialStudent = await Student.findOne({
+            username,
+            plainPassword: { $exists: true, $ne: "" },
+          }).sort({ updatedAt: -1, createdAt: -1 });
+
+          if (existingCredentialStudent?.plainPassword) {
+            plainPassword = existingCredentialStudent.plainPassword;
+          } else {
+            plainPassword = Math.random().toString(36).slice(-8);
+            hashedPassword = await bcrypt.hash(plainPassword, 10);
+            existingUser.password = hashedPassword;
+            existingUser.college = req.user.college;
+            await existingUser.save();
+          }
+        } else {
+          plainPassword = Math.random().toString(36).slice(-8);
+          hashedPassword = await bcrypt.hash(plainPassword, 10);
+        }
+
+        // Create student record with department, course, and division references
         const newStudent = new Student({
           rollNo,
           enrollmentNo,
           studentName,
-          batch,
-          division: division || "",
+          batch: assignedBatch,
+          division: division.name, // Store division name for backward compatibility
+          departmentId,
+          courseId,
+          divisionId,
           username,
           plainPassword,
+          passwordGeneratedAt: new Date(),
         });
 
         await newStudent.save();
 
-        // Create user account for student
-        const existingUser = await User.findOne({ username });
+        // Create user account for student (if not existing)
         if (!existingUser) {
           const newUser = new User({
             username,
@@ -324,7 +597,16 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
  */
 router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const { rollNo, enrollmentNo, studentName, batch, division } = req.body;
+    const {
+      rollNo,
+      enrollmentNo,
+      studentName,
+      batch,
+      division,
+      departmentId,
+      courseId,
+      divisionId,
+    } = req.body;
 
     if (!studentName || !rollNo || !enrollmentNo || !batch) {
       return res.status(400).json({
@@ -333,14 +615,57 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
       });
     }
 
+    const updateData = {
+      rollNo,
+      enrollmentNo,
+      studentName,
+      batch,
+      division: division || "",
+    };
+
+    // If new department/course/division IDs are provided, validate and update them
+    if (departmentId && courseId && divisionId) {
+      const department = await Department.findById(departmentId);
+      const course = await Course.findById(courseId);
+      const division = await Division.findById(divisionId);
+
+      if (!department || !course || !division) {
+        return res.status(404).json({
+          success: false,
+          message: "Invalid department, course, or division",
+        });
+      }
+
+      if (
+        course.departmentId.toString() !== departmentId ||
+        division.courseId.toString() !== courseId
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid relationship between department, course, and division",
+        });
+      }
+
+      updateData.departmentId = departmentId;
+      updateData.courseId = courseId;
+      updateData.divisionId = divisionId;
+      updateData.division = division.name;
+    }
+
     const updatedStudent = await Student.findByIdAndUpdate(
       req.params.id,
-      { rollNo, enrollmentNo, studentName, batch, division: division || "" },
-      { new: true }
-    );
+      updateData,
+      { new: true },
+    )
+      .populate("departmentId", "name code")
+      .populate("courseId", "semester scheme courseCode")
+      .populate("divisionId", "name");
 
     if (!updatedStudent) {
-      return res.status(404).json({ success: false, message: "Student not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found" });
     }
 
     res.json({ success: true, student: updatedStudent });
@@ -355,28 +680,135 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
  * Delete student (office staff only)
  * Auth: Office staff or admin
  */
-router.delete("/student/:id", authenticate, authorizeOffice, async (req, res) => {
+router.delete(
+  "/student/:id",
+  authenticate,
+  authorizeOffice,
+  async (req, res) => {
+    try {
+      const student = await Student.findById(req.params.id);
+
+      if (!student) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Student not found" });
+      }
+
+      // Delete associated user account
+      if (student.username) {
+        await User.findOneAndDelete({ username: student.username });
+      }
+
+      await Student.findByIdAndDelete(req.params.id);
+
+      res.json({
+        success: true,
+        message: "Student deleted successfully",
+        studentName: student.studentName,
+      });
+    } catch (error) {
+      console.error("Delete student error:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
+);
+
+/**
+ * GET /api/faculty/notices
+ * Get notices for faculty
+ */
+router.get("/notices", authenticate, async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const { faculty } = req.query;
+    const college = req.user.college || localStorage?.getItem("college") || "VP";
 
-    if (!student) {
-      return res.status(404).json({ success: false, message: "Student not found" });
+    let query = { college };
+    if (faculty) {
+      query.faculty = faculty;
     }
 
-    // Delete associated user account
-    if (student.username) {
-      await User.findOneAndDelete({ username: student.username });
-    }
-
-    await Student.findByIdAndDelete(req.params.id);
-
-    res.json({
-      success: true,
-      message: "Student deleted successfully",
-      studentName: student.studentName,
-    });
+    const notices = await Notice.find(query).sort({ createdAt: -1 });
+    res.json({ success: true, notices });
   } catch (error) {
-    console.error("Delete student error:", error);
+    console.error("Error fetching notices:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * POST /api/faculty/notices
+ * Create a new notice
+ */
+router.post("/notices", authenticate, async (req, res) => {
+  try {
+    const { title, content, division, faculty } = req.body;
+    const college = req.user.college || "VP";
+
+    if (!title || !content) {
+      return res.status(400).json({ success: false, message: "Title and content are required" });
+    }
+
+    const notice = new Notice({
+      title,
+      content,
+      division,
+      faculty: faculty || req.user.username,
+      college,
+    });
+
+    await notice.save();
+    res.json({ success: true, message: "Notice created successfully", notice });
+  } catch (error) {
+    console.error("Error creating notice:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * PUT /api/faculty/notices/:id
+ * Update a notice
+ */
+router.put("/notices/:id", authenticate, async (req, res) => {
+  try {
+    const { title, content, division } = req.body;
+
+    const notice = await Notice.findByIdAndUpdate(
+      req.params.id,
+      {
+        title,
+        content,
+        division,
+        updatedAt: new Date(),
+      },
+      { new: true }
+    );
+
+    if (!notice) {
+      return res.status(404).json({ success: false, message: "Notice not found" });
+    }
+
+    res.json({ success: true, message: "Notice updated successfully", notice });
+  } catch (error) {
+    console.error("Error updating notice:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * DELETE /api/faculty/notices/:id
+ * Delete a notice
+ */
+router.delete("/notices/:id", authenticate, async (req, res) => {
+  try {
+    const notice = await Notice.findByIdAndDelete(req.params.id);
+
+    if (!notice) {
+      return res.status(404).json({ success: false, message: "Notice not found" });
+    }
+
+    res.json({ success: true, message: "Notice deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting notice:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 });

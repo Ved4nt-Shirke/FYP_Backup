@@ -1,130 +1,121 @@
-:root {
-  --sidebar-bg: #143326;       /* Slightly darker than navbar */
-  --sidebar-text: #ffffff;
-  --sidebar-hover: rgba(255, 255, 255, 0.08);
-  --sidebar-active: #2d6a4f;   /* Emerald Green */
-  --sidebar-width: 260px;
-  --navbar-height: 60px;       /* Match Navbar Height */
-}
+@import "./SuperAdmin.css";
 
 .sidebar {
   position: fixed;
-  top: var(--navbar-height);   /* Starts exactly below navbar */
+  top: 60px;
   left: 0;
-  height: calc(100vh - var(--navbar-height)); /* Fills remaining height */
-  width: var(--sidebar-width);
-  background-color: var(--sidebar-bg);
-  color: var(--sidebar-text);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1050;               /* Lower than navbar (1060) */
+  width: 260px;
+  height: calc(100vh - 60px);
+  background: #ffffff;
+  border-right: 1px solid var(--sa-border);
+  z-index: 1050;
   overflow-y: auto;
-  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
+  transition: transform 0.25s ease;
 }
 
-/* Header hidden since title is in Top Navbar now */
+.sidebar:not(.visible) {
+  transform: translateX(-100%);
+}
+
 .sidebar-header {
   display: none;
 }
 
 .sidebar-nav {
-  padding: 20px 0;
-  flex: 1;
-}
-
-.sidebar-nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  padding: 16px 10px;
 }
 
 .sidebar-nav li {
-  margin: 4px 12px;
+  list-style: none;
+  margin: 4px 0;
 }
 
 .sidebar-nav a {
+  height: 42px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  color: rgba(255, 255, 255, 0.85);
+  gap: 10px;
+  padding: 0 12px;
+  border-radius: 9px;
   text-decoration: none;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  font-size: 0.95rem;
-  font-weight: 500;
+  color: #334155;
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .sidebar-nav a:hover {
-  background-color: var(--sidebar-hover);
-  color: #fff;
-  transform: translateX(4px);
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .sidebar-nav a.active {
-  background-color: var(--sidebar-active);
-  color: #fff;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+  background: #e6fffa;
+  color: #115e59;
+  border: 1px solid #99f6e4;
 }
 
 .sidebar-nav i {
-  width: 24px;
+  width: 18px;
   text-align: center;
-  font-size: 1.1rem;
 }
 
-/* Mobile Toggle Button */
 .menu-toggle {
   position: fixed;
-  top: 15px;
-  left: 15px;
-  z-index: 1070; /* Higher than navbar */
-  background-color: var(--sidebar-bg);
-  color: white;
-  border: none;
+  top: 14px;
+  left: 12px;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
-  padding: 8px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: rgba(15, 23, 42, 0.6);
+  color: #f8fafc;
+  display: none;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  display: none; 
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transition: background 0.2s;
+  z-index: 1070;
 }
 
 .menu-toggle:hover {
-  background-color: var(--sidebar-active);
+  background: rgba(15, 23, 42, 0.9);
 }
 
-/* Responsive */
 @media (max-width: 992px) {
   .sidebar {
     transform: translateX(-100%);
-    top: var(--navbar-height);
-    height: calc(100vh - var(--navbar-height));
-    z-index: 1040;
+    width: 250px;
+    box-shadow: 8px 0 24px rgba(15, 23, 42, 0.18);
   }
 
   .sidebar.visible {
     transform: translateX(0);
   }
 
-  .menu-toggle {
-    display: block;
-  }
-
   .sidebar-overlay {
     position: fixed;
-    top: 0;
+    top: 60px;
     left: 0;
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(2px);
-    z-index: 1035;
+    height: calc(100vh - 60px);
+    background: rgba(15, 23, 42, 0.35);
+    z-index: 1040;
     display: none;
   }
 
   .sidebar-overlay.visible {
     display: block;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 993px) {
+  .sidebar {
+    transform: translateX(0);
   }
 }

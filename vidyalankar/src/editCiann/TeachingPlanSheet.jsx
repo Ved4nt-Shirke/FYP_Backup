@@ -6,8 +6,6 @@ import Header from "../basic/Header";
 import "./WeekwisePlan1.css";
 import "./TeachingPlanSheet.css";
 
-const weekOptions = Array.from({ length: 16 }, (_, i) => `Week ${i + 1}`);
-
 // UPDATED modalStyles to match the WeekwisePlan component's look
 const modalStyles = {
   overlay: {
@@ -26,13 +24,13 @@ const modalStyles = {
     background: "white",
     borderRadius: "16px", // More rounded corners
     width: "90%",
-    maxWidth: "700px", // Increased max-width for better desktop look
-    maxHeight: "84vh",
+    maxWidth: "900px", // Increased for better visibility
+    maxHeight: "90vh", // Increased from 84vh
     animation: "fadeIn 0.3s ease-in-out", // Added animation
     display: "flex",
     flexDirection: "column",
     boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4)", // Stronger shadow
-    overflow: "hidden", // Ensure content is clipped by rounded corners
+    overflow: "hidden", // Modal itself doesn't scroll, children do
     padding: "0", // Removed internal padding, managed by child elements
     marginTop: "0",
   },
@@ -84,7 +82,7 @@ const TeachingPlan = () => {
             // Also store in sessionStorage for consistency
             sessionStorage.setItem(
               "currentCiannData",
-              JSON.stringify(parsedData)
+              JSON.stringify(parsedData),
             );
             return;
           }
@@ -102,7 +100,6 @@ const TeachingPlan = () => {
   const onBack = () => navigate(-1);
 
   const [view, setView] = useState("sheet");
-  const [week, setWeek] = useState("");
   const [plans, setPlans] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -117,6 +114,8 @@ const TeachingPlan = () => {
   const [chapterOptions, setChapterOptions] = useState([
     "--- Select Chapter ---",
   ]);
+  const [chaptersLoading, setChaptersLoading] = useState(false);
+  const [chaptersFetchError, setChaptersFetchError] = useState(null);
 
   // Fetch chapter list for the selected CIANN from backend
   useEffect(() => {
@@ -126,7 +125,19 @@ const TeachingPlan = () => {
         const programLabel = ciannData?.department?.label; // e.g., "Computer Engineering"
         const className = ciannData?.class;
 
-        if (!courseName) return; // can't fetch without course
+        console.log("📚 Fetching chapters for Teaching Plan:");
+        console.log("  Course:", courseName);
+        console.log("  Program:", programLabel);
+        console.log("  Class:", className);
+
+        if (!courseName) {
+          console.warn("⚠️ No course name found, cannot fetch chapters");
+          setChaptersFetchError("Course information not available");
+          return;
+        }
+
+        setChaptersLoading(true);
+        setChaptersFetchError(null);
 
         const res = await fetch(
           "http://localhost:5000/api/course-chapters/get-chapters",
@@ -138,16 +149,31 @@ const TeachingPlan = () => {
               program: programLabel,
               className,
             }),
-          }
+          },
         );
         const data = await res.json();
-        const dynamicOptions = (data?.chp || [])
-          .sort((a, b) => (a.chapterNo || 0) - (b.chapterNo || 0))
-          .map((c) => `Unit - ${c.chapterNo}. ${c.chapterName}`);
-        setChapterOptions(["--- Select Chapter ---", ...dynamicOptions]);
+        console.log("✅ Chapters API response:", data);
+
+        if (data.success && data.chp && data.chp.length > 0) {
+          const dynamicOptions = data.chp
+            .sort((a, b) => (a.chapterNo || 0) - (b.chapterNo || 0))
+            .map((c) => `Unit - ${c.chapterNo}. ${c.chapterName}`);
+          console.log("📋 Processed chapter options:", dynamicOptions);
+          setChapterOptions(["--- Select Chapter ---", ...dynamicOptions]);
+          setChaptersFetchError(null);
+        } else {
+          console.warn("⚠️ No chapters found for this course");
+          setChapterOptions(["--- Select Chapter ---"]);
+          setChaptersFetchError(
+            `No chapters found for ${courseName}. Please add chapters in Course Management first.`,
+          );
+        }
       } catch (err) {
-        console.error("Failed to fetch chapters:", err);
+        console.error("❌ Failed to fetch chapters:", err);
         setChapterOptions(["--- Select Chapter ---"]);
+        setChaptersFetchError(`Error loading chapters: ${err.message}`);
+      } finally {
+        setChaptersLoading(false);
       }
     };
     fetchChapters();
@@ -164,7 +190,7 @@ const TeachingPlan = () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:5000/api/teaching-plan/${ciannId}`
+          `http://localhost:5000/api/teaching-plan/${ciannId}`,
         );
         if (res.status === 404) {
           console.log(`No teaching plans found for ciannId: ${ciannId}`);
@@ -188,92 +214,121 @@ const TeachingPlan = () => {
     fetchPlans();
   }, [ciannId]);
 
-  useEffect(() => {
-    if ((view === "edit" || view === "add") && week) {
-      const weekNo = parseInt(week.replace("Week ", ""));
-      const found = teachingPlans.find((p) => p.weekNo === weekNo);
-      const filled = Array(5)
-        .fill()
-        .map((_, i) =>
-          found && found.plans && found.plans[i]
-            ? {
-                chapter: found.plans[i].chapter || "",
-                subTopic: found.plans[i].subTopic || "",
-                startDate: found.plans[i].startDate || "",
-                endDate: found.plans[i].endDate || "",
-                teachingMethod: found.plans[i].teachingMethod || "",
-              }
-            : {
-                chapter: "",
-                subTopic: "",
-                startDate: "",
-                endDate: "",
-                teachingMethod: "",
-              }
-        );
-      setPlans(filled);
-    }
-  }, [week, view, teachingPlans]);
+  // Removed useEffect for plans initialization - now done directly in button onClick handlers
 
   const handleChange = (index, field, value) => {
-    const updated = [...plans];
+    console.log(
+      `🔧 handleChange called: index=${index}, field=${field}, value="${value}", plans.length=${plans.length}`,
+    );
+    console.log("📦 Current plans before update:", JSON.stringify(plans));
+
+    // Ensure plans array is initialized with proper objects
+    let updated = [...plans];
+
+    // If plans is empty or index doesn't exist, initialize it
+    if (updated.length === 0 || !updated[index]) {
+      console.log("⚠️ Plans array not initialized, creating empty array");
+      updated = [
+        {
+          chapter: "",
+          subTopic: "",
+          startDate: "",
+          endDate: "",
+          teachingMethod: "",
+        },
+      ];
+    }
+
+    // Now safely update the field
     updated[index][field] = value;
+    console.log(
+      "✅ Updated plan after change:",
+      JSON.stringify(updated[index]),
+    );
+    console.log("💾 Setting new plans array:", JSON.stringify(updated));
     setPlans(updated);
   };
 
   const handleSubmit = async () => {
-    if (!week) {
-      setMessage("⚠️ Please select a week number.");
-      return;
-    }
     if (!ciannId) {
       setMessage("⚠️ No CIAAN ID available. Cannot save plan.");
       return;
     }
-    const weekNo = parseInt(week.replace("Week ", ""));
+
+    console.log("🚀 Submit clicked. Plans array:", plans);
+    console.log("📋 Chapter options:", chapterOptions);
+
+    // Log each plan individually to debug
+    plans.forEach((plan, index) => {
+      console.log(`Plan ${index}:`, {
+        chapter: plan.chapter,
+        chapterValid:
+          plan.chapter &&
+          plan.chapter.trim() !== "" &&
+          plan.chapter !== chapterOptions[0],
+        subTopic: plan.subTopic,
+        subTopicValid: plan.subTopic && plan.subTopic.trim() !== "",
+        startDate: plan.startDate,
+        startDateValid: plan.startDate && plan.startDate.trim() !== "",
+        teachingMethod: plan.teachingMethod,
+        teachingMethodValid:
+          plan.teachingMethod && plan.teachingMethod.trim() !== "",
+      });
+    });
 
     const filteredPlans = plans.filter(
       (p) =>
         p.chapter &&
+        p.chapter.trim() !== "" &&
         p.chapter !== chapterOptions[0] &&
         p.subTopic &&
+        p.subTopic.trim() !== "" &&
         p.startDate &&
-        p.teachingMethod
+        p.startDate.trim() !== "" &&
+        p.teachingMethod &&
+        p.teachingMethod.trim() !== "",
     );
+
+    console.log("✅ Filtered plans:", filteredPlans);
 
     if (filteredPlans.length === 0) {
       setMessage(
-        "⚠️ Please fill at least one complete plan entry (Chapter, Sub-Topic, Start Date, Teaching Method)."
+        "⚠️ Please fill in all fields (Chapter, Sub-Topic, Start Date, Teaching Method).",
       );
       return;
     }
 
     setLoading(true);
     try {
+      // Auto-generate week number based on existing plans
+      const weekNo =
+        teachingPlans.length > 0
+          ? Math.max(...teachingPlans.map((p) => p.weekNo)) + 1
+          : 1;
+
       const res = await fetch(
         `http://localhost:5000/api/teaching-plan/${ciannId}/${weekNo}`,
         {
-          method: "PUT", // Use PUT to update specific week
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ plans: filteredPlans }),
-        }
+        },
       );
       if (!res.ok) throw new Error("Failed to save teaching plan");
 
       const updatedRes = await fetch(
-        `http://localhost:5000/api/teaching-plan/${ciannId}`
+        `http://localhost:5000/api/teaching-plan/${ciannId}`,
       );
       const updatedData = await updatedRes.json();
       setTeachingPlans(updatedData);
       setPlanningStarted(true);
       setView("sheet");
-      setWeek("");
       setPlans([]);
       setMessage("✅ Data submitted successfully!");
-      setTimeout(() => setMessage(""), 2000); // Clear message after 2 seconds
+      setTimeout(() => setMessage(""), 2000);
     } catch (err) {
       setMessage("❌ Error saving teaching plan: " + err.message);
-      setTimeout(() => setMessage(""), 3000); // Clear message after 3 seconds for errors
+      setTimeout(() => setMessage(""), 3000);
     } finally {
       setLoading(false);
     }
@@ -283,7 +338,7 @@ const TeachingPlan = () => {
     const startWeek = (page - 1) * 4 + 1;
     const endWeek = startWeek + 3;
     return teachingPlans.filter(
-      (p) => p.weekNo >= startWeek && p.weekNo <= endWeek
+      (p) => p.weekNo >= startWeek && p.weekNo <= endWeek,
     );
   };
 
@@ -326,8 +381,8 @@ const TeachingPlan = () => {
             <td
               rowSpan={5}
               style={{ textAlign: "center" }}
-              data-label="Week No."
-              className="week-no"
+              data-label="Entry No."
+              className="entry-no"
             >
               {week}
             </td>
@@ -341,7 +396,7 @@ const TeachingPlan = () => {
           <td data-label="Teaching Methods" className="teaching-method">
             {plan?.teachingMethod || ""}
           </td>
-        </tr>
+        </tr>,
       );
     }
     return rows;
@@ -354,7 +409,6 @@ const TeachingPlan = () => {
           className="tps-close-btn"
           onClick={() => {
             setView("sheet");
-            setWeek("");
             setPlans([]);
             setMessage("");
           }}
@@ -364,8 +418,45 @@ const TeachingPlan = () => {
           &times;
         </button>
         <div className="tps-modal-header">
-          {view === "edit" ? "Edit Weekwise Plan" : "Weekwise Plan"}
+          {view === "edit" ? "Edit Teaching Plan" : "Add Teaching Plan"}
         </div>
+
+        {/* Chapter fetch error message */}
+        {chaptersFetchError && (
+          <div
+            style={{
+              margin: "20px 20px 0 20px",
+              padding: "12px 16px",
+              backgroundColor: "#fff3cd",
+              border: "1px solid #ffc107",
+              borderRadius: "8px",
+              color: "#856404",
+              fontSize: "14px",
+              lineHeight: "1.5",
+            }}
+          >
+            <strong>⚠️ Warning:</strong> {chaptersFetchError}
+            <br />
+            <small>
+              Go to Dashboard → Manage Courses → Select Course → Manage Chapters
+            </small>
+          </div>
+        )}
+
+        {/* Loading indicator */}
+        {chaptersLoading && (
+          <div
+            style={{
+              margin: "20px",
+              textAlign: "center",
+              color: "#666",
+              fontSize: "14px",
+            }}
+          >
+            Loading chapters...
+          </div>
+        )}
+
         <div className="weekwise-form-container">
           {" "}
           {/* Renamed for clarity */}
@@ -375,30 +466,56 @@ const TeachingPlan = () => {
               {/* This div acts as the table header */}
               <label>Chapter</label>
               <label>Sub-Topic</label>
-              <label>Week No.</label>
               <label>Start Date</label>
               <label>Teaching Methods</label>
             </div>
-            {(plans.length > 0
-              ? plans
-              : Array(5).fill({
-                  chapter: "",
-                  subTopic: "",
-                  startDate: "",
-                  endDate: "",
-                  teachingMethod: "",
-                })
-            ).map((plan, index) => (
+            {plans.map((plan, index) => (
               <div className="form-row" key={index}>
                 <select
-                  value={plan.chapter}
-                  onChange={(e) =>
-                    handleChange(index, "chapter", e.target.value)
-                  }
+                  value={plan.chapter || chapterOptions[0] || ""}
+                  onChange={(e) => {
+                    const selectedValue = e.target.value;
+                    console.log(
+                      `📝 Chapter selected for row ${index + 1}:`,
+                      selectedValue,
+                    );
+                    console.log(
+                      "📦 Current plans state BEFORE update:",
+                      JSON.stringify(plans),
+                    );
+
+                    // Direct state update
+                    const newPlans = [...plans];
+                    newPlans[index] = {
+                      ...newPlans[index],
+                      chapter: selectedValue,
+                    };
+                    console.log(
+                      "💾 New plans state AFTER update:",
+                      JSON.stringify(newPlans),
+                    );
+                    setPlans(newPlans);
+                  }}
                   className="form-input"
+                  disabled={chaptersLoading || chapterOptions.length <= 1}
+                  style={{
+                    cursor:
+                      chaptersLoading || chapterOptions.length <= 1
+                        ? "not-allowed"
+                        : "pointer",
+                    backgroundColor:
+                      chaptersLoading || chapterOptions.length <= 1
+                        ? "#f5f5f5"
+                        : "white",
+                  }}
                 >
-                  {chapterOptions.map((opt) => (
-                    <option key={opt} value={opt}>
+                  {chapterOptions.map((opt, optIndex) => (
+                    <option
+                      key={`${opt}-${optIndex}`}
+                      value={opt}
+                      disabled={optIndex === 0}
+                      selected={optIndex === 0 && !plan.chapter}
+                    >
                       {opt}
                     </option>
                   ))}
@@ -406,31 +523,15 @@ const TeachingPlan = () => {
                 <input
                   type="text"
                   placeholder="Sub-Topic"
-                  value={plan.subTopic}
+                  value={plan.subTopic || ""}
                   onChange={(e) =>
                     handleChange(index, "subTopic", e.target.value)
                   }
                   className="form-input"
                 />
-                {index === 0 ? (
-                  <select
-                    value={week}
-                    onChange={(e) => setWeek(e.target.value)}
-                    className="form-input week-select" // Added week-select class
-                  >
-                    <option value="">Select Week</option>
-                    {weekOptions.map((w) => (
-                      <option key={w} value={w}>
-                        {w}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="empty-cell"></div> // Empty div to maintain grid structure
-                )}
                 <input
                   type="date"
-                  value={plan.startDate}
+                  value={plan.startDate || ""}
                   onChange={(e) =>
                     handleChange(index, "startDate", e.target.value)
                   }
@@ -439,7 +540,7 @@ const TeachingPlan = () => {
                 <input
                   type="text"
                   placeholder="Teaching Methods"
-                  value={plan.teachingMethod}
+                  value={plan.teachingMethod || ""}
                   onChange={(e) =>
                     handleChange(index, "teachingMethod", e.target.value)
                   }
@@ -455,7 +556,6 @@ const TeachingPlan = () => {
             className="btn cancel"
             onClick={() => {
               setView("sheet");
-              setWeek("");
               setPlans([]);
               setMessage(""); // Clear message on cancel
             }}
@@ -510,11 +610,14 @@ const TeachingPlan = () => {
         showSearch={false}
         onMenuToggle={() => setIsSidebarVisible((v) => !v)}
         onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
+        hidePrimaryMenuToggleOnCompact={true}
+        mobileHomePath="/dashboard"
       />
       <div className="teaching-main-row">
         <Sidebar
           isSidebarVisible={isSidebarVisible}
           setIsSidebarVisible={setIsSidebarVisible}
+          disableOnCompact={true}
         />
         <div className="syllabus-secondary-sidebar-wrapper">
           <SecondarySidebar
@@ -525,11 +628,11 @@ const TeachingPlan = () => {
         </div>
         <div
           className="teaching-main-content syllabus-main-content has-secondary-sidebar"
-          style={{ marginTop: "180px" }}
+          style={{ marginTop: "0" }}
         >
           <div className="plan-container">
             <div className="header-row">
-              <h3 className="plan-title">6. Teaching Plan (TP)</h3>
+              <h3 className="plan-title">4. Teaching Plan (TP)</h3>
               {/* Move the button/action area here */}
               <div className="plan-actions-top-right">
                 {" "}
@@ -538,10 +641,18 @@ const TeachingPlan = () => {
                   <button
                     className="start-btn btn submit"
                     onClick={() => {
+                      console.log("📅 Start Planning clicked");
                       setPlanningStarted(true);
                       setView("add");
-                      setWeek("");
-                      setPlans([]);
+                      setPlans([
+                        {
+                          chapter: "",
+                          subTopic: "",
+                          startDate: "",
+                          endDate: "",
+                          teachingMethod: "",
+                        },
+                      ]);
                     }}
                     disabled={loading}
                   >
@@ -552,24 +663,40 @@ const TeachingPlan = () => {
                     <button
                       className="start-btn btn submit"
                       onClick={() => {
+                        console.log("📢 Add New Plan clicked");
                         setView("add");
-                        setWeek("");
-                        setPlans([]);
+                        setPlans([
+                          {
+                            chapter: "",
+                            subTopic: "",
+                            startDate: "",
+                            endDate: "",
+                            teachingMethod: "",
+                          },
+                        ]);
                       }}
                       disabled={loading}
                     >
-                      Add Weekwise Plan
+                      Add New Plan
                     </button>
                     <button
                       className="start-btn btn submit"
                       onClick={() => {
+                        console.log("📋 Edit Plan clicked");
                         setView("edit");
-                        setWeek("");
-                        setPlans([]);
+                        setPlans([
+                          {
+                            chapter: "",
+                            subTopic: "",
+                            startDate: "",
+                            endDate: "",
+                            teachingMethod: "",
+                          },
+                        ]);
                       }}
                       disabled={loading}
                     >
-                      Edit Weekwise Plan
+                      Edit Plan
                     </button>
                   </div>
                 )}
@@ -603,7 +730,7 @@ const TeachingPlan = () => {
                         <th>Chapter No.</th>
                         <th>Name of Chapter</th>
                         <th>Topics / Sub-topics</th>
-                        <th>Week No.</th>
+                        <th>Entry No.</th>
                         <th>Start Date</th>
                         <th>End Date</th>
                         <th>Teaching Methods</th>
@@ -612,7 +739,7 @@ const TeachingPlan = () => {
                     <tbody>
                       {planningStarted &&
                         [...Array(4)].flatMap((_, i) =>
-                          renderWeekRow((currentPage - 1) * 4 + i + 1)
+                          renderWeekRow((currentPage - 1) * 4 + i + 1),
                         )}
                     </tbody>
                   </table>

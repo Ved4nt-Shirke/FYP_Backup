@@ -160,7 +160,7 @@ const ViewInstitutions = () => {
           <a href="/superadmin-create-institution" className="create-btn">
             <i className="fas fa-plus-circle me-2"></i>Create New
           </a>
-          <button className="refresh-btn" onClick={handleRefresh}>
+          <button className="sa-refresh-btn" onClick={handleRefresh}>
             <i className="fas fa-sync-alt me-2"></i>Refresh
           </button>
         </div>
@@ -194,7 +194,9 @@ const ViewInstitutions = () => {
           {filteredInstitutions.map((institution) => (
             <div
               key={institution._id}
-              className="institution-item"
+              className={`institution-item ${
+                institution.isActive === false ? "inactive" : ""
+              }`}
               onClick={() => handleNavigate(institution._id)}
             >
               <div className="card-body">
@@ -212,6 +214,15 @@ const ViewInstitutions = () => {
                     </span>
                     <span className="meta-pill">
                       Admin: {institution.adminUsername || "—"}
+                    </span>
+                    <span
+                      className={`meta-pill status-pill ${
+                        institution.isActive === false
+                          ? "status-inactive"
+                          : "status-active"
+                      }`}
+                    >
+                      {institution.isActive === false ? "Inactive" : "Active"}
                     </span>
                     {renderPaletteTag(institution)}
                   </div>

@@ -4,6 +4,7 @@ import "./SuperAdminSidebar.css";
 
 const SuperAdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
   const location = useLocation();
+  const isMobileViewport = window.innerWidth < 992;
 
   const isActive = (path) => (location.pathname === path ? "active" : "");
 
@@ -16,7 +17,7 @@ const SuperAdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
   return (
     <>
       {/* Overlay for mobile */}
-      {isSidebarVisible && window.innerWidth < 992 && (
+      {isSidebarVisible && isMobileViewport && (
         <div
           className="sidebar-overlay visible"
           onClick={() => setIsSidebarVisible(false)}
@@ -24,8 +25,11 @@ const SuperAdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
         ></div>
       )}
 
-      {isSidebarVisible && (
-        <nav className="sidebar" aria-label="Super admin navigation">
+      {
+        <nav
+          className={`sidebar ${isSidebarVisible ? "visible" : ""}`}
+          aria-label="Super admin navigation"
+        >
           {/* Header is hidden via CSS but kept for structure if needed */}
           <div className="sidebar-header">
             <h4>Super Admin</h4>
@@ -66,7 +70,7 @@ const SuperAdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
             </li>
           </ul>
         </nav>
-      )}
+      }
 
       {/* Mobile Menu Toggle Button */}
       <button

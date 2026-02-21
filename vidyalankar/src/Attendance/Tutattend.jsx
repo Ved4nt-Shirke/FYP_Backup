@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import axios from 'axios';
-import * as XLSX from 'xlsx';
-import './TheoryEdit.css';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import axios from "axios";
+import * as XLSX from "xlsx";
+import "./TheoryEdit.css";
 
 const StudentAttendance = () => {
   // State Management
@@ -10,7 +10,7 @@ const StudentAttendance = () => {
   const [columnsVisible, setColumnsVisible] = useState({
     rollId: true,
     name: true,
-    mark: true
+    mark: true,
   });
   const [showDropdown, setShowDropdown] = useState(false);
   const [showHeaders, setShowHeaders] = useState(true);
@@ -20,16 +20,34 @@ const StudentAttendance = () => {
 
   // Data Initialization
   useEffect(() => {
-    axios.get('http://localhost:5000/api/students')
-      .then(res => {
-        const studentList = res.data.map(student => ({
+    // Get ciannData from localStorage to filter by division
+    const ciannDataStr = localStorage.getItem("ciannData");
+
+    const params = {};
+    if (ciannDataStr) {
+      try {
+        const ciannData = JSON.parse(ciannDataStr);
+        if (ciannData.division) {
+          params.division = ciannData.division;
+        }
+      } catch (err) {
+        console.error("Error parsing ciannData:", err);
+      }
+    }
+
+    axios
+      .get("http://localhost:5000/api/students", { params })
+      .then((res) => {
+        const studentList = res.data.map((student) => ({
           rollId: student.rollNo,
           name: student.studentName,
-          attendance: 'Absent'
+          enrollmentNo: student.enrollmentNo || "N/A",
+          batch: student.batch || "N/A",
+          attendance: "Absent",
         }));
         setStudents(studentList);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Failed to fetch students:", err);
         setStudents([]);
       });
@@ -38,48 +56,52 @@ const StudentAttendance = () => {
   // Handlers
   const toggleAttendance = (index) => {
     const updated = [...students];
-    updated[index].attendance = updated[index].attendance === 'Present' ? 'Absent' : 'Present';
+    updated[index].attendance =
+      updated[index].attendance === "Present" ? "Absent" : "Present";
     setStudents(updated);
-    console.log('Updated attendance:', updated[index]); // Debug log
+    console.log("Updated attendance:", updated[index]); // Debug log
   };
 
   const handleSubmit = async () => {
     try {
-      const topic = localStorage.getItem('topic');
-      const actualDate = localStorage.getItem('date');
-      const ciannDataStr = localStorage.getItem('ciannData');
-      
+      const topic = localStorage.getItem("topic");
+      const actualDate = localStorage.getItem("date");
+      const ciannDataStr = localStorage.getItem("ciannData");
+
       if (!topic || !actualDate) {
         alert("Missing topic or date from local storage.");
         return;
       }
-      
+
       if (!ciannDataStr) {
         alert("Missing CIANN data. Please select a CIANN first.");
         return;
       }
-      
+
       const ciannData = JSON.parse(ciannDataStr);
-      const payload = { 
-        Topic: topic, 
-        actualDate, 
+      const payload = {
+        Topic: topic,
+        actualDate,
         students,
         ciannId: ciannData.ciannId,
         subject: ciannData.subject,
-        division: ciannData.division
+        division: ciannData.division,
       };
-      
+
       console.log("Payload to be sent:", payload);
-      await axios.post('http://localhost:5000/api/tutorial-attendance', payload);
+      await axios.post(
+        "http://localhost:5000/api/tutorial-attendance",
+        payload,
+      );
       alert("Student attendance submitted!");
-      
+
       // Clear localStorage after successful submission
-      localStorage.removeItem('topic');
-      localStorage.removeItem('date');
-      localStorage.removeItem('ciannData');
-      
+      localStorage.removeItem("topic");
+      localStorage.removeItem("date");
+      localStorage.removeItem("ciannData");
+
       // Navigate to dashboard
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
       console.error("Error submitting attendance:", err);
       alert("Submission failed. Check the console for details.");
@@ -87,22 +109,22 @@ const StudentAttendance = () => {
   };
 
   const handleExport = () => {
-    const data = students.map(student => ({
-      'Roll ID': student.rollId,
-      'Name': student.name,
-      'Mark': student.attendance === 'Present' ? '✔' : ''
+    const data = students.map((student) => ({
+      "Roll ID": student.rollId,
+      Name: student.name,
+      Mark: student.attendance === "Present" ? "✔" : "",
     }));
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
-    XLSX.writeFile(workbook, 'Student_Attendance.xlsx');
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+    XLSX.writeFile(workbook, "Student_Attendance.xlsx");
   };
 
   const toggleColumn = (column) => {
-    setColumnsVisible(prev => ({ ...prev, [column]: !prev[column] }));
+    setColumnsVisible((prev) => ({ ...prev, [column]: !prev[column] }));
   };
 
-  const handleGridView = () => setShowDropdown(prev => !prev);
+  const handleGridView = () => setShowDropdown((prev) => !prev);
 
   // Effect for closing dropdown
   useEffect(() => {
@@ -111,46 +133,111 @@ const StudentAttendance = () => {
         setShowDropdown(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-
 
   return (
     <div className="timetable-main-content">
       <div className="theory-attendance-container">
         <div className="header-row">
-          <h3>Student Tutorial Attendance</h3>
+          <h3>Tutorial Attendance</h3>
         </div>
-        
+
+        {/* Subject Context Header */}
+        {(() => {
+          const ciannDataStr = localStorage.getItem("ciannData");
+          const topic = localStorage.getItem("topic");
+          const date = localStorage.getItem("date");
+          let ciannData = null;
+          try {
+            ciannData = ciannDataStr ? JSON.parse(ciannDataStr) : null;
+          } catch (err) {
+            console.error("Error parsing ciannData:", err);
+          }
+
+          return ciannData ? (
+            <div
+              className="subject-info"
+              style={{
+                backgroundColor: "#f0f7ff",
+                padding: "15px",
+                marginBottom: "15px",
+                borderRadius: "8px",
+                borderLeft: "4px solid #4CAF50",
+              }}
+            >
+              <h4 style={{ margin: "0 0 10px 0", color: "#2c5282" }}>
+                {ciannData.subject?.name} ({ciannData.subject?.code})
+              </h4>
+              <p style={{ margin: "5px 0", fontSize: "14px" }}>
+                <strong>Division:</strong> {ciannData.division} |
+                <strong> Department:</strong>{" "}
+                {ciannData.department?.name || "N/A"}
+              </p>
+              {topic && (
+                <p style={{ margin: "5px 0", fontSize: "14px" }}>
+                  <strong>Topic:</strong> {topic}
+                </p>
+              )}
+              {date && (
+                <p style={{ margin: "5px 0", fontSize: "14px" }}>
+                  <strong>Date:</strong> {date}
+                </p>
+              )}
+            </div>
+          ) : null;
+        })()}
+
         <div className="toolbar toolbar-icons">
           <input type="text" placeholder="Search" className="search-input" />
-          <button className="icon-btn" onClick={() => setArrowOpen(prev => !prev)}>
-            <i className={arrowOpen ? "bi bi-caret-up-fill" : "bi bi-caret-down-fill"}></i>
+          <button
+            className="icon-btn"
+            onClick={() => setArrowOpen((prev) => !prev)}
+          >
+            <i
+              className={
+                arrowOpen ? "bi bi-caret-up-fill" : "bi bi-caret-down-fill"
+              }
+            ></i>
           </button>
           <button className="icon-btn" onClick={() => window.location.reload()}>
             <i className="bi bi-arrow-clockwise"></i>
           </button>
-          <button className="icon-btn" onClick={() => setShowHeaders(prev => !prev)}>
+          <button
+            className="icon-btn"
+            onClick={() => setShowHeaders((prev) => !prev)}
+          >
             <i className="bi bi-list"></i>
           </button>
-          <div style={{ position: 'relative' }} ref={dropdownRef}>
+          <div style={{ position: "relative" }} ref={dropdownRef}>
             <button className="icon-btn" onClick={handleGridView}>
               <i className="bi bi-grid-3x3-gap-fill"></i>
             </button>
             {showDropdown && (
               <div className="dropdown-menu">
                 <label className="dropdown-label">
-                  <input type="checkbox" checked={columnsVisible.rollId} onChange={() => toggleColumn('rollId')} />
+                  <input
+                    type="checkbox"
+                    checked={columnsVisible.rollId}
+                    onChange={() => toggleColumn("rollId")}
+                  />
                   Roll ID
                 </label>
                 <label className="dropdown-label">
-                  <input type="checkbox" checked={columnsVisible.name} onChange={() => toggleColumn('name')} />
+                  <input
+                    type="checkbox"
+                    checked={columnsVisible.name}
+                    onChange={() => toggleColumn("name")}
+                  />
                   Name
                 </label>
                 <label className="dropdown-label">
-                  <input type="checkbox" checked={columnsVisible.mark} onChange={() => toggleColumn('mark')} />
+                  <input
+                    type="checkbox"
+                    checked={columnsVisible.mark}
+                    onChange={() => toggleColumn("mark")}
+                  />
                   Mark
                 </label>
               </div>
@@ -166,31 +253,43 @@ const StudentAttendance = () => {
             {showHeaders && (
               <thead>
                 <tr>
-                  {columnsVisible.rollId && <th>Roll ID</th>}
+                  {columnsVisible.rollId && <th>Roll No</th>}
                   {columnsVisible.name && <th>Name</th>}
+                  <th>Enrollment No</th>
+                  <th>Batch</th>
                   {columnsVisible.mark && <th>Mark Present</th>}
                 </tr>
               </thead>
             )}
             <tbody>
-              {students.map((student, index) => (
-                <tr key={index}>
-                  {columnsVisible.rollId && <td>{student.rollId}</td>}
-                  {columnsVisible.name && <td>{student.name}</td>}
-                  {columnsVisible.mark && (
-                    <td style={{ textAlign: 'center' }}>
-                      <label className="custom-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={student.attendance === 'Present'}
-                          onChange={() => toggleAttendance(index)}
-                        />
-                        <span className="checkmark"></span>
-                      </label>
-                    </td>
-                  )}
+              {students.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: "center" }}>
+                    No students found for this division.
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                students.map((student, index) => (
+                  <tr key={index}>
+                    {columnsVisible.rollId && <td>{student.rollId}</td>}
+                    {columnsVisible.name && <td>{student.name}</td>}
+                    <td>{student.enrollmentNo}</td>
+                    <td>{student.batch}</td>
+                    {columnsVisible.mark && (
+                      <td style={{ textAlign: "center" }}>
+                        <label className="custom-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={student.attendance === "Present"}
+                            onChange={() => toggleAttendance(index)}
+                          />
+                          <span className="checkmark"></span>
+                        </label>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

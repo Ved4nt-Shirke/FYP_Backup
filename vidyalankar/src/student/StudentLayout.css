@@ -2,7 +2,7 @@
   display: flex;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+  background: linear-gradient(135deg, var(--primary-accent-light, #f5f7fa) 0%, #eefbf6 100%);
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -12,7 +12,11 @@
 /* Sidebar Styles */
 .student-sidebar {
   width: 250px;
-  background: linear-gradient(160deg, #2e7d32 0%, #1b5e20 100%);
+  background: linear-gradient(
+    160deg,
+    var(--primary-accent, #2e7d32) 0%,
+    var(--primary-accent-dark, #1b5e20) 100%
+  );
   color: white;
   height: 100%;
   position: fixed;
@@ -43,6 +47,44 @@
   text-overflow: ellipsis;
   letter-spacing: 0.5px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.student-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.student-brand-logo,
+.student-brand-fallback,
+.student-header-logo,
+.student-header-fallback {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.student-brand-fallback,
+.student-header-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.student-brand-fallback {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.student-brand-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .sidebar-menu {
@@ -167,7 +209,7 @@
 }
 
 .student-header {
-  background: linear-gradient(to right, white, #f8f9fa);
+  background: linear-gradient(to right, #ffffff, #f4fbf8);
   padding: 15px 30px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -180,7 +222,7 @@
 .header-left h1 {
   margin: 0;
   font-size: 1.8rem;
-  color: #2d3748;
+  color: var(--text-primary, #2d3748);
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -199,14 +241,26 @@
 
 .user-name {
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-primary, #2d3748);
   font-size: 1.1rem;
 }
 
 .college-info {
   font-size: 0.9rem;
-  color: #718096;
+  color: var(--text-secondary, #718096);
   font-weight: 500;
+}
+
+.student-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.student-header-fallback {
+  background: #eaf9f1;
+  color: var(--primary-accent-dark, #065f46);
+  border-color: #9fd9bf;
 }
 
 .logout-btn {
@@ -214,7 +268,11 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: linear-gradient(to right, #e53e3e, #c53030);
+  background: linear-gradient(
+    to right,
+    var(--primary-accent, #10b981),
+    var(--primary-accent-dark, #059669)
+  );
   color: white;
   border: none;
   border-radius: 6px;
@@ -225,7 +283,11 @@
 }
 
 .logout-btn:hover {
-  background: linear-gradient(to right, #c53030, #9b2c2c);
+  background: linear-gradient(
+    to right,
+    var(--primary-accent-dark, #059669),
+    var(--primary-accent, #10b981)
+  );
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -239,7 +301,7 @@
   flex: 1;
   padding: 30px;
   overflow-y: auto;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, var(--primary-accent-light, #f8fafc) 0%, #f2faf6 100%);
 }
 
 /* Responsive Styles */

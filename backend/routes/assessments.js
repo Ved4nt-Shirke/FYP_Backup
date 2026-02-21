@@ -613,6 +613,71 @@ router.get('/batch/:batch', async (req, res) => {
   }
 });
 
+// POST assessment data by student names (division-based fetch)
+router.post('/by-students', async (req, res) => {
+  try {
+    const { studentNames } = req.body;
+
+    if (!Array.isArray(studentNames) || studentNames.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'studentNames array is required',
+      });
+    }
+
+    const students = await Student.find({
+      studentName: { $in: studentNames },
+    })
+      .select('rollNo studentName batch')
+      .sort({ rollNo: 1 });
+
+    if (students.length === 0) {
+      return res.json({
+        success: true,
+        data: [],
+        message: 'No students found for provided names',
+      });
+    }
+
+    const assessments = await Assessment.find({
+      studentName: { $in: studentNames },
+    }).sort({ studentName: 1, experimentNumber: 1 });
+
+    const studentAssessments = {};
+    students.forEach((student) => {
+      studentAssessments[student.studentName] = {
+        _id: student._id,
+        rollNo: student.rollNo,
+        studentName: student.studentName,
+        assessments: {},
+      };
+    });
+
+    assessments.forEach((assessment) => {
+      if (studentAssessments[assessment.studentName]) {
+        studentAssessments[assessment.studentName].assessments[
+          assessment.experimentNumber
+        ] = {
+          marks: assessment.marks,
+          experimentName: assessment.experimentName,
+          assessedDate: assessment.assessedDate,
+        };
+      }
+    });
+
+    const result = Object.values(studentAssessments);
+
+    res.json({
+      success: true,
+      data: result,
+      totalStudents: result.length,
+    });
+  } catch (error) {
+    console.error('Error fetching assessment data by students:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // GET assessment data for editing (experiment + student marks)
 router.get('/edit-data/:experimentId', async (req, res) => {
   try {

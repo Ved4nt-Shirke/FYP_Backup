@@ -2,9 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Sidebar.css";
 
-const Sidebar = ({ isSidebarVisible, setIsSidebarVisible, ciannData }) => {
+const Sidebar = ({
+  isSidebarVisible,
+  setIsSidebarVisible,
+  ciannData,
+  disableOnCompact = false,
+}) => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
 
   const sidebarRef = useRef(null);
   const dropdownRefs = {
@@ -14,6 +20,8 @@ const Sidebar = ({ isSidebarVisible, setIsSidebarVisible, ciannData }) => {
     assessment: useRef(null),
     ct: useRef(null),
     ptMicroProject: useRef(null),
+    msbte: useRef(null),
+    practicalExams: useRef(null),
   };
 
   const navigate = useNavigate();
@@ -21,6 +29,7 @@ const Sidebar = ({ isSidebarVisible, setIsSidebarVisible, ciannData }) => {
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 769);
+      setIsCompact(window.innerWidth <= 1024);
     };
 
     checkMobile();
@@ -54,16 +63,27 @@ const Sidebar = ({ isSidebarVisible, setIsSidebarVisible, ciannData }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownRefs]);
 
+  if (disableOnCompact && isCompact) {
+    return null;
+  }
+
   const handleDropdownToggle = (dropdownName) => {
     setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
+  };
+
+  const navigateAndClose = (path) => {
+    navigate(path);
+    if (window.innerWidth <= 1024) {
+      setIsSidebarVisible(false);
+    }
   };
 
   const handleCiannSelect = (option) => {
     setOpenDropdown(null);
     if (option === "Create CIANN") {
-      navigate("/create-ciann");
+      navigateAndClose("/create-ciann");
     } else if (option === "Edit CIANN") {
-      navigate("/edit-ciann");
+      navigateAndClose("/edit-ciann");
     } else if (option === "Print CIANN") {
       alert("Print CIANN clicked");
     }
@@ -72,60 +92,91 @@ const Sidebar = ({ isSidebarVisible, setIsSidebarVisible, ciannData }) => {
   const handleAttendanceSelect = (option) => {
     setOpenDropdown(null);
     if (option === "Mark Attendance") {
-      navigate("/mark-attendance");
+      navigateAndClose("/mark-attendance");
     } else if (option === "View Attendance") {
-      navigate("/view-attendance");
+      navigateAndClose("/view-attendance");
     } else if (option === "Edit Attendance") {
-      navigate("/edit-attendance");
+      navigateAndClose("/edit-attendance");
     } else if (option === "Defaultters") {
-      navigate("/defaulter");
+      navigateAndClose("/defaulter");
     } else if (option === "Summary") {
-      navigate("/summary-cards");
+      navigateAndClose("/summary-cards");
+    } else if (option === "Practical Batches") {
+      navigateAndClose("/practical-batch-distribution");
     }
   };
 
   const handleCourseSelect = (option) => {
     setOpenDropdown(null);
     if (option === "Chapters") {
-      navigate("/chapters");
+      navigateAndClose("/chapters");
     } else if (option === "Experiment") {
-      navigate("/experiment");
+      navigateAndClose("/experiment");
     }
   };
 
   const handleAssessmentSelect = (option) => {
     setOpenDropdown(null);
     if (option === "Assess") {
-      navigate("/assess-ciann");
+      navigateAndClose("/assess-ciann");
     } else if (option === "Edit") {
-      navigate("/edit-card");
+      navigateAndClose("/edit-card");
     } else if (option === "Studentwise (Defaulters)") {
-      navigate("/studentwise-defaulters");
+      navigateAndClose("/studentwise-defaulters");
     } else if (option === "View") {
-      navigate("/view-assessment");
+      navigateAndClose("/view-assessment");
     }
   };
 
   const handleCtSelect = (option) => {
     setOpenDropdown(null);
     if (option === "CT1") {
-      navigate("/ct/ct1");
+      navigateAndClose("/ct-cianns");
     } else if (option === "CT2") {
-      navigate("/ct/ct2");
+      navigateAndClose("/ct-cianns");
     }
   };
 
   const handlePtMicroProjectSelect = (option) => {
     setOpenDropdown(null);
     if (option === "Microproject") {
-      navigate("/pt-microproject/microproject");
+      navigateAndClose("/pt-microproject/microproject");
+    }
+  };
+
+  const handleMSBTESelect = (option) => {
+    setOpenDropdown(null);
+    if (option === "FA-PR-K3: Generate") {
+      navigateAndClose("/msbte/fa-pr-k3/generate");
+    } else if (option === "SA-PR-K4: Generate") {
+      navigateAndClose("/msbte/sa-pr-k4/generate");
+    } else if (option === "SA-PR-K4: Edit") {
+      navigateAndClose("/msbte/sa-pr-k4/edit");
+    } else if (option === "SA-PR-K4: Print") {
+      navigateAndClose("/msbte/sa-pr-k4/print");
+    } else if (option === "Attendance Report") {
+      navigateAndClose("/msbte/attendance");
+    }
+  };
+
+  const handlePracticalExamSelect = (option) => {
+    setOpenDropdown(null);
+    if (option === "Manage") {
+      navigateAndClose("/faculty/practical-exams");
+    } else if (option === "Add Exam") {
+      navigateAndClose("/faculty/practical-exams/add");
+    } else if (option === "View/Edit") {
+      navigateAndClose("/faculty/practical-exams/manage");
+    } else if (option === "Status Control") {
+      navigateAndClose("/faculty/practical-exams/status");
     }
   };
 
   const handleItemClick = (action) => {
-    setOpenDropdown(null);
-    if (action === "dashboard") {
-      navigate("/dashboard");
+    if (action === "MSBTE Formats") {
+      handleDropdownToggle("msbte");
+    } else if (action === "dashboard") {
+      navigateAndClose("/dashboard");
     } else {
       alert(`${action} clicked`);
     }
@@ -155,8 +206,8 @@ const Sidebar = ({ isSidebarVisible, setIsSidebarVisible, ciannData }) => {
               raw === "VIT"
                 ? "VIT"
                 : raw === "VSIT"
-                ? "VSIT"
-                : "VP Polytechnic";
+                  ? "VSIT"
+                  : "VP Polytechnic";
             return <h2 className="sidebar-title">{title}</h2>;
           })()}
           {isMobile && (
@@ -299,6 +350,18 @@ const Sidebar = ({ isSidebarVisible, setIsSidebarVisible, ciannData }) => {
                       }}
                     >
                       <i className="bi bi-exclamation-triangle"></i> Defaultters
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAttendanceSelect("Practical Batches");
+                      }}
+                    >
+                      <i className="bi bi-people-fill"></i> Practical Batches
                     </a>
                   </li>
                 </ul>
@@ -478,18 +541,161 @@ const Sidebar = ({ isSidebarVisible, setIsSidebarVisible, ciannData }) => {
               )}
             </div>
           </li>
-          {["MSBTE Formats", "Practical Exam", "Mock Exams"].map(
-            (item, index) => (
-              <li
-                key={index}
-                className="sidebar-item"
-                onClick={() => handleItemClick(item)}
+          {/* MSBTE Formats Dropdown */}
+          <li className="sidebar-item">
+            <div className="dropdown" ref={dropdownRefs.msbte}>
+              <button
+                className="btn dropdown-toggle dropdown-header w-100 text-start"
+                type="button"
+                onClick={() => handleDropdownToggle("msbte")}
               >
-                <i className="bi bi-gear"></i>
-                <span>{item}</span>
-              </li>
-            )
-          )}
+                <i className="bi bi-folder-fill"></i>
+                <span>MSBTE Formats</span>
+              </button>
+              {openDropdown === "msbte" && (
+                <ul className="dropdown-menu show">
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleMSBTESelect("FA-PR-K3: Generate");
+                      }}
+                    >
+                      <i className="bi bi-plus-circle"></i> FA-PR-K3: Generate
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleMSBTESelect("SA-PR-K4: Generate");
+                      }}
+                    >
+                      <i className="bi bi-plus-circle"></i> SA-PR-K4: Generate
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleMSBTESelect("SA-PR-K4: Edit");
+                      }}
+                    >
+                      <i className="bi bi-pencil-square"></i> SA-PR-K4: Edit
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleMSBTESelect("SA-PR-K4: Print");
+                      }}
+                    >
+                      <i className="bi bi-printer-fill"></i> SA-PR-K4: Print
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleMSBTESelect("Attendance Report");
+                      }}
+                    >
+                      <i className="bi bi-calendar-check"></i> Attendance Report
+                    </a>
+                  </li>
+                </ul>
+              )}
+            </div>
+          </li>
+
+          {/* Practical Exams Dropdown */}
+          <li className="sidebar-item">
+            <div className="dropdown" ref={dropdownRefs.practicalExams}>
+              <button
+                className="btn dropdown-toggle dropdown-header w-100 text-start"
+                type="button"
+                onClick={() => handleDropdownToggle("practicalExams")}
+              >
+                <i className="bi bi-pencil-square"></i>
+                <span>Practical Exams</span>
+              </button>
+              {openDropdown === "practicalExams" && (
+                <ul className="dropdown-menu show">
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePracticalExamSelect("Manage");
+                      }}
+                    >
+                      <i className="bi bi-house-door"></i> Dashboard
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePracticalExamSelect("Add Exam");
+                      }}
+                    >
+                      <i className="bi bi-plus-circle"></i> Add Exam
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePracticalExamSelect("View/Edit");
+                      }}
+                    >
+                      <i className="bi bi-list-check"></i> View/Edit
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePracticalExamSelect("Status Control");
+                      }}
+                    >
+                      <i className="bi bi-eye-slash"></i> Status Control
+                    </a>
+                  </li>
+                </ul>
+              )}
+            </div>
+          </li>
+
+          {/* Other Items */}
+          {["Mock Exams"].map((item, index) => (
+            <li
+              key={index}
+              className="sidebar-item"
+              onClick={() => handleItemClick(item)}
+            >
+              <i className="bi bi-gear"></i>
+              <span>{item}</span>
+            </li>
+          ))}
         </ul>
       </div>
     </>

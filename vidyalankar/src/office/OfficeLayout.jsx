@@ -5,7 +5,10 @@ import "./OfficeLayout.css";
 
 const OfficeLayout = ({ children }) => {
   const [sidebarVisible, setSidebarVisible] = React.useState(true);
-  const staffName = localStorage.getItem("staffName") || localStorage.getItem("name") || "Office Staff";
+  const staffName =
+    localStorage.getItem("staffName") ||
+    localStorage.getItem("name") ||
+    "Office Staff";
 
   const handleLogout = () => {
     localStorage.clear();
@@ -18,20 +21,14 @@ const OfficeLayout = ({ children }) => {
 
   return (
     <div className="office-layout-container">
-      <OfficeSidebar 
+      <OfficeSidebar
         isVisible={sidebarVisible}
         setIsVisible={setSidebarVisible}
         onLogout={handleLogout}
         staffName={staffName}
       />
       <div className="office-layout-main">
-        <OfficeHeader 
-          onMenuToggle={handleMenuToggle}
-          staffName={staffName}
-        />
-        <div className="office-layout-content">
-          {children}
-        </div>
+        <div className="office-layout-content">{children}</div>
       </div>
     </div>
   );

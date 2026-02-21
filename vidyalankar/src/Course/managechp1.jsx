@@ -1,243 +1,175 @@
 // managechp1.jsx
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './managechp1.css';
-
-// Data structures (classData, courseData) remain the same...
-const classData = {
-  'Computer Engineering': [
-    'CO1K', 'CO2K', 'CO3K', 'CO4K', 'CO5K', 'CO6K'
-  ],
-  'Electronics and Telecommunication Engineering': [
-    'EJ1K', 'EJ2K', 'EJ3K', 'EJ4K', 'EJ5K', 'EJ6K'
-  ],
-  'Information Technology': [
-    'IF1K', 'IF2K', 'IF3K', 'IF4K', 'IF5K', 'IF6K'
-  ],
-  'Electronics and Computer Engineering': [
-    'TE1K', 'TE2K', 'TE3K', 'TE4K', 'TE5K', 'TE6K'
-  ]
-};
-
-const courseData = {
-  'CO1K': [
-    "COMMUNICATION SKILLS (ENGLISH)", 
-    "BASIC MATHEMATICS",
-    "ENGINEERING GRAPHICS",
-    "ENGINEERING WORKSHOP PRACTICE",
-    "FUNDAMENTALS OF ICT",
-    "Basic Science(Physics)",
-    "Basic Science(Chemistry)",
-    "Yoga and Meditation"
-  ],
-  'CO2K': [
-    "Linux Basics",
-     "Professional Communication",
-      "Social and Life Skills",
-       "Web Page Designing",
-        "Applied Mathematics",
-         "Basic Electrical And Electronics Engineering (Electrical)",
-          "Programming in C",
-           "Basic Electrical And Electronics Engineering (Electronics)"
-  ],
-  'CO3K': [
-    "Data Structure using C",
-     "Database Management System",
-      "Digital Techniques",
-       "Object Oriented Programming using C++",
-        "Computer Graphics",
-         "Essence of Indian Constitution"
-  ],
-  'CO4K': [
-    "Environmental Education and Sustainability",
-     "Java Programming",
-      "Data Communication and Computer Network",
-       "Microprocessor Programming",
-        "Python Programming",
-         "UI/UX Design"
-  ],
-  'CO5K': [
-    "OPERATING SYSTEM",
-     "SOFTWARE ENGINEERING",
-      "ENTREPRENEURSHIP DEVELOPMENT AND STARTUPS",
-       "SEMINAR AND PROJECT INITIATION COURSE",
-        "INTERNSHIP",
-         "CLOUD COMPUTING"
-  ],
-  'CO6K': [],
-  'EJ1K': [
-    "COMMUNICATION SKILLS(ENGLISH)",
-     "BASIC MATHEMATICS",
-      "ENGINEERING GRAPHICS",
-       "ENGINEERING WORKSHOP PRACTICE",
-        "FUNDAMENTALS OF ICT",
-         "Basic Science(Physics)",
-          "Basic Science(Chemistry)"
-  ],
-  'EJ2K': [
-    "Professional Communication",
-     "Social And Life Skills",
-      "Electronics Workshop Practice",
-       "Programming In C Language",
-        "Applied Mathematics",
-         "Basic Electronics",
-          "Elements of Electrical Engineering",
-           "Electronic Materials & Components"
-  ],
-  'EJ3K': [
-    "Digital Techniques",
-     "Analog Electronics",
-      "Circuits & Networks",
-       "Principles of Electronic Communication",
-        "Essence of Indian Constitution",
-         "Basic Python Programming",
-          "Electronic Measurements & Instrumentation"
-  ],
-  'EJ4K': [
-    "Environmental Education and Sustainability",
-     "DIGITAL COMMUNICATION SYSTEMS",
-      "CONSUMER ELECTRONIC SYSTEMS",
-       "MICROCONTROLLER & APPLICATIONS",
-        "BASIC POWER ELECTRONICS",
-         "ELECTRONIC EQUIPMENT MAINTENANCE & SIMULATION"
-  ],
-  'EJ5K': [
-    "EMBEDDED SYSTEM",
-     "MOBILE & WIRELESS COMMUNICATION",
-      "ENTREPRENEURSHIP DEVELOPMENT AND STARTUPS",
-       "SEMINAR AND PROJECT INITIATION COURSE",
-        "INTERNSHIP", "IOT APPLICATIONS"
-  ],
-  'EJ6K': [],
-  'IF1K': [
-    "COMMUNICATIONS SKILLS(ENGLISH)",
-     "BASIC MATHEMATICS",
-      "ENGINEERING GRAPHICS",
-       "ENGINEERING WORKSHOP PRACTICE",
-        "FUNDAMENTALS OF ICT",
-         "Basic Science(Physics)",
-          "Basic Science(Chemistry)",
-           "Yoga and Meditation"
-  ],
-  'IF2K': [
-    "Linux Basics",
-     "Professional Communication",
-      "Social and Life Skills",
-       "Web Page Designing",
-        "Applied Mathematics",
-         "Basic Electrical and Electronics Engineering (Electrical)",
-          "Programming in C",
-           "Basic Electrical And Electronics Engineering (Electronics)"
-  ],
-  'IF3K': [
-    "Data Structure using C",
-     "Database Management System",
-      "Object Oriented Programming using C++", 
-      "Digital Techniques and Microprocessors",
-       "Essence of Indian Constitution",
-        "Applied Multimedia Techniques"
-  ],
-  'IF4K': [
-    "Environmental Education and Sustainability",
-     "Java Programming",
-      "Data Communication and Computer Network",
-       "Python Programming",
-        "Information Security",
-         "Internet Of Things"
-  ],
-  'IF5K': [
-    "OPERATING SYSTEMS",
-     "SOFTWARE ENGINEERING AND TESTING",
-      "ENTREPRENEURSHIP DEVELOPEMENT AND STARTUPS", 
-      "SEMINAR AND PROJECT INITIATION COURSE", 
-      "INTERNSHIP",
-       "DATA ANALYTICS"
-  ],
-  'TE1K': [
-    "Communication Skill (English)",
-     "Basic Science(Physics)",
-      "Basic Science(Chemistry)",
-       "Basic Mathematics",
-        "Engineering Graphics",
-         "Fundamentals of ICT",
-          "Workshop Practice",
-           "Yoga and Meditation"
-  ],
-  'TE2K': [
-    "APPLIED MATHEMATICS",
-     "BASIC ELECTRONICS",
-      "ELEMENTS OF ELECTRICAL ENGINEERING",
-       "PROFESSIONAL COMMUNICATION",
-        "SOCIAL AND LIFE SKILLS", 
-        "ELECTRONICS WORKSHOP PRACTICE",
-         "PROGRAMMING IN 'C' LANGUAGE",
-          "WEB PAGE DESIGN"
-  ],
-  'TE3K': [
-    "Database Management System",
-     "Digital Techniques",
-      "Object Oriented Programming Using C++",
-       "Analog Electronics",
-        "Essence Of Indian Constitution", 
-        "EDA Tools"
-  ],
-  'TE4K': [],
-  'TE5K': [],
-  'TE6K': []
-};
-
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { config } from "../config/api";
+import "./managechp1.css";
 
 const ManageChapters1 = () => {
   const navigate = useNavigate();
 
-  const [selectedProgram, setSelectedProgram] = useState('');
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
-  
-  const [availableClasses, setAvailableClasses] = useState([]);
-  const [availableCourses, setAvailableCourses] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
 
-  const programs = [
-    'Computer Engineering',
-    'Electronics and Telecommunication Engineering',
-    'Information Technology',
-    'Electronics and Computer Engineering',
-  ];
+  // CIANN data
+  const [cianns, setCianns] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
+  // Fetch CIANNs on mount
   useEffect(() => {
-    if (selectedProgram) {
-      setAvailableClasses(classData[selectedProgram] || []);
-    } else {
-      setAvailableClasses([]);
-    }
-    setSelectedClass('');
-  }, [selectedProgram]);
+    fetchCianns();
+  }, []);
 
+  // Extract unique departments from CIANNs
   useEffect(() => {
-    if (selectedClass) {
-      setAvailableCourses(courseData[selectedClass] || []);
-    } else {
-      setAvailableCourses([]);
+    if (cianns.length > 0) {
+      const uniqueDepts = [];
+      const deptMap = new Map();
+
+      cianns.forEach((ciann) => {
+        if (
+          ciann.department &&
+          ciann.department._id &&
+          !deptMap.has(ciann.department._id)
+        ) {
+          deptMap.set(ciann.department._id, {
+            _id: ciann.department._id,
+            name: ciann.department.name,
+            code: ciann.department.code,
+          });
+        }
+      });
+
+      setDepartments(Array.from(deptMap.values()));
     }
-    setSelectedCourse('');
-  }, [selectedClass]);
+  }, [cianns]);
+
+  // Filter courses when department changes
+  useEffect(() => {
+    if (selectedDepartment && cianns.length > 0) {
+      const deptCianns = cianns.filter(
+        (c) => c.department?._id === selectedDepartment,
+      );
+      const uniqueCourses = [];
+      const courseMap = new Map();
+
+      deptCianns.forEach((ciann) => {
+        const key = `${ciann.semester}-${ciann.class}`;
+        if (!courseMap.has(key)) {
+          courseMap.set(key, {
+            _id: key,
+            semester: ciann.semester,
+            class: ciann.class,
+            semesterType: ciann.semesterType,
+          });
+        }
+      });
+
+      setCourses(Array.from(courseMap.values()));
+      setSelectedCourse("");
+      setSelectedSubject("");
+    } else {
+      setCourses([]);
+      setSubjects([]);
+    }
+  }, [selectedDepartment, cianns]);
+
+  // Filter subjects when course changes
+  useEffect(() => {
+    if (selectedDepartment && cianns.length > 0) {
+      let filteredCianns = cianns.filter(
+        (c) => c.department?._id === selectedDepartment,
+      );
+
+      if (selectedCourse) {
+        filteredCianns = filteredCianns.filter(
+          (c) => `${c.semester}-${c.class}` === selectedCourse,
+        );
+      }
+
+      const uniqueSubjects = [];
+      const subjectMap = new Map();
+
+      filteredCianns.forEach((ciann) => {
+        if (
+          ciann.subject &&
+          ciann.subject._id &&
+          !subjectMap.has(ciann.subject._id)
+        ) {
+          subjectMap.set(ciann.subject._id, {
+            _id: ciann.subject._id,
+            name: ciann.subject.name,
+            code: ciann.subject.code,
+          });
+        }
+      });
+
+      setSubjects(Array.from(subjectMap.values()));
+      if (selectedCourse) {
+        setSelectedSubject("");
+      }
+    } else {
+      setSubjects([]);
+    }
+  }, [selectedCourse, selectedDepartment, cianns]);
+
+  const fetchCianns = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Session expired. Please login again.");
+        return;
+      }
+
+      const res = await fetch(config.cianns, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch CIANNs");
+      }
+
+      const data = await res.json();
+      setCianns(data || []);
+    } catch (err) {
+      console.error("Error fetching CIANNs:", err);
+      setError("Failed to load your courses. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    
-    if (!selectedProgram || !selectedClass || !selectedCourse) {
-      alert("Please select a program, class, and course before submitting.");
+
+    if (!selectedDepartment || !selectedCourse || !selectedSubject) {
+      alert(
+        "Please select a department, course, and subject before submitting.",
+      );
       return;
     }
-  
+
+    const selectedDept = departments.find((d) => d._id === selectedDepartment);
+    const selectedCourseObj = courses.find((c) => c._id === selectedCourse);
+    const selectedSubj = subjects.find((s) => s._id === selectedSubject);
+
     // Pass the selected data to the next route using the state property
-    navigate('/add-chapters', { 
-      state: { 
-        program: selectedProgram, 
-        className: selectedClass, 
-        course: selectedCourse 
-      } 
+    navigate("/add-chapters", {
+      state: {
+        program: selectedDept.name,
+        className: `${selectedCourseObj.class}`,
+        course: selectedSubj.name,
+        // Also pass IDs for future use
+        departmentId: selectedDept._id,
+        courseId: selectedCourse,
+        subjectId: selectedSubj._id,
+      },
     });
   };
 
@@ -245,61 +177,66 @@ const ManageChapters1 = () => {
     <div className="manage-chapters-container">
       <h2 className="page-title">Select Course To Add Chapters</h2>
 
+      {error && <div className="error-message">{error}</div>}
+
       <form className="chapter-form" onSubmit={handleSubmit}>
-        {/* ... form elements remain the same ... */}
         <div className="form-group">
-          <label htmlFor="program-select">Select Program</label>
+          <label htmlFor="department-select">Select Department</label>
           <select
-            id="program-select"
-            value={selectedProgram}
-            onChange={(e) => setSelectedProgram(e.target.value)}
-            className="program-select"
+            id="department-select"
+            value={selectedDepartment}
+            onChange={(e) => setSelectedDepartment(e.target.value)}
+            className="department-select"
+            disabled={loading}
           >
-            <option value="">-- Select Program --</option>
-            {programs.map((program, index) => (
-              <option key={index} value={program}>
-                {program}
+            <option value="">-- Select Department --</option>
+            {departments.map((dept) => (
+              <option key={dept._id} value={dept._id}>
+                {dept.name} ({dept.code})
               </option>
             ))}
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="class-select">Select Class</label>
-          <select
-            id="class-select"
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            disabled={!selectedProgram}
-          >
-            <option value="">-- Select Class --</option>
-            {availableClasses.map((className, index) => (
-              <option key={index} value={className}>
-                {className}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="course-select">Select Course</label>
+          <label htmlFor="course-select">Select Course (Semester)</label>
           <select
             id="course-select"
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}
-            disabled={!selectedClass}
+            disabled={!selectedDepartment || loading}
           >
             <option value="">-- Select Course --</option>
-            {availableCourses.map((courseName, index) => (
-              <option key={index} value={courseName}>
-                {courseName}
+            {courses.map((course) => (
+              <option key={course._id} value={course._id}>
+                Semester {course.semester} - {course.class}
+                {course.scheme})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="subject-select">Select Subject</label>
+          <select
+            id="subject-select"
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            disabled={!selectedDepartment || loading}
+          >
+            <option value="">-- Select Subject --</option>
+            {subjects.map((subject) => (
+              <option key={subject._id} value={subject._id}>
+                {subject.name} ({subject.code})
               </option>
             ))}
           </select>
         </div>
 
         <div className="form-actions">
-            <button type="submit" className="submit-btn">Submit</button>
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? "Loading..." : "Submit"}
+          </button>
         </div>
       </form>
     </div>

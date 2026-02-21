@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { showSuccessAlert, showErrorAlert } from "../utils/alertUtils.jsx";
 import { config } from "../config/api";
 import { TokenManager, SessionManager } from "../utils/authUtils.js";
+import { buildInstitutionLogoUrl } from "../utils/institutionBranding";
 import "./Login.css";
 import loginImage from "../assets/login.png";
 
@@ -38,21 +39,31 @@ const Login = () => {
       const data = await response.json();
 
       if (data.success) {
-        setInstitutions(data.institutions);
+        const normalized = (data.institutions || []).map((inst) => ({
+          ...inst,
+          isActive: inst.isActive !== false,
+        }));
+        setInstitutions(normalized);
         if (
-          data.institutions.length > 0 &&
-          !data.institutions.find((inst) => inst.code === college) &&
+          normalized.length > 0 &&
+          !normalized.find((inst) => inst.code === college) &&
           college !== "ALL"
         ) {
-          setCollege(data.institutions[0].code);
+          const firstActive = normalized.find((inst) => inst.isActive);
+          setCollege((firstActive || normalized[0]).code);
         }
       } else {
         const hardcodedInstitutions = [
-          { code: "VP", name: "Vidyalankar Polytechnic" },
-          { code: "VIT", name: "Vidyalankar Institute of Technology" },
+          { code: "VP", name: "Vidyalankar Polytechnic", isActive: true },
+          {
+            code: "VIT",
+            name: "Vidyalankar Institute of Technology",
+            isActive: true,
+          },
           {
             code: "VSIT",
             name: "Vidyalankar School of Information Technology",
+            isActive: true,
           },
         ];
         setInstitutions(hardcodedInstitutions);
@@ -60,9 +71,17 @@ const Login = () => {
     } catch (error) {
       console.error("Error fetching institutions:", error);
       const hardcodedInstitutions = [
-        { code: "VP", name: "Vidyalankar Polytechnic" },
-        { code: "VIT", name: "Vidyalankar Institute of Technology" },
-        { code: "VSIT", name: "Vidyalankar School of Information Technology" },
+        { code: "VP", name: "Vidyalankar Polytechnic", isActive: true },
+        {
+          code: "VIT",
+          name: "Vidyalankar Institute of Technology",
+          isActive: true,
+        },
+        {
+          code: "VSIT",
+          name: "Vidyalankar School of Information Technology",
+          isActive: true,
+        },
       ];
       setInstitutions(hardcodedInstitutions);
     } finally {
@@ -74,6 +93,18 @@ const Login = () => {
     if (!username || !password) {
       showErrorAlert("Please fill in all fields");
       return;
+    }
+
+    if (role !== "superadmin") {
+      const selectedInstitution = institutions.find(
+        (inst) => inst.code === college,
+      );
+      if (selectedInstitution && selectedInstitution.isActive === false) {
+        showErrorAlert(
+          "This institute is currently inactive. Please contact the administrator.",
+        );
+        return;
+      }
     }
 
     try {
@@ -106,7 +137,53 @@ const Login = () => {
           college: data.college || requestData.college,
         });
 
-        applyTheme(data.college || requestData.college);
+        const resolvedInstitutionCode = (
+          data.institutionCode ||
+          data.college ||
+          requestData.college ||
+          "VP"
+        )
+          .toString()
+          .toUpperCase();
+        const selectedInstitution = institutions.find(
+          (inst) => inst.code === resolvedInstitutionCode,
+        );
+        const resolvedInstitutionName =
+          data.institutionName ||
+          selectedInstitution?.name ||
+          resolvedInstitutionCode;
+        const resolvedInstitutionLogo =
+          data.institutionLogoUrl || selectedInstitution?.logoUrl || "";
+        const resolvedInstitutionPalette =
+          data.institutionPalette || selectedInstitution?.palette || null;
+
+        localStorage.setItem("institutionCode", resolvedInstitutionCode);
+        localStorage.setItem("institutionName", resolvedInstitutionName);
+        localStorage.setItem(
+          "institutionLogoUrl",
+          buildInstitutionLogoUrl(resolvedInstitutionLogo),
+        );
+        if (resolvedInstitutionPalette) {
+          localStorage.setItem(
+            "institutionPalette",
+            JSON.stringify(resolvedInstitutionPalette),
+          );
+        } else {
+          localStorage.removeItem("institutionPalette");
+        }
+
+        if ((data.role || role) === "student") {
+          localStorage.setItem(
+            "studentName",
+            data.studentName || data.userName || formattedName,
+          );
+          localStorage.setItem("enrollmentNo", data.enrollmentNo || "");
+          localStorage.setItem("studentRollNo", data.rollNo || "");
+          localStorage.setItem("studentDivision", data.division || "");
+          localStorage.setItem("studentBatch", data.batch || "");
+        }
+
+        applyTheme(resolvedInstitutionCode);
 
         showSuccessAlert("Login successful");
 
@@ -182,8 +259,13 @@ const Login = () => {
                   ) : (
                     <>
                       {institutions.map((inst) => (
-                        <option key={inst.code} value={inst.code}>
-                          {inst.code}
+                        <option
+                          key={inst.code}
+                          value={inst.code}
+                          disabled={inst.isActive === false}
+                        >
+                          {inst.code} - {inst.name}
+                          {inst.isActive === false ? " (inactive)" : ""}
                         </option>
                       ))}
                       <option value="ALL">ALL</option>

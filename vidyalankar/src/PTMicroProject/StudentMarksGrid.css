@@ -1,0 +1,202 @@
+.student-marks-grid-container {
+  margin: 20px 0;
+}
+
+.students-series {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.student-entry-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  gap: 15px;
+}
+
+.student-entry-card:hover {
+  border-color: #ffc107;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.15);
+}
+
+.student-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.student-number {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffc107;
+  min-width: 40px;
+  text-align: center;
+}
+
+.student-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.student-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-roll {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.marks-input-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.marks-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.marks-input {
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 10px 15px;
+  border: none;
+  width: 80px;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+}
+
+.marks-input:focus {
+  background-color: #f8f9fa;
+  box-shadow: inset 0 0 0 2px #ffc107;
+}
+
+.marks-input:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.marks-input::placeholder {
+  color: #999;
+}
+
+/* Mobile keypad styling */
+@media (max-width: 768px) {
+  .marks-input {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
+
+/* Remove number input spinner for all browsers */
+.marks-input::-webkit-outer-spin-button,
+.marks-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.marks-input[type="text"] {
+  -moz-appearance: textfield;
+}
+
+.marks-max-label {
+  background-color: #f8f9fa;
+  border-left: 2px solid #dee2e6;
+  font-weight: 600;
+  color: #666;
+  padding: 10px 12px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.marks-save-btn {
+  padding: 10px 16px;
+  font-weight: 500;
+  min-width: 90px;
+  white-space: nowrap;
+  border: none;
+}
+
+.marks-save-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(25, 135, 84, 0.3);
+}
+
+.marks-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Scrollbar styling */
+.students-series::-webkit-scrollbar {
+  width: 8px;
+}
+
+.students-series::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.students-series::-webkit-scrollbar-thumb {
+  background: #ffc107;
+  border-radius: 10px;
+}
+
+.students-series::-webkit-scrollbar-thumb:hover {
+  background: #ff9800;
+}
+
+@media (max-width: 768px) {
+  .student-entry-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .marks-input-section {
+    width: 100%;
+  }
+
+  .marks-input-wrapper {
+    flex: 1;
+  }
+
+  .marks-input {
+    width: 100%;
+  }
+
+  .marks-save-btn {
+    width: 100%;
+  }
+
+  .students-series {
+    max-height: 800px;
+  }
+}

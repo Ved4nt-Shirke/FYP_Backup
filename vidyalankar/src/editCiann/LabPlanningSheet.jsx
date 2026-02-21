@@ -6,6 +6,7 @@ import SecondarySidebar from "./SecondarySidebar";
 import WeekwisePlan from "./WeekwisePlan";
 import CiannSelector from "../components/CiannSelector";
 import { useCiann } from "../hooks/useCiann";
+import { config } from "../config/api";
 import "./LabPlanningSheet.css";
 
 const LabPlanningSheet = () => {
@@ -42,16 +43,6 @@ const LabPlanningSheet = () => {
   const ciannData = getCiannData();
   const ciannId = ciannData?.ciannId;
 
-  // Debug logging
-  useEffect(() => {
-    console.log("LabPlanningSheet - Debug Info:");
-    console.log("location.state:", location.state);
-    console.log("currentCiann:", currentCiann);
-    console.log("localStorage ciannData:", localStorage.getItem("ciannData"));
-    console.log("Final ciannData:", ciannData);
-    console.log("Final ciannId:", ciannId);
-  }, [location.state, currentCiann, ciannData, ciannId]);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [planningStarted, setPlanningStarted] = useState(false);
   const [showWeekwisePlan, setShowWeekwisePlan] = useState(false);
@@ -73,18 +64,16 @@ const LabPlanningSheet = () => {
       }
       setLoading(true);
       try {
-        const res = await fetch(`${config.labPlanning}/${ciannId}`);
-        if (res.status === 404) {
-          console.log(`No lab plans found for ciannId: ${ciannId}`);
-          setLabPlans([]);
-          setPlanningStarted(false);
-          return;
-        }
+        const res = await fetch(config.labPlanning);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        console.log("Fetched lab plans:", data);
-        setLabPlans(data);
-        setPlanningStarted(data.length > 0);
+        const allPlans = Array.isArray(data) ? data : [];
+        const numericCiannId = Number(ciannId);
+        const filteredPlans = allPlans.filter(
+          (plan) => Number(plan?.ciannId) === numericCiannId,
+        );
+        setLabPlans(filteredPlans);
+        setPlanningStarted(filteredPlans.length > 0);
       } catch (err) {
         console.error("Failed to fetch lab plans:", err);
         setLabPlans([]);
@@ -128,7 +117,7 @@ const LabPlanningSheet = () => {
         const errorData = await res.json();
         console.error("Server error response:", errorData);
         throw new Error(
-          errorData.message || `HTTP ${res.status}: Failed to save lab plan`
+          errorData.message || `HTTP ${res.status}: Failed to save lab plan`,
         );
       }
 
@@ -136,14 +125,14 @@ const LabPlanningSheet = () => {
       console.log("Lab plan saved successfully:", savedPlan);
 
       // Refetch plans after submit
-      const updatedRes = await fetch(
-        `http://localhost:5000/api/lab-planning/${ciannId}`
-      );
+      const updatedRes = await fetch(config.labPlanning);
       if (updatedRes.ok) {
         const updatedData = await updatedRes.json();
-        setLabPlans(updatedData);
-      } else if (updatedRes.status === 404) {
-        setLabPlans([]);
+        const allPlans = Array.isArray(updatedData) ? updatedData : [];
+        const numericCiannId = Number(ciannId);
+        setLabPlans(
+          allPlans.filter((plan) => Number(plan?.ciannId) === numericCiannId),
+        );
       }
       setPlanningStarted(true);
       setShowWeekwisePlan(false);
@@ -214,11 +203,14 @@ const LabPlanningSheet = () => {
         showSearch={false}
         onMenuToggle={() => setIsSidebarVisible((v) => !v)}
         onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
+        hidePrimaryMenuToggleOnCompact={true}
+        mobileHomePath="/dashboard"
       />
       <div className="teaching-main-row">
         <Sidebar
           isSidebarVisible={isSidebarVisible}
           setIsSidebarVisible={setIsSidebarVisible}
+          disableOnCompact={true}
         />
         <div className="syllabus-secondary-sidebar-wrapper">
           <SecondarySidebar
@@ -227,11 +219,11 @@ const LabPlanningSheet = () => {
             setIsSecondarySidebarVisible={setIsSecondarySidebarVisible}
           />
         </div>
-        <div className="labplanning-main-content">
+        <div className="labplanning-main-content syllabus-main-content has-secondary-sidebar">
           {!ciannId ? (
             <div className="plan-container">
               <div className="header-row">
-                <h3>7. Laboratory Plan (LP)</h3>
+                <h3>5. Laboratory Plan (LP)</h3>
               </div>
               <div
                 style={{
@@ -275,16 +267,17 @@ const LabPlanningSheet = () => {
               existingData={
                 Array.isArray(labPlans)
                   ? labPlans.flatMap((lp) =>
-                      lp.plans.map((p) => ({ ...p, weekNo: lp.weekNo }))
+                      lp.plans.map((p) => ({ ...p, weekNo: lp.weekNo })),
                     )
                   : []
               }
               initialWeek={editWeekNo}
+              ciannData={ciannData}
             />
           ) : (
             <div className="plan-container">
               <div className="header-row">
-                <h3>7. Laboratory Plan (LP)</h3>
+                <h3>5. Laboratory Plan (LP)</h3>
                 <div className="button-group">
                   {planningStarted ? (
                     <div
@@ -350,8 +343,8 @@ const LabPlanningSheet = () => {
                                     i === 0
                                       ? "first"
                                       : i === weekPlans.length - 1
-                                      ? "last"
-                                      : ""
+                                        ? "last"
+                                        : ""
                                   }`}
                                 >
                                   {i === 0 && (
@@ -378,7 +371,7 @@ const LabPlanningSheet = () => {
                                   <td></td>
                                   <td>--</td>
                                 </tr>
-                              ))
+                              )),
                         )}
                       </tbody>
                     )}

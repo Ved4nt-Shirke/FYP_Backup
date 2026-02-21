@@ -78,7 +78,7 @@
   border-left: 3px solid var(--app-header-bg, #2e7d32); /* Use theme variable */
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   .secondary-sidebar {
     position: relative !important;
     transform: none !important;
@@ -90,7 +90,7 @@
 }
 
 /* Mobile styles */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .secondary-sidebar-wrapper {
     position: fixed;
     top: 0;
@@ -98,31 +98,31 @@
     height: 100vh;
     width: 100vw;
     pointer-events: none;
-    z-index: 99999;
-    transition: background 0.3s ease; /* For smooth darkening effect */
+    z-index: 1100;
+    transition: background 0.25s ease;
   }
 
-  /* ✅ FIX: Add a background color to the wrapper to create the overlay darkening effect */
   .secondary-sidebar-wrapper.visible {
     pointer-events: auto;
-    background: rgba(0, 0, 0, 0.5); /* This creates the darkening effect */
+    background: rgba(0, 0, 0, 0.28);
   }
 
   .secondary-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 280px;
-    max-width: 85vw;
+    position: absolute;
+    top: var(--header-height, 60px);
+    right: 0;
+    left: auto;
+    height: calc(100vh - var(--header-height, 60px));
+    width: min(86vw, 360px);
+    min-width: 260px;
     background: #fff;
-    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.6);
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 100000;
-    padding-top: 60px;
+    box-shadow: -10px 0 24px rgba(0, 0, 0, 0.2);
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    z-index: 1101;
+    padding-top: 0;
     overflow-y: auto;
-    border-right: 3px solid var(--app-header-bg, #2e7d32); /* Use theme variable */
+    border-left: 3px solid var(--app-header-bg, #2e7d32);
     display: flex;
     flex-direction: column;
   }
@@ -131,7 +131,6 @@
     transform: translateX(0);
   }
 
-  /* ✅ FIX: Remove the redundant overlay class and its styles. The wrapper class handles it. */
   .secondary-sidebar-overlay {
     display: none;
   }
@@ -156,31 +155,32 @@
   }
 
   .secondary-sidebar-header {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-    width: 280px;
-    max-width: 85vw;
+    left: auto;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    font-size: 18px;
+    padding: 14px 16px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--app-header-bg, #2e7d32); /* Use theme variable */
     border-bottom: 2px solid #e9ecef;
     background-color: #f8f9fa;
-    z-index: 100001;
+    z-index: 1;
     border-radius: 0;
   }
 
   .secondary-sidebar-header + ul {
-    margin-top: 60px;
+    margin-top: 0;
   }
 
   .secondary-sidebar ul li {
     font-size: 14px;
-    padding: 14px 20px;
+    padding: 12px 14px;
     border-bottom: 1px solid #f0f0f0;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -199,5 +199,19 @@
     background-color: #f8f9fa;
     color: var(--app-header-bg, #2e7d32); /* Use theme variable */
     border-left: 3px solid var(--app-header-bg, #2e7d32); /* Use theme variable */
+  }
+
+  @media (max-width: 576px) {
+    .secondary-sidebar {
+      width: min(92vw, 340px);
+      min-width: 240px;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .secondary-sidebar {
+      width: 94vw;
+      min-width: 200px;
+    }
   }
 }

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "../utils/axiosConfig";
 import "./CreateInstitution.css";
 import PalettePicker, { DEFAULT_PALETTE } from "./PalettePicker";
+import { buildInstitutionLogoUrl } from "../utils/institutionBranding";
 
 const CreateInstitution = () => {
   const [institutionData, setInstitutionData] = useState({
@@ -16,6 +17,7 @@ const CreateInstitution = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [palette, setPalette] = useState(DEFAULT_PALETTE);
+  const [logoFile, setLogoFile] = useState(null);
 
   const handleChange = (e) => {
     setInstitutionData({
@@ -76,19 +78,21 @@ const CreateInstitution = () => {
         // ignore
       }
 
-      const requestData = {
-        name: institutionData.name.trim(),
-        code: institutionData.code.trim(),
-        palette,
-      };
+      const requestData = new FormData();
+      requestData.append("name", institutionData.name.trim());
+      requestData.append("code", institutionData.code.trim());
+      requestData.append("palette", JSON.stringify(palette));
+      if (logoFile) {
+        requestData.append("logo", logoFile);
+      }
 
       if (advancedOptions) {
         const hasUsername = institutionData.adminUsername.trim() !== "";
         const hasPassword = institutionData.adminPassword.trim() !== "";
 
         if (hasUsername && hasPassword) {
-          requestData.adminUsername = institutionData.adminUsername.trim();
-          requestData.adminPassword = institutionData.adminPassword;
+          requestData.append("adminUsername", institutionData.adminUsername.trim());
+          requestData.append("adminPassword", institutionData.adminPassword);
         }
       }
 
@@ -108,6 +112,7 @@ const CreateInstitution = () => {
           adminUsername: "",
           adminPassword: "",
         });
+        setLogoFile(null);
         setAdvancedOptions(false);
         setPalette(DEFAULT_PALETTE);
       } else {
@@ -147,7 +152,27 @@ const CreateInstitution = () => {
     });
     setAdvancedOptions(false);
     setPalette(DEFAULT_PALETTE);
+    setLogoFile(null);
     setError("");
+  };
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setLogoFile(null);
+      return;
+    }
+
+    const allowedTypes = ["image/png", "image/jpeg"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Only PNG or JPEG logo files are allowed");
+      setLogoFile(null);
+      e.target.value = "";
+      return;
+    }
+
+    setError("");
+    setLogoFile(file);
   };
 
   return (
@@ -209,6 +234,18 @@ const CreateInstitution = () => {
                         {createdInstitution.code}
                       </div>
                     </div>
+                    {createdInstitution.logoUrl && (
+                      <div className="credential-row">
+                        <div className="credential-label">Logo</div>
+                        <div className="credential-box">
+                          <img
+                            src={buildInstitutionLogoUrl(createdInstitution.logoUrl)}
+                            alt="Institution logo"
+                            className="created-logo-preview"
+                          />
+                        </div>
+                      </div>
+                    )}
                     <div className="credential-row">
                       <div className="credential-label">Admin Username</div>
                       <div className="credential-box">
@@ -294,6 +331,22 @@ const CreateInstitution = () => {
                 </div>
 
                 <div className="mb-3">
+                  <label className="form-label">Institution Logo (PNG/JPEG)</label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept="image/png,image/jpeg"
+                    onChange={handleLogoChange}
+                  />
+                  <div className="form-text">
+                    Optional. If not uploaded, institution short code (example: VP) is used in header.
+                  </div>
+                  {logoFile && (
+                    <div className="logo-file-name">Selected: {logoFile.name}</div>
+                  )}
+                </div>
+
+                <div className="mb-3">
                   <button
                     type="button"
                     className={`toggle-adv ${advancedOptions ? "active" : ""}`}
@@ -369,25 +422,6 @@ const CreateInstitution = () => {
             </div>
           </div>
         </main>
-
-        <aside className="aside-col">
-          <div className="card section-card mb-3">
-            <div className="card-header">
-              <h5>Recent Institutions</h5>
-            </div>
-            <div className="card-body">
-              <div className="recent-item">
-                <div className="icon-round bg-soft">
-                  <i className="fas fa-graduation-cap text-success" />
-                </div>
-                <div>
-                  <div className="fw-bold">Vidyalankar Polytechnic</div>
-                  <div className="text-muted small">Code: VP</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
     </div>
   );

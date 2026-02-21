@@ -157,9 +157,76 @@ export const loadAndApplyAdminTheme = async (college) => {
       _lastAppliedHash = hashPalette(palette);
       return palette;
     }
+
+    // Fallback to login payload cache if present
+    const loginPalette = localStorage.getItem("institutionPalette");
+    if (loginPalette) {
+      const palette = JSON.parse(loginPalette);
+      console.log("[THEME] Using login-cached palette:", palette);
+      applyPalette(palette);
+      _lastAppliedHash = hashPalette(palette);
+      return palette;
+    }
     console.warn("[THEME] No palette found in API or cache");
   } catch (e) {
     console.error("[THEME] Failed to load admin theme:", e);
+
+    try {
+      const loginPalette = localStorage.getItem("institutionPalette");
+      if (loginPalette) {
+        const palette = JSON.parse(loginPalette);
+        applyPalette(palette);
+        _lastAppliedHash = hashPalette(palette);
+        return palette;
+      }
+    } catch {
+      // ignore fallback parse errors
+    }
+  }
+  return null;
+};
+
+export const loadAndApplyOfficeTheme = async (college) => {
+  try {
+    const cacheKey = `palette:${college}`;
+    const resp = await axios.get("/office/theme");
+    if (resp?.data?.success && resp.data.institution?.palette) {
+      const palette = resp.data.institution.palette;
+      localStorage.setItem(cacheKey, JSON.stringify(palette));
+      applyPalette(palette);
+      _lastAppliedHash = hashPalette(palette);
+      return palette;
+    }
+
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const palette = JSON.parse(cached);
+      applyPalette(palette);
+      _lastAppliedHash = hashPalette(palette);
+      return palette;
+    }
+
+    const loginPalette = localStorage.getItem("institutionPalette");
+    if (loginPalette) {
+      const palette = JSON.parse(loginPalette);
+      applyPalette(palette);
+      _lastAppliedHash = hashPalette(palette);
+      return palette;
+    }
+  } catch (e) {
+    console.error("[THEME] Failed to load office theme:", e);
+
+    try {
+      const loginPalette = localStorage.getItem("institutionPalette");
+      if (loginPalette) {
+        const palette = JSON.parse(loginPalette);
+        applyPalette(palette);
+        _lastAppliedHash = hashPalette(palette);
+        return palette;
+      }
+    } catch {
+      // ignore fallback parse errors
+    }
   }
   return null;
 };
@@ -196,4 +263,80 @@ export const attachAdminThemeAutoRefresh = (college) => {
   const id = setInterval(refresh, 60000);
   // Store id if we want to clear later
   window.__ADMIN_THEME_INTERVAL__ = id;
+  return () => {
+    window.removeEventListener("focus", refresh);
+    clearInterval(id);
+  };
+};
+
+export const attachOfficeThemeAutoRefresh = (college) => {
+  const refresh = async () => {
+    const resp = await axios.get("/office/theme").catch(() => null);
+    const pal = resp?.data?.institution?.palette;
+    const h = hashPalette(pal);
+    if (h && h !== _lastAppliedHash) {
+      _lastAppliedHash = h;
+      localStorage.setItem(`palette:${college}`, JSON.stringify(pal));
+      applyPalette(pal);
+    }
+  };
+
+  window.addEventListener("focus", refresh);
+  const id = setInterval(refresh, 60000);
+  window.__OFFICE_THEME_INTERVAL__ = id;
+  return () => {
+    window.removeEventListener("focus", refresh);
+    clearInterval(id);
+  };
+};
+
+export const attachFacultyThemeAutoRefresh = (college) => {
+  const refresh = async () => {
+    let palette = null;
+
+    const resp = await axios.get("/institutions").catch(() => null);
+    const institutions = resp?.data?.institutions;
+    if (Array.isArray(institutions)) {
+      const targetCollege = String(college || "").toUpperCase();
+      const match = institutions.find((inst) => {
+        const code = String(inst?.code || "").toUpperCase();
+        return code === targetCollege;
+      });
+      if (match?.palette) {
+        palette = match.palette;
+        localStorage.setItem("institutionPalette", JSON.stringify(palette));
+        localStorage.setItem(`palette:${college}`, JSON.stringify(palette));
+      }
+    }
+
+    if (!palette) {
+      const cache =
+        localStorage.getItem(`palette:${college}`) ||
+        localStorage.getItem("institutionPalette");
+      if (cache) {
+        try {
+          palette = JSON.parse(cache);
+        } catch {
+          palette = null;
+        }
+      }
+    }
+
+    const h = hashPalette(palette);
+    if (h && h !== _lastAppliedHash) {
+      _lastAppliedHash = h;
+      applyPalette(palette);
+    }
+  };
+
+  window.addEventListener("focus", refresh);
+  const id = setInterval(refresh, 60000);
+  window.__FACULTY_THEME_INTERVAL__ = id;
+
+  refresh();
+
+  return () => {
+    window.removeEventListener("focus", refresh);
+    clearInterval(id);
+  };
 };
