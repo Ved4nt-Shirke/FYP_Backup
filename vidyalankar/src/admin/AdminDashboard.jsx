@@ -15,14 +15,14 @@ const AdminDashboard = () => {
 
   const adminCardsData = [
     {
-      label: "MANAGE DEPARTMENTS",
+      label: "Manage Departments",
       icon: "bi-building",
       path: "/admin-departments",
       description: "Create, view, and manage departments in your institution",
       available: true,
     },
     {
-      label: "CREATE FACULTY USER",
+      label: "Create Faculty User",
       icon: "bi-person-plus",
       path: "/admin-create-faculty",
       description:
@@ -30,21 +30,21 @@ const AdminDashboard = () => {
       available: true,
     },
     {
-      label: "CREATE OFFICE STAFF",
+      label: "Create Office Staff",
       icon: "bi-person-badge",
       path: "/admin-create-office-staff",
       description: "Create new office staff accounts for student management",
       available: true,
     },
     {
-      label: "MANAGE FACULTY",
+      label: "Manage Faculty",
       icon: "bi-people",
       path: "/admin-faculty",
       description: "View, edit, or manage faculty profiles and information",
       available: true,
     },
     {
-      label: "MANAGE OFFICE STAFF",
+      label: "Manage Office Staff",
       icon: "bi-person-badge",
       path: "/admin-office-staff",
       description:
@@ -52,7 +52,7 @@ const AdminDashboard = () => {
       available: true,
     },
     {
-      label: "MANAGE COURSES & SUBJECTS",
+      label: "Manage Courses & Subjects",
       icon: "bi-journal-text",
       path: "/admin-departments",
       description: "Create and manage courses, divisions, and subjects",
@@ -78,21 +78,21 @@ const AdminDashboard = () => {
 
   return (
     <div className="scrollable-wrapper">
-      <div className="admin-dash-header">
+      <div className="page-header">
         <h2>Admin Dashboard</h2>
-        <p>Manage {adminInstitution} Institution Settings</p>
+        <p>Manage {adminInstitution} institution operations from one place</p>
       </div>
 
       {alertMessage && (
-        <div className="admin-dash-banner">
+        <div className="info-banner">
           <i className="bi bi-exclamation-circle"></i>
           <div>
-            <div className="admin-dash-banner-title">Notice</div>
-            <div className="admin-dash-banner-text">{alertMessage}</div>
+            <div className="banner-title">Notice</div>
+            <div className="banner-text">{alertMessage}</div>
           </div>
           <button
             onClick={closeAlert}
-            className="admin-dash-banner-close"
+            className="banner-close-btn"
             aria-label="Close alert"
           >
             ✕
@@ -100,11 +100,11 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      <div className="admin-dash-grid">
+      <div className="card-container">
         {adminCardsData.map((card, index) => (
           <div
             key={index}
-            className={`admin-dash-card ${!card.available ? "coming-soon" : ""}`}
+            className={`card-item ${!card.available ? "coming-soon" : ""}`}
             onClick={() => handleCardClick(card)}
             role={card.available ? "button" : "presentation"}
             tabIndex={card.available ? 0 : -1}
@@ -115,14 +115,14 @@ const AdminDashboard = () => {
             }}
             aria-disabled={!card.available}
           >
-            <div className="admin-dash-icon-wrap">
-              <i className={`bi ${card.icon} admin-dash-icon`}></i>
+            <div className="card-icon-wrap">
+              <i className={`bi ${card.icon} card-icon`}></i>
             </div>
-            <h3 className="admin-dash-label">{card.label}</h3>
+            <h3 className="card-label">{card.label}</h3>
 
-            <p className="admin-dash-description">{card.description}</p>
+            <p className="card-description">{card.description}</p>
             {!card.available && (
-              <span className="admin-dash-badge">COMING SOON</span>
+              <span className="coming-soon-badge">COMING SOON</span>
             )}
           </div>
         ))}

@@ -1,0 +1,92 @@
+.ct-dashboard-page {
+  width: 100%;
+  max-width: none;
+  padding: 16px;
+  min-height: 100%;
+  padding-bottom: 96px;
+}
+
+.ct-dashboard-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ct-dashboard-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: #111827;
+}
+
+.ct-dashboard-panel {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.ct-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.ct-field {
+  min-width: 180px;
+}
+
+.ct-save-btn {
+  min-width: 180px;
+  height: 40px;
+}
+
+.ct-table-wrap {
+  width: 100%;
+  overflow: visible;
+}
+
+.ct-dashboard-page .table-responsive {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.ct-table {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.ct-table th,
+.ct-table td {
+  vertical-align: middle;
+}
+
+.ct-table input.form-control {
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .ct-dashboard-page {
+    padding: 10px;
+    padding-bottom: 72px;
+  }
+
+  .ct-dashboard-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ct-dashboard-title {
+    font-size: 1.15rem;
+  }
+
+  .ct-save-btn,
+  .ct-field {
+    width: 100%;
+  }
+}

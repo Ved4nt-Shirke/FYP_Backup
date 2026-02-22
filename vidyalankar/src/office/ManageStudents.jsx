@@ -39,6 +39,18 @@ const ManageStudents = () => {
   const [courses, setCourses] = useState([]);
   const [divisions, setDivisions] = useState([]);
 
+  // Add Student Modal
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [newStudent, setNewStudent] = useState({
+    studentName: "",
+    rollNo: "",
+    enrollmentNo: "",
+    batch: "",
+    seatNo: "",
+    section: "",
+    aadhaarNo: "",
+  });
+
   // Search
   const [filterSearch, setFilterSearch] = useState("");
 
@@ -305,6 +317,72 @@ const ManageStudents = () => {
     }
   };
 
+  const handleAddStudent = async () => {
+    // Validation
+    if (
+      !newStudent.studentName?.trim() ||
+      !newStudent.rollNo?.trim() ||
+      !newStudent.enrollmentNo?.trim() ||
+      !newStudent.batch?.trim() ||
+      !selectedDepartment ||
+      !selectedCourse ||
+      !selectedDivision
+    ) {
+      setError("All required fields (Name, Roll No, Enrollment No, Batch, Department, Course, Division) must be filled.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(config.students, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...newStudent,
+          departmentId: selectedDepartment,
+          courseId: selectedCourse,
+          divisionId: selectedDivision,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || "Failed to add student");
+      }
+
+      setSuccess(`"${newStudent.studentName}" added successfully.`);
+      setNewStudent({
+        studentName: "",
+        rollNo: "",
+        enrollmentNo: "",
+        batch: "",
+        seatNo: "",
+        section: "",
+        aadhaarNo: "",
+      });
+      setShowAddStudentModal(false);
+
+      // Refresh student list
+      setTimeout(() => {
+        if (selectedDepartment && selectedCourse && selectedDivision && selectedBatch) {
+          fetchStudents();
+        }
+      }, 500);
+
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteConfirm = (student) => {
     setDeleteConfirmId(student._id);
     setDeleteConfirmName(student.studentName);
@@ -433,15 +511,152 @@ const ManageStudents = () => {
     <div className="manage-students-page">
       {/* Header */}
       <div className="manage-header">
-        <h1>👥 Manage Students</h1>
-        <p>
-          Filter, view, edit, and manage student records with full cascading
-          controls.
-        </p>
+        <div>
+          <h1>👥 Manage Students</h1>
+          <p>
+            Filter, view, edit, and manage student records with full cascading
+            controls.
+          </p>
+        </div>
+        <div className="manage-header-actions">
+          <button
+            className="btn-add-student"
+            onClick={() => setShowAddStudentModal(true)}
+            disabled={!selectedDepartment || !selectedCourse || !selectedDivision}
+            title="Select Department, Course, and Division first"
+          >
+            ➕ Add Student
+          </button>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
+
+      {/* Add Student Modal */}
+      {showAddStudentModal && (
+        <div className="modal-overlay" onClick={() => setShowAddStudentModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Add New Student</h2>
+            <p>Create a new student record</p>
+            
+            <div className="modal-form">
+              <div className="form-row">
+                <label>Student Name <span className="required">*</span></label>
+                <input
+                  type="text"
+                  placeholder="Enter student name"
+                  value={newStudent.studentName}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, studentName: e.target.value })
+                  }
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Roll Number <span className="required">*</span></label>
+                <input
+                  type="text"
+                  placeholder="e.g., 101"
+                  value={newStudent.rollNo}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, rollNo: e.target.value })
+                  }
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Enrollment Number <span className="required">*</span></label>
+                <input
+                  type="text"
+                  placeholder="e.g., 2024001"
+                  value={newStudent.enrollmentNo}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, enrollmentNo: e.target.value })
+                  }
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Batch <span className="required">*</span></label>
+                <select
+                  value={newStudent.batch}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, batch: e.target.value })
+                  }
+                  disabled={loading}
+                >
+                  <option value="">-- Select Batch --</option>
+                  {generateBatchOptions().map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-row">
+                <label>Seat Number</label>
+                <input
+                  type="text"
+                  placeholder="e.g., A1"
+                  value={newStudent.seatNo}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, seatNo: e.target.value })
+                  }
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Section</label>
+                <input
+                  type="text"
+                  placeholder="e.g., A"
+                  value={newStudent.section}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, section: e.target.value })
+                  }
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Aadhaar Number</label>
+                <input
+                  type="text"
+                  placeholder="e.g., 1234 5678 9012"
+                  value={newStudent.aadhaarNo}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, aadhaarNo: e.target.value })
+                  }
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="modal-form-buttons">
+              <button
+                className="modal-btn"
+                onClick={() => setShowAddStudentModal(false)}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-btn-primary"
+                onClick={handleAddStudent}
+                disabled={loading}
+              >
+                {loading ? "Adding..." : "Add Student"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="manage-controls">

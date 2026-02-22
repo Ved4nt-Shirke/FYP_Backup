@@ -1,220 +1,192 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../basic/Header";
 import Sidebar from "../../basic/Sidebar";
+import { config } from "../../config/api";
 import "./MSBTEPages.css";
 
 const SAPRK4Generate = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+  const ciannData = location.state?.ciannData || null;
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [students, setStudents] = useState([]);
-  const [experiments, setExperiments] = useState([]);
-  const [selectedExperiment, setSelectedExperiment] = useState("");
-  const [marksByExperiment, setMarksByExperiment] = useState({});
-  const [headerInfo, setHeaderInfo] = useState({
-    academicYear: "2025 - 2026",
-    courseAndCode: "C05K-A",
-    subjectAndCode: "CLOUD COMPUTING (315325)",
-    maxMarks: "",
-    minMarks: "",
-    examDate: "",
-    program: "",
-    className: "",
-    course: "",
-  });
+  const [marks, setMarks] = useState({});
+  const [maxLimit, setMaxLimit] = useState(100);
+  const [saving, setSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/students`,
-        );
+        const query = new URLSearchParams();
+        if (ciannData?.division) query.set("division", ciannData.division);
+        if (ciannData?.department?._id) {
+          query.set("departmentId", ciannData.department._id);
+        }
+
+        const url = query.toString()
+          ? `${config.students}?${query.toString()}`
+          : config.students;
+
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setStudents(data);
+          const initialMarks = {};
+          data.forEach((student) => {
+            initialMarks[student._id] = "";
+          });
+
+          let nextMarks = initialMarks;
+          if (ciannData?.ciannId && ciannData?.division) {
+            const recordRes = await fetch(
+              `${config.msbte}/sa-pr-k4?ciannId=${encodeURIComponent(
+                ciannData.ciannId,
+              )}&division=${encodeURIComponent(ciannData.division)}`,
+            );
+            if (recordRes.ok) {
+              const recordData = await recordRes.json();
+              const record = recordData?.data;
+              if (record?.students?.length) {
+                const marksByKey = {};
+                record.students.forEach((item) => {
+                  const key = `${item.rollNo || ""}::${item.studentName || ""}`;
+                  marksByKey[key] = item.marks;
+                });
+                if (record.maxMarks) {
+                  setMaxLimit(Number(record.maxMarks));
+                }
+
+                nextMarks = { ...initialMarks };
+                data.forEach((student) => {
+                  const key = `${student.rollNo || student.rollId || ""}::${student.studentName || student.name || ""}`;
+                  if (marksByKey[key] !== undefined && marksByKey[key] !== null) {
+                    nextMarks[student._id] = marksByKey[key];
+                  }
+                });
+                setIsSaved(true);
+              }
+            }
+          }
+
+          setMarks(nextMarks);
         }
       } catch (error) {
         console.error("Error fetching students:", error);
       }
     };
     fetchStudents();
-  }, []);
-
-  useEffect(() => {
-    if (!students.length) return;
-    const first = students[0] || {};
-    const derivedProgram = first.departmentName || first.departmentCode || "";
-    const derivedClass = first.className || "";
-    const derivedCourse = first.courseName || "";
-    const derivedCourseAndCode =
-      derivedCourse && derivedClass
-        ? `${derivedCourse} - ${derivedClass}`
-        : derivedCourse || derivedClass;
-
-    setHeaderInfo((prev) => ({
-      ...prev,
-      program: prev.program || derivedProgram,
-      className: prev.className || derivedClass,
-      course: prev.course || derivedCourse,
-      courseAndCode: prev.courseAndCode || derivedCourseAndCode,
-    }));
-  }, [students]);
-
-  const academicYearOptions = useMemo(() => {
-    const options = new Set();
-    students.forEach((student) => {
-      if (student.batch) {
-        options.add(student.batch);
-      }
-    });
-    if (options.size === 0 && headerInfo.academicYear) {
-      options.add(headerInfo.academicYear);
-    }
-    return Array.from(options);
-  }, [students, headerInfo.academicYear]);
-
-  const programOptions = useMemo(() => {
-    const options = new Set();
-    students.forEach((student) => {
-      if (student.departmentName) {
-        options.add(student.departmentName);
-      } else if (student.departmentCode) {
-        options.add(student.departmentCode);
-      }
-    });
-    if (options.size === 0 && headerInfo.program) {
-      options.add(headerInfo.program);
-    }
-    return Array.from(options);
-  }, [students, headerInfo.program]);
-
-  const classOptions = useMemo(() => {
-    const options = new Set();
-    students.forEach((student) => {
-      if (student.className) {
-        options.add(student.className);
-      }
-    });
-    if (options.size === 0 && headerInfo.className) {
-      options.add(headerInfo.className);
-    }
-    return Array.from(options);
-  }, [students, headerInfo.className]);
-
-  const courseOptions = useMemo(() => {
-    const options = new Set();
-    students.forEach((student) => {
-      if (student.courseName) {
-        options.add(student.courseName);
-      }
-    });
-    if (options.size === 0 && headerInfo.course) {
-      options.add(headerInfo.course);
-    }
-    return Array.from(options);
-  }, [students, headerInfo.course]);
-
-  const courseAndCodeOptions = useMemo(() => {
-    const options = new Set();
-    students.forEach((student) => {
-      const derivedCourse = student.courseName || "";
-      const derivedClass = student.className || "";
-      const combined =
-        derivedCourse && derivedClass
-          ? `${derivedCourse} - ${derivedClass}`
-          : derivedCourse || derivedClass;
-      if (combined) {
-        options.add(combined);
-      }
-    });
-    if (options.size === 0 && headerInfo.courseAndCode) {
-      options.add(headerInfo.courseAndCode);
-    }
-    return Array.from(options);
-  }, [students, headerInfo.courseAndCode]);
-
-  const subjectOptions = useMemo(() => {
-    const options = new Set();
-    if (headerInfo.subjectAndCode) {
-      options.add(headerInfo.subjectAndCode);
-    }
-    return Array.from(options);
-  }, [headerInfo.subjectAndCode]);
-
-  const handleHeaderChange = (field, value) => {
-    setHeaderInfo((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleFetchExperiments = async () => {
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/get-experiments/get-experiments`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            program: headerInfo.program,
-            className: headerInfo.className,
-            course: headerInfo.course,
-          }),
-        },
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setExperiments(data.experiments || []);
-        if (data.experiments && data.experiments.length > 0) {
-          const firstId = String(data.experiments[0].practicalNo || 1);
-          setSelectedExperiment(firstId);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching experiments:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (!headerInfo.program || !headerInfo.className || !headerInfo.course) {
-      return;
-    }
-    if (experiments.length > 0) return;
-    handleFetchExperiments();
-  }, [headerInfo.program, headerInfo.className, headerInfo.course]);
+  }, [ciannData]);
 
   const handleMarksChange = (studentId, value) => {
-    if (!selectedExperiment) return;
-    setMarksByExperiment((prev) => {
-      const experimentMarks = { ...(prev[selectedExperiment] || {}) };
-      experimentMarks[studentId] = value;
-      return {
+    if (value === "") {
+      setMarks((prev) => ({
         ...prev,
-        [selectedExperiment]: experimentMarks,
-      };
+        [studentId]: "",
+      }));
+      return;
+    }
+
+    const numeric = Number(value);
+    if (Number.isNaN(numeric) || numeric < 0) return;
+
+    const cappedValue = numeric > maxLimit ? maxLimit : numeric;
+    setMarks((prev) => ({
+      ...prev,
+      [studentId]: cappedValue,
+    }));
+  };
+
+  const handleMaxLimitChange = (value) => {
+    const numeric = Number(value);
+    if (Number.isNaN(numeric) || numeric < 1) {
+      setMaxLimit(1);
+      return;
+    }
+
+    setMaxLimit(numeric);
+    setMarks((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((studentId) => {
+        const mark = next[studentId];
+        if (mark !== "" && Number(mark) > numeric) {
+          next[studentId] = numeric;
+        }
+      });
+      return next;
     });
   };
 
-  const averageByStudent = useMemo(() => {
-    const averages = {};
-    students.forEach((student) => {
-      let sum = 0;
-      let count = 0;
-      Object.values(marksByExperiment).forEach((expMarks) => {
-        const raw = expMarks?.[student._id];
-        const value = Number(raw);
-        if (!Number.isNaN(value) && raw !== "") {
-          sum += value;
-          count += 1;
-        }
-      });
-      averages[student._id] = count > 0 ? (sum / count).toFixed(2) : "";
-    });
-    return averages;
-  }, [students, marksByExperiment]);
-
   const handleSubmit = () => {
-    alert("SA-PR sheet data prepared. Please review the MSBTE format below.");
+    alert("SA-PR sheet data prepared successfully.");
+  };
+
+  const handleSave = async () => {
+    if (!ciannData?.ciannId || !ciannData?.division) {
+      alert("Please select a CIANN first.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const hasInvalid = students.some((student) => {
+        const value = marks[student._id];
+        return value !== "" && Number(value) > Number(maxLimit);
+      });
+
+      if (hasInvalid) {
+        alert(`Marks cannot be greater than limit (${maxLimit}).`);
+        setSaving(false);
+        return;
+      }
+
+      const payload = {
+        ciannId: Number(ciannData.ciannId),
+        subjectName: ciannData.subject?.name || "",
+        subjectCode: ciannData.subject?.code || "",
+        courseCode: ciannData.class || "",
+        academicYear: ciannData.academicYear || "",
+        division: ciannData.division,
+        maxMarks: Number(maxLimit),
+        minMarks: 0,
+        students: students.map((student) => ({
+          studentId: student._id,
+          rollNo: student.rollNo || student.rollId || student.regNumber || "",
+          enrollmentNo: student.enrollmentNo || "",
+          studentName: student.studentName || student.name || "",
+          seatNo: student.examSeatNo || student.seatNo || student.examSeat || "",
+          marks:
+            marks[student._id] === "" || marks[student._id] === undefined
+              ? null
+              : Number(marks[student._id]),
+        })),
+      };
+
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${config.msbte}/sa-pr-k4/save`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.message || "Failed to save SA-PR-K4 marks");
+      }
+
+      setIsSaved(true);
+      alert("SA-PR-K4 marks saved. Continue editing from Edit page only.");
+      navigate("/msbte/sa-pr-k4/edit", { state: { ciannData } });
+    } catch (error) {
+      console.error("Error saving SA-PR-K4 marks:", error);
+      alert(error.message || "Failed to save SA-PR-K4 marks");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -229,198 +201,75 @@ const SAPRK4Generate = () => {
           <i className="bi bi-arrow-left"></i> Back
         </button>
 
+        {!ciannData && (
+          <div className="alert alert-warning">
+            Please select a CIANN first for SA-PR-K4.
+            <button
+              className="btn btn-sm btn-outline-secondary ms-3"
+              onClick={() => navigate("/msbte/sa-pr-k4/cianns?mode=generate")}
+            >
+              Select CIANN
+            </button>
+          </div>
+        )}
+
         <h3 className="mb-4">Generate SA-PR Sheet</h3>
 
-        <div className="msbte-controls">
-          <div className="row g-3">
-            <div className="col-md-4">
-              <label className="form-label">Academic Year</label>
-              <select
-                className="form-select"
-                value={headerInfo.academicYear}
-                onChange={(e) =>
-                  handleHeaderChange("academicYear", e.target.value)
-                }
-              >
-                {academicYearOptions.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Course and Code</label>
-              <select
-                className="form-select"
-                value={headerInfo.courseAndCode}
-                onChange={(e) =>
-                  handleHeaderChange("courseAndCode", e.target.value)
-                }
-              >
-                {courseAndCodeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Subject and Code</label>
-              <select
-                className="form-select"
-                value={headerInfo.subjectAndCode}
-                onChange={(e) =>
-                  handleHeaderChange("subjectAndCode", e.target.value)
-                }
-              >
-                {subjectOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-3">
-              <label className="form-label">Marks: Max</label>
-              <input
-                type="number"
-                className="form-control"
-                value={headerInfo.maxMarks}
-                onChange={(e) => handleHeaderChange("maxMarks", e.target.value)}
-              />
-            </div>
-            <div className="col-md-3">
-              <label className="form-label">Marks: Min</label>
-              <input
-                type="number"
-                className="form-control"
-                value={headerInfo.minMarks}
-                onChange={(e) => handleHeaderChange("minMarks", e.target.value)}
-              />
-            </div>
-            <div className="col-md-3">
-              <label className="form-label">Date of Examination</label>
-              <input
-                type="date"
-                className="form-control"
-                value={headerInfo.examDate}
-                onChange={(e) => handleHeaderChange("examDate", e.target.value)}
-              />
-            </div>
+        {isSaved && (
+          <div className="alert alert-info">
+            Marks are already saved for this CIANN/division. Generate is locked.
+            Use Edit page to modify marks.
           </div>
+        )}
 
-          <div className="row g-3 mt-2">
-            <div className="col-md-4">
-              <label className="form-label">Program</label>
-              <select
-                className="form-select"
-                value={headerInfo.program}
-                onChange={(e) => handleHeaderChange("program", e.target.value)}
-              >
-                {programOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Class</label>
-              <select
-                className="form-select"
-                value={headerInfo.className}
-                onChange={(e) =>
-                  handleHeaderChange("className", e.target.value)
-                }
-              >
-                {classOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Course</label>
-              <select
-                className="form-select"
-                value={headerInfo.course}
-                onChange={(e) => handleHeaderChange("course", e.target.value)}
-              >
-                {courseOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="mt-3 d-flex align-items-center gap-2">
-            <button
-              className="btn btn-primary"
-              onClick={handleFetchExperiments}
-            >
-              Load Practicals
-            </button>
-            <select
-              className="form-select w-auto"
-              value={selectedExperiment}
-              onChange={(e) => setSelectedExperiment(e.target.value)}
-            >
-              <option value="">Select Practical</option>
-              {experiments.map((exp) => (
-                <option key={exp.practicalNo} value={String(exp.practicalNo)}>
-                  {`Practical ${exp.practicalNo} - ${exp.practicalName}`}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="mb-3" style={{ maxWidth: 240 }}>
+          <label className="form-label">Limit Marks</label>
+          <input
+            type="number"
+            className="form-control"
+            min="1"
+            value={maxLimit}
+            onChange={(e) => handleMaxLimitChange(e.target.value)}
+            disabled={isSaved}
+          />
         </div>
 
         <div className="table-responsive mt-4">
           <table className="table table-bordered table-hover">
             <thead className="table-light">
               <tr>
-                <th>Roll No.</th>
-                <th>Enrollment Number</th>
+                <th>Roll ID</th>
                 <th>Name</th>
-                <th>Exam Seat No.</th>
-                <th>Marks (Selected Practical)</th>
+                <th>Seat No.</th>
+                <th>Marks</th>
               </tr>
             </thead>
             <tbody>
               {students.length > 0 ? (
                 students.map((student) => (
                   <tr key={student._id}>
-                    <td>{student.rollNo || "-"}</td>
-                    <td>{student.enrollmentNo || "-"}</td>
-                    <td>{student.studentName || "-"}</td>
-                    <td>{student.examSeatNo || "-"}</td>
+                    <td>{student.rollNo || student.rollId || student.regNumber || "-"}</td>
+                    <td>{student.studentName || student.name || "-"}</td>
+                    <td>{student.examSeatNo || student.seatNo || student.examSeat || "-"}</td>
                     <td>
                       <input
                         type="number"
                         className="form-control form-control-sm"
                         placeholder="0"
-                        value={
-                          marksByExperiment?.[selectedExperiment]?.[
-                            student._id
-                          ] || ""
-                        }
+                        value={marks[student._id] || ""}
                         onChange={(e) =>
                           handleMarksChange(student._id, e.target.value)
                         }
                         min="0"
-                        max={headerInfo.maxMarks || "100"}
-                        disabled={!selectedExperiment}
+                        max={maxLimit}
+                        disabled={isSaved}
                       />
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center text-muted">
+                  <td colSpan="4" className="text-center text-muted">
                     No students found
                   </td>
                 </tr>
@@ -430,77 +279,28 @@ const SAPRK4Generate = () => {
         </div>
 
         <div className="mt-3">
+          <button
+            className="btn btn-success me-2"
+            onClick={handleSave}
+            disabled={saving || isSaved}
+          >
+            <i className="bi bi-save"></i>{" "}
+            {saving ? "Saving..." : isSaved ? "Saved" : "Save"}
+          </button>
           <button className="btn btn-primary me-2" onClick={handleSubmit}>
             <i className="bi bi-download"></i> Generate Sheet
+          </button>
+          <button
+            className="btn btn-info me-2"
+            onClick={() =>
+              navigate("/msbte/sa-pr-k4/print", { state: { marks, ciannData } })
+            }
+          >
+            <i className="bi bi-printer-fill"></i> Print Preview
           </button>
           <button className="btn btn-secondary" onClick={() => navigate(-1)}>
             Cancel
           </button>
-        </div>
-
-        <div className="msbte-preview mt-4">
-          <div className="msbte-header">
-            <div className="msbte-title">
-              Maharashtra State Board of Technical Education
-            </div>
-            <div className="msbte-subtitle">
-              Summative Assessment of Practical (SA-PR)
-            </div>
-            <div className="msbte-format">Format K4</div>
-          </div>
-          <div className="msbte-meta">
-            <div>
-              <strong>Academic Year:</strong> {headerInfo.academicYear || "-"}
-            </div>
-            <div>
-              <strong>Course and Code:</strong>{" "}
-              {headerInfo.courseAndCode || "-"}
-            </div>
-            <div>
-              <strong>Subject and Code:</strong>{" "}
-              {headerInfo.subjectAndCode || "-"}
-            </div>
-            <div>
-              <strong>Marks:</strong> Max {headerInfo.maxMarks || "-"} Min{" "}
-              {headerInfo.minMarks || "-"}
-            </div>
-            <div>
-              <strong>Date of Examination:</strong> {headerInfo.examDate || "-"}
-            </div>
-          </div>
-
-          <div className="table-responsive">
-            <table className="table table-bordered msbte-table">
-              <thead>
-                <tr>
-                  <th>Roll No.</th>
-                  <th>Enrollment Number</th>
-                  <th>Name of the Student</th>
-                  <th>Exam Seat No.</th>
-                  <th>Marks obtained in SA part of Practical (Avg)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.length > 0 ? (
-                  students.map((student) => (
-                    <tr key={student._id}>
-                      <td>{student.rollNo || "-"}</td>
-                      <td>{student.enrollmentNo || "-"}</td>
-                      <td>{student.studentName || "-"}</td>
-                      <td>{student.examSeatNo || "-"}</td>
-                      <td>{averageByStudent[student._id] || "-"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="text-center text-muted">
-                      No students found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
     </>

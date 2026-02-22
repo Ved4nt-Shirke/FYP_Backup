@@ -72,13 +72,6 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
     }
   };
 
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      localStorage.clear();
-      navigate("/");
-    }
-  };
-
   const adminUsername = localStorage.getItem("username") || "Admin";
   const adminInstitution = localStorage.getItem("college") || "Institution";
 
@@ -183,17 +176,6 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
             </li>
           ))}
         </ul>
-
-        <div className="admin-sidebar-footer">
-          <button
-            className="logout-btn"
-            onClick={handleLogout}
-            aria-label="Logout"
-          >
-            <i className="bi bi-box-arrow-right"></i>
-            <span>Logout</span>
-          </button>
-        </div>
       </div>
     </>
   );

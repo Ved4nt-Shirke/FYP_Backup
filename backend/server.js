@@ -79,10 +79,7 @@ async function initializeSuperAdmin() {
 app.get("/api/institutions", async (req, res) => {
   try {
     const Institution = require("./models/Institution");
-    const institutions = await Institution.find(
-      {},
-      "name code isActive logoUrl palette",
-    );
+    const institutions = await Institution.find({}, "name code isActive");
     res.json({
       success: true,
       institutions,
@@ -167,6 +164,9 @@ app.use("/api/practical-exams", require("./routes/practicalExams"));
 
 // CT Marks Routes
 app.use("/api/ct-marks", require("./routes/ctMarks"));
+
+// MSBTE Formats Routes
+app.use("/api/msbte", require("./routes/msbteFormats"));
 
 // Admin Routes
 const { authenticate, authorizeAdmin } = require("./middleware/auth");

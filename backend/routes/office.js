@@ -753,6 +753,7 @@ router.post("/notices", authenticate, async (req, res) => {
       content,
       division,
       faculty: faculty || req.user.username,
+      source: "office",
       college,
     });
 
@@ -778,6 +779,7 @@ router.put("/notices/:id", authenticate, async (req, res) => {
         title,
         content,
         division,
+        source: "office",
         updatedAt: new Date(),
       },
       { new: true }

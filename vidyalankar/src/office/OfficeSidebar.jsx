@@ -1,5 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  buildInstitutionLogoUrl,
+  getInstitutionInitials,
+} from "../utils/institutionBranding";
 import "./OfficeSidebar.css";
 
 const OfficeSidebar = ({
@@ -11,6 +15,14 @@ const OfficeSidebar = ({
   onTabChange,
 }) => {
   const navigate = useNavigate();
+  const institutionCode = (
+    localStorage.getItem("institutionCode") || localStorage.getItem("college") || "VP"
+  ).toUpperCase();
+  const institutionName = localStorage.getItem("institutionName") || institutionCode;
+  const institutionLogoUrl = buildInstitutionLogoUrl(
+    localStorage.getItem("institutionLogoUrl") || "",
+  );
+  const institutionFallback = getInstitutionInitials(institutionName, institutionCode);
 
   const menuItems = [
     {
@@ -26,6 +38,13 @@ const OfficeSidebar = ({
       icon: "👥",
       tab: "manage",
       section: "Student Management",
+    },
+    {
+      id: "notices",
+      label: "Notices",
+      icon: "📢",
+      tab: "notices",
+      section: "Communication",
     },
     {
       id: "divider1",
@@ -60,7 +79,18 @@ const OfficeSidebar = ({
 
       {/* Sidebar */}
       <aside className={`office-sidebar ${isVisible ? "visible" : ""}`}>
-        <div className="sidebar-user-info">
+        <div className="sidebar-header">
+          <div className="sidebar-logo">
+            {institutionLogoUrl ? (
+              <img src={institutionLogoUrl} alt={institutionName} className="sidebar-logo-image" />
+            ) : (
+              <div className="sidebar-logo-fallback">{institutionFallback}</div>
+            )}
+            <div className="sidebar-logo-text">
+              <p className="sidebar-title">{institutionName}</p>
+              <p className="sidebar-subtitle">Office Portal</p>
+            </div>
+          </div>
           <button
             className="sidebar-close"
             onClick={() => setIsVisible(false)}
@@ -68,6 +98,9 @@ const OfficeSidebar = ({
           >
             ✕
           </button>
+        </div>
+
+        <div className="sidebar-user-info">
           <div className="sidebar-user-avatar">
             {staffName.charAt(0).toUpperCase()}
           </div>

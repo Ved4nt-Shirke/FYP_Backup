@@ -16,7 +16,6 @@ const SuperAdminLayout = () => {
   const menuItems = [
     { path: '/superadmin-dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
     { path: '/superadmin-view-institutions', label: 'Institutions', icon: 'fas fa-university' },
-    { path: '/superadmin-admins', label: 'Admins', icon: 'fas fa-users-cog' },
   ];
 
   return (

@@ -10,9 +10,7 @@ const AdminHeader = ({ onMenuToggle }) => {
   const navigate = useNavigate();
 
   // Get admin info from localStorage
-  const adminInstitution = (
-    localStorage.getItem("college") || "VP"
-  ).toUpperCase();
+  const adminInstitution = (localStorage.getItem("college") || "VP").toUpperCase();
   const institutionCode = (
     localStorage.getItem("institutionCode") || adminInstitution
   ).toUpperCase();
@@ -35,10 +33,10 @@ const AdminHeader = ({ onMenuToggle }) => {
 
   return (
     <header className="admin-page-header">
-      <div className="admin-header-left">
+      <div className="header-left">
         {/* Mobile menu toggle */}
         <button
-          className="admin-mobile-menu-toggle"
+          className="mobile-menu-toggle"
           onClick={onMenuToggle}
           aria-label="Toggle menu"
         >
@@ -55,9 +53,7 @@ const AdminHeader = ({ onMenuToggle }) => {
                   className="institution-brand-logo"
                 />
               ) : (
-                <span className="institution-brand-fallback">
-                  {institutionFallback}
-                </span>
+                <span className="institution-brand-fallback">{institutionFallback}</span>
               )}
               {institutionCode} Admin Panel
             </span>
@@ -66,7 +62,7 @@ const AdminHeader = ({ onMenuToggle }) => {
         </div>
       </div>
 
-      <div className="admin-header-right">
+      <div className="header-right">
         <div className="admin-user-info">
           <div className="user-avatar">
             <span>{username.charAt(0).toUpperCase()}</span>

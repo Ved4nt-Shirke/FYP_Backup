@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { performSearch, handleSearchResultClick } from "../utils/searchUtils";
 import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
@@ -13,27 +14,28 @@ const Header = ({
   showUserDropdown: propShowUserDropdown,
   setShowUserDropdown: propSetShowUserDropdown,
   userDropdownRef: propUserDropdownRef,
+  showSearch = false,
   onMenuToggle, // This prop receives the function from App.jsx
   onSecondaryMenuToggle, // This prop receives the function for secondary sidebar toggle
-  hidePrimaryMenuToggleOnCompact = false,
-  mobileHomePath = "",
 }) => {
   const navigate = useNavigate();
 
   // Initialize local state for user dropdown if props aren't provided
   const [localShowUserDropdown, setLocalShowUserDropdown] = useState(false);
   const localUserDropdownRef = useRef(null);
-
+  
   // Use props if provided, otherwise use local state/ref
-  const showUserDropdown =
-    propShowUserDropdown !== undefined
-      ? propShowUserDropdown
-      : localShowUserDropdown;
-  const setShowUserDropdown =
-    propSetShowUserDropdown !== undefined
-      ? propSetShowUserDropdown
-      : setLocalShowUserDropdown;
+  const showUserDropdown = propShowUserDropdown !== undefined ? propShowUserDropdown : localShowUserDropdown;
+  const setShowUserDropdown = propSetShowUserDropdown !== undefined ? propSetShowUserDropdown : setLocalShowUserDropdown;
   const userDropdownRef = propUserDropdownRef || localUserDropdownRef;
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
 
   const handleLogout = () => {
     const confirmLogout = window.confirm("Are you sure you want to logout?");
@@ -49,17 +51,80 @@ const Header = ({
     }
   };
 
-  const handlePrimaryMenuToggle = () => {
-    if (typeof onMenuToggle === "function") {
-      onMenuToggle();
+  // Search functionality
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+      setIsSearching(false);
       return;
     }
-    window.dispatchEvent(new Event("app:toggle-sidebar"));
+
+    setIsSearching(true);
+    setShowSearchDropdown(true);
+
+    // Debounce search
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const results = await performSearch(query);
+        setSearchResults(results);
+        setIsSearching(false);
+      } catch (error) {
+        console.error("Search failed:", error);
+        setSearchResults([]);
+        setIsSearching(false);
+      }
+    }, 300);
   };
 
-  // Close user dropdown when clicking outside
+  const handleResultClick = (result) => {
+    handleSearchResultClick(result, navigate);
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowSearchDropdown(false);
+  };
+
+  const handleSearchFocus = () => {
+    if (searchQuery.trim().length >= 2) {
+      setShowSearchDropdown(true);
+    }
+  };
+
+  const handleSearchBlur = (e) => {
+    // Delay hiding dropdown to allow clicks on results
+    setTimeout(() => {
+      if (!searchRef.current?.contains(document.activeElement)) {
+        setShowSearchDropdown(false);
+      }
+    }, 200);
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "Escape") {
+      setSearchQuery("");
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+      e.target.blur();
+    }
+  };
+
+  // Close search dropdown when clicking outside and handle keyboard shortcuts
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Handle click outside for both search and user dropdowns
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearchDropdown(false);
+      }
+
+      // Handle click outside for user dropdown
       if (
         userDropdownRef &&
         userDropdownRef.current &&
@@ -75,31 +140,54 @@ const Header = ({
       }
     };
 
+    const handleKeyboardShortcut = (event) => {
+      // Ctrl+K or Cmd+K to focus search
+      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
+        event.preventDefault();
+        const searchInput = searchRef.current?.querySelector(".search-input");
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyboardShortcut);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyboardShortcut);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
     };
-  }, [setShowUserDropdown, showUserDropdown]);
+  }, [setShowUserDropdown, showUserDropdown]); // Add showUserDropdown to dependency array
+
+  // Group results by category
+  const groupedResults = searchResults.reduce((groups, result) => {
+    const category = result.category;
+    if (!groups[category]) {
+      groups[category] = [];
+    }
+    groups[category].push(result);
+    return groups;
+  }, {});
 
   // Get and format username
   let username = currentUser || localStorage.getItem("username") || "User";
-
+  
   // Format username properly (capitalize words and remove dots)
   if (username.includes(".")) {
-    username = username
-      .split(".")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    username = username.split(".")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
   } else if (username !== "User") {
     username = username.charAt(0).toUpperCase() + username.slice(1);
   }
-
+  
   const college = (localStorage.getItem("college") || "VP").toUpperCase();
   const institutionCode = (
-    localStorage.getItem("institutionCode") ||
-    college ||
-    "VP"
+    localStorage.getItem("institutionCode") || college || "VP"
   ).toUpperCase();
   const institutionName =
     localStorage.getItem("institutionName") || institutionCode;
@@ -121,10 +209,7 @@ const Header = ({
     <div className="header">
       <div className="header-left">
         {/* This button's onClick calls the function passed from App.jsx */}
-        <button
-          className={`menu-toggle ${hidePrimaryMenuToggleOnCompact ? "hide-on-compact" : ""}`}
-          onClick={handlePrimaryMenuToggle}
-        >
+        <button className="menu-toggle" onClick={onMenuToggle}>
           <i className="bi bi-list"></i>
         </button>
         {/* Secondary menu toggle button for CIANN sidebar */}
@@ -144,74 +229,121 @@ const Header = ({
               className="institution-logo-image"
             />
           ) : (
-            <span className="institution-logo-fallback">
-              {institutionFallback}
-            </span>
+            <span className="institution-logo-fallback">{institutionFallback}</span>
           )}
           <span className="institution-name-text">{institutionName}</span>
           {isFaculty && <span className="role-chip">Faculty</span>}
         </span>
       </div>
+      {showSearch && false && (
+        <div className="header-center">
+          <div className="search-container" ref={searchRef}>
+            <input
+              type="text"
+              placeholder="Search students, attendance, navigation... (Ctrl+K)"
+              className="search-input"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
+              onKeyDown={handleSearchKeyDown}
+              aria-label="Search"
+            />
+            {showSearchDropdown && (
+              <div className="search-dropdown">
+                {isSearching ? (
+                  <div className="search-loading">Searching...</div>
+                ) : searchResults.length > 0 ? (
+                  <ul className="search-results">
+                    {Object.entries(groupedResults).map(
+                      ([category, results]) => (
+                        <div key={category} className="search-category-group">
+                          <div className="search-category-header">
+                            {category}
+                          </div>
+                          {results.map((result) => (
+                            <li
+                              key={result.id}
+                              className="search-result-item"
+                              onClick={() => handleResultClick(result)}
+                            >
+                              <div className="search-result-title">
+                                {result.title}
+                              </div>
+                              {result.subtitle && (
+                                <div className="search-result-subtitle">
+                                  {result.subtitle}
+                                </div>
+                              )}
+                              <div className="search-result-category">
+                                {result.category}
+                              </div>
+                            </li>
+                          ))}
+                        </div>
+                      )
+                    )}
+                  </ul>
+                ) : searchQuery.trim().length >= 2 ? (
+                  <div className="search-no-results">
+                    No results found for "{searchQuery}"
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <div className="header-right">
-        {mobileHomePath && (
-          <button
-            className="mobile-home-button"
-            onClick={() => navigate(mobileHomePath)}
-            title="Go to Home"
-          >
-            <i className="bi bi-house-door"></i>
-            <span>Home</span>
-          </button>
-        )}
         {isFaculty && (
           <button className="faculty-logout-button" onClick={handleLogout}>
             <i className="bi bi-box-arrow-right"></i>
             <span>Logout</span>
           </button>
         )}
-        {!isFaculty && (
-          <div className="user-section" ref={userDropdownRef}>
-            <button
-              className="user-button"
-              onClick={() => {
-                setShowUserDropdown(!showUserDropdown);
-              }}
-              aria-expanded={showUserDropdown}
+        <div className="user-section" ref={userDropdownRef}>
+          <button
+            className="user-button"
+            onClick={() => {
+              setShowUserDropdown(!showUserDropdown);
+            }}
+            aria-expanded={showUserDropdown}
+          >
+            <span className="user-icon">👤</span>
+            <span
+              className="user-name"
+              title={username}
+              aria-label={`Logged in as ${username}`}
             >
-              <span className="user-icon">👤</span>
-              <span
-                className="user-name"
-                title={username}
-                aria-label={`Logged in as ${username}`}
-              >
-                {isSuperAdmin ? `Super Admin (${username})` : username}
-              </span>
-              <span className="dropdown-arrow">▼</span>
-            </button>
-            {showUserDropdown && (
-              <div
-                className={`user-dropdown-menu ${
-                  showUserDropdown ? "visible" : ""
-                }`}
-              >
-                {isSuperAdmin && (
-                  <button
-                    className="dropdown-item"
-                    onClick={() => {
-                      setShowUserDropdown(false);
-                      window.location.href = "/superadmin-dashboard";
-                    }}
-                  >
-                    <i className="fas fa-user-shield"></i> Super Admin Panel
-                  </button>
-                )}
+              {isSuperAdmin ? `Super Admin (${username})` : username}
+            </span>
+            <span className="dropdown-arrow">▼</span>
+          </button>
+          {showUserDropdown && (
+            <div
+              className={`user-dropdown-menu ${
+                showUserDropdown ? "visible" : ""
+              }`}
+            >
+              {isSuperAdmin && (
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    setShowUserDropdown(false);
+                    window.location.href = "/superadmin-dashboard";
+                  }}
+                >
+                  <i className="fas fa-user-shield"></i> Super Admin Panel
+                </button>
+              )}
+              {!isFaculty && (
                 <button className="dropdown-item logout" onClick={handleLogout}>
                   <i className="bi bi-box-arrow-right"></i> Logout
                 </button>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

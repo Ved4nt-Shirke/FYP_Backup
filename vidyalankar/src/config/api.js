@@ -39,6 +39,9 @@ export const config = {
   // Assessment endpoints
   assessments: `${API_BASE_URL}/assessments`,
 
+  // MSBTE Formats endpoints
+  msbte: `${API_BASE_URL}/msbte`,
+
   // Course endpoints
   course: {
     chapters: `${API_BASE_URL}/course-chapters`,
@@ -129,6 +132,7 @@ export const config = {
 
   // Office Staff Panel Endpoints
   office: {
+    theme: `${API_BASE_URL}/office/theme`,
     dashboardSummary: `${API_BASE_URL}/office/dashboard-summary`,
     students: `${API_BASE_URL}/office/students`,
     divisions: `${API_BASE_URL}/office/divisions`,
@@ -143,7 +147,17 @@ export const config = {
     // New endpoints for department/course/division selection
     departments: `${API_BASE_URL}/office/departments`,
     courses: (departmentId) => `${API_BASE_URL}/office/courses/${departmentId}`,
-    courseDivisions: (courseId) => `${API_BASE_URL}/office/course-divisions/${courseId}`,
+    courseDivisions: (courseId) =>
+      `${API_BASE_URL}/office/course-divisions/${courseId}`,
+  },
+
+  // Catalog endpoints (for fetching admin-created data: departments, courses, divisions, subjects)
+  catalog: {
+    departments: `${API_BASE_URL}/catalog/departments`,
+    courses: (departmentId) =>
+      `${API_BASE_URL}/catalog/courses/${departmentId}`,
+    divisions: (courseId) => `${API_BASE_URL}/catalog/divisions/${courseId}`,
+    subjects: `${API_BASE_URL}/catalog/subjects`,
   },
 };
 

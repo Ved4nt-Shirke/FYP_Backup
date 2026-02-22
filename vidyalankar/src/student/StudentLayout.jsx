@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate, Outlet, useLocation } from "react-router-dom";
 import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
@@ -8,7 +8,9 @@ import "./StudentLayout.css";
 
 const StudentLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
   const dropdownRefs = {
     elibrary: useRef(null),
@@ -56,16 +58,15 @@ const StudentLayout = () => {
         setOpenDropdown(null);
       }
       
-      // Close sidebar on mobile if click is outside and sidebar is visible
-      const sidebar = document.querySelector('.student-sidebar');
-      if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('mobile-visible') && !isInsideSidebar) {
-        sidebar.classList.remove('mobile-visible');
+      // Close sidebar on mobile if click is outside
+      if (window.innerWidth <= 768 && isSidebarOpen && !isInsideSidebar) {
+        setIsSidebarOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isSidebarOpen]);
 
   const handleDropdownToggle = (dropdownName) => {
     setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
@@ -84,21 +85,19 @@ const StudentLayout = () => {
 
   const handleNavigation = (path) => {
     navigate(path);
-    // Close dropdowns
     setOpenDropdown(null);
-    // Close sidebar on mobile after navigation
     if (window.innerWidth <= 768) {
-      const sidebar = document.querySelector('.student-sidebar');
-      if (sidebar && sidebar.classList.contains('mobile-visible')) {
-        sidebar.classList.remove('mobile-visible');
-      }
+      setIsSidebarOpen(false);
     }
   };
+
+  const isActivePath = (path) => location.pathname === path;
+  const isDropdownActive = (paths) => paths.includes(location.pathname);
 
   return (
     <div className="student-dashboard">
       {/* Sidebar */}
-      <div className="student-sidebar" ref={sidebarRef}>
+      <div className={`student-sidebar ${isSidebarOpen ? "mobile-visible" : ""}`} ref={sidebarRef}>
         <div className="sidebar-header">
           <div className="student-brand">
             {institutionLogoUrl ? (
@@ -114,13 +113,19 @@ const StudentLayout = () => {
         </div>
         <ul className="sidebar-menu">
           <li className="sidebar-item">
-            <div className="menu-item" onClick={() => handleNavigation("/dashboard")}>
+            <div
+              className={`menu-item ${isActivePath("/dashboard") ? "active" : ""}`}
+              onClick={() => handleNavigation("/dashboard")}
+            >
               <i className="bi bi-speedometer2"></i>
               <span>Dashboard</span>
             </div>
           </li>
           <li className="sidebar-item">
-            <div className="menu-item" onClick={() => handleNavigation("/study-material")}>
+            <div
+              className={`menu-item ${isActivePath("/study-material") ? "active" : ""}`}
+              onClick={() => handleNavigation("/study-material")}
+            >
               <i className="bi bi-book"></i>
               <span>Study Material</span>
             </div>
@@ -130,7 +135,7 @@ const StudentLayout = () => {
           <li className="sidebar-item">
             <div className="dropdown" ref={dropdownRefs.elibrary}>
               <button
-                className="dropdown-toggle"
+                className={`dropdown-toggle ${isDropdownActive(["/elibrary/coursewise", "/elibrary/search"]) ? "active" : ""}`}
                 onClick={() => handleDropdownToggle("elibrary")}
               >
                 <i className="bi bi-bookshelf"></i>
@@ -141,7 +146,7 @@ const StudentLayout = () => {
                 <ul className="dropdown-menu">
                   <li>
                     <div 
-                      className="dropdown-item" 
+                      className={`dropdown-item ${isActivePath("/elibrary/coursewise") ? "active" : ""}`}
                       onClick={() => {
                         handleNavigation("/elibrary/coursewise");
                         setOpenDropdown(null);
@@ -153,7 +158,7 @@ const StudentLayout = () => {
                   </li>
                   <li>
                     <div 
-                      className="dropdown-item" 
+                      className={`dropdown-item ${isActivePath("/elibrary/search") ? "active" : ""}`}
                       onClick={() => {
                         handleNavigation("/elibrary/search");
                         setOpenDropdown(null);
@@ -173,7 +178,7 @@ const StudentLayout = () => {
           <li className="sidebar-item">
             <div className="dropdown" ref={dropdownRefs.mockTest}>
               <button
-                className="dropdown-toggle"
+                className={`dropdown-toggle ${isDropdownActive(["/mock-test/exam-list", "/mock-test/exam-result", "/mock-test/exams"]) ? "active" : ""}`}
                 onClick={() => handleDropdownToggle("mockTest")}
               >
                 <i className="bi bi-laptop"></i>
@@ -184,7 +189,7 @@ const StudentLayout = () => {
                 <ul className="dropdown-menu">
                   <li>
                     <div 
-                      className="dropdown-item" 
+                      className={`dropdown-item ${isActivePath("/mock-test/exam-list") ? "active" : ""}`}
                       onClick={() => {
                         handleNavigation("/mock-test/exam-list");
                         setOpenDropdown(null);
@@ -196,7 +201,7 @@ const StudentLayout = () => {
                   </li>
                   <li>
                     <div 
-                      className="dropdown-item" 
+                      className={`dropdown-item ${isActivePath("/mock-test/exam-result") ? "active" : ""}`}
                       onClick={() => {
                         handleNavigation("/mock-test/exam-result");
                         setOpenDropdown(null);
@@ -208,7 +213,7 @@ const StudentLayout = () => {
                   </li>
                   <li>
                     <div 
-                      className="dropdown-item" 
+                      className={`dropdown-item ${isActivePath("/mock-test/exams") ? "active" : ""}`}
                       onClick={() => {
                         handleNavigation("/mock-test/exams");
                         setOpenDropdown(null);
@@ -225,7 +230,10 @@ const StudentLayout = () => {
           
           {/* Practical Exams */}
           <li className="sidebar-item">
-            <div className="menu-item" onClick={() => handleNavigation("/practical-exams")}>
+            <div
+              className={`menu-item ${isActivePath("/practical-exams") ? "active" : ""}`}
+              onClick={() => handleNavigation("/practical-exams")}
+            >
               <i className="bi bi-file-earmark-check"></i>
               <span>Practical Exams</span>
             </div>
@@ -233,7 +241,10 @@ const StudentLayout = () => {
           
           {/* Results */}
           <li className="sidebar-item">
-            <div className="menu-item" onClick={() => handleNavigation("/results")}>
+            <div
+              className={`menu-item ${isActivePath("/results") ? "active" : ""}`}
+              onClick={() => handleNavigation("/results")}
+            >
               <i className="bi bi-bar-chart"></i>
               <span>Results</span>
             </div>
@@ -241,7 +252,10 @@ const StudentLayout = () => {
           
           {/* Notices */}
           <li className="sidebar-item">
-            <div className="menu-item" onClick={() => handleNavigation("/notices")}>
+            <div
+              className={`menu-item ${isActivePath("/notices") ? "active" : ""}`}
+              onClick={() => handleNavigation("/notices")}
+            >
               <i className="bi bi-bell"></i>
               <span>Notices</span>
             </div>
@@ -249,12 +263,10 @@ const StudentLayout = () => {
         </ul>
       </div>
       {/* Mobile overlay */}
-      <div className="mobile-sidebar-overlay" onClick={() => {
-        const sidebar = document.querySelector('.student-sidebar');
-        if (sidebar && sidebar.classList.contains('mobile-visible')) {
-          sidebar.classList.remove('mobile-visible');
-        }
-      }}></div>
+      <div
+        className={`mobile-sidebar-overlay ${isSidebarOpen ? "visible" : ""}`}
+        onClick={() => setIsSidebarOpen(false)}
+      ></div>
 
       {/* Main Content */}
       <div className="student-main-content">
@@ -262,10 +274,7 @@ const StudentLayout = () => {
         <div className="student-header">
           <div className="header-left">
             <button className="mobile-menu-toggle" onClick={() => {
-              const sidebar = document.querySelector('.student-sidebar');
-              if (sidebar) {
-                sidebar.classList.toggle('mobile-visible');
-              }
+              setIsSidebarOpen((prev) => !prev);
             }}>
               <i className="bi bi-list"></i>
             </button>

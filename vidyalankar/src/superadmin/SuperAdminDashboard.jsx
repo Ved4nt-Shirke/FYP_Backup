@@ -1,163 +1,157 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "../utils/axiosConfig";
 import "./SuperAdminDashboard.css";
 
 const SuperAdminDashboard = () => {
   const navigate = useNavigate();
-  const [activeCard, setActiveCard] = useState(null);
-  const [loadingCounts, setLoadingCounts] = useState(false);
-  const [statsData, setStatsData] = useState({
-    institutions: 0,
-    admins: 0,
-    uptime: "99.9%",
-  });
 
-  const fetchDashboardStats = async () => {
-    try {
-      setLoadingCounts(true);
-
-      const [institutionsRes, adminsRes] = await Promise.all([
-        axios.get("/superadmin/institutions"),
-        axios.get("/superadmin/admins"),
-      ]);
-
-      const institutions = institutionsRes?.data?.institutions || [];
-      const admins = adminsRes?.data?.admins || [];
-
-      setStatsData({
-        institutions: institutions.length,
-        admins: admins.filter((admin) => admin?.isActive !== false).length,
-        uptime: "99.9%",
-      });
-    } catch (error) {
-      console.error("Failed to fetch superadmin dashboard stats:", error);
-    } finally {
-      setLoadingCounts(false);
-    }
+  const handleRefresh = () => {
+    window.location.reload();
   };
 
-  useEffect(() => {
-    fetchDashboardStats();
-  }, []);
-
-  const dashboardCards = [
+  const managementCards = [
     {
-      id: 1,
+      id: "create",
       title: "Create Institution",
-      description:
-        "Add a new institution to the system with admin credentials.",
+      description: "Add a new institution to the system with admin credentials.",
       icon: "fas fa-university",
       action: () => navigate("/superadmin-create-institution"),
-      badge: "New",
-      stats: "0 pending",
+      badge: "Quick Setup",
+      stats: "Create and configure in one flow",
     },
     {
-      id: 2,
+      id: "view",
       title: "View Institutions",
       description: "See all institutions and their admin credentials.",
       icon: "fas fa-th-large",
       action: () => navigate("/superadmin-view-institutions"),
-      badge: "Active",
-      stats: `${statsData.institutions} institutions`,
-    },
-    {
-      id: 3,
-      title: "Manage Admins",
-      description: "Control admin access and assign institution permissions.",
-      icon: "fas fa-user-tie",
-      action: () => navigate("/superadmin-admins"),
-      badge: "Manage",
-      stats: `${statsData.admins} active`,
+      badge: "Directory",
+      stats: "Track institution health and status",
     },
   ];
 
   const stats = [
     {
       label: "Total Institutions",
-      value: String(statsData.institutions),
+      value: "3",
       icon: "fas fa-building",
+      delta: "+1 this month",
     },
     {
       label: "Active Admins",
-      value: String(statsData.admins),
+      value: "5",
       icon: "fas fa-users",
+      delta: "All systems active",
     },
     {
       label: "System Uptime",
-      value: statsData.uptime,
+      value: "99.9%",
       icon: "fas fa-heartbeat",
+      delta: "Operational",
+    },
+  ];
+
+  const recentActivity = [
+    {
+      id: 1,
+      title: "New institution created",
+      description: "Vidyalankar Polytechnic was added and activated.",
+      time: "2 hours ago",
+      icon: "fas fa-plus-circle",
+    },
+    {
+      id: 2,
+      title: "Admin account provisioned",
+      description: "New admin access granted for VIT.",
+      time: "1 day ago",
+      icon: "fas fa-user-plus",
+    },
+    {
+      id: 3,
+      title: "Platform maintenance complete",
+      description: "Background maintenance completed successfully.",
+      time: "3 days ago",
+      icon: "fas fa-screwdriver-wrench",
     },
   ];
 
   return (
     <div className="sa-dashboard">
-      <div className="sa-dashboard-header">
-        <div className="sa-header-content">
-          <div className="sa-header-text">
-            <h1 className="sa-main-title">Super Admin Control Center</h1>
-            <p className="sa-header-subtitle">
-              Manage all institutions and administrative operations
-            </p>
-          </div>
+      <section className="sa-hero">
+        <div className="sa-hero__content">
+          <p className="sa-kicker">Super Admin</p>
+          <h1>Control Center</h1>
+          <p className="sa-hero__subtitle">
+            Manage institutions, administrators and system operations from one place.
+          </p>
         </div>
-        <button
-          className="sa-btn-refresh"
-          onClick={fetchDashboardStats}
-          disabled={loadingCounts}
-        >
-          <i className="fas fa-sync-alt"></i>
-          <span>{loadingCounts ? "Refreshing..." : "Refresh"}</span>
+        <button className="sa-refresh" onClick={handleRefresh}>
+          <i className="fas fa-rotate-right"></i>
+          Refresh
         </button>
-      </div>
+      </section>
 
-      <div className="sa-stats-section">
-        {stats.map((stat, idx) => (
-          <div key={idx} className="sa-stat-card">
-            <div className="sa-stat-icon">
+      <section className="sa-stats-grid">
+        {stats.map((stat) => (
+          <article key={stat.label} className="sa-stat-card">
+            <div className="sa-stat-card__icon">
               <i className={stat.icon}></i>
             </div>
-            <div className="sa-stat-content">
-              <div className="sa-stat-value">{stat.value}</div>
-              <div className="sa-stat-label">{stat.label}</div>
+            <div className="sa-stat-card__content">
+              <p className="sa-stat-card__label">{stat.label}</p>
+              <h3>{stat.value}</h3>
+              <span>{stat.delta}</span>
             </div>
-          </div>
+          </article>
         ))}
-      </div>
+      </section>
 
-      <div className="sa-cards-container">
-        <h2 className="sa-section-title">Core Management</h2>
-        <div className="sa-card-grid">
-          {dashboardCards.map((card) => (
-            <div
-              key={card.id}
-              className={`sa-enhanced-card ${
-                activeCard === card.id ? "active" : ""
-              }`}
-              onMouseEnter={() => setActiveCard(card.id)}
-              onMouseLeave={() => setActiveCard(null)}
-            >
-              <div className="sa-card-content">
-                <div className="sa-card-badge">{card.badge}</div>
-
-                <div className="sa-card-icon-container">
+      <section className="sa-section">
+        <div className="sa-section__header">
+          <h2>Core Management</h2>
+        </div>
+        <div className="sa-management-grid">
+          {managementCards.map((card) => (
+            <article key={card.id} className="sa-management-card">
+              <div className="sa-management-card__top">
+                <div className="sa-management-card__icon">
                   <i className={card.icon}></i>
                 </div>
-
-                <h3 className="sa-card-title">{card.title}</h3>
-                <p className="sa-card-description">{card.description}</p>
-
-                <div className="sa-card-stats">{card.stats}</div>
-
-                <button className="sa-btn-card" onClick={card.action}>
-                  <span>Access Now</span>
-                  <i className="fas fa-arrow-right"></i>
-                </button>
+                <span className="sa-badge">{card.badge}</span>
               </div>
-            </div>
+
+              <h3>{card.title}</h3>
+              <p>{card.description}</p>
+              <div className="sa-management-card__meta">{card.stats}</div>
+
+              <button className="sa-action-btn" onClick={card.action}>
+                Open Section
+                <i className="fas fa-arrow-right"></i>
+              </button>
+            </article>
           ))}
         </div>
-      </div>
+      </section>
+
+      <section className="sa-section">
+        <div className="sa-section__header">
+          <h2>System Activity</h2>
+        </div>
+        <div className="sa-activity-grid">
+          {recentActivity.map((activity) => (
+            <article key={activity.id} className="sa-activity-card">
+              <div className="sa-activity-card__icon">
+                <i className={activity.icon}></i>
+              </div>
+              <div>
+                <h4>{activity.title}</h4>
+                <p>{activity.description}</p>
+                <span>{activity.time}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };

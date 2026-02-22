@@ -1,74 +1,88 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../basic/Header";
-import { fetchCiannsWithAuth } from "../utils/ciannFetch";
 import "../components/EditCiann.css";
+import { config } from "../config/api";
 
 export default function CTCiannCards() {
-  const [cianns, setCianns] = useState([]);
+  const navigate = useNavigate();
+  const [ciannDataList, setCiannDataList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadCianns = async () => {
+    const fetchCianns = async () => {
       try {
-        setLoading(true);
-        setError("");
-        const data = await fetchCiannsWithAuth();
-        setCianns(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setError(err.message || "Failed to load CIANNs");
+        const token = localStorage.getItem("token");
+        const response = await fetch(config.cianns, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.message || "Failed to fetch CIANNs");
+        }
+
+        setCiannDataList(Array.isArray(data) ? data : []);
+      } catch (fetchError) {
+        setError(fetchError.message || "Failed to fetch CIANNs");
       } finally {
         setLoading(false);
       }
     };
 
-    loadCianns();
+    fetchCianns();
   }, []);
+
+  const handleCardClick = (ciannData) => {
+    navigate(`/ct-dashboard/${ciannData.ciannId}`, { state: { ciannData } });
+  };
 
   return (
     <>
       <Header showSearch={false} />
+      <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+        rel="stylesheet"
+      />
       <div className="edit-ciann-page">
         <div className="edit-ciann-header">
           <h2 className="text-center py-2 bg-success text-white">
-            Class Test - Select CIANN
+            CT - Select CIANN
           </h2>
         </div>
 
-        {loading && <p className="text-center mt-3">Loading CIANNs...</p>}
-        {error && <p className="text-center text-danger mt-3">{error}</p>}
-
-        {!loading && !error && (
-          <div className="ciann-card-container">
-            {cianns.length === 0 ? (
-              <p className="text-center">No CIANNs available.</p>
-            ) : (
-              cianns.map((ciann) => (
-                <div
-                  key={ciann._id}
-                  className="ciann-dashboard-card"
-                  onClick={() =>
-                    navigate(`/ct-dashboard/${ciann.ciannId}`, {
-                      state: { ciannData: ciann },
-                    })
-                  }
-                >
-                  <i className="bi bi-journal-check ciann-icon"></i>
-                  <div className="ciann-id">CIANN ID: {ciann.ciannId}</div>
-                  <p className="card-text">
-                    <strong>{ciann.subject?.name || "Subject"}</strong>
-                    <br />({ciann.subject?.code || "-"})
-                  </p>
-                  <p className="card-text">
-                    Division: <strong>{ciann.division || "-"}</strong>
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+        <div className="ciann-card-container">
+          {loading ? (
+            <p>Loading CIANNs...</p>
+          ) : error ? (
+            <p className="text-danger">{error}</p>
+          ) : ciannDataList.length > 0 ? (
+            ciannDataList.map((ciannData) => (
+              <div
+                key={ciannData._id || ciannData.ciannId}
+                className="ciann-dashboard-card"
+                onClick={() => handleCardClick(ciannData)}
+                style={{ cursor: "pointer" }}
+              >
+                <i className="bi bi-pencil-square ciann-icon"></i>
+                <div className="ciann-id">CIAAN ID: {ciannData.ciannId}</div>
+                <p className="card-text">
+                  <strong>{ciannData.subject?.name || "-"}</strong>
+                  <br />
+                  <span className="subject-code">
+                    ({ciannData.subject?.code || "-"})
+                  </span>
+                </p>
+                <p className="card-text">
+                  Division: <strong>{ciannData.division || "-"}</strong>
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="text-center">No CIAANs available.</p>
+          )}
+        </div>
       </div>
     </>
   );

@@ -34,9 +34,20 @@ const Results = () => {
     }
   };
 
-  const filteredResults = filter === "all" 
-    ? results 
-    : results.filter(result => result.examType.toLowerCase() === filter);
+  const normalizedCtMarks = ctMarks.map((ct) => ({
+    ...ct,
+    subjectName: ct.subjectName || ct.subject || "Subject",
+    subjectCode: ct.subjectCode || "",
+    totalMarks: Number(ct.totalMarks || 20),
+    marks: Number(ct.marks || 0),
+  }));
+
+  const filteredResults =
+    filter === "all"
+      ? results
+      : results.filter(
+          (result) => String(result.examType || "").toLowerCase() === filter,
+        );
 
   const calculatePercentage = (marks, maxMarks) => {
     return ((marks / maxMarks) * 100).toFixed(2);
@@ -80,7 +91,7 @@ const Results = () => {
     <div className="student-content-container">
       <div className="content-header">
         <h1>Academic Results</h1>
-        <p>View your exam results and performance analytics</p>
+        <p>View CT marks and exam performance with subject-wise insights</p>
         {studentInfo?.studentName && (
           <p>
             Student: <strong>{studentInfo.studentName}</strong> ({studentInfo.rollNo || "-"})
@@ -90,18 +101,21 @@ const Results = () => {
 
       <div className="performance-summary" style={{ marginBottom: "20px" }}>
         <h2>CT Marks</h2>
-        {ctMarks.length === 0 ? (
+        {normalizedCtMarks.length === 0 ? (
           <div className="no-results">
             <i className="bi bi-journal-x"></i>
             <p>No CT marks available yet for your account.</p>
           </div>
         ) : (
           <div className="results-grid">
-            {ctMarks.map((ct) => (
+            {normalizedCtMarks.map((ct) => (
               <div key={ct._id} className="result-card">
                 <div className="result-header">
-                  <h3>{ct.subject || "Subject"}</h3>
-                  <span className="grade-badge" style={{ backgroundColor: "#10b981" }}>
+                  <h3>
+                    {ct.subjectName}
+                    {ct.subjectCode ? <small> ({ct.subjectCode})</small> : null}
+                  </h3>
+                  <span className="grade-badge ct-pill">
                     CT {ct.ctNumber}
                   </span>
                 </div>
@@ -118,10 +132,10 @@ const Results = () => {
                 <div className="marks-section">
                   <div className="marks-display">
                     <span className="marks">{ct.marks}</span>
-                    <span className="max-marks">/{ct.totalMarks || 20}</span>
+                    <span className="max-marks">/{ct.totalMarks}</span>
                   </div>
                   <div className="percentage">
-                    {calculatePercentage(ct.marks, ct.totalMarks || 20)}%
+                    {calculatePercentage(ct.marks, ct.totalMarks)}%
                   </div>
                 </div>
               </div>

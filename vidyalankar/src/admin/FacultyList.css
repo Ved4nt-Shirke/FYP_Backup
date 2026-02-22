@@ -375,7 +375,7 @@
     padding: var(--admin-space-md);
   }
 }
-*/ .faculty-controls {
+.faculty-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;

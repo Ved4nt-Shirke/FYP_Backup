@@ -5,7 +5,7 @@ const User = require("../models/user");
 const Department = require("../models/Department");
 const Faculty = require("../models/Faculty");
 const OfficeStaff = require("../models/OfficeStaff");
-const { authenticate, authorizeAdmin } = require("../middleware/auth");
+const { authenticate, authorizeAdmin, authorizeOffice } = require("../middleware/auth");
 const Institution = require("../models/Institution");
 
 // Institution and department mappings

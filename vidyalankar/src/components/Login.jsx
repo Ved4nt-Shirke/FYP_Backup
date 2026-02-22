@@ -3,11 +3,17 @@ import { showSuccessAlert, showErrorAlert } from "../utils/alertUtils.jsx";
 import { config } from "../config/api";
 import { TokenManager, SessionManager } from "../utils/authUtils.js";
 import { buildInstitutionLogoUrl } from "../utils/institutionBranding";
+import { applyPalette } from "../utils/theme";
 import "./Login.css";
 import loginImage from "../assets/login.png";
 
 // Function to apply theme based on college
-const applyTheme = (college) => {
+const applyTheme = (college, palette = null) => {
+  if (palette && typeof palette === "object") {
+    applyPalette(palette);
+    return;
+  }
+
   const root = document.documentElement;
   const themeMap = {
     VSIT: { header: "#c62828", accent: "#ef4444", accentDark: "#b91c1c" }, // red
@@ -137,25 +143,17 @@ const Login = () => {
           college: data.college || requestData.college,
         });
 
-        const resolvedInstitutionCode = (
-          data.institutionCode ||
-          data.college ||
-          requestData.college ||
-          "VP"
-        )
-          .toString()
-          .toUpperCase();
+        const resolvedInstitutionCode =
+          (data.institutionCode || data.college || requestData.college || "VP")
+            .toString()
+            .toUpperCase();
         const selectedInstitution = institutions.find(
           (inst) => inst.code === resolvedInstitutionCode,
         );
         const resolvedInstitutionName =
-          data.institutionName ||
-          selectedInstitution?.name ||
-          resolvedInstitutionCode;
+          data.institutionName || selectedInstitution?.name || resolvedInstitutionCode;
         const resolvedInstitutionLogo =
           data.institutionLogoUrl || selectedInstitution?.logoUrl || "";
-        const resolvedInstitutionPalette =
-          data.institutionPalette || selectedInstitution?.palette || null;
 
         localStorage.setItem("institutionCode", resolvedInstitutionCode);
         localStorage.setItem("institutionName", resolvedInstitutionName);
@@ -163,27 +161,24 @@ const Login = () => {
           "institutionLogoUrl",
           buildInstitutionLogoUrl(resolvedInstitutionLogo),
         );
-        if (resolvedInstitutionPalette) {
+        if (data.institutionPalette) {
           localStorage.setItem(
             "institutionPalette",
-            JSON.stringify(resolvedInstitutionPalette),
+            JSON.stringify(data.institutionPalette),
           );
         } else {
           localStorage.removeItem("institutionPalette");
         }
 
         if ((data.role || role) === "student") {
-          localStorage.setItem(
-            "studentName",
-            data.studentName || data.userName || formattedName,
-          );
+          localStorage.setItem("studentName", data.studentName || data.userName || formattedName);
           localStorage.setItem("enrollmentNo", data.enrollmentNo || "");
           localStorage.setItem("studentRollNo", data.rollNo || "");
           localStorage.setItem("studentDivision", data.division || "");
           localStorage.setItem("studentBatch", data.batch || "");
         }
 
-        applyTheme(resolvedInstitutionCode);
+        applyTheme(resolvedInstitutionCode, data.institutionPalette || null);
 
         showSuccessAlert("Login successful");
 

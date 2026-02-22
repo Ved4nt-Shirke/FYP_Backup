@@ -8,7 +8,6 @@ const SubjectDetails = () => {
   const location = useLocation();
   const [ciannData, setCiannData] = useState(location.state?.ciannData || null);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] = useState(false); // Start with false for mobile
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false); // Primary sidebar toggle (no-op here)
 
   useEffect(() => {
     console.log("Current path:", location.pathname);
@@ -74,7 +73,9 @@ const SubjectDetails = () => {
     <>
       {/* Header with secondary sidebar toggle like editCiann pages */}
       <Header 
-        onMenuToggle={() => setIsSidebarVisible(v => !v)}
+        onMenuToggle={() =>
+          window.dispatchEvent(new CustomEvent("faculty:toggle-main-sidebar"))
+        }
         onSecondaryMenuToggle={() => setIsSecondarySidebarVisible(v => !v)}
       />
 

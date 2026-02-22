@@ -17,104 +17,9 @@ function Studentlist() {
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth > 1024);
   // State for the secondary sidebar from your first code
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
-
-  const normalizeValue = (value) =>
-    String(value || "")
-      .trim()
-      .toLowerCase();
-
-  const getIdValue = (value) => {
-    if (!value) return "";
-    if (typeof value === "object") return value._id || value.id || "";
-    return String(value);
-  };
-
-  const buildStudentQuery = () => {
-    const params = new URLSearchParams();
-
-    const divisionId = getIdValue(ciannData?.divisionId || ciannData?.division?._id);
-    const courseId = getIdValue(ciannData?.courseId || ciannData?.course?._id);
-    const departmentId = getIdValue(
-      ciannData?.departmentId || ciannData?.department?._id,
-    );
-    const division = ciannData?.division || ciannData?.classDetails?.division;
-
-    if (divisionId) params.append("divisionId", divisionId);
-    if (courseId) params.append("courseId", courseId);
-    if (departmentId) params.append("departmentId", departmentId);
-    if (division && !divisionId) params.append("division", division);
-
-    return params.toString();
-  };
-
-  const filterStudentsByCiann = (studentList) => {
-    if (!ciannData) return studentList;
-
-    const ciannDivisionId = getIdValue(ciannData?.divisionId || ciannData?.division?._id);
-    const ciannCourseId = getIdValue(ciannData?.courseId || ciannData?.course?._id);
-    const ciannDepartmentId = getIdValue(
-      ciannData?.departmentId || ciannData?.department?._id,
-    );
-    const ciannDivision = normalizeValue(
-      ciannData?.division || ciannData?.classDetails?.division,
-    );
-    const ciannClass = normalizeValue(ciannData?.class || ciannData?.className);
-    const ciannDepartment = normalizeValue(
-      ciannData?.department?.name || ciannData?.departmentName || ciannData?.department,
-    );
-
-    return studentList.filter((student) => {
-      if (
-        ciannDivisionId &&
-        getIdValue(student?.divisionId) !== ciannDivisionId
-      ) {
-        return false;
-      }
-
-      if (ciannCourseId && getIdValue(student?.courseId) !== ciannCourseId) {
-        return false;
-      }
-
-      if (
-        ciannDepartmentId &&
-        getIdValue(student?.departmentId) !== ciannDepartmentId
-      ) {
-        return false;
-      }
-
-      if (ciannDivision) {
-        const studentDivision = normalizeValue(
-          student?.divisionName || student?.division,
-        );
-        if (studentDivision !== ciannDivision) return false;
-      }
-
-      if (ciannClass) {
-        const studentClass = normalizeValue(student?.className || student?.class);
-        if (studentClass && studentClass !== ciannClass) return false;
-      }
-
-      if (ciannDepartment) {
-        const studentDepartment = normalizeValue(
-          student?.departmentName || student?.department,
-        );
-        if (studentDepartment && studentDepartment !== ciannDepartment)
-          return false;
-      }
-
-      return true;
-    });
-  };
-
-  useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth > 1024);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   useEffect(() => {
     // This logic for managing ciannData is from your original file
@@ -142,18 +47,10 @@ function Studentlist() {
     setLoading(true);
     setError(null);
     try {
-      const query = buildStudentQuery();
-      const response = await fetch(
-        query ? `${config.students}?${query}` : config.students,
-      );
+      const response = await fetch(config.students);
       if (!response.ok) throw new Error("Failed to fetch students");
       const data = await response.json();
-      const studentList = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.students)
-          ? data.students
-          : [];
-      setStudents(filterStudentsByCiann(studentList));
+      setStudents(data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -163,32 +60,16 @@ function Studentlist() {
 
   useEffect(() => {
     fetchStudents();
-  }, [ciannData]);
+  }, []);
 
   const handleAddStudent = async (student) => {
     setAddLoading(true);
     setAddError(null);
     try {
-      const payload = {
-        ...student,
-        division:
-          student.division || ciannData?.division || ciannData?.classDetails?.division || "",
-      };
-
-      const divisionId = getIdValue(ciannData?.divisionId || ciannData?.division?._id);
-      const courseId = getIdValue(ciannData?.courseId || ciannData?.course?._id);
-      const departmentId = getIdValue(
-        ciannData?.departmentId || ciannData?.department?._id,
-      );
-
-      if (divisionId) payload.divisionId = divisionId;
-      if (courseId) payload.courseId = courseId;
-      if (departmentId) payload.departmentId = departmentId;
-
       const response = await fetch(config.students, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(student),
       });
       if (!response.ok) {
         const errData = await response.json();
@@ -203,22 +84,46 @@ function Studentlist() {
     }
   };
 
+  const handleDeleteStudent = async (studentId) => {
+    if (!window.confirm("Are you sure you want to delete this student?"))
+      return;
+    try {
+      const response = await fetch(`${config.students}/${studentId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        let errorMessage = `Failed to delete student: ${response.status} ${response.statusText}`;
+        try {
+          const errData = JSON.parse(text);
+          errorMessage = errData.message || errorMessage;
+        } catch (e) {
+          errorMessage += ` - Server returned: ${text.substring(0, 50)}...`;
+        }
+        throw new Error(errorMessage);
+      }
+      fetchStudents();
+    } catch (err) {
+      console.error("Error deleting student:", err.message);
+      alert("Error deleting student: " + err.message);
+    }
+  };
+
   return (
     <div className="student-layout">
       <Header
         showSearch={false}
-        onMenuToggle={() => setIsSidebarVisible((v) => !v)}
+        onMenuToggle={() => {
+          setIsSidebarVisible((v) => !v);
+          window.dispatchEvent(new CustomEvent("faculty:toggle-main-sidebar"));
+        }}
+        // Added the toggle prop for the secondary sidebar
         onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
-        hidePrimaryMenuToggleOnCompact={true}
-        mobileHomePath="/dashboard"
       />
-      <div
-        className={`student-main-row ${isDesktop && isSidebarVisible ? "with-primary-sidebar" : ""}`}
-      >
+      <div className="student-main-row">
         <Sidebar
           isSidebarVisible={isSidebarVisible}
           setIsSidebarVisible={setIsSidebarVisible}
-          disableOnCompact={true}
         />
 
         {/* Added the Secondary Sidebar component and its wrapper */}
@@ -233,7 +138,13 @@ function Studentlist() {
         <div className="student-main-content">
           <div className="studentlist-container">
             <div className="header-with-button">
-              <h6>3. List of Student Enrollment & Roll ID</h6>
+              <h6>4. List of Student Enrollment & Roll ID</h6>
+              <button
+                className="btn btn-add-student"
+                onClick={() => setShowForm(true)}
+              >
+                Add Student
+              </button>
             </div>
 
             {addError && (
@@ -246,26 +157,27 @@ function Studentlist() {
                   <tr>
                     <th>Roll No</th>
                     <th>Enrollment No</th>
-                    <th>Batch</th>
                     <th>Student Name</th>
+                    <th>Batch</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan="4" className="text-center">
+                      <td colSpan="5" className="text-center">
                         Loading...
                       </td>
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan="4" className="text-center text-danger">
+                      <td colSpan="5" className="text-center text-danger">
                         {error}
                       </td>
                     </tr>
                   ) : students.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="text-center">
+                      <td colSpan="5" className="text-center">
                         No data available
                       </td>
                     </tr>
@@ -278,11 +190,19 @@ function Studentlist() {
                         <td data-label="Enrollment No">
                           <span>{student.enrollmentNo}</span>
                         </td>
+                        <td data-label="Student Name">
+                          <span>{student.studentName}</span>
+                        </td>
                         <td data-label="Batch">
                           <span>{student.batch}</span>
                         </td>
-                        <td data-label="Student Name">
-                          <span>{student.studentName}</span>
+                        <td data-label="Action">
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleDeleteStudent(student._id)}
+                          >
+                            Delete
+                          </button>
                         </td>
                       </tr>
                     ))

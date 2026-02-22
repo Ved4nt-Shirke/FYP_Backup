@@ -25,17 +25,29 @@ const CTMarks = () => {
       const enrollmentNo = localStorage.getItem("enrollmentNo");
 
       const response = await fetch(
-        `${config.API_URL}/api/ct-marks/student-marks/${enrollmentNo}`,
+        `${config.API_URL}/api/ct-marks/student/${enrollmentNo}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       const data = await response.json();
-      setMarks(Array.isArray(data) ? data : []);
-      calculateStats(data);
+      const normalizedMarks = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.marks)
+          ? data.marks
+          : [];
+
+      const mappedMarks = normalizedMarks.map((mark) => ({
+        ...mark,
+        subjectName: mark.subjectName || mark.subject || "Subject",
+        subjectCode: mark.subjectCode || "",
+      }));
+
+      setMarks(mappedMarks);
+      calculateStats(mappedMarks);
     } catch (err) {
       console.error("Error fetching CT marks:", err);
       setError("Failed to load CT marks");
@@ -73,13 +85,14 @@ const CTMarks = () => {
       ? marks
       : marks.filter((m) => m.subjectName === selectedSubject);
 
-  const getGrade = (marks) => {
-    if (marks >= 90) return { grade: "A+", color: "#27ae60" };
-    if (marks >= 80) return { grade: "A", color: "#2ecc71" };
-    if (marks >= 70) return { grade: "B+", color: "#f39c12" };
-    if (marks >= 60) return { grade: "B", color: "#e67e22" };
-    if (marks >= 50) return { grade: "C", color: "#e74c3c" };
-    return { grade: "F", color: "#c0392b" };
+  const getGrade = (scoreOutOf20) => {
+    const percentage = (Number(scoreOutOf20 || 0) / 20) * 100;
+    if (percentage >= 90) return { grade: "A+", className: "grade-a-plus" };
+    if (percentage >= 80) return { grade: "A", className: "grade-a" };
+    if (percentage >= 70) return { grade: "B+", className: "grade-b-plus" };
+    if (percentage >= 60) return { grade: "B", className: "grade-b" };
+    if (percentage >= 50) return { grade: "C", className: "grade-c" };
+    return { grade: "F", className: "grade-f" };
   };
 
   return (
@@ -92,7 +105,7 @@ const CTMarks = () => {
       {/* Statistics Cards */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: "#3498db30" }}>
+          <div className="stat-icon stat-icon-ct1">
             📝
           </div>
           <div className="stat-info">
@@ -101,7 +114,7 @@ const CTMarks = () => {
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: "#e74c3c30" }}>
+          <div className="stat-icon stat-icon-ct2">
             📝
           </div>
           <div className="stat-info">
@@ -110,7 +123,7 @@ const CTMarks = () => {
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: "#2ecc7130" }}>
+          <div className="stat-icon stat-icon-overall">
             📊
           </div>
           <div className="stat-info">
@@ -119,7 +132,7 @@ const CTMarks = () => {
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: "#f39c1230" }}>
+          <div className="stat-icon stat-icon-subjects">
             📚
           </div>
           <div className="stat-info">
@@ -162,9 +175,7 @@ const CTMarks = () => {
             const ct1Grade = mark.ct1 ? getGrade(mark.ct1) : null;
             const ct2Grade = mark.ct2 ? getGrade(mark.ct2) : null;
             const average =
-              mark.ct1 && mark.ct2
-                ? ((mark.ct1 + mark.ct2) / 2).toFixed(2)
-                : null;
+              mark.ct1 && mark.ct2 ? ((mark.ct1 + mark.ct2) / 2).toFixed(2) : null;
 
             return (
               <div key={`${mark._id}-${index}`} className="mark-card">
@@ -182,10 +193,7 @@ const CTMarks = () => {
                           <span className="marks">{mark.ct1}</span>
                           <span className="out-of">/20</span>
                           {ct1Grade && (
-                            <span
-                              className="grade"
-                              style={{ background: ct1Grade.color }}
-                            >
+                            <span className={`grade ${ct1Grade.className}`}>
                               {ct1Grade.grade}
                             </span>
                           )}
@@ -204,10 +212,7 @@ const CTMarks = () => {
                           <span className="marks">{mark.ct2}</span>
                           <span className="out-of">/20</span>
                           {ct2Grade && (
-                            <span
-                              className="grade"
-                              style={{ background: ct2Grade.color }}
-                            >
+                            <span className={`grade ${ct2Grade.className}`}>
                               {ct2Grade.grade}
                             </span>
                           )}

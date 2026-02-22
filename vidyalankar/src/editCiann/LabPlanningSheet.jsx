@@ -43,6 +43,16 @@ const LabPlanningSheet = () => {
   const ciannData = getCiannData();
   const ciannId = ciannData?.ciannId;
 
+  // Debug logging
+  useEffect(() => {
+    console.log("LabPlanningSheet - Debug Info:");
+    console.log("location.state:", location.state);
+    console.log("currentCiann:", currentCiann);
+    console.log("localStorage ciannData:", localStorage.getItem("ciannData"));
+    console.log("Final ciannData:", ciannData);
+    console.log("Final ciannId:", ciannId);
+  }, [location.state, currentCiann, ciannData, ciannId]);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [planningStarted, setPlanningStarted] = useState(false);
   const [showWeekwisePlan, setShowWeekwisePlan] = useState(false);
@@ -64,16 +74,18 @@ const LabPlanningSheet = () => {
       }
       setLoading(true);
       try {
-        const res = await fetch(config.labPlanning);
+        const res = await fetch(`${config.labPlanning}/${ciannId}`);
+        if (res.status === 404) {
+          console.log(`No lab plans found for ciannId: ${ciannId}`);
+          setLabPlans([]);
+          setPlanningStarted(false);
+          return;
+        }
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        const allPlans = Array.isArray(data) ? data : [];
-        const numericCiannId = Number(ciannId);
-        const filteredPlans = allPlans.filter(
-          (plan) => Number(plan?.ciannId) === numericCiannId,
-        );
-        setLabPlans(filteredPlans);
-        setPlanningStarted(filteredPlans.length > 0);
+        console.log("Fetched lab plans:", data);
+        setLabPlans(data);
+        setPlanningStarted(data.length > 0);
       } catch (err) {
         console.error("Failed to fetch lab plans:", err);
         setLabPlans([]);
@@ -125,14 +137,12 @@ const LabPlanningSheet = () => {
       console.log("Lab plan saved successfully:", savedPlan);
 
       // Refetch plans after submit
-      const updatedRes = await fetch(config.labPlanning);
+      const updatedRes = await fetch(`${config.labPlanning}/${ciannId}`);
       if (updatedRes.ok) {
         const updatedData = await updatedRes.json();
-        const allPlans = Array.isArray(updatedData) ? updatedData : [];
-        const numericCiannId = Number(ciannId);
-        setLabPlans(
-          allPlans.filter((plan) => Number(plan?.ciannId) === numericCiannId),
-        );
+        setLabPlans(updatedData);
+      } else if (updatedRes.status === 404) {
+        setLabPlans([]);
       }
       setPlanningStarted(true);
       setShowWeekwisePlan(false);
@@ -201,16 +211,16 @@ const LabPlanningSheet = () => {
     <div className="lab-layout">
       <Header
         showSearch={false}
-        onMenuToggle={() => setIsSidebarVisible((v) => !v)}
+        onMenuToggle={() => {
+          setIsSidebarVisible((v) => !v);
+          window.dispatchEvent(new CustomEvent("faculty:toggle-main-sidebar"));
+        }}
         onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
-        hidePrimaryMenuToggleOnCompact={true}
-        mobileHomePath="/dashboard"
       />
       <div className="teaching-main-row">
         <Sidebar
           isSidebarVisible={isSidebarVisible}
           setIsSidebarVisible={setIsSidebarVisible}
-          disableOnCompact={true}
         />
         <div className="syllabus-secondary-sidebar-wrapper">
           <SecondarySidebar
@@ -219,11 +229,11 @@ const LabPlanningSheet = () => {
             setIsSecondarySidebarVisible={setIsSecondarySidebarVisible}
           />
         </div>
-        <div className="labplanning-main-content syllabus-main-content has-secondary-sidebar">
+        <div className="labplanning-main-content">
           {!ciannId ? (
             <div className="plan-container">
               <div className="header-row">
-                <h3>5. Laboratory Plan (LP)</h3>
+                <h3>7. Laboratory Plan (LP)</h3>
               </div>
               <div
                 style={{
@@ -277,7 +287,7 @@ const LabPlanningSheet = () => {
           ) : (
             <div className="plan-container">
               <div className="header-row">
-                <h3>5. Laboratory Plan (LP)</h3>
+                <h3>7. Laboratory Plan (LP)</h3>
                 <div className="button-group">
                   {planningStarted ? (
                     <div

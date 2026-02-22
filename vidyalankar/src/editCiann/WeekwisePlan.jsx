@@ -71,20 +71,8 @@ const WeekwisePlan = ({
 
         console.log("Fetching experiments with payload:", payload);
 
-        let response;
-        try {
-          response = await axios.post(
-            `${config.course.experiments}/get-experiments`,
-            payload,
-          );
-        } catch (primaryError) {
-          if (primaryError?.response?.status === 404) {
-            response = await axios.post(config.course.experiments, payload);
-          } else {
-            throw primaryError;
-          }
-        }
-
+        const response = await axios.post(config.course.experiments, payload);
+        
         if (response.data.success && response.data.experiments) {
           setExperiments(response.data.experiments);
           console.log("Fetched experiments:", response.data.experiments);
@@ -130,20 +118,18 @@ const WeekwisePlan = ({
 
   const handleChange = (index, field, value) => {
     const updatedPlans = [...plans];
-
+    
     if (field === "exptNo") {
       // When experiment number changes, auto-fill the experiment name
       const selectedExperiment = experiments.find(
-        (exp) => String(exp.practicalNo) === String(value),
+        (exp) => String(exp.practicalNo) === String(value)
       );
       updatedPlans[index].exptNo = value;
-      updatedPlans[index].exptName = selectedExperiment
-        ? selectedExperiment.practicalName
-        : "";
+      updatedPlans[index].exptName = selectedExperiment ? selectedExperiment.practicalName : "";
     } else {
       updatedPlans[index][field] = value;
     }
-
+    
     setPlans(updatedPlans);
   };
 
@@ -376,32 +362,27 @@ const WeekwisePlan = ({
         </div>
         <div className="weekwise-container flip-animate">
           {loadingExperiments && (
-            <div
-              style={{
-                padding: "10px",
-                background: "#e3f2fd",
-                borderRadius: "5px",
-                marginBottom: "10px",
-                textAlign: "center",
-                color: "#1976d2",
-              }}
-            >
+            <div style={{ 
+              padding: "10px", 
+              background: "#e3f2fd", 
+              borderRadius: "5px", 
+              marginBottom: "10px",
+              textAlign: "center",
+              color: "#1976d2"
+            }}>
               Loading experiments...
             </div>
           )}
           {!loadingExperiments && experiments.length === 0 && ciannData && (
-            <div
-              style={{
-                padding: "10px",
-                background: "#fff3cd",
-                borderRadius: "5px",
-                marginBottom: "10px",
-                textAlign: "center",
-                color: "#856404",
-              }}
-            >
-              No experiments found for this subject. Please add experiments
-              first.
+            <div style={{ 
+              padding: "10px", 
+              background: "#fff3cd", 
+              borderRadius: "5px", 
+              marginBottom: "10px",
+              textAlign: "center",
+              color: "#856404"
+            }}>
+              No experiments found for this subject. Please add experiments first.
             </div>
           )}
           <div className="plan-table-wrapper">
@@ -447,10 +428,7 @@ const WeekwisePlan = ({
                       >
                         <option value="">Select Experiment</option>
                         {experiments.map((exp) => (
-                          <option
-                            key={exp.practicalNo}
-                            value={String(exp.practicalNo)}
-                          >
+                          <option key={exp.practicalNo} value={String(exp.practicalNo)}>
                             {exp.practicalNo}
                           </option>
                         ))}

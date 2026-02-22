@@ -99,46 +99,28 @@
   font-size: 13px;
 }
 
-.notice-editor .ql-container {
-  max-height: 200px;
-  overflow-y: auto;
+.cke {
   border-radius: 4px;
-  font-family: inherit;
+  border-color: #ced4da !important;
 }
 
-.notice-editor .ql-editor {
-  min-height: 150px;
-  padding: 10px;
+.cke_top {
+  background: #ffffff !important;
+  border-bottom-color: #ced4da !important;
 }
 
-.notice-editor .ql-toolbar {
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  border-color: #ced4da;
-  background: white;
+.cke_bottom {
+  background: #f8f9fa !important;
+  border-top-color: #ced4da !important;
 }
 
-.notice-editor .ql-toolbar button:hover,
-.notice-editor .ql-toolbar button:focus,
-.notice-editor .ql-toolbar button.ql-active,
-.notice-editor .ql-toolbar.ql-snow .ql-formats button:hover,
-.notice-editor .ql-toolbar.ql-snow .ql-formats button.ql-active,
-.notice-editor .ql-toolbar.ql-snow .ql-stroke:hover,
-.notice-editor .ql-toolbar.ql-snow .ql-stroke.ql-active,
-.notice-editor .ql-toolbar.ql-snow .ql-fill:hover,
-.notice-editor .ql-toolbar.ql-snow .ql-fill.ql-active,
-.notice-editor .ql-toolbar.ql-snow .ql-picker-label:hover,
-.notice-editor .ql-toolbar.ql-snow .ql-picker-item:hover,
-.notice-editor .ql-toolbar.ql-snow .ql-picker-item.ql-selected {
-  color: var(--primary-accent, #10b981);
+.cke_contents {
+  min-height: 200px;
 }
 
-.notice-editor .ql-toolbar.ql-snow .ql-stroke {
-  stroke: #444;
-}
-
-.notice-editor .ql-toolbar.ql-snow .ql-fill {
-  fill: #444;
+.cke_editable {
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 /* Form Actions */

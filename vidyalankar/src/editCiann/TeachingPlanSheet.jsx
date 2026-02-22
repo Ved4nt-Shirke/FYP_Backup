@@ -608,16 +608,16 @@ const TeachingPlan = () => {
     <div className="teaching-layout">
       <Header
         showSearch={false}
-        onMenuToggle={() => setIsSidebarVisible((v) => !v)}
+        onMenuToggle={() => {
+          setIsSidebarVisible((v) => !v);
+          window.dispatchEvent(new CustomEvent("faculty:toggle-main-sidebar"));
+        }}
         onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
-        hidePrimaryMenuToggleOnCompact={true}
-        mobileHomePath="/dashboard"
       />
       <div className="teaching-main-row">
         <Sidebar
           isSidebarVisible={isSidebarVisible}
           setIsSidebarVisible={setIsSidebarVisible}
-          disableOnCompact={true}
         />
         <div className="syllabus-secondary-sidebar-wrapper">
           <SecondarySidebar
@@ -628,11 +628,11 @@ const TeachingPlan = () => {
         </div>
         <div
           className="teaching-main-content syllabus-main-content has-secondary-sidebar"
-          style={{ marginTop: "0" }}
+          style={{ marginTop: "180px" }}
         >
           <div className="plan-container">
             <div className="header-row">
-              <h3 className="plan-title">4. Teaching Plan (TP)</h3>
+              <h3 className="plan-title">6. Teaching Plan (TP)</h3>
               {/* Move the button/action area here */}
               <div className="plan-actions-top-right">
                 {" "}

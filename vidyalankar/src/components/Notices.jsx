@@ -1,6 +1,39 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import DOMPurify from "dompurify";
 import { config } from "../config/api";
 import "./Notices.css";
+
+const CKEDITOR_CDN = "https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js";
+const CKEDITOR_TEXTAREA_ID = "faculty-notice-ckeditor";
+
+const loadCkEditorScript = () => {
+  if (window.CKEDITOR) {
+    return Promise.resolve();
+  }
+
+  const existingScript = document.querySelector(`script[src="${CKEDITOR_CDN}"]`);
+  if (existingScript) {
+    return new Promise((resolve, reject) => {
+      existingScript.addEventListener("load", () => resolve(), { once: true });
+      existingScript.addEventListener("error", () => reject(new Error("Failed to load CKEditor script")), { once: true });
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = CKEDITOR_CDN;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load CKEditor script"));
+    document.body.appendChild(script);
+  });
+};
+
+const isRichTextEmpty = (html = "") =>
+  !String(html)
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .trim();
 
 const Notices = () => {
   const [notices, setNotices] = useState([]);
@@ -9,6 +42,8 @@ const Notices = () => {
   const [noticeContent, setNoticeContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const editorInstanceRef = useRef(null);
+  const editorInitRef = useRef(false);
 
   const token = localStorage.getItem("token");
   const facultyUsername = localStorage.getItem("username");
@@ -17,6 +52,70 @@ const Notices = () => {
   useEffect(() => {
     fetchNotices();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const setupEditor = async () => {
+      if (!showForm || editorInitRef.current) return;
+
+      try {
+        editorInitRef.current = true;
+        await loadCkEditorScript();
+        if (cancelled || !window.CKEDITOR) return;
+
+        const existing = window.CKEDITOR.instances[CKEDITOR_TEXTAREA_ID];
+        if (existing) {
+          existing.destroy(true);
+        }
+
+        const instance = window.CKEDITOR.replace(CKEDITOR_TEXTAREA_ID, {
+          height: 220,
+          removePlugins: "elementspath",
+          resize_enabled: false,
+        });
+
+        instance.on("instanceReady", () => {
+          instance.setData(noticeContent || "");
+          instance.setReadOnly(loading);
+        });
+
+        instance.on("change", () => {
+          setNoticeContent(instance.getData());
+        });
+
+        editorInstanceRef.current = instance;
+      } catch (error) {
+        console.error("Failed to initialize CKEditor:", error);
+        alert("Failed to load rich text editor. Please refresh and try again.");
+      }
+    };
+
+    setupEditor();
+
+    return () => {
+      cancelled = true;
+      editorInitRef.current = false;
+      if (editorInstanceRef.current) {
+        editorInstanceRef.current.destroy(true);
+        editorInstanceRef.current = null;
+      }
+    };
+  }, [showForm]);
+
+  useEffect(() => {
+    if (!showForm || !editorInstanceRef.current) return;
+    const currentData = editorInstanceRef.current.getData();
+    if (currentData !== noticeContent) {
+      editorInstanceRef.current.setData(noticeContent || "");
+    }
+  }, [noticeContent, showForm]);
+
+  useEffect(() => {
+    if (editorInstanceRef.current) {
+      editorInstanceRef.current.setReadOnly(loading);
+    }
+  }, [loading]);
 
   const fetchNotices = async () => {
     try {
@@ -45,7 +144,11 @@ const Notices = () => {
   };
 
   const handleSaveNotice = async () => {
-    if (!noticeTitle.trim() || !noticeContent.trim()) {
+    const rawContent =
+      editorInstanceRef.current?.getData?.() ?? noticeContent;
+    const contentToSave = DOMPurify.sanitize(rawContent);
+
+    if (!noticeTitle.trim() || isRichTextEmpty(contentToSave)) {
       alert("Title and content are required");
       return;
     }
@@ -65,7 +168,7 @@ const Notices = () => {
         },
         body: JSON.stringify({
           title: noticeTitle,
-          content: noticeContent,
+          content: contentToSave,
           faculty: facultyUsername,
         }),
       });
@@ -76,6 +179,10 @@ const Notices = () => {
         setNoticeContent("");
         setShowForm(false);
         setEditingId(null);
+        if (editorInstanceRef.current) {
+          editorInstanceRef.current.destroy(true);
+          editorInstanceRef.current = null;
+        }
       } else {
         alert("Error saving notice");
       }
@@ -127,6 +234,10 @@ const Notices = () => {
     setNoticeTitle("");
     setNoticeContent("");
     setEditingId(null);
+    if (editorInstanceRef.current) {
+      editorInstanceRef.current.destroy(true);
+      editorInstanceRef.current = null;
+    }
   };
 
   return (
@@ -166,9 +277,8 @@ const Notices = () => {
           <div className="form-group">
             <label>Notice Content</label>
             <textarea
-              value={noticeContent}
-              onChange={(e) => setNoticeContent(e.target.value)}
-              placeholder="Write your notice here..."
+              id={CKEDITOR_TEXTAREA_ID}
+              defaultValue={noticeContent}
               disabled={loading}
               className="form-input notice-editor"
               rows={8}
@@ -220,7 +330,7 @@ const Notices = () => {
               <div className="notice-title">{notice.title}</div>
               <div
                 className="notice-content"
-                dangerouslySetInnerHTML={{ __html: notice.content }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(notice.content || "") }}
               ></div>
               <div className="notice-footer">
                 <small className="notice-date">

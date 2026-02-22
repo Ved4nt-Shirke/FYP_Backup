@@ -42,7 +42,7 @@ function Syllabus() {
             setCiannData(parsedData);
             sessionStorage.setItem(
               "currentCiannData",
-              JSON.stringify(parsedData),
+              JSON.stringify(parsedData)
             );
             return;
           }
@@ -60,11 +60,11 @@ function Syllabus() {
     let updatedImages;
     if (images.length === 0) {
       updatedImages = selectedFiles.map((file) =>
-        file ? URL.createObjectURL(file) : "",
+        file ? URL.createObjectURL(file) : ""
       );
     } else {
       updatedImages = images.map((img, index) =>
-        selectedFiles[index] ? URL.createObjectURL(selectedFiles[index]) : img,
+        selectedFiles[index] ? URL.createObjectURL(selectedFiles[index]) : img
       );
     }
     setImages(updatedImages);
@@ -82,17 +82,17 @@ function Syllabus() {
     <div className="timetable-layout">
       <Header
         showSearch={false}
-        onMenuToggle={() => setIsSidebarVisible((v) => !v)}
+        onMenuToggle={() => {
+          setIsSidebarVisible((v) => !v);
+          window.dispatchEvent(new CustomEvent("faculty:toggle-main-sidebar"));
+        }}
         onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
-        hidePrimaryMenuToggleOnCompact={true}
-        mobileHomePath="/dashboard"
       />
 
       <div className="timetable-main-row">
         <Sidebar
           isSidebarVisible={isSidebarVisible}
           setIsSidebarVisible={setIsSidebarVisible}
-          disableOnCompact={true}
         />
 
         {/* Secondary Sidebar Overlay */}

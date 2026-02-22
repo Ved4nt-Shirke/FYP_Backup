@@ -1,6 +1,6 @@
 :root {
   --header-height: 60px;
-  --sidebar-width: 280px; /* Default for admin/office */
+  --sidebar-width: 280px; /* Updated to match AdminSidebar width */
   --page-bg: #f8f9fa;
   --surface-color: #ffffff;
   --border-color: #dee2e6;
@@ -9,10 +9,6 @@
   --app-header-bg: #2e7d32;
   --primary-accent: #10b981;
   --primary-accent-dark: #059669;
-}
-
-.faculty-page {
-  --sidebar-width: 220px;
 }
 
 /* Global palette-aware button/text helpers (keeps superadmin colors intact) */
@@ -92,7 +88,9 @@ body {
 
 .superadmin-page .main-content-wrapper {
   margin-top: 0; /* No top margin for superadmin as navbar is outside wrapper */
-  padding-top: 60px; /* Add padding to account for fixed navbar */
+  padding-top: 112px; /* Add padding to account for fixed navbar + tabs */
+  overflow-x: hidden;
+  height: 100vh;
 }
 
 /* Scrolls only the content between Header and Footer */
@@ -114,20 +112,22 @@ body {
 
 /* Adjust for superadmin navbar */
 .superadmin-page .scrollable-content {
-  height: 100vh; /* Full height since navbar is outside wrapper */
+  height: calc(100vh - 112px); /* Fit remaining viewport below superadmin header */
+  overflow-x: hidden;
+  padding-bottom: 20px;
 }
 
 /* Admin page specific styles */
 .admin-page .main-content-wrapper {
-  margin-top: 0;
+  margin-top: 60px; /* Account for fixed admin header */
   padding-top: 0;
 }
 
 .admin-page .scrollable-content {
   padding-top: 0;
-  padding-bottom: 350px;
+  padding-bottom: 220px;
   overflow-y: auto;
-  height: 100vh;
+  height: calc(100vh - 60px);
 }
 
 .admin-page.admin-dashboard-page .scrollable-content {
@@ -183,7 +183,8 @@ body {
 
 @media (max-width: 768px) {
   .superadmin-page .scrollable-content {
-    height: 100vh !important; /* Full height since navbar is outside wrapper */
+    height: calc(100vh - 104px) !important; /* Fit remaining viewport below mobile superadmin header */
+    padding-bottom: 20px !important;
   }
 }
 
@@ -194,38 +195,37 @@ body {
   }
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .faculty-page .main-content-wrapper {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
 @media (max-width: 768px) {
   .main-content-wrapper {
     margin-left: 0 !important;
     width: 100% !important;
     margin-top: 0 !important; /* Remove margin since header is fixed */
-    padding-top: 60px !important; /* Add padding to account for fixed header */
+    padding-top: var(--header-height) !important; /* Match actual mobile header height */
   }
 
   .scrollable-content {
     height: 100vh !important; /* Full height since navbar is now outside wrapper */
     padding-top: 0 !important;
+    overflow-x: auto !important;
+  }
+
+  .content-area {
+    padding: 1rem !important;
   }
 
   .superadmin-page .main-content-wrapper {
     margin-top: 0 !important; /* No top margin for superadmin as navbar is outside wrapper */
-    padding-top: 60px !important; /* Add padding to account for fixed navbar */
+    padding-top: 104px !important; /* Add padding to account for fixed navbar + tabs */
   }
 
   .admin-page .main-content-wrapper {
-    margin-top: 56px !important;
-    padding-top: 0 !important;
+    margin-top: 0 !important;
+    padding-top: 60px !important; /* Account for fixed admin header */
   }
 
   .admin-page .scrollable-content {
-    height: calc(100vh - 56px) !important;
+    height: calc(100vh - 60px) !important;
+    padding-bottom: 140px !important;
   }
 
   .admin-page.admin-dashboard-page .scrollable-content {
@@ -239,6 +239,19 @@ body {
   .teaching-layout {
     overflow-y: auto !important;
     padding-top: 50px !important; /* Account for mobile header */
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .timetable-main-content,
+  .student-main-content,
+  .teaching-main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box !important;
   }
 
   .app-container {
@@ -442,36 +455,4 @@ h6 {
 
 .app-container.student-layout .header .menu-toggle {
   display: none;
-}
-
-/* Faculty module-specific responsive normalization */
-@media (max-width: 1024px) {
-  .faculty-page .ciann-header-wrapper,
-  .faculty-page .assessment-header,
-  .faculty-page .assessment-header-card,
-  .faculty-page .header-actions,
-  .faculty-page .controls-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-  }
-}
-
-@media (max-width: 768px) {
-  .faculty-page .ciann-header-wrapper,
-  .faculty-page .assessment-header,
-  .faculty-page .assessment-header-card,
-  .faculty-page .header-actions,
-  .faculty-page .controls-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .faculty-page .ciann-header-wrapper button,
-  .faculty-page .assessment-header button,
-  .faculty-page .header-actions button,
-  .faculty-page .controls-container button {
-    width: 100%;
-  }
 }

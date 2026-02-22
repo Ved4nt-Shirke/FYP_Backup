@@ -1,0 +1,116 @@
+.k5-page {
+  padding: 16px;
+  background: #f5f6f8;
+  min-height: calc(100vh - 64px);
+}
+
+.k5-card {
+  background: #fff;
+  border: 1px solid #d9dee5;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 720px;
+}
+
+.k5-error {
+  color: #c62828;
+  font-weight: 600;
+}
+
+.k5-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.k5-sheet {
+  background: #fff;
+  border: 1px solid #444;
+  overflow-x: auto;
+}
+
+.k5-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+
+.k5-table th,
+.k5-table td {
+  border: 1px solid #444;
+  font-size: 12px;
+  padding: 4px 6px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.k5-title-cell {
+  position: relative;
+  text-align: center;
+  padding: 8px 10px !important;
+}
+
+.k5-title-top {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.k5-title-sub {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.k5-format {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.k5-meta-left,
+.k5-meta-right {
+  text-align: left;
+  padding: 6px 8px !important;
+}
+
+.k5-meta-right {
+  text-align: right;
+}
+
+.k5-name {
+  text-align: left;
+}
+
+.k5-empty {
+  text-align: center;
+  padding: 16px 8px !important;
+}
+
+.k5-signatures {
+  border-top: 1px solid #444;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 13px;
+  min-height: 78px;
+}
+
+@media print {
+  .no-print,
+  .sidebar,
+  .header,
+  .navbar {
+    display: none !important;
+  }
+
+  .k5-page {
+    background: #fff;
+    padding: 0;
+  }
+
+  .k5-sheet {
+    border: 1px solid #000;
+  }
+}

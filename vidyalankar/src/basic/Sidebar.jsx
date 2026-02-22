@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./Sidebar.css";
 
 const Sidebar = ({
@@ -9,6 +9,10 @@ const Sidebar = ({
   disableOnCompact = false,
 }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [openMsbteSections, setOpenMsbteSections] = useState({
+    k3: true,
+    k4: true,
+  });
   const [isMobile, setIsMobile] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
 
@@ -25,6 +29,7 @@ const Sidebar = ({
   };
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -62,6 +67,12 @@ const Sidebar = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownRefs]);
+
+  useEffect(() => {
+    if (sidebarRef.current) {
+      sidebarRef.current.scrollTop = 0;
+    }
+  }, [location.pathname, isSidebarVisible]);
 
   if (disableOnCompact && isCompact) {
     return null;
@@ -145,18 +156,23 @@ const Sidebar = ({
   };
 
   const handleMSBTESelect = (option) => {
-    setOpenDropdown(null);
-    if (option === "FA-PR-K3: Generate") {
-      navigateAndClose("/msbte/fa-pr-k3/generate");
-    } else if (option === "SA-PR-K4: Generate") {
-      navigateAndClose("/msbte/sa-pr-k4/generate");
-    } else if (option === "SA-PR-K4: Edit") {
-      navigateAndClose("/msbte/sa-pr-k4/edit");
-    } else if (option === "SA-PR-K4: Print") {
-      navigateAndClose("/msbte/sa-pr-k4/print");
+    if (option === "FA-PR-K3 Generate") {
+      navigateAndClose("/msbte/fa-pr-k3/cianns");
+    } else if (option === "FA-TH-K5 Generate") {
+      navigateAndClose("/msbte/fa-th-k5/cianns");
+    } else if (option === "SA-PR-K4 Generate") {
+      navigateAndClose("/msbte/sa-pr-k4/cianns?mode=generate");
+    } else if (option === "SA-PR-K4 Edit") {
+      navigateAndClose("/msbte/sa-pr-k4/cianns?mode=edit");
+    } else if (option === "SA-PR-K4 Print") {
+      navigateAndClose("/msbte/sa-pr-k4/cianns?mode=print");
     } else if (option === "Attendance Report") {
       navigateAndClose("/msbte/attendance");
     }
+  };
+
+  const toggleMsbteSection = (section) => {
+    setOpenMsbteSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
   const handlePracticalExamSelect = (option) => {
@@ -192,6 +208,7 @@ const Sidebar = ({
         <div
           className="sidebar-overlay"
           onClick={() => setIsSidebarVisible(false)}
+          onTouchStart={() => setIsSidebarVisible(false)}
         ></div>
       )}
       <div
@@ -199,26 +216,17 @@ const Sidebar = ({
         className={sidebarClasses}
         style={{ backgroundColor: "var(--app-header-bg)" }}
       >
-        <div className="sidebar-header">
-          {(() => {
-            const raw = (localStorage.getItem("college") || "VP").toUpperCase();
-            const title =
-              raw === "VIT"
-                ? "VIT"
-                : raw === "VSIT"
-                  ? "VSIT"
-                  : "VP Polytechnic";
-            return <h2 className="sidebar-title">{title}</h2>;
-          })()}
-          {isMobile && (
+        {isMobile && (
+          <div className="sidebar-header">
             <button
               className="sidebar-close-btn"
               onClick={() => setIsSidebarVisible(false)}
+              onTouchStart={() => setIsSidebarVisible(false)}
             >
               <i className="bi bi-x-lg"></i>
             </button>
-          )}
-        </div>
+          </div>
+        )}
         <ul className="sidebar-menu list-unstyled">
           <li
             className="sidebar-item active"
@@ -550,68 +558,108 @@ const Sidebar = ({
                 onClick={() => handleDropdownToggle("msbte")}
               >
                 <i className="bi bi-folder-fill"></i>
-                <span>MSBTE Formats</span>
+                <span>MSBTE Formats (K Scheme)</span>
               </button>
               {openDropdown === "msbte" && (
                 <ul className="dropdown-menu show">
                   <li>
                     <a
-                      className="dropdown-item d-flex align-items-center gap-2"
+                      className="dropdown-item d-flex align-items-center justify-content-between gap-2"
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        handleMSBTESelect("FA-PR-K3: Generate");
+                        toggleMsbteSection("k3");
                       }}
                     >
-                      <i className="bi bi-plus-circle"></i> FA-PR-K3: Generate
+                      <span className="d-flex align-items-center gap-2">
+                        <i className="bi bi-file-earmark"></i> FA-PR-K3
+                      </span>
+                      <i
+                        className={`bi ${openMsbteSections.k3 ? "bi-chevron-down" : "bi-chevron-left"}`}
+                      ></i>
                     </a>
                   </li>
+                  {openMsbteSections.k3 && (
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMSBTESelect("FA-PR-K3 Generate");
+                        }}
+                      >
+                        Generate
+                      </a>
+                    </li>
+                  )}
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleMsbteSection("k4");
+                      }}
+                    >
+                      <span className="d-flex align-items-center gap-2">
+                        <i className="bi bi-file-earmark"></i> SA-PR-K4
+                      </span>
+                      <i
+                        className={`bi ${openMsbteSections.k4 ? "bi-chevron-down" : "bi-chevron-left"}`}
+                      ></i>
+                    </a>
+                  </li>
+                  {openMsbteSections.k4 && (
+                    <>
+                      <li>
+                        <a
+                          className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleMSBTESelect("SA-PR-K4 Generate");
+                          }}
+                        >
+                          Generate
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleMSBTESelect("SA-PR-K4 Edit");
+                          }}
+                        >
+                          Edit
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleMSBTESelect("SA-PR-K4 Print");
+                          }}
+                        >
+                          Print
+                        </a>
+                      </li>
+                    </>
+                  )}
                   <li>
                     <a
                       className="dropdown-item d-flex align-items-center gap-2"
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        handleMSBTESelect("SA-PR-K4: Generate");
+                        handleMSBTESelect("FA-TH-K5 Generate");
                       }}
                     >
-                      <i className="bi bi-plus-circle"></i> SA-PR-K4: Generate
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="dropdown-item d-flex align-items-center gap-2"
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleMSBTESelect("SA-PR-K4: Edit");
-                      }}
-                    >
-                      <i className="bi bi-pencil-square"></i> SA-PR-K4: Edit
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="dropdown-item d-flex align-items-center gap-2"
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleMSBTESelect("SA-PR-K4: Print");
-                      }}
-                    >
-                      <i className="bi bi-printer-fill"></i> SA-PR-K4: Print
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="dropdown-item d-flex align-items-center gap-2"
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleMSBTESelect("Attendance Report");
-                      }}
-                    >
-                      <i className="bi bi-calendar-check"></i> Attendance Report
+                      <i className="bi bi-file-earmark"></i> FA-TH-K5
                     </a>
                   </li>
                 </ul>

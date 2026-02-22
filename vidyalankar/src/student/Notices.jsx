@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import DOMPurify from "dompurify";
 import "./StudentComponents.css";
 import { noticesService } from "./services/api";
 
@@ -28,15 +29,12 @@ const Notices = () => {
 
   const filteredNotices = filter === "all" 
     ? notices 
-    : notices.filter(notice => notice.category === filter);
+    : notices.filter(notice => (notice.source || notice.category) === filter);
 
   const getCategoryIcon = (category) => {
     switch (category) {
-      case "examination": return "bi-file-earmark-text";
-      case "library": return "bi-book";
-      case "events": return "bi-calendar-event";
-      case "administration": return "bi-building";
-      case "academics": return "bi-mortarboard";
+      case "office": return "bi-building";
+      case "faculty": return "bi-person-workspace";
       default: return "bi-info-circle";
     }
   };
@@ -109,11 +107,8 @@ const Notices = () => {
             className="filter-select"
           >
             <option value="all">All Categories</option>
-            <option value="examination">Examinations</option>
-            <option value="library">Library</option>
-            <option value="events">Events</option>
-            <option value="administration">Administration</option>
-            <option value="academics">Academics</option>
+            <option value="office">Office</option>
+            <option value="faculty">Faculty</option>
           </select>
         </div>
       </div>
@@ -129,8 +124,8 @@ const Notices = () => {
             <div key={notice._id || notice.id} className="notice-card">
               <div className="notice-header">
                 <div className="notice-meta">
-                  <i className={`bi ${getCategoryIcon(notice.category)}`}></i>
-                  <span className="notice-category">{notice.category}</span>
+                  <i className={`bi ${getCategoryIcon(notice.source || notice.category)}`}></i>
+                  <span className="notice-category">{(notice.source || notice.category || "general").toUpperCase()}</span>
                   <span 
                     className="notice-priority" 
                     style={{ color: getPriorityColor(notice.priority) }}
@@ -141,7 +136,10 @@ const Notices = () => {
                 <span className="notice-date">{formatDate(notice.date)}</span>
               </div>
               <h3 className="notice-title">{notice.title}</h3>
-              <p className="notice-content">{notice.content}</p>
+              <div
+                className="notice-content"
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(notice.content || "") }}
+              ></div>
               <div className="notice-footer">
                 <span className="notice-author">By: {notice.author}</span>
                 {!notice.read && (
@@ -172,18 +170,18 @@ const Notices = () => {
             <i className="bi bi-exclamation-triangle"></i>
             <div className="stat-info">
               <span className="stat-value">
-                {notices.filter(n => n.priority === "high").length}
+                {notices.filter(n => (n.source || n.category) === "office").length}
               </span>
-              <span className="stat-label">High Priority</span>
+              <span className="stat-label">Office Notices</span>
             </div>
           </div>
           <div className="stat-card">
             <i className="bi bi-calendar-event"></i>
             <div className="stat-info">
               <span className="stat-value">
-                {notices.filter(n => n.category === "events").length}
+                {notices.filter(n => (n.source || n.category) === "faculty").length}
               </span>
-              <span className="stat-label">Events</span>
+              <span className="stat-label">Faculty Notices</span>
             </div>
           </div>
         </div>

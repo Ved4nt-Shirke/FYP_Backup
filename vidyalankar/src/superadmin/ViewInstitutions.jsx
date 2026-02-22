@@ -160,7 +160,7 @@ const ViewInstitutions = () => {
           <a href="/superadmin-create-institution" className="create-btn">
             <i className="fas fa-plus-circle me-2"></i>Create New
           </a>
-          <button className="sa-refresh-btn" onClick={handleRefresh}>
+          <button className="refresh-btn" onClick={handleRefresh}>
             <i className="fas fa-sync-alt me-2"></i>Refresh
           </button>
         </div>

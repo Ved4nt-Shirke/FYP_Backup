@@ -54,6 +54,7 @@ router.post("/notices", async (req, res) => {
       title,
       content,
       faculty,
+      source: "faculty",
       college,
     });
 
@@ -92,6 +93,7 @@ router.put("/notices/:id", async (req, res) => {
 
     if (title) notice.title = title;
     if (content) notice.content = content;
+    if (!notice.source) notice.source = "faculty";
     notice.updatedAt = new Date();
 
     await notice.save();

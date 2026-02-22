@@ -208,3 +208,156 @@
     overflow-x: auto;
   }
 }
+
+.k4-print-sheet {
+  border: 1px solid #333;
+  background: #fff;
+  padding: 10px;
+}
+
+.k4-print-container {
+  padding: 16px;
+  background: #f5f6f8;
+}
+
+.k4-print-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.k4-print-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border: 1px solid #333;
+  border-bottom: none;
+  padding: 6px 10px;
+}
+
+.k4-print-title-wrap {
+  flex: 1;
+  text-align: center;
+}
+
+.k4-print-board {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.k4-print-subtitle {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.k4-print-format {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+
+.k4-print-meta-row {
+  border: 1px solid #333;
+  border-top: none;
+  padding: 6px 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.k4-print-blank {
+  display: inline-block;
+  border-bottom: 1px solid #333;
+  min-width: 24px;
+}
+
+.k4-print-table {
+  margin-bottom: 0;
+}
+
+.k4-print-table th,
+.k4-print-table td {
+  border: 1px solid #333 !important;
+  font-size: 12px;
+  padding: 6px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.k4-structure-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.k4-sheet-title-cell {
+  padding: 4px 8px !important;
+}
+
+.k4-sheet-title-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.k4-meta-left,
+.k4-meta-right,
+.k4-meta-center {
+  font-size: 12px !important;
+  font-weight: 600;
+  text-align: left !important;
+  padding: 4px 8px !important;
+}
+
+.k4-meta-right {
+  text-align: right !important;
+}
+
+.k4-meta-center {
+  text-align: center !important;
+}
+
+.k4-print-signatures {
+  border: 1px solid #333;
+  border-top: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 110px;
+}
+
+.k4-sign-column {
+  padding: 8px;
+  font-size: 12px;
+}
+
+.k4-sign-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+@media print {
+  .k4-print-toolbar,
+  .main-content > .btn,
+  .main-content > h3,
+  .main-content > .mt-4,
+  .sidebar,
+  .header,
+  .navbar,
+  .no-print {
+    display: none !important;
+  }
+
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .k4-print-sheet {
+    border: 1px solid #000;
+    box-shadow: none;
+  }
+}

@@ -13,6 +13,11 @@ const NoticeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  source: {
+    type: String,
+    enum: ["faculty", "office"],
+    default: "faculty",
+  },
   division: {
     type: String,
     required: false,

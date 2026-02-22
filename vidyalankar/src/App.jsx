@@ -25,6 +25,8 @@ import MockTestExamResult from "./student/MockTestExamResult";
 import Results from "./student/Results";
 import Notices from "./student/Notices";
 import Exams from "./student/Exams";
+import StudentPracticalExamList from "./student/StudentPracticalExamList";
+import StudentPracticalExamUpload from "./student/StudentPracticalExamUpload";
 
 // CIANN / Edit CIANN Components
 import CreateCiann from "./components/CreateCiann";
@@ -109,8 +111,8 @@ import ViewT2 from "./Attendance/view/ViewTut2";
 // Admin & Office Components
 import AdminPanel from "./admin/AdminPanel";
 import AdminDashboard from "./admin/AdminDashboard";
-import AdminHeader from "./admin/AdminHeader";
 import AdminSidebar from "./admin/AdminSidebar";
+import AdminHeader from "./admin/AdminHeader";
 import DepartmentList from "./admin/DepartmentList";
 import DepartmentForm from "./admin/DepartmentForm";
 import DepartmentManagement from "./admin/DepartmentManagement";
@@ -168,10 +170,15 @@ import EditPractical from "./PracticalExam/EditPractical";
 import PublicPracticalExam from "./PracticalExam/PublicPracticalExam";
 
 // MSBTE Formats Pages
+import FAPRK3CiannCards from "./pages/msbte/FAPRK3CiannCards";
 import FAPRK3Generate from "./pages/msbte/FAPRK3Generate";
+import FAPRK3Print from "./pages/msbte/FAPRK3Print";
+import SAPRK4CiannCards from "./pages/msbte/SAPRK4CiannCards";
 import SAPRK4Generate from "./pages/msbte/SAPRK4Generate";
 import SAPRK4Edit from "./pages/msbte/SAPRK4Edit";
 import SAPRK4Print from "./pages/msbte/SAPRK4Print";
+import FATHK5CiannCards from "./pages/msbte/FATHK5CiannCards";
+import FATHK5Print from "./pages/msbte/FATHK5Print";
 import AttendanceReport from "./pages/msbte/AttendanceReport";
 
 // CT / PT / Course Components
@@ -184,8 +191,6 @@ import Course4 from "./Course/Course4";
 import ManageChapters1 from "./Course/managechp1";
 import ManageChapters2 from "./Course/managechp2";
 import UpdateChapter from "./Course/managechp3";
-import CT1 from "./PTMicroProject/CT1";
-import CT2 from "./PTMicroProject/CT2";
 import Microproject from "./PTMicroProject/Microproject";
 
 // Defaulters
@@ -196,7 +201,6 @@ import StudentWiseAssess from "./Assessment/studentDefaulter/StudentWiseAssess";
 import StudentAssessSetup from "./Assessment/studentDefaulter/StudentAssessSetup";
 
 // Super Admin
-import SuperAdminSidebar from "./superadmin/SuperAdminSidebar";
 import SuperAdminDashboard from "./superadmin/SuperAdminDashboard";
 import CreateInstitution from "./superadmin/CreateInstitution";
 import ViewInstitutions from "./superadmin/ViewInstitutions";
@@ -205,20 +209,37 @@ import SuperAdminNavbar from "./superadmin/SuperAdminNavbar";
 
 import TestStudents from "./TestStudents";
 import "./App.css";
-import "./styles/faculty-responsive.css";
 import {
   applyPalette,
   loadAndApplyAdminTheme,
   loadAndApplyOfficeTheme,
   attachAdminThemeAutoRefresh,
-  attachFacultyThemeAutoRefresh,
-  attachOfficeThemeAutoRefresh,
 } from "./utils/theme";
 
 // Merged Theme Application Logic
 const applyTheme = async (college, role) => {
   console.log("Applying theme for:", college, "Role:", role);
   const root = document.documentElement;
+  const institutionPaletteRaw = localStorage.getItem("institutionPalette");
+  const cachedPaletteRaw = localStorage.getItem(`palette:${college}`);
+
+  const parsePalette = (raw) => {
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  };
+
+  const institutionPalette = parsePalette(institutionPaletteRaw);
+  const cachedPalette = parsePalette(cachedPaletteRaw);
+
+  if (institutionPalette) {
+    applyPalette(institutionPalette);
+  } else if (cachedPalette) {
+    applyPalette(cachedPalette);
+  }
 
   if (role === "admin") {
     await loadAndApplyAdminTheme(college);
@@ -228,21 +249,6 @@ const applyTheme = async (college, role) => {
   if (role === "office") {
     await loadAndApplyOfficeTheme(college);
     return;
-  }
-
-  if (role === "faculty") {
-    try {
-      const cachedPalette = localStorage.getItem(`palette:${college}`);
-      const loginPalette = localStorage.getItem("institutionPalette");
-      const paletteSource = cachedPalette || loginPalette;
-
-      if (paletteSource) {
-        applyPalette(JSON.parse(paletteSource));
-        return;
-      }
-    } catch (error) {
-      console.warn("Failed to apply faculty institution palette:", error);
-    }
   }
 
   const themeMap = {
@@ -261,20 +267,18 @@ const applyTheme = async (college, role) => {
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const userRole = localStorage.getItem("role") || "faculty";
-  const sidebarCollapseBreakpoint = userRole === "faculty" ? 1024 : 768;
-  const isMobileViewport = window.innerWidth <= sidebarCollapseBreakpoint;
   const [isSidebarVisible, setIsSidebarVisible] = useState(
-    window.innerWidth > sidebarCollapseBreakpoint,
+    window.innerWidth >= 769,
   );
-  const [isMobileView, setIsMobileView] = useState(isMobileViewport);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [currentTab, setCurrentTab] = useState("upload");
   const userDropdownRef = useRef(null);
 
+  const userRole = localStorage.getItem("role") || "faculty";
   const college = localStorage.getItem("college") || "VP";
   const isAdminDashboard =
     userRole === "admin" && location.pathname === "/admin-dashboard";
+  const hasLeftSidebar = userRole !== "superadmin";
 
   // Auth Guard
   useEffect(() => {
@@ -293,44 +297,42 @@ const AppContent = () => {
 
   // Responsive Sidebar Toggle
   useEffect(() => {
-    const handleResize = () => {
-      const shouldCollapseSidebar =
-        window.innerWidth <= sidebarCollapseBreakpoint;
-      setIsSidebarVisible(!shouldCollapseSidebar);
-      setIsMobileView(shouldCollapseSidebar);
-    };
+    const handleResize = () => setIsSidebarVisible(window.innerWidth >= 769);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [sidebarCollapseBreakpoint]);
+  }, []);
+
+  // Allow secondary pages (e.g., CIANN flows) to toggle the main faculty sidebar
+  useEffect(() => {
+    const handleExternalMainSidebarToggle = () => {
+      setIsSidebarVisible((prev) => !prev);
+    };
+
+    window.addEventListener(
+      "faculty:toggle-main-sidebar",
+      handleExternalMainSidebarToggle,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "faculty:toggle-main-sidebar",
+        handleExternalMainSidebarToggle,
+      );
+    };
+  }, []);
 
   // Theme Application
   useEffect(() => {
     applyTheme(college, userRole);
-    if (userRole !== "admin" && userRole !== "office" && userRole !== "faculty") return;
+    if (userRole !== "admin") return;
 
-    const cleanup =
-      userRole === "admin"
-        ? attachAdminThemeAutoRefresh(college)
-        : userRole === "office"
-          ? attachOfficeThemeAutoRefresh(college)
-          : attachFacultyThemeAutoRefresh(college);
+    const cleanup = attachAdminThemeAutoRefresh(college);
     return () => {
       if (typeof cleanup === "function") cleanup();
     };
   }, [college, userRole]);
 
   const handleMenuToggle = () => setIsSidebarVisible((prev) => !prev);
-
-  useEffect(() => {
-    const onGlobalMenuToggle = () => {
-      setIsSidebarVisible((prev) => !prev);
-    };
-
-    window.addEventListener("app:toggle-sidebar", onGlobalMenuToggle);
-    return () => {
-      window.removeEventListener("app:toggle-sidebar", onGlobalMenuToggle);
-    };
-  }, []);
 
   const isSpecialPage =
     [
@@ -387,6 +389,11 @@ const AppContent = () => {
               element={<MockTestExamResult />}
             />
             <Route path="mock-test/exams" element={<Exams />} />
+            <Route path="practical-exams" element={<StudentPracticalExamList />} />
+            <Route
+              path="practical-exam-upload/:examId"
+              element={<StudentPracticalExamUpload />}
+            />
             <Route path="results" element={<Results />} />
             <Route path="notices" element={<Notices />} />
           </Route>
@@ -397,15 +404,10 @@ const AppContent = () => {
 
   return (
     <div
-      className={`app-container ${isSidebarVisible ? "sidebar-visible" : "sidebar-collapsed"} ${userRole}-page ${isAdminDashboard ? "admin-dashboard-page" : ""}`}
+      className={`app-container ${hasLeftSidebar && isSidebarVisible ? "sidebar-visible" : "sidebar-collapsed"} ${userRole}-page ${isAdminDashboard ? "admin-dashboard-page" : ""}`}
     >
       {/* Sidebar logic */}
-      {userRole === "superadmin" ? (
-        <SuperAdminSidebar
-          isSidebarVisible={isSidebarVisible}
-          setIsSidebarVisible={setIsSidebarVisible}
-        />
-      ) : userRole === "admin" ? (
+      {userRole === "superadmin" ? null : userRole === "admin" ? (
         <AdminSidebar
           isSidebarVisible={isSidebarVisible}
           setIsSidebarVisible={setIsSidebarVisible}
@@ -431,10 +433,10 @@ const AppContent = () => {
       {/* Header logic */}
       {userRole === "superadmin" ? (
         <SuperAdminNavbar />
-      ) : userRole === "admin" && isMobileView ? (
-        <AdminHeader onMenuToggle={handleMenuToggle} />
       ) : userRole === "office" ? (
         <OfficeHeader onMenuToggle={handleMenuToggle} />
+      ) : userRole === "admin" ? (
+        <AdminHeader onMenuToggle={handleMenuToggle} />
       ) : userRole !== "admin" ? (
         <Header
           onMenuToggle={handleMenuToggle}
@@ -716,8 +718,6 @@ const AppContent = () => {
             {/* CT & PT Routes */}
             <Route path="/ct-cianns" element={<CTCiannCards />} />
             <Route path="/ct-dashboard/:ciannId" element={<CTDashboard />} />
-            <Route path="/ct/ct1" element={<CT1 />} />
-            <Route path="/ct/ct2" element={<CT2 />} />
             <Route
               path="/pt-microproject/microproject"
               element={<Microproject />}
@@ -732,9 +732,23 @@ const AppContent = () => {
             <Route path="/course4" element={<Course4 />} />
             {/* MSBTE Formats Routes */}
             <Route
+              path="/msbte/fa-pr-k3/cianns"
+              element={<FAPRK3CiannCards />}
+            />
+            <Route
+              path="/msbte/sa-pr-k4/cianns"
+              element={<SAPRK4CiannCards />}
+            />
+            <Route
+              path="/msbte/fa-th-k5/cianns"
+              element={<FATHK5CiannCards />}
+            />
+            <Route
               path="/msbte/fa-pr-k3/generate"
               element={<FAPRK3Generate />}
             />
+            <Route path="/msbte/fa-pr-k3/print" element={<FAPRK3Print />} />
+            <Route path="/msbte/fa-th-k5/print" element={<FATHK5Print />} />
             <Route
               path="/msbte/sa-pr-k4/generate"
               element={<SAPRK4Generate />}

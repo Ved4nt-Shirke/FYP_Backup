@@ -6,56 +6,7 @@ const MSBTEPanel = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
-
-  const menuItems = [
-    // FA-PR-K3
-    {
-      id: "fa-pr-k3-generate",
-      label: "FA-PR-K3: Generate",
-      icon: "bi-plus-circle",
-      route: "/msbte/fa-pr-k3/generate",
-    },
-    // SA-PR-K4
-    {
-      id: "sa-pr-k4-generate",
-      label: "SA-PR-K4: Generate",
-      icon: "bi-plus-circle",
-      route: "/msbte/sa-pr-k4/generate",
-    },
-    {
-      id: "sa-pr-k4-edit",
-      label: "SA-PR-K4: Edit",
-      icon: "bi-pencil-square",
-      route: "/msbte/sa-pr-k4/edit",
-    },
-    {
-      id: "sa-pr-k4-print",
-      label: "SA-PR-K4: Print",
-      icon: "bi-printer-fill",
-      route: "/msbte/sa-pr-k4/print",
-    },
-    // FA-TH-K5
-    {
-      id: "fa-th-k5",
-      label: "FA-TH-K5",
-      icon: "bi-folder-fill",
-      route: null,
-    },
-    // SLA-K6
-    {
-      id: "sla-k6",
-      label: "SLA-K6",
-      icon: "bi-folder-fill",
-      route: null,
-    },
-    // Attendance Report
-    {
-      id: "attendance",
-      label: "Attendance Report",
-      icon: "bi-calendar-check",
-      route: "/msbte/attendance",
-    },
-  ];
+  const [openSections, setOpenSections] = useState({ k3: true, k4: true });
 
   useEffect(() => {
     if (isOpen) {
@@ -85,10 +36,15 @@ const MSBTEPanel = ({ isOpen, onClose }) => {
   }, [isOpen, onClose]);
 
   const handleItemClick = (route) => {
-    if (route) {
-      navigate(route);
-      onClose();
-    }
+    navigate(route);
+    onClose();
+  };
+
+  const toggleSection = (sectionKey) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey],
+    }));
   };
 
   if (!isOpen) return null;
@@ -103,17 +59,74 @@ const MSBTEPanel = ({ isOpen, onClose }) => {
       }}
     >
       <div className="msbte-dropdown-container">
-        {menuItems.map((item) => (
+        <button
+          className="msbte-dropdown-option"
+          onClick={() => toggleSection("k3")}
+        >
+          <i className="bi bi-file-earmark"></i>
+          <span>FA-PR-K3</span>
+          <i
+            className={`bi ms-auto ${openSections.k3 ? "bi-chevron-down" : "bi-chevron-left"}`}
+          ></i>
+        </button>
+        {openSections.k3 && (
           <button
-            key={item.id}
-            className={`msbte-dropdown-option ${item.route ? "" : "disabled"}`}
-            onClick={() => handleItemClick(item.route)}
-            disabled={!item.route}
+            className="msbte-dropdown-option"
+            onClick={() => handleItemClick("/msbte/fa-pr-k3/cianns")}
           >
-            <i className={`bi ${item.icon}`}></i>
-            <span>{item.label}</span>
+            <i className="bi bi-dot"></i>
+            <span>Generate</span>
           </button>
-        ))}
+        )}
+
+        <button
+          className="msbte-dropdown-option"
+          onClick={() => toggleSection("k4")}
+        >
+          <i className="bi bi-file-earmark"></i>
+          <span>SA-PR-K4</span>
+          <i
+            className={`bi ms-auto ${openSections.k4 ? "bi-chevron-down" : "bi-chevron-left"}`}
+          ></i>
+        </button>
+        {openSections.k4 && (
+          <>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() =>
+                handleItemClick("/msbte/sa-pr-k4/cianns?mode=generate")
+              }
+            >
+              <i className="bi bi-dot"></i>
+              <span>Generate</span>
+            </button>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() => handleItemClick("/msbte/sa-pr-k4/cianns?mode=edit")}
+            >
+              <i className="bi bi-dot"></i>
+              <span>Edit</span>
+            </button>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() =>
+                handleItemClick("/msbte/sa-pr-k4/cianns?mode=print")
+              }
+            >
+              <i className="bi bi-dot"></i>
+              <span>Print</span>
+            </button>
+          </>
+        )}
+
+        <button
+          className="msbte-dropdown-option"
+          onClick={() => handleItemClick("/msbte/fa-th-k5/cianns")}
+        >
+          <i className="bi bi-file-earmark"></i>
+          <span>FA-TH-K5</span>
+        </button>
+
       </div>
     </div>
   );

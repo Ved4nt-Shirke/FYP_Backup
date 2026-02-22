@@ -1,119 +1,147 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Header from "../../basic/Header";
-import Sidebar from "../../basic/Sidebar";
-import "./MSBTEPages.css";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { config } from "../../config/api";
+import "./K3Pages.css";
 
 const FAPRK3Generate = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-  const [students, setStudents] = useState([]);
-  const [marks, setMarks] = useState({});
+  const ciannData = location.state?.ciannData || null;
 
-  // Fetch students on component load
+  const [batches, setBatches] = useState([]);
+  const [selectedBatch, setSelectedBatch] = useState("");
+  const [maxMarks, setMaxMarks] = useState("25");
+  const [loadingBatches, setLoadingBatches] = useState(false);
+  const [error, setError] = useState("");
+
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchBatches = async () => {
+      setLoadingBatches(true);
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/students`,
-        );
+        const response = await fetch(`${config.assessments}/batches`);
         if (response.ok) {
           const data = await response.json();
-          setStudents(data);
-          // Initialize marks object
-          const initialMarks = {};
-          data.forEach((student) => {
-            initialMarks[student._id] = "";
-          });
-          setMarks(initialMarks);
+          const options = data?.success && Array.isArray(data?.batches)
+            ? data.batches
+            : [];
+
+          if (options.length > 0) {
+            setBatches(options);
+            setSelectedBatch(options[0]);
+          } else {
+            const fallback = ["Batch 1", "Batch 2", "Batch 3", "Batch 4"];
+            setBatches(fallback);
+            setSelectedBatch("Batch 3");
+          }
         }
       } catch (error) {
-        console.error("Error fetching students:", error);
+        console.error("Error fetching batches:", error);
+        const fallback = ["Batch 1", "Batch 2", "Batch 3", "Batch 4"];
+        setBatches(fallback);
+        setSelectedBatch("Batch 3");
+      } finally {
+        setLoadingBatches(false);
       }
     };
-    fetchStudents();
+    fetchBatches();
   }, []);
 
-  const handleMarksChange = (studentId, value) => {
-    setMarks((prev) => ({
-      ...prev,
-      [studentId]: value,
-    }));
-  };
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setError("");
 
-  const handleSubmit = async () => {
-    // Submit marks
-    console.log("Submitting marks:", marks);
-    alert("FA-PR Sheet generated successfully!");
+    if (!ciannData) {
+      setError("Please select a CIANN first.");
+      return;
+    }
+
+    if (!selectedBatch) {
+      setError("Please select a batch.");
+      return;
+    }
+
+    navigate("/msbte/fa-pr-k3/print", {
+      state: {
+        ciannData,
+        batch: selectedBatch,
+        maxMarks: Number(maxMarks),
+      },
+    });
   };
 
   return (
-    <>
-      <Header onMenuToggle={() => setIsSidebarVisible(!isSidebarVisible)} />
-      <Sidebar
-        isSidebarVisible={isSidebarVisible}
-        setIsSidebarVisible={setIsSidebarVisible}
-      />
-      <div className="main-content">
-        <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
-          <i className="bi bi-arrow-left"></i> Back
-        </button>
+    <div className="k3-page">
+      <div className="k3-form-card">
+        <h3>Batch Selection For Generation Of K3</h3>
 
-        <h3 className="mb-4">Generate FA-PR Sheet</h3>
+        {ciannData && (
+          <div className="k3-info">
+            <div>
+              <strong>Subject:</strong> {ciannData.subject?.name || "-"} (
+              {ciannData.subject?.code || "-"})
+            </div>
+            <div>
+              <strong>Division:</strong> {ciannData.division || "-"}
+            </div>
+          </div>
+        )}
 
-        <div className="table-responsive">
-          <table className="table table-bordered table-hover">
-            <thead className="table-light">
-              <tr>
-                <th>Roll ID</th>
-                <th>Name</th>
-                <th>Seat No.</th>
-                <th>Marks</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.length > 0 ? (
-                students.map((student) => (
-                  <tr key={student._id}>
-                    <td>{student.rollId || student.regNumber || "-"}</td>
-                    <td>{student.name || "-"}</td>
-                    <td>{student.seatNo || "-"}</td>
-                    <td>
-                      <input
-                        type="number"
-                        className="form-control form-control-sm"
-                        placeholder="0"
-                        value={marks[student._id] || ""}
-                        onChange={(e) =>
-                          handleMarksChange(student._id, e.target.value)
-                        }
-                        min="0"
-                        max="100"
-                      />
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="4" className="text-center text-muted">
-                    No students found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <form onSubmit={handleSubmit}>
+          <label className="k3-label" htmlFor="k3-batch">
+            Select Batch
+          </label>
+          <select
+            id="k3-batch"
+            className="form-select mb-3"
+            value={selectedBatch}
+            onChange={(event) => setSelectedBatch(event.target.value)}
+            disabled={loadingBatches}
+          >
+            <option value="">-- Select Batch --</option>
+            {batches.map((batch) => (
+              <option key={batch} value={batch}>
+                {batch}
+              </option>
+            ))}
+          </select>
 
-        <div className="mt-4">
-          <button className="btn btn-primary me-2" onClick={handleSubmit}>
-            <i className="bi bi-download"></i> Generate Sheet
+          <label className="k3-label" htmlFor="k3-max-marks">
+            Experiment Maximum Marks (out of Marks for single experiment)
+          </label>
+          <select
+            id="k3-max-marks"
+            className="form-select mb-3"
+            value={maxMarks}
+            onChange={(event) => setMaxMarks(event.target.value)}
+          >
+            <option value="20">20</option>
+            <option value="25">25</option>
+          </select>
+
+          {error && <div className="k3-error mb-3">{error}</div>}
+
+          <button
+            type="submit"
+            className="btn btn-success k3-submit-btn"
+            disabled={loadingBatches}
+          >
+            Submit
           </button>
-          <button className="btn btn-secondary" onClick={() => navigate(-1)}>
-            Cancel
-          </button>
-        </div>
+        </form>
+
+        {!ciannData && (
+          <div className="mt-3">
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => navigate("/msbte/fa-pr-k3/cianns")}
+            >
+              Select CIANN First
+            </button>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

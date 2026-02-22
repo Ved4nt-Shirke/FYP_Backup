@@ -975,11 +975,33 @@ const ManageInstitution = () => {
               </div>
               <button
                 type="button"
-                className="btn btn-outline btn-sm modal-close-btn"
+                className="btn btn-outline btn-sm"
                 title="Close modal"
                 onClick={() => {
                   setPaletteForm({ superadminPassword: "", confirmation: "" });
                   setShowPaletteModal(false);
+                }}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--primary-dark)",
+                  fontSize: "1.25rem",
+                  cursor: "pointer",
+                  padding: "4px 8px",
+                  lineHeight: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "6px",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(45,106,79,0.1)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
                 }}
               >
                 <i className="fas fa-times" />

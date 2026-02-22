@@ -98,6 +98,18 @@ router.get('/ct-marks', verifyStudent, async (req, res) => {
       ],
     }).sort({ createdAt: -1, ctNumber: 1 });
 
+    const normalizedMarks = marks.map((mark) => {
+      const markObj = mark.toObject();
+      return {
+        ...markObj,
+        subjectName:
+          markObj.subjectName ||
+          markObj.subject ||
+          (markObj.subjectCode ? `Subject (${markObj.subjectCode})` : `Subject ${markObj.ciannId || ''}`.trim()),
+        subjectCode: markObj.subjectCode || '',
+      };
+    });
+
     res.json({
       success: true,
       student: {
@@ -105,7 +117,7 @@ router.get('/ct-marks', verifyStudent, async (req, res) => {
         rollNo: student.rollNo,
         enrollmentNo: student.enrollmentNo,
       },
-      marks,
+      marks: normalizedMarks,
     });
   } catch (err) {
     console.error('Error fetching student CT marks:', err);
@@ -150,7 +162,8 @@ router.get('/notices', verifyStudent, async (req, res) => {
       title: notice.title,
       content: notice.content,
       date: notice.createdAt,
-      category: 'administration',
+      category: notice.source || 'faculty',
+      source: notice.source || 'faculty',
       priority: 'medium',
       author: notice.faculty,
       read: false,

@@ -49,7 +49,8 @@ const K5Print = () => {
       return raw
         .split(".")
         .map(
-          (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase(),
+          (part) =>
+            part.charAt(0).toUpperCase() + part.slice(1).toLowerCase(),
         )
         .join(" ");
     }
@@ -67,7 +68,6 @@ const K5Print = () => {
       try {
         setLoading(true);
         setError("");
-        const token = localStorage.getItem("token");
 
         const studentPromise = axios.get(config.students, {
           params: {
@@ -77,11 +77,6 @@ const K5Print = () => {
 
         const ctMarksPromise = axios.get(
           `${config.apiBaseUrl}/ct-marks/${ciannData.ciannId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
         );
 
         const [studentsResponse, ctMarksResponse] = await Promise.all([
@@ -97,9 +92,7 @@ const K5Print = () => {
           ? marksPayload.data
           : [];
 
-        setStudents(
-          studentList.sort((a, b) => compareRollNo(a.rollNo, b.rollNo)),
-        );
+        setStudents(studentList.sort((a, b) => compareRollNo(a.rollNo, b.rollNo)));
         setCtMarks(marksList);
       } catch (err) {
         console.error("Error loading K5 data:", err);
@@ -116,12 +109,8 @@ const K5Print = () => {
     const map = new Map();
 
     ctMarks.forEach((entry) => {
-      const rollKey = String(entry.rollNo || "")
-        .trim()
-        .toLowerCase();
-      const nameKey = String(entry.studentName || "")
-        .trim()
-        .toLowerCase();
+      const rollKey = String(entry.rollNo || "").trim().toLowerCase();
+      const nameKey = String(entry.studentName || "").trim().toLowerCase();
       const key = rollKey || nameKey;
 
       if (!key) {
@@ -146,12 +135,8 @@ const K5Print = () => {
 
   const rows = useMemo(() => {
     return students.map((student) => {
-      const rollKey = String(student.rollNo || "")
-        .trim()
-        .toLowerCase();
-      const nameKey = String(student.studentName || "")
-        .trim()
-        .toLowerCase();
+      const rollKey = String(student.rollNo || "").trim().toLowerCase();
+      const nameKey = String(student.studentName || "").trim().toLowerCase();
       const key = rollKey || nameKey;
 
       const marks = marksByStudent.get(key) || {};
@@ -178,10 +163,7 @@ const K5Print = () => {
         <div className="k5-card">
           <h3>Missing Selection</h3>
           <p className="k5-error">Please select a CIANN first.</p>
-          <button
-            className="btn btn-success"
-            onClick={() => navigate("/msbte/k5")}
-          >
+          <button className="btn btn-success" onClick={() => navigate("/msbte/k5")}>
             Back to CIANN list
           </button>
         </div>
@@ -194,10 +176,7 @@ const K5Print = () => {
       <div className="k5-toolbar no-print">
         <div className="k5-toolbar-title">MSBTE FORMATS</div>
         <div className="k5-toolbar-actions">
-          <button
-            className="btn btn-outline-secondary"
-            onClick={() => navigate(-1)}
-          >
+          <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
             Go back
           </button>
           <button className="btn btn-success" onClick={() => window.print()}>
@@ -209,12 +188,8 @@ const K5Print = () => {
       <div className="k5-sheet">
         <div className="k5-header-row">
           <div className="k5-header-center">
-            <div className="k5-board">
-              Maharashtra State Board of Technical Education
-            </div>
-            <div className="k5-subtitle">
-              FORMATIVE ASSESSMENT OF THEORY (FA-TH)
-            </div>
+            <div className="k5-board">Maharashtra State Board of Technical Education</div>
+            <div className="k5-subtitle">FORMATIVE ASSESSMENT OF THEORY (FA-TH)</div>
           </div>
           <div className="k5-format">Format K5</div>
         </div>
@@ -224,8 +199,7 @@ const K5Print = () => {
             <strong>Academic Year:</strong> {ciannData.academicYear || ""}
           </div>
           <div>
-            <strong>Subject and Code:</strong> {ciannData.subject?.name || ""} (
-            {ciannData.subject?.code || ""})
+            <strong>Subject and Code:</strong> {ciannData.subject?.name || ""} ({ciannData.subject?.code || ""})
           </div>
           <div>
             <strong>Course and Code:</strong> {ciannData.class || ""}
@@ -257,21 +231,15 @@ const K5Print = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={8} className="k5-empty">
-                  Loading...
-                </td>
+                <td colSpan={8} className="k5-empty">Loading...</td>
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={8} className="k5-error">
-                  {error}
-                </td>
+                <td colSpan={8} className="k5-error">{error}</td>
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={8} className="k5-empty">
-                  No students found for this CIANN division.
-                </td>
+                <td colSpan={8} className="k5-empty">No students found for this CIANN division.</td>
               </tr>
             ) : (
               rows.map((row) => (

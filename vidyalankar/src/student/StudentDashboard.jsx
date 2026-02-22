@@ -44,7 +44,7 @@ const StudentDashboard = () => {
         <div className="welcome-header">
           <div>
             <h1>{greeting}, Student!</h1>
-            <p>Welcome back to your learning dashboard</p>
+            <p>Track your academics, notices, and exam readiness from one place</p>
           </div>
           <div className="datetime-display">
             <div className="time">{formatTime(currentTime)}</div>
@@ -56,11 +56,17 @@ const StudentDashboard = () => {
       {/* Hero Section with Motivational Message */}
       <div className="hero-section">
         <div className="hero-content">
-          <h2>Ready to Learn Something New Today?</h2>
-          <p>Explore your courses, take practice tests, and track your progress</p>
-          <button className="cta-button" onClick={() => handleNavigation("/study-material")}>
-            Get Started
-          </button>
+          <span className="hero-badge">Student Workspace</span>
+          <h2>Stay ahead with focused study and smart practice</h2>
+          <p>Use quick actions below to access material, exams, and results faster.</p>
+          <div className="hero-actions">
+            <button className="cta-button" onClick={() => handleNavigation("/study-material")}>
+              Open Study Material
+            </button>
+            <button className="cta-button secondary" onClick={() => handleNavigation("/results")}>
+              View Results
+            </button>
+          </div>
         </div>
         <div className="hero-image">
           <i className="bi bi-mortarboard"></i>
@@ -74,22 +80,27 @@ const StudentDashboard = () => {
           <div className="card" onClick={() => handleNavigation("/study-material")}>
             <i className="bi bi-book"></i>
             <span>Study Material</span>
+            <small>Notes, chapters and references</small>
           </div>
           <div className="card" onClick={() => handleNavigation("/elibrary/coursewise")}>
             <i className="bi bi-bookshelf"></i>
             <span>E-library</span>
+            <small>Search resources by course</small>
           </div>
           <div className="card" onClick={() => handleNavigation("/mock-test/exam-list")}>
             <i className="bi bi-laptop"></i>
             <span>Mock Tests</span>
+            <small>Practice and improve speed</small>
           </div>
           <div className="card" onClick={() => handleNavigation("/results")}>
             <i className="bi bi-bar-chart"></i>
             <span>Results</span>
+            <small>CT and exam performance</small>
           </div>
           <div className="card" onClick={() => handleNavigation("/notices")}>
             <i className="bi bi-bell"></i>
             <span>Notices</span>
+            <small>Latest announcements</small>
           </div>
         </div>
       </div>

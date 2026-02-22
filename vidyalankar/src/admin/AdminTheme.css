@@ -637,3 +637,98 @@ textarea {
     padding: var(--admin-space-md);
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   PROFESSIONAL ADMIN PANEL OVERRIDES
+   ───────────────────────────────────────────────────────────────────── */
+
+.admin-page .admin-wrapper,
+.admin-page .scrollable-wrapper,
+.admin-page .admin-content {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 180px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary-accent-light, #ecfdf5) 30%, #ffffff 70%)
+      0%,
+    color-mix(in srgb, var(--primary-accent-light, #ecfdf5) 14%, #ffffff 86%)
+      100%
+  );
+  min-height: 100%;
+}
+
+.admin-page .page-header {
+  margin-bottom: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    var(--card-bg, #ffffff) 0%,
+    color-mix(in srgb, var(--primary-accent-light, #ecfdf5) 24%, #ffffff 76%)
+      100%
+  );
+  border: 1px solid var(--border-color, #dbe5f1);
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.06);
+  gap: 8px;
+}
+
+.admin-page .page-header::before {
+  display: none;
+}
+
+.admin-page .page-header h2 {
+  color: var(--text-main, #0f172a);
+  font-size: 1.58rem;
+}
+
+.admin-page .page-header p {
+  color: var(--text-muted, #475569);
+  opacity: 1;
+  font-size: 0.94rem;
+}
+
+.admin-page .card,
+.admin-page .card-item {
+  border: 1px solid var(--border-color, #dbe5f1);
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.06);
+}
+
+.admin-page .btn-primary,
+.admin-page button.btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--primary-accent, #2563eb) 0%,
+    var(--primary-accent-dark, #1d4ed8) 100%
+  ) !important;
+  color: var(--text-on-primary, #ffffff) !important;
+}
+
+.admin-page .btn-primary:hover,
+.admin-page button.btn-primary:hover {
+  background: linear-gradient(
+    135deg,
+    var(--primary-accent-dark, #1d4ed8) 0%,
+    color-mix(in srgb, var(--primary-accent-dark, #1d4ed8) 80%, #000 20%) 100%
+  ) !important;
+}
+
+@media (max-width: 768px) {
+  .admin-page .admin-wrapper,
+  .admin-page .scrollable-wrapper,
+  .admin-page .admin-content {
+    padding: 12px;
+    padding-bottom: 120px;
+  }
+
+  .admin-page .page-header {
+    padding: 13px 14px;
+    gap: 6px;
+  }
+
+  .admin-page .page-header h2 {
+    font-size: 1.35rem;
+  }
+}
