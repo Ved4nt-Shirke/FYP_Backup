@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ciannUtils } from "../utils/ciannUtils";
 import "./Sidebar.css";
 
 const Sidebar = ({
@@ -10,11 +11,12 @@ const Sidebar = ({
 }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [openMsbteSections, setOpenMsbteSections] = useState({
-    k3: true,
-    k4: true,
+    k3: false,
+    k4: false,
   });
   const [isMobile, setIsMobile] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
+  const [pendingCiannRequests, setPendingCiannRequests] = useState(0);
 
   const sidebarRef = useRef(null);
   const dropdownRefs = {
@@ -30,6 +32,8 @@ const Sidebar = ({
 
   const navigate = useNavigate();
   const location = useLocation();
+  const userRole = localStorage.getItem("role") || "faculty";
+  const isFaculty = userRole === "faculty";
 
   useEffect(() => {
     const checkMobile = () => {
@@ -74,6 +78,24 @@ const Sidebar = ({
     }
   }, [location.pathname, isSidebarVisible]);
 
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      if (!isFaculty) {
+        setPendingCiannRequests(0);
+        return;
+      }
+
+      try {
+        const response = await ciannUtils.getIncomingShareRequests();
+        setPendingCiannRequests(Array.isArray(response?.incoming) ? response.incoming.length : 0);
+      } catch (error) {
+        setPendingCiannRequests(0);
+      }
+    };
+
+    fetchPendingRequests();
+  }, [isFaculty, location.pathname]);
+
   if (disableOnCompact && isCompact) {
     return null;
   }
@@ -96,7 +118,7 @@ const Sidebar = ({
     } else if (option === "Edit CIANN") {
       navigateAndClose("/edit-ciann");
     } else if (option === "Print CIANN") {
-      alert("Print CIANN clicked");
+      navigateAndClose("/summary-cards");
     }
   };
 
@@ -111,7 +133,7 @@ const Sidebar = ({
     } else if (option === "Defaultters") {
       navigateAndClose("/defaulter");
     } else if (option === "Summary") {
-      navigateAndClose("/summary-cards");
+      navigateAndClose("/attendance-summary-cards");
     } else if (option === "Practical Batches") {
       navigateAndClose("/practical-batch-distribution");
     }
@@ -193,12 +215,16 @@ const Sidebar = ({
       handleDropdownToggle("msbte");
     } else if (action === "dashboard") {
       navigateAndClose("/dashboard");
+    } else if (action === "faculty-study-material") {
+      navigateAndClose("/faculty/study-material");
+    } else if (action === "student-timetable") {
+      navigateAndClose("/faculty/student-timetable");
     } else {
       alert(`${action} clicked`);
     }
   };
 
-  const sidebarClasses = `sidebar ${
+  const sidebarClasses = `sidebar main-sidebar ${
     isSidebarVisible ? "visible" : "collapsed"
   } ${isMobile ? "mobile" : ""}`;
 
@@ -235,6 +261,20 @@ const Sidebar = ({
             <i className="bi bi-house-door"></i>
             <span>Dashboard</span>
           </li>
+          <li
+            className="sidebar-item"
+            onClick={() => handleItemClick("student-timetable")}
+          >
+            <i className="bi bi-calendar-week"></i>
+            <span>Student Timetable</span>
+          </li>
+          <li
+            className="sidebar-item"
+            onClick={() => handleItemClick("faculty-study-material")}
+          >
+            <i className="bi bi-journal-bookmark"></i>
+            <span>Study Material</span>
+          </li>
           <li className="sidebar-item">
             <div className="dropdown" ref={dropdownRefs.ciann}>
               <button
@@ -244,6 +284,11 @@ const Sidebar = ({
               >
                 <i className="bi bi-file-earmark-text"></i>
                 <span>CIANN</span>
+                {pendingCiannRequests > 0 && (
+                  <span className="sidebar-notification-badge" title={`${pendingCiannRequests} pending CIANN share request(s)`}>
+                    {pendingCiannRequests}
+                  </span>
+                )}
               </button>
               {openDropdown === "ciann" && (
                 <ul className="dropdown-menu show">
@@ -733,17 +778,6 @@ const Sidebar = ({
             </div>
           </li>
 
-          {/* Other Items */}
-          {["Mock Exams"].map((item, index) => (
-            <li
-              key={index}
-              className="sidebar-item"
-              onClick={() => handleItemClick(item)}
-            >
-              <i className="bi bi-gear"></i>
-              <span>{item}</span>
-            </li>
-          ))}
         </ul>
       </div>
     </>

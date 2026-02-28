@@ -13,6 +13,7 @@ router.post("/login", async (req, res) => {
   const college = (req.body.college || "").trim();
   const role = (req.body.role || "").trim();
   const normalizedUsername = username.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const normalizedCollege = college.toUpperCase();
 
   try {
     console.log("Login attempt:", { username, college, role });
@@ -32,6 +33,13 @@ router.post("/login", async (req, res) => {
     // For superadmin, we should look for college 'ALL' regardless of what's sent
     let user;
     let studentProfile = null;
+
+    if (role !== "superadmin" && (!college || normalizedCollege === "ALL")) {
+      return res.status(400).json({
+        msg: "Please select a valid institution",
+      });
+    }
+
     if (role === "superadmin") {
       user = await User.findOne({ username, college: "ALL" });
     } else if (role === "student") {
@@ -40,6 +48,7 @@ router.post("/login", async (req, res) => {
       user = await User.findOne({
         username: { $regex: new RegExp(`^${normalizedUsername}$`, "i") },
         role: "student",
+        college: normalizedCollege,
       });
 
       if (user) {
@@ -61,9 +70,6 @@ router.post("/login", async (req, res) => {
     } else {
       console.log("Searching for user with:", { username, college, role });
 
-      // Normalize college to uppercase for consistent matching
-      const normalizedCollege = college.toUpperCase();
-
       // First try exact match
       user = await User.findOne({ username, college: normalizedCollege, role });
       console.log("Exact match result:", user);
@@ -77,44 +83,6 @@ router.post("/login", async (req, res) => {
           role,
         });
         console.log("Case insensitive search result:", user);
-      }
-
-      // If still not found for admin role, try finding any admin user with this username
-      // (in case the college code doesn't match)
-      if (!user && role === "admin") {
-        console.log("Admin not found with specified college, searching all colleges...");
-        user = await User.findOne({
-          username: { $regex: new RegExp(`^${username}$`, "i") },
-          role: "admin",
-        });
-        console.log("Admin search in all colleges result:", user);
-      }
-
-      // If still not found for office role, try finding any office user with this username
-      if (!user && role === "office") {
-        console.log("Office staff not found with specified college, searching all colleges...");
-        user = await User.findOne({
-          username: { $regex: new RegExp(`^${username}$`, "i") },
-          role: "office",
-        });
-        console.log("Office staff search in all colleges result:", user);
-      }
-
-      // If still not found and role is office, attempt to migrate an existing faculty user with the same username/college to office
-      if (!user && role === "office") {
-        console.log("Attempting role migration: searching faculty with same username and college...");
-        const candidate = await User.findOne({
-          username: { $regex: new RegExp(`^${username}$`, "i") },
-          college: normalizedCollege,
-          role: "faculty",
-        });
-
-        if (candidate) {
-          console.log("Migrating faculty to office for username:", candidate.username);
-          candidate.role = "office";
-          await candidate.save();
-          user = candidate;
-        }
       }
     }
 

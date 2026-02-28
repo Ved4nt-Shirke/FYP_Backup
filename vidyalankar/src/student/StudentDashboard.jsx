@@ -82,16 +82,6 @@ const StudentDashboard = () => {
             <span>Study Material</span>
             <small>Notes, chapters and references</small>
           </div>
-          <div className="card" onClick={() => handleNavigation("/elibrary/coursewise")}>
-            <i className="bi bi-bookshelf"></i>
-            <span>E-library</span>
-            <small>Search resources by course</small>
-          </div>
-          <div className="card" onClick={() => handleNavigation("/mock-test/exam-list")}>
-            <i className="bi bi-laptop"></i>
-            <span>Mock Tests</span>
-            <small>Practice and improve speed</small>
-          </div>
           <div className="card" onClick={() => handleNavigation("/results")}>
             <i className="bi bi-bar-chart"></i>
             <span>Results</span>

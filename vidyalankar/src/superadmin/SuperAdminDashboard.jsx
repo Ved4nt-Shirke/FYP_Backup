@@ -1,12 +1,107 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "../utils/axiosConfig";
 import "./SuperAdminDashboard.css";
 
 const SuperAdminDashboard = () => {
   const navigate = useNavigate();
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [stats, setStats] = useState([
+    {
+      id: "institutions",
+      label: "Total Institutions",
+      value: "--",
+      icon: "fas fa-building",
+      delta: "Loading...",
+      tone: "blue",
+    },
+    {
+      id: "admins",
+      label: "Active Admins",
+      value: "--",
+      icon: "fas fa-user-shield",
+      delta: "Loading...",
+      tone: "teal",
+    },
+    {
+      id: "uptime",
+      label: "System Uptime",
+      value: "--",
+      icon: "fas fa-signal",
+      delta: "Checking...",
+      tone: "slate",
+    },
+  ]);
+
+  const POLL_INTERVAL_MS = 8000;
+
+  const formatUptime = (uptimeSeconds) => {
+    if (uptimeSeconds === null || uptimeSeconds === undefined) return "Online";
+    const totalMinutes = Math.floor(uptimeSeconds / 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours <= 0) return `${minutes}m`;
+    return `${hours}h ${minutes}m`;
+  };
+
+  const formatUpdateTime = (date) =>
+    date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  const fetchDashboardStats = async () => {
+    try {
+      const [institutionsResponse, healthResponse] = await Promise.all([
+        axios.get("/superadmin/institutions"),
+        axios.get("/health"),
+      ]);
+
+      const institutions = institutionsResponse?.data?.institutions ?? [];
+      const institutionCount = institutions.length;
+      const adminCount = institutions.filter((inst) => inst?.isActive !== false)
+        .length;
+      const uptimeSeconds = healthResponse?.data?.uptimeSeconds;
+      const uptimeValue = formatUptime(uptimeSeconds);
+      const healthStatus = healthResponse?.data?.status === "OK";
+
+      setStats([
+        {
+          id: "institutions",
+          label: "Total Institutions",
+          value: `${institutionCount}`,
+          icon: "fas fa-building",
+          delta: institutionCount === 1 ? "1 institution" : "All institutions",
+          tone: "blue",
+        },
+        {
+          id: "admins",
+          label: "Active Admins",
+          value: `${adminCount}`,
+          icon: "fas fa-user-shield",
+          delta: adminCount === 1 ? "1 active" : "Active admins",
+          tone: "teal",
+        },
+        {
+          id: "uptime",
+          label: "System Uptime",
+          value: uptimeValue,
+          icon: "fas fa-signal",
+          delta: healthStatus ? "Operational" : "Check failed",
+          tone: "slate",
+        },
+      ]);
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error("Error fetching superadmin dashboard stats:", error);
+      setStats((prevStats) =>
+        prevStats.map((stat) => ({
+          ...stat,
+          delta: "Last check failed",
+        })),
+      );
+    }
+  };
 
   const handleRefresh = () => {
-    window.location.reload();
+    fetchDashboardStats();
   };
 
   const managementCards = [
@@ -30,50 +125,11 @@ const SuperAdminDashboard = () => {
     },
   ];
 
-  const stats = [
-    {
-      label: "Total Institutions",
-      value: "3",
-      icon: "fas fa-building",
-      delta: "+1 this month",
-    },
-    {
-      label: "Active Admins",
-      value: "5",
-      icon: "fas fa-users",
-      delta: "All systems active",
-    },
-    {
-      label: "System Uptime",
-      value: "99.9%",
-      icon: "fas fa-heartbeat",
-      delta: "Operational",
-    },
-  ];
-
-  const recentActivity = [
-    {
-      id: 1,
-      title: "New institution created",
-      description: "Vidyalankar Polytechnic was added and activated.",
-      time: "2 hours ago",
-      icon: "fas fa-plus-circle",
-    },
-    {
-      id: 2,
-      title: "Admin account provisioned",
-      description: "New admin access granted for VIT.",
-      time: "1 day ago",
-      icon: "fas fa-user-plus",
-    },
-    {
-      id: 3,
-      title: "Platform maintenance complete",
-      description: "Background maintenance completed successfully.",
-      time: "3 days ago",
-      icon: "fas fa-screwdriver-wrench",
-    },
-  ];
+  useEffect(() => {
+    fetchDashboardStats();
+    const intervalId = setInterval(fetchDashboardStats, POLL_INTERVAL_MS);
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <div className="sa-dashboard">
@@ -84,6 +140,13 @@ const SuperAdminDashboard = () => {
           <p className="sa-hero__subtitle">
             Manage institutions, administrators and system operations from one place.
           </p>
+          <div className="sa-hero__meta">
+            <span className="sa-live">Live updates</span>
+            <span className="sa-update-text">
+              Updating every 8s
+              {lastUpdated ? ` · Updated ${formatUpdateTime(lastUpdated)}` : ""}
+            </span>
+          </div>
         </div>
         <button className="sa-refresh" onClick={handleRefresh}>
           <i className="fas fa-rotate-right"></i>
@@ -93,7 +156,10 @@ const SuperAdminDashboard = () => {
 
       <section className="sa-stats-grid">
         {stats.map((stat) => (
-          <article key={stat.label} className="sa-stat-card">
+          <article
+            key={stat.id}
+            className={`sa-stat-card sa-stat-card--${stat.tone}`}
+          >
             <div className="sa-stat-card__icon">
               <i className={stat.icon}></i>
             </div>
@@ -133,25 +199,6 @@ const SuperAdminDashboard = () => {
         </div>
       </section>
 
-      <section className="sa-section">
-        <div className="sa-section__header">
-          <h2>System Activity</h2>
-        </div>
-        <div className="sa-activity-grid">
-          {recentActivity.map((activity) => (
-            <article key={activity.id} className="sa-activity-card">
-              <div className="sa-activity-card__icon">
-                <i className={activity.icon}></i>
-              </div>
-              <div>
-                <h4>{activity.title}</h4>
-                <p>{activity.description}</p>
-                <span>{activity.time}</span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
     </div>
   );
 };

@@ -16,34 +16,36 @@ body {
   display: flex;
   flex: 1;
   flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 /* offset the fixed primary sidebar (220px) so content starts after it */
 .student-main-row {
-  margin-left: 220px; /* same as .sidebar width */
+  margin-left: 0;
 }
 
 .student-secondary-sidebar-wrapper {
   width: 200px;
   flex-shrink: 0;
-  padding-right: 10px;
+  padding-right: 0;
   box-sizing: border-box;
 }
 
 .student-main-content {
-  margin-top: 8px;
+  margin-top: 0;
   padding-top: 8px;
-  max-width: 2500px;
-  padding-left: 15px;
+  padding-left: 2px;
+  padding-right: 8px;
   flex: 1 1 auto; /* take remaining horizontal space */
   width: auto;
   box-sizing: border-box;
 }
 
 .studentlist-container {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
+  width: min(100%, 1100px);
+  max-width: 1100px;
+  margin: 0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   min-height: 600px;
   position: relative;
@@ -54,19 +56,9 @@ body {
 
 .header-with-button {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: 1rem;
-}
-
-.btn-add-student {
-  background-color: green;
-  color: white;
-  padding: 8px 16px;
-  font-weight: bold;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 /* =================== TABLE STYLES =================== */
@@ -126,9 +118,8 @@ body {
 .table td:first-child,
 .table td:nth-child(2),
 .table td:nth-child(3),
-.table td:nth-child(4),
-.table tr td:last-child {
-  min-width: 315px;
+.table td:nth-child(4) {
+  min-width: 140px;
   text-align: center;
   background-color: #ffffff;
   border: white;
@@ -148,23 +139,38 @@ body {
   /* --- General Layout --- */
   .student-main-row {
     flex-direction: column;
+    margin-left: 0;
+    gap: 0;
   }
   .student-secondary-sidebar-wrapper {
-    width: 100%;
+    width: 0;
+    min-width: 0;
+    flex: 0 0 0;
     padding-right: 0;
+    overflow: visible;
   }
   .student-main-content {
     margin-left: 0;
     width: 100%;
-    padding: 10px;
+    padding: 8px;
   }
   .studentlist-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
     padding: 10px;
+    min-height: 0;
   }
   .header-with-button {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
+  }
+
+  .header-with-button h6 {
+    font-size: 16px;
+    line-height: 1.3;
+    margin: 0;
   }
 
   /* --- Table transforms into card layout --- */
@@ -228,33 +234,16 @@ body {
     width: auto !important;
     display: inline-block;
     word-wrap: break-word;
+    overflow-wrap: anywhere;
   }
 
-  /* Action button row */
-  .table td[data-label="Action"] {
-    background: transparent;
-    border-top: 1px solid #ddd;
-    text-align: right;
-    justify-content: flex-end;
+  .pagination-buttons {
+    justify-content: stretch;
+    flex-direction: column;
   }
 
-  .table td[data-label="Action"]::before {
-    display: none;
-  }
-
-  .table td[data-label="Action"] .btn {
-    font-size: 14px;
-    padding: 6px 14px;
-    background-color: #6c757d;
-    border: none;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  .table td[data-label="Action"] .btn:hover {
-    background-color: red;
+  .pagination-buttons button {
+    width: 100%;
   }
 }
 

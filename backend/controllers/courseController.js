@@ -14,6 +14,37 @@ const normalizeScheme = (scheme) =>
     .trim()
     .toUpperCase();
 
+const buildDuplicateCourseMessage = (error) => {
+  const keyPattern = error?.keyPattern || {};
+  const keyValue = error?.keyValue || {};
+  const rawMessage = String(error?.message || "");
+
+  if (keyPattern.courseCode) {
+    const conflictingCode = keyValue.courseCode;
+    return conflictingCode
+      ? `Course already exists with code ${conflictingCode} in this institution`
+      : "Course already exists for the selected department, semester, and scheme";
+  }
+
+  if (keyPattern.name || keyPattern.courseName) {
+    return "Legacy course index conflict detected. Run `npm run fix:course-indexes` in backend, then retry.";
+  }
+
+  const indexMatch = rawMessage.match(/index:\s*([^\s]+)\s*dup key/i);
+  if (indexMatch?.[1]) {
+    if (indexMatch[1] === "courseId_1") {
+      return "Legacy index conflict detected on courses.courseId. Run `npm run fix:course-indexes` in backend, then retry.";
+    }
+    return `Duplicate value violates unique index ${indexMatch[1]}`;
+  }
+
+  if (/courseCode/i.test(rawMessage)) {
+    return "Course already exists for the selected department, semester, and scheme";
+  }
+
+  return "Duplicate course entry detected";
+};
+
 const createCourse = async (req, res) => {
   try {
     const { departmentId, semester, scheme } = req.body;
@@ -71,6 +102,23 @@ const createCourse = async (req, res) => {
       normalizedScheme,
     );
 
+    const existingCourse = await Course.findOne({
+      institution,
+      courseCode,
+    }).select("_id departmentId semester scheme courseCode institution");
+
+    if (existingCourse) {
+      return res.status(409).json({
+        success: false,
+        message: `Course already exists for this department, semester, and scheme (${courseCode})`,
+        duplicateKey: {
+          institution,
+          courseCode,
+        },
+        existingCourse,
+      });
+    }
+
     const course = await Course.create({
       departmentId,
       semester: semesterNumber,
@@ -86,9 +134,11 @@ const createCourse = async (req, res) => {
     });
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-        message: "Course name already exists in this department",
+        message: buildDuplicateCourseMessage(error),
+        duplicateKey: error.keyPattern || error.keyValue || undefined,
+        errorCode: error.code,
       });
     }
 

@@ -8,6 +8,14 @@ import CryptoJS from "crypto-js";
 const SECRET_KEY =
   import.meta.env.VITE_ENCRYPTION_KEY || "vidyalankar-secure-key-2025";
 
+const safeRedirectToLogin = () => {
+  if (window.__AUTH_REDIRECTING__) return;
+  if (window.location.pathname === "/login") return;
+
+  window.__AUTH_REDIRECTING__ = true;
+  window.location.replace("/login");
+};
+
 /**
  * Secure storage: Encrypt sensitive data in localStorage
  */
@@ -213,7 +221,7 @@ export const securefetch = async (url, options = {}) => {
     if (response.status === 401) {
       console.error("Unauthorized - token expired");
       SessionManager.clearSession();
-      window.location.href = "/login";
+      safeRedirectToLogin();
       throw new Error("Session expired. Please login again.");
     }
 

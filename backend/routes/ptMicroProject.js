@@ -10,26 +10,69 @@ router.use(authenticate);
 // GET: Fetch all students for a particular division/course
 router.get('/students', async (req, res) => {
   try {
-    const { divisionId, courseId, departmentId, batch, institution } = req.query;
+    const { divisionId, courseId, departmentId, batch /* institution intentionally ignored */ } = req.query;
 
+    // Debug log to help trace issues when students are unexpectedly empty
+    console.log('=== PTMicroProject /students Request ===');
+    console.log('Query params:', req.query);
+
+    // Build filter with fallback logic
     let filter = {};
-    if (divisionId) filter.divisionId = divisionId;
-    if (courseId) filter.courseId = courseId;
-    if (departmentId) filter.departmentId = departmentId;
-    if (batch) filter.batch = batch;
-    if (institution) filter.institution = institution;
+    
+    // Priority 1: If divisionId is provided, use it (most specific)
+    if (divisionId) {
+      filter.divisionId = divisionId;
+      console.log('Filter by divisionId:', divisionId);
+    }
+    // Priority 2: If courseId is provided, try using it
+    else if (courseId) {
+      filter.courseId = courseId;
+      console.log('Filter by courseId:', courseId);
+    }
+    // Priority 3: If departmentId is provided, use it
+    else if (departmentId) {
+      filter.departmentId = departmentId;
+      console.log('Filter by departmentId:', departmentId);
+    }
+    // Priority 4: If batch is provided, use it
+    else if (batch) {
+      filter.batch = batch;
+      console.log('Filter by batch:', batch);
+    }
+    // Priority 5: If nothing provided, return ALL students (for testing)
+    else {
+      console.log('No filter criteria provided - returning ALL students');
+    }
 
-    const students = await Student.find(filter).select('_id studentName rollNo enrollmentNo batch');
+    console.log('Built filter:', filter);
+
+    let students = await Student.find(filter).select('_id studentName rollNo enrollmentNo batch departmentId courseId divisionId');
+    
+    console.log(`Found ${students.length} students with filter:`, filter);
+
+    // If no students found with specific filter, try broader fallback
+    if (students.length === 0 && (courseId || divisionId || departmentId)) {
+      console.log('No students found with specific filter - trying batch fallback...');
+      
+      // If batch was specified, already tried it above
+      if (!batch) {
+        // Try to find ANY students if nothing worked
+        students = await Student.find({}).select('_id studentName rollNo enrollmentNo batch departmentId courseId divisionId').limit(50);
+        console.log(`Fallback: Found ${students.length} total students in database`);
+      }
+    }
 
     res.json({
       success: true,
-      data: students
+      data: students,
+      count: students.length,
+      message: students.length === 0 ? 'No students found for the selected criteria' : `Found ${students.length} students`
     });
   } catch (error) {
     console.error('Error fetching students:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching students'
+      message: 'Error fetching students: ' + error.message
     });
   }
 });

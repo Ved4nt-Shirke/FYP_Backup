@@ -204,28 +204,40 @@
 
 .create-institution-container .success-box {
   border: 1px solid #86efac;
-  border-radius: 14px;
-  background: #f0fdf4;
-  padding: 14px;
-  margin-bottom: 14px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 100%);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.08);
 }
 
 .create-institution-container .success-header {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #bbf7d0;
 }
 
 .create-institution-container .success-header i {
   color: #16a34a;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   margin-top: 2px;
 }
 
 .create-institution-container .credentials-display {
   display: grid;
-  gap: 8px;
+  gap: 10px;
+}
+
+.create-institution-container .credentials-title {
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #166534;
+  margin: 2px 0;
 }
 
 .create-institution-container .credential-row {
@@ -242,17 +254,52 @@
 }
 
 .create-institution-container .credential-box {
-  border: 1px solid #bbf7d0;
-  border-radius: 10px;
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
   background: #ffffff;
-  min-height: 40px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   color: #064e3b;
   font-weight: 600;
+}
+
+.create-institution-container .credential-value {
+  display: inline-block;
+  max-width: 100%;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.create-institution-container .credential-copy-btn {
+  border: 1px solid #34d399;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #065f46;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-height: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.create-institution-container .credential-copy-btn:hover {
+  background: #d1fae5;
+  border-color: #10b981;
+  color: #064e3b;
+}
+
+.create-institution-container .credential-copy-btn:focus-visible {
+  outline: 3px solid rgba(16, 185, 129, 0.25);
+  outline-offset: 1px;
 }
 
 .create-institution-container .created-logo-preview {

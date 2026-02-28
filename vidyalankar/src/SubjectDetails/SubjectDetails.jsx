@@ -101,22 +101,23 @@ const SubjectDetails = () => {
             display: flex;
             width: 100%;
             font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
+            min-height: calc(100vh - var(--header-height, 60px));
             background-color: #f8f9fa;
             margin: 0;
-            padding: 1.5rem;
-            gap: 2rem;
+            padding: 1rem;
+            gap: 1rem;
             box-sizing: border-box;
             position: relative;
             overflow-y: auto;
             overflow-x: hidden;
+            margin-top: var(--header-height, 60px);
           }
 
           /* Left column for the secondary sidebar */
           .details-sidebar-column {
-            width: 280px;
-            min-width: 280px;
-            max-width: 280px;
+            width: 220px;
+            min-width: 220px;
+            max-width: 220px;
             flex-shrink: 0;
             background-color: #ffffff;
             border: 1px solid #dee2e6;
@@ -125,14 +126,14 @@ const SubjectDetails = () => {
             height: fit-content;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             position: sticky;
-            top: 1.5rem;
+            top: calc(var(--header-height, 60px) + 1rem);
             z-index: 1;
           }
 
           /* Right column for the main content */
           .details-content-column {
             flex: 1;
-            min-width: 500px;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             background-color: #ffffff;
@@ -149,7 +150,7 @@ const SubjectDetails = () => {
 
           /* Wrapper for the navbar */
           .navbar-wrapper {
-            margin-top: 40px;
+            margin-top: 0;
             background-color: #ffffff;
             border-bottom: 2px solid #f1f3f4;
             padding: 1.5rem 2rem 0 2rem;
@@ -161,7 +162,7 @@ const SubjectDetails = () => {
           /* Wrapper for the main page content from the Outlet */
           .page-content {
             flex: 1;
-            padding: 0rem; /* Corrected padding value */
+            padding: 1rem;
             overflow-y: auto;
             overflow-x: hidden;
             margin-left: 0; /* Removed margin-left */
@@ -190,18 +191,16 @@ const SubjectDetails = () => {
           @media (max-width: 1200px) {
             .subject-details-container {
               padding: 1rem;
-              gap: 1.5rem;
+              gap: 0.75rem;
             }
             
             .details-sidebar-column {
-              width: 260px;
-              min-width: 260px;
-              max-width: 260px;
+              width: 210px;
+              min-width: 210px;
+              max-width: 210px;
             }
             
-            .details-content-column {
-              min-width: 450px;
-            }
+            .details-content-column { min-width: 0; }
             
             .navbar-wrapper {
               padding: 1.5rem 1.5rem 0 1.5rem;
@@ -215,18 +214,16 @@ const SubjectDetails = () => {
           @media (max-width: 1024px) {
             .subject-details-container {
               padding: 0.75rem;
-              gap: 1rem;
+              gap: 0.5rem;
             }
             
             .details-sidebar-column {
-              width: 240px;
-              min-width: 240px;
-              max-width: 240px;
+              width: 200px;
+              min-width: 200px;
+              max-width: 200px;
             }
             
-            .details-content-column {
-              min-width: 400px;
-            }
+            .details-content-column { min-width: 0; }
             
             .navbar-wrapper {
               padding: 1rem 1.25rem 0 1.25rem;
@@ -245,6 +242,7 @@ const SubjectDetails = () => {
               width: 100%;
               position: relative;
               min-height: auto;
+              margin-top: var(--header-height, 50px);
             }
             
             .details-sidebar-column {

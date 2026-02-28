@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const LabPlanning = require('../models/LabPlanning');
+const PracticalAttendance = require('../models/PracticalAttendance');
+const Student = require('../models/Student');
+const Ciann = require('../models/Ciann');
 
 // GET all lab plans
 router.get('/', async (req, res) => {
@@ -23,10 +26,8 @@ router.get('/:ciannId', async (req, res) => {
     }
     
     const plans = await LabPlanning.find({ ciannId: numericCiannId }).lean();
-    if (!plans || plans.length === 0) {
-      return res.status(404).json({ message: 'No lab plans found for this CIAAN' });
-    }
-    res.json(plans);
+    // Return empty array if no plans found (not 404 - that's a valid state)
+    res.json(plans || []);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -34,9 +35,15 @@ router.get('/:ciannId', async (req, res) => {
 
 // POST a new lab plan (with upsert functionality)
 router.post('/', async (req, res) => {
+  let sanitizedPlans = []; // Declare outside try block for access in catch
+  let ciannId, weekNo; // Declare at function level for access in nested catch
+  
   try {
     console.log('POST /api/lab-planning - Request body:', req.body);
-    const { ciannId, weekNo, plans } = req.body;
+    const reqData = req.body;
+    ciannId = reqData.ciannId;
+    weekNo = reqData.weekNo;
+    const plans = reqData.plans;
     
     // Validation
     if (!ciannId) {
@@ -49,33 +56,135 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'plans must be an array' });
     }
     
-    // Validate each plan entry
-    for (const plan of plans) {
-      if (!plan.batch || !plan.exptNo || !plan.exptName || !plan.date) {
+    // Validate each plan entry: only validate rows that have data
+    // (filter out empty rows where all fields are empty)
+    // A row is considered "filled" only if it has BOTH exptNo and exptName
+    const filledPlans = plans.filter(p => (p.exptNo?.trim() || '') && (p.exptName?.trim() || ''));
+    
+    for (const plan of filledPlans) {
+      // If the row is filled, ALL fields must be provided
+      if (!plan.batch?.trim() || !plan.exptNo?.trim() || !plan.exptName?.trim() || !plan.date?.trim()) {
         return res.status(400).json({ 
-          message: 'Each plan must have batch, exptNo, exptName, and date' 
+          message: 'Each filled plan row must have batch, exptNo, exptName, and date' 
         });
       }
     }
     
-    console.log('Creating/updating lab plan with:', { ciannId, weekNo, plans });
+    // Only save non-empty plans (if no filled plans, save empty array)
+    sanitizedPlans = filledPlans;
     
-    // Use findOneAndUpdate with upsert to handle both create and update
-    const savedPlan = await LabPlanning.findOneAndUpdate(
-      { ciannId, weekNo },
-      { plans },
-      { new: true, upsert: true, runValidators: true }
-    );
+    console.log('Creating/updating lab plan with:', { ciannId, weekNo, plans: sanitizedPlans });
     
-    console.log('Lab plan saved successfully:', savedPlan);
+    // Save lab plan - handle the old weekNo index issue
+    let savedPlan;
+    let upsertAttempts = 0;
+    
+    const attemptUpsert = async () => {
+      try {
+        // Try upsert with findOneAndUpdate first
+        savedPlan = await LabPlanning.findOneAndUpdate(
+          { ciannId, weekNo },
+          { plans: sanitizedPlans },
+          { upsert: true, new: true }
+        );
+        console.log('Lab plan saved successfully with upsert');
+        return true;
+      } catch (upsertError) {
+        console.error('Upsert error code:', upsertError.code);
+        console.error('Upsert error message:', upsertError.message);
+        console.error('Full error:', upsertError);
+        
+        // If upsert fails due to old weekNo index (code 11000), try to fix it
+        if (upsertError.code === 11000 || upsertError.message.includes('E11000')) {
+          console.log('Detected E11000 duplicate key error (old weekNo index)');
+          upsertAttempts++;
+          
+          if (upsertAttempts === 1) {
+            // First attempt: try to drop the old weekNo index
+            try {
+              console.log('Attempting to drop old weekNo index...');
+              await LabPlanning.collection.dropIndex('weekNo_1');
+              console.log('Successfully dropped weekNo_1 index, retrying upsert...');
+              return attemptUpsert(); // Recursive retry after dropping index
+            } catch (dropError) {
+              console.error('Could not drop index:', dropError.message);
+              // Continue to replaceOne approach
+            }
+          }
+          
+          // Second attempt: use replaceOne as fallback
+          try {
+            console.log('Using collection.replaceOne as fallback...');
+            const result = await LabPlanning.collection.replaceOne(
+              { ciannId, weekNo },
+              { ciannId, weekNo, plans: sanitizedPlans },
+              { upsert: true }
+            );
+            console.log('ReplaceOne succeeded, modifiedCount:', result.modifiedCount, 'upsertedId:', result.upsertedId);
+            
+            // Fetch the updated document
+            savedPlan = await LabPlanning.findOne({ ciannId, weekNo });
+            if (!savedPlan) {
+              throw new Error('Could not fetch document after replaceOne');
+            }
+            console.log('Successfully fetched lab plan after replaceOne');
+            return true;
+          } catch (replaceError) {
+            console.error('ReplaceOne failed:', replaceError);
+            // Try collection.updateOne as final fallback
+            try {
+              console.log('Trying collection.updateOne as final fallback...');
+              await LabPlanning.collection.updateOne(
+                { ciannId, weekNo },
+                { $set: { plans: sanitizedPlans } },
+                { upsert: true }
+              );
+              savedPlan = await LabPlanning.findOne({ ciannId, weekNo });
+              if (!savedPlan) {
+                throw new Error('Could not fetch document after updateOne');
+              }
+              console.log('Successfully saved via updateOne fallback');
+              return true;
+            } catch (updateError) {
+              console.error('UpdateOne also failed:', updateError);
+              throw updateError;
+            }
+          }
+        } else {
+          // Different error, not a duplicate key error
+          throw upsertError;
+        }
+      }
+    };
+    
+    const success = await attemptUpsert();
+    if (!success) {
+      throw new Error('Could not save lab plan after multiple attempts');
+    }
+    
+    if (!savedPlan) {
+      console.error('Failed to fetch saved lab plan');
+      return res.status(500).json({ message: 'Lab plan saved but could not retrieve it' });
+    }
+    
+    console.log('Lab plan saved and retrieved successfully');
+    
+    // Sync lab plan to practical attendance (non-blocking)
+    if (sanitizedPlans.length > 0) {
+      syncLabPlanToPracticalAttendance(ciannId, weekNo, sanitizedPlans)
+        .then(() => console.log('Synced lab plan to practical attendance'))
+        .catch(syncError => console.error('Error syncing to practical attendance:', syncError));
+    }
+    
     res.status(201).json(savedPlan);
   } catch (error) {
-    console.error('Error creating lab plan:', error);
-    if (error.code === 11000) {
-      res.status(409).json({ message: 'Lab plan for this week already exists', error: error.message });
-    } else {
-      res.status(400).json({ message: 'Error creating lab plan', error: error.message });
-    }
+    console.error('Error creating/updating lab plan:', error);
+    console.error('Error details:', error.message, error.stack);
+    res.status(500).json({ 
+      message: 'Error creating lab plan: ' + error.message,
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -169,5 +278,72 @@ router.delete('/ciann/:ciannId', async (req, res) => {
     res.status(500).json({ message: 'Error deleting lab plans', error: error.message });
   }
 });
+
+// Helper function: Sync lab plans to practical attendance
+async function syncLabPlanToPracticalAttendance(ciannId, weekNo, plans) {
+  try {
+    console.log(`Syncing lab plans to practical attendance for CIANN ${ciannId}, Week ${weekNo}`);
+    
+    // Get all students for this CIANN by querying division
+    const ciann = await Ciann.findOne({ ciannId: parseInt(ciannId) });
+    if (!ciann) {
+      console.log(`CIANN ${ciannId} not found - skipping attendance sync`);
+      return;
+    }
+    
+    const divisionId = ciann.divisionId || ciann.division;
+    if (!divisionId) {
+      console.log(`CIANN ${ciannId} has no division - skipping attendance sync`);
+      return;
+    }
+    
+    // Get all students in this division/batch
+    const students = await Student.find({ divisionId: divisionId }).select('rollNo studentName');
+    
+    if (students.length === 0) {
+      console.log(`No students found for CIANN ${ciannId}`);
+      return;
+    }
+    
+    // For each plan (each batch), create or update practical attendance
+    for (const plan of plans) {
+      if (!plan.batch || !plan.exptNo || !plan.exptName || !plan.date) {
+        continue; // Skip incomplete plans
+      }
+      
+      // Create student attendance array with default "Absent" status
+      const studentAttendance = students.map(student => ({
+        rollNo: student.rollNo,
+        studentName: student.studentName,
+        status: 'Absent' // Default to absent, faculty can mark present
+      }));
+      
+      // Create or update practical attendance record
+      const attendanceFilter = {
+        ciannId,
+        weekNo,
+        batch: plan.batch,
+        exptNo: plan.exptNo
+      };
+      
+      const attendanceData = {
+        exptName: plan.exptName,
+        actualDate: plan.date,
+        students: studentAttendance
+      };
+      
+      await PracticalAttendance.findOneAndUpdate(
+        attendanceFilter,
+        attendanceData,
+        { upsert: true, new: true }
+      );
+      
+      console.log(`Created/updated practical attendance for batch ${plan.batch}, expt ${plan.exptNo}`);
+    }
+  } catch (error) {
+    console.error('Error in syncLabPlanToPracticalAttendance:', error);
+    // Don't throw - sync failures shouldn't break the operation
+  }
+}
 
 module.exports = router;

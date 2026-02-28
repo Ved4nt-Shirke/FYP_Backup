@@ -628,7 +628,6 @@ const TeachingPlan = () => {
         </div>
         <div
           className="teaching-main-content syllabus-main-content has-secondary-sidebar"
-          style={{ marginTop: "180px" }}
         >
           <div className="plan-container">
             <div className="header-row">

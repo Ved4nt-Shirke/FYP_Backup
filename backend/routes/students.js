@@ -11,7 +11,7 @@ const { authenticate, authorizeOffice } = require("../middleware/auth");
 router.get("/", async (req, res) => {
   try {
     console.log("GET /api/students - Request received");
-    const { batch, division, divisionId, courseId, departmentId } = req.query;
+    const { batch, division, divisionId, courseId, departmentId, academicYear } = req.query;
     console.log("Query params:", req.query);
 
     // Build query object
@@ -30,6 +30,9 @@ router.get("/", async (req, res) => {
     if (departmentId) {
       query.departmentId = departmentId;
     }
+    if (academicYear) {
+      query.academicYear = academicYear;
+    }
 
     console.log("Database query:", query);
 
@@ -39,7 +42,7 @@ router.get("/", async (req, res) => {
       .populate("courseId", "name semester class")
       .populate("divisionId", "name")
       .select(
-        "rollNo studentName enrollmentNo batch division departmentId courseId divisionId",
+        "rollNo studentName enrollmentNo batch academicYear division departmentId courseId divisionId",
       )
       .lean()
       .exec();
@@ -80,7 +83,7 @@ router.get("/divisions", async (req, res) => {
 // POST bulk upload students
 router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const { students } = req.body;
+    const { students, academicYear } = req.body;
 
     const results = {
       inserted: 0,
@@ -115,6 +118,7 @@ router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
         enrollmentNo,
         studentName,
         batch,
+        academicYear: (academicYear || "").toString().trim(),
         division: division || "",
         username,
         plainPassword,
@@ -153,11 +157,19 @@ router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
 // PUT update student
 router.put("/:id", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const { rollNo, enrollmentNo, studentName, batch, division } = req.body;
+    const { rollNo, enrollmentNo, studentName, batch, academicYear, division, aadhaarNo } = req.body;
 
     const updatedStudent = await Student.findByIdAndUpdate(
       req.params.id,
-      { rollNo, enrollmentNo, studentName, batch, division: division || "" },
+      {
+        rollNo,
+        enrollmentNo,
+        studentName,
+        batch,
+        academicYear: (academicYear || "").toString().trim(),
+        division: division || "",
+        aadhaarNo: (aadhaarNo || "").toString().trim(),
+      },
       { new: true },
     );
 

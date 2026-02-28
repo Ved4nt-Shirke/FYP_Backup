@@ -46,23 +46,12 @@ const OfficeSidebar = ({
       tab: "notices",
       section: "Communication",
     },
-    {
-      id: "divider1",
-      type: "divider",
-    },
-    {
-      id: "help",
-      label: "Help & Info",
-      icon: "📚",
-      tab: "help",
-      section: "Support",
-    },
   ];
 
   const handleNavigation = (item) => {
     if (item.tab && onTabChange) {
       onTabChange(item.tab);
-    } else if (item.path && item.path !== "#help") {
+    } else if (item.path) {
       navigate(item.path);
     }
     if (window.innerWidth <= 768) {
@@ -74,7 +63,7 @@ const OfficeSidebar = ({
     <>
       {/* Mobile Overlay */}
       {isVisible && window.innerWidth <= 768 && (
-        <div className="sidebar-overlay" onClick={() => setIsVisible(false)} />
+        <div className="office-sidebar-overlay" onClick={() => setIsVisible(false)} />
       )}
 
       {/* Sidebar */}

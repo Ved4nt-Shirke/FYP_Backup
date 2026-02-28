@@ -1,0 +1,213 @@
+.faculty-study-material-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--text-main, #0f172a);
+}
+
+.faculty-study-material-manager__header {
+  border: 1px solid var(--border-color, #dbe5f1);
+  border-radius: 14px;
+  padding: 18px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary-accent, #2563eb) 12%, #ffffff 88%) 0%,
+    #ffffff 100%
+  );
+}
+
+.faculty-study-material-manager__header h1 {
+  margin: 0 0 6px;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.faculty-study-material-manager__header p {
+  margin: 0;
+  color: var(--text-muted, #64748b);
+}
+
+.faculty-study-material-manager__alert {
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 500;
+}
+
+.faculty-study-material-manager__alert.error {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+}
+
+.faculty-study-material-manager__alert.success {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.faculty-study-material-manager__form,
+.faculty-study-material-manager__list {
+  border: 1px solid var(--border-color, #dbe5f1);
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  border: 1px solid var(--border-color, #dbe5f1);
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 0.94rem;
+  color: var(--text-main, #0f172a);
+  background: #ffffff;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus {
+  outline: none;
+  border-color: var(--primary-accent, #2563eb);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-accent, #2563eb) 16%, transparent);
+}
+
+.form-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.file-input-wrap input {
+  padding: 7px;
+}
+
+.actions-row {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.actions-row button,
+.list-head button,
+.material-card__actions button {
+  border: none;
+  border-radius: 9px;
+  padding: 9px 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions-row button,
+.list-head button {
+  color: #ffffff;
+  background: linear-gradient(
+    135deg,
+    var(--primary-accent, #2563eb) 0%,
+    var(--primary-accent-dark, #1d4ed8) 100%
+  );
+}
+
+.list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.list-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.empty-state {
+  margin: 0;
+  color: var(--text-muted, #64748b);
+}
+
+.material-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.material-card {
+  border: 1px solid var(--border-color, #dbe5f1);
+  border-radius: 12px;
+  padding: 14px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.material-card__meta {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.material-card__meta span {
+  background: color-mix(in srgb, var(--primary-accent, #2563eb) 12%, #ffffff 88%);
+  color: var(--primary-accent-dark, #1d4ed8);
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.material-card h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.material-card p {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+}
+
+.material-card .muted {
+  color: var(--text-muted, #64748b);
+}
+
+.material-card__actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.material-card__actions .secondary {
+  color: var(--primary-accent-dark, #1d4ed8);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.material-card__actions .danger {
+  color: #ffffff;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+@media (max-width: 768px) {
+  .faculty-study-material-manager__header,
+  .faculty-study-material-manager__form,
+  .faculty-study-material-manager__list {
+    padding: 14px;
+  }
+
+  .actions-row {
+    justify-content: stretch;
+  }
+
+  .actions-row button {
+    width: 100%;
+  }
+}

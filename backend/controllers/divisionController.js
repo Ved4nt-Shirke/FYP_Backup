@@ -47,6 +47,18 @@ const createDivision = async (req, res) => {
     });
   } catch (error) {
     if (error.code === 11000) {
+      const keyPattern = error.keyPattern || {};
+      const rawMessage = String(error.message || "");
+      const indexMatch = rawMessage.match(/index:\s*([^\s]+)\s*dup key/i);
+
+      if (keyPattern.name || indexMatch?.[1] === "name_1") {
+        return res.status(409).json({
+          success: false,
+          message:
+            "Legacy division index conflict detected. Run `npm run fix:catalog-indexes` in backend, then retry.",
+        });
+      }
+
       return res.status(400).json({
         success: false,
         message: "Division name already exists in this course",
@@ -138,6 +150,18 @@ const updateDivision = async (req, res) => {
     });
   } catch (error) {
     if (error.code === 11000) {
+      const keyPattern = error.keyPattern || {};
+      const rawMessage = String(error.message || "");
+      const indexMatch = rawMessage.match(/index:\s*([^\s]+)\s*dup key/i);
+
+      if (keyPattern.name || indexMatch?.[1] === "name_1") {
+        return res.status(409).json({
+          success: false,
+          message:
+            "Legacy division index conflict detected. Run `npm run fix:catalog-indexes` in backend, then retry.",
+        });
+      }
+
       return res.status(400).json({
         success: false,
         message: "Division name already exists in this course",

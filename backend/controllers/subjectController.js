@@ -35,6 +35,89 @@ const validateHierarchy = async ({ institution, departmentId, courseId }) => {
   return { ok: true, department, course };
 };
 
+const createSubjectsBatch = async ({
+  subjects,
+  departmentId,
+  courseId,
+  institution,
+  userId,
+}) => {
+  const results = {
+    inserted: 0,
+    skipped: 0,
+    errors: [],
+  };
+
+  const seenCodes = new Set();
+
+  for (const [index, subjectRow] of subjects.entries()) {
+    const rawName = subjectRow?.name;
+    const rawCode = subjectRow?.code;
+    const name = String(rawName || "").trim();
+    const code = String(rawCode || "").trim().toUpperCase();
+
+    if (!name || !code) {
+      results.skipped += 1;
+      results.errors.push({
+        row: index + 1,
+        code: code || "",
+        error: "Subject name and code are required",
+      });
+      continue;
+    }
+
+    if (seenCodes.has(code)) {
+      results.skipped += 1;
+      results.errors.push({
+        row: index + 1,
+        code,
+        error: "Duplicate subject code in upload file",
+      });
+      continue;
+    }
+
+    seenCodes.add(code);
+
+    try {
+      const existingSubject = await Subject.findOne({
+        departmentId,
+        code,
+        institution,
+      });
+
+      if (existingSubject) {
+        results.skipped += 1;
+        results.errors.push({
+          row: index + 1,
+          code,
+          error: "Subject code already exists in this department",
+        });
+        continue;
+      }
+
+      await Subject.create({
+        name,
+        code,
+        departmentId,
+        courseId,
+        institution,
+        createdBy: userId,
+      });
+
+      results.inserted += 1;
+    } catch (error) {
+      results.skipped += 1;
+      results.errors.push({
+        row: index + 1,
+        code,
+        error: error.message || "Failed to create subject",
+      });
+    }
+  }
+
+  return results;
+};
+
 const createSubject = async (req, res) => {
   try {
     const { name, code, departmentId, courseId } = req.body;

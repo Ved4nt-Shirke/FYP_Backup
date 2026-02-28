@@ -3,6 +3,15 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../utils/axiosConfig";
 import "./ViewInstitutions.css";
 
+const isDummyInstitution = (institution) => {
+  const matcher = /dummy|test|demo|sample/i;
+  return (
+    matcher.test(String(institution?.name || "")) ||
+    matcher.test(String(institution?.code || "")) ||
+    matcher.test(String(institution?.adminUsername || ""))
+  );
+};
+
 const ViewInstitutions = () => {
   const navigate = useNavigate();
   const [institutions, setInstitutions] = useState([]);
@@ -64,7 +73,10 @@ const ViewInstitutions = () => {
       const response = await axios.get("/superadmin/institutions");
 
       if (response.data.success) {
-        setInstitutions(response.data.institutions || []);
+        const visibleInstitutions = (response.data.institutions || []).filter(
+          (institution) => !isDummyInstitution(institution),
+        );
+        setInstitutions(visibleInstitutions);
       } else {
         setError("Failed to fetch institutions");
       }

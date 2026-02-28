@@ -40,7 +40,7 @@
     border-radius: 4px;
 }
 
-h3 {
+.summary-container h3 {
     font-size: 24px;
     margin-top: 40px;
     margin-bottom: 20px;
@@ -102,9 +102,6 @@ h3 {
     word-wrap: break-word;
     overflow-wrap: break-word;
     white-space: normal;
-    width: 12.5%; /* Ensure perfectly equal column widths (100% / 8 columns) */
-    min-width: 0; /* Allow columns to shrink equally */
-    max-width: 12.5%; /* Prevent columns from growing beyond equal size */
 }
 
 /* MODIFIED: Header styling now applies to all table headers consistently */
@@ -234,7 +231,7 @@ h3 {
         align-items: center;
     }
     
-    h3 {
+    .summary-container h3 {
         font-size: 20px;
         margin-top: 30px;
     }
@@ -246,9 +243,6 @@ h3 {
     
     .summary-container th, .summary-container td {
         padding: 8px;
-        width: 12.5%; /* Maintain perfectly equal column widths on mobile */
-        min-width: 0;
-        max-width: 12.5%;
     }
     
     .print-button {
@@ -271,7 +265,7 @@ h3 {
         font-size: 20px;
     }
     
-    h3 {
+    .summary-container h3 {
         font-size: 18px;
         margin-top: 25px;
     }
@@ -283,9 +277,6 @@ h3 {
     
     .summary-container th, .summary-container td {
         padding: 6px;
-        width: 12.5%; /* Maintain perfectly equal column widths on small screens */
-        min-width: 0;
-        max-width: 12.5%;
     }
     
     .print-button {
@@ -369,7 +360,6 @@ h3 {
   }
 
   .summary-container th, .summary-container td {
-    width: 12.5% !important;
     min-width: auto !important;
     max-width: none !important;
     padding: 8px 4px !important;
@@ -395,7 +385,7 @@ h3 {
     print-color-adjust: exact !important;
   }
 
-  h3 {
+  .summary-container h3 {
     border-bottom: 2px solid #009540 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -424,7 +414,7 @@ h3 {
     print-color-adjust: exact !important;
   }
 
-  h3 {
+  .summary-container h3 {
     font-size: 18px !important;
     margin-top: 25px !important;
     margin-bottom: 15px !important;

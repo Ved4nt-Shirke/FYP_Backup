@@ -6,6 +6,14 @@
 import { config } from "../config/api";
 import { TokenManager } from "./authUtils";
 
+const safeRedirectToLogin = () => {
+  if (window.__AUTH_REDIRECTING__) return;
+  if (window.location.pathname === "/login") return;
+
+  window.__AUTH_REDIRECTING__ = true;
+  window.location.replace("/login");
+};
+
 export const fetchCiannsWithAuth = async () => {
   try {
     const token = TokenManager.getToken();
@@ -23,7 +31,7 @@ export const fetchCiannsWithAuth = async () => {
 
     if (response.status === 401) {
       TokenManager.clearToken();
-      window.location.href = "/login";
+      safeRedirectToLogin();
       throw new Error("Session expired. Please login again.");
     }
 
@@ -55,7 +63,7 @@ export const fetchCiannsWithAxios = async (axios) => {
   } catch (error) {
     if (error.response?.status === 401) {
       TokenManager.clearToken();
-      window.location.href = "/login";
+      safeRedirectToLogin();
       throw new Error("Session expired. Please login again.");
     }
     console.error("Error fetching CIANNs:", error);

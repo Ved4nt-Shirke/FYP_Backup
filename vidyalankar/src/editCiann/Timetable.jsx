@@ -4,6 +4,7 @@ import Header from "../basic/Header";
 import Sidebar from "../basic/Sidebar";
 import SecondarySidebar from "./SecondarySidebar";
 import Footer from "../basic/Footer";
+import { config } from "../config/api";
 import "./Timetable.css";
 
 const days = [
@@ -97,6 +98,11 @@ const TimeTable = () => {
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   useEffect(() => {
     // If no ciannData from location state, try to get it from storage
     if (!ciannData) {
@@ -139,6 +145,24 @@ const TimeTable = () => {
     }
   }, [ciannData]);
 
+  useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+
+    window.addEventListener(
+      "faculty:toggle-secondary-sidebar",
+      handleSecondaryToggle,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "faculty:toggle-secondary-sidebar",
+        handleSecondaryToggle,
+      );
+    };
+  }, []);
+
   const handleAddTheorySlot = () => setShowPopup(true);
 
   // Ensure default practical start index when opening the popup
@@ -163,7 +187,11 @@ const TimeTable = () => {
         let response;
         for (let i = 0; i < 3; i++) {
           // Retry up to 3 times
-          response = await fetch("http://localhost:5000/api/slots");
+          response = await fetch(config.slots, {
+            headers: {
+              ...getAuthHeaders(),
+            },
+          });
           if (response.ok) break;
           await new Promise((res) => setTimeout(res, Math.pow(2, i) * 1000)); // Exponential backoff
         }
@@ -194,9 +222,12 @@ const TimeTable = () => {
     try {
       let response;
       for (let i = 0; i < 3; i++) {
-        response = await fetch("http://localhost:5000/api/slots", {
+        response = await fetch(config.slots, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
           body: JSON.stringify({
             weekday: selectedDay,
             time: selectedTime,
@@ -237,18 +268,24 @@ const TimeTable = () => {
 
     try {
       const fetchPromises = [
-        fetch("http://localhost:5000/api/slots", {
+        fetch(config.slots, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
           body: JSON.stringify({
             weekday: selectedDay,
             time: times[index],
             label: value,
           }),
         }),
-        fetch("http://localhost:5000/api/slots", {
+        fetch(config.slots, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
           body: JSON.stringify({
             weekday: selectedDay,
             time: times[index + 1],
@@ -300,9 +337,12 @@ const TimeTable = () => {
     try {
       let response;
       for (let i = 0; i < 3; i++) {
-        response = await fetch("http://localhost:5000/api/slots", {
+        response = await fetch(config.slots, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
           body: JSON.stringify({
             weekday: selectedDay,
             time: selectedTime,
@@ -332,9 +372,12 @@ const TimeTable = () => {
 
     try {
       const deletePromises = timesToDelete.map((time) =>
-        fetch("http://localhost:5000/api/slots", {
+        fetch(config.slots, {
           method: "DELETE",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
           body: JSON.stringify({ weekday: day, time }),
         })
       );

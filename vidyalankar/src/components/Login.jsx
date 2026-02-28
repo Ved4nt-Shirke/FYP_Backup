@@ -26,10 +26,18 @@ const applyTheme = (college, palette = null) => {
   root.style.setProperty("--primary-accent-dark", theme.accentDark);
 };
 
+const isDummyInstitution = (institution) => {
+  const matcher = /dummy|test|demo|sample/i;
+  return (
+    matcher.test(String(institution?.name || "")) ||
+    matcher.test(String(institution?.code || ""))
+  );
+};
+
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [college, setCollege] = useState("VP");
+  const [college, setCollege] = useState("");
   const [role, setRole] = useState("faculty");
   const [institutions, setInstitutions] = useState([]);
   const [loadingInstitutions, setLoadingInstitutions] = useState(false);
@@ -48,8 +56,10 @@ const Login = () => {
         const normalized = (data.institutions || []).map((inst) => ({
           ...inst,
           isActive: inst.isActive !== false,
-        }));
+        })).filter((inst) => !isDummyInstitution(inst));
+
         setInstitutions(normalized);
+
         if (
           normalized.length > 0 &&
           !normalized.find((inst) => inst.code === college) &&
@@ -57,39 +67,17 @@ const Login = () => {
         ) {
           const firstActive = normalized.find((inst) => inst.isActive);
           setCollege((firstActive || normalized[0]).code);
+        } else if (normalized.length === 0) {
+          setCollege("");
         }
       } else {
-        const hardcodedInstitutions = [
-          { code: "VP", name: "Vidyalankar Polytechnic", isActive: true },
-          {
-            code: "VIT",
-            name: "Vidyalankar Institute of Technology",
-            isActive: true,
-          },
-          {
-            code: "VSIT",
-            name: "Vidyalankar School of Information Technology",
-            isActive: true,
-          },
-        ];
-        setInstitutions(hardcodedInstitutions);
+        setInstitutions([]);
+        setCollege("");
       }
     } catch (error) {
       console.error("Error fetching institutions:", error);
-      const hardcodedInstitutions = [
-        { code: "VP", name: "Vidyalankar Polytechnic", isActive: true },
-        {
-          code: "VIT",
-          name: "Vidyalankar Institute of Technology",
-          isActive: true,
-        },
-        {
-          code: "VSIT",
-          name: "Vidyalankar School of Information Technology",
-          isActive: true,
-        },
-      ];
-      setInstitutions(hardcodedInstitutions);
+      setInstitutions([]);
+      setCollege("");
     } finally {
       setLoadingInstitutions(false);
     }
@@ -98,6 +86,11 @@ const Login = () => {
   const handleLogin = async () => {
     if (!username || !password) {
       showErrorAlert("Please fill in all fields");
+      return;
+    }
+
+    if (role !== "superadmin" && (!college || college === "ALL")) {
+      showErrorAlert("Please select a valid institution");
       return;
     }
 
@@ -251,6 +244,8 @@ const Login = () => {
                 >
                   {loadingInstitutions ? (
                     <option value="">Loading institutions...</option>
+                  ) : institutions.length === 0 ? (
+                    <option value="">No institutions available</option>
                   ) : (
                     <>
                       {institutions.map((inst) => (
@@ -263,7 +258,6 @@ const Login = () => {
                           {inst.isActive === false ? " (inactive)" : ""}
                         </option>
                       ))}
-                      <option value="ALL">ALL</option>
                     </>
                   )}
                 </select>

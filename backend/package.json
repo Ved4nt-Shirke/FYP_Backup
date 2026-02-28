@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "fix:course-indexes": "node scripts/fixCourseIndexes.js",
+    "fix:catalog-indexes": "node scripts/fixCatalogIndexes.js"
   },
   "keywords": [],
   "author": "Shlok Lokhande",

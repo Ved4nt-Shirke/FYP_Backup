@@ -109,7 +109,14 @@ const SAPRK4Print = () => {
         </div>
       ) : (
         <div className="k4-print-sheet">
-          <table className="table table-bordered k4-print-table k4-structure-table">
+          <table className="k4-print-table k4-structure-table">
+            <colgroup>
+              <col className="k4-col-roll" />
+              <col className="k4-col-enroll" />
+              <col className="k4-col-name" />
+              <col className="k4-col-seat" />
+              <col className="k4-col-marks" />
+            </colgroup>
             <thead>
               <tr>
                 <th colSpan="5" className="k4-sheet-title-cell">

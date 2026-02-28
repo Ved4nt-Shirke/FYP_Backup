@@ -3,7 +3,8 @@ const router = express.Router();
 const Experiment = require("../models/Experiment"); // Schema file
 
 // Get experiments by Program/Class/Course with flexible fallback
-router.post("/get-experiments", async (req, res) => {
+// Route: POST /api/get-experiments
+router.post("/", async (req, res) => {
   const { program, className, course } = req.body;
   try {
     // Exact match first
@@ -43,6 +44,7 @@ router.post("/get-experiments", async (req, res) => {
 });
 
 // ✅ --- NEW ROUTE TO ADD AN EXPERIMENT --- ✅
+// Route: POST /api/get-experiments/add-experiment
 router.post("/add-experiment", async (req, res) => {
   const { program, className, course, practicalNo, practicalName } = req.body;
 
@@ -83,6 +85,7 @@ router.post("/add-experiment", async (req, res) => {
   }
 });
 
+// Route: PUT /api/get-experiments/update-experiment
 router.put("/update-experiment", async (req, res) => {
   const {
     program,

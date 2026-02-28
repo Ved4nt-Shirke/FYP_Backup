@@ -29,41 +29,55 @@ const StudyMaterial = () => {
 
   const getTypeIcon = (type) => {
     switch (type) {
-      case "PDF": return "bi-file-pdf";
-      case "Video": return "bi-camera-video";
-      case "ZIP": return "bi-file-zip";
-      case "DOC": return "bi-file-word";
+      case "Notes": return "bi-journal-text";
+      case "Assignment": return "bi-card-checklist";
+      case "Question Bank": return "bi-question-circle";
+      case "Lab Manual": return "bi-beaker";
+      case "Reference": return "bi-book";
+      case "Presentation": return "bi-easel";
       default: return "bi-file";
     }
   };
 
   const getTypeColor = (type) => {
     switch (type) {
-      case "PDF": return "#dc2626";
-      case "Video": return "#2563eb";
-      case "ZIP": return "#ea580c";
-      case "DOC": return "#1d4ed8";
+      case "Notes": return "#2563eb";
+      case "Assignment": return "#7c3aed";
+      case "Question Bank": return "#059669";
+      case "Lab Manual": return "#ea580c";
+      case "Reference": return "#1d4ed8";
+      case "Presentation": return "#db2777";
       default: return "#64748b";
     }
   };
 
   const handleDownload = async (materialId) => {
     try {
-      // In a real app, this would trigger a download
-      // For now, we'll just simulate it
-      alert(`Downloading material ${materialId}`);
-      // await studyMaterialsService.downloadMaterial(materialId);
+      const blob = await studyMaterialsService.downloadMaterial(materialId);
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     } catch (err) {
       console.error("Failed to download material:", err);
-      alert("Failed to download material. Please try again.");
+      setError("Failed to open material. Please try again.");
     }
+  };
+
+  const handleOpenMaterial = async (material) => {
+    if (material.resourceType === "link" && material.externalUrl) {
+      window.open(material.externalUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    await handleDownload(material._id || material.id);
   };
 
   // Filter materials based on search term and type filter
   const filteredMaterials = materials.filter(material => {
     const matchesSearch = material.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         material.subject.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === "all" || material.type === filterType;
+                         (material.subject || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (material.course || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === "all" || material.category === filterType;
     return matchesSearch && matchesType;
   });
 
@@ -114,10 +128,13 @@ const StudyMaterial = () => {
               onChange={(e) => setFilterType(e.target.value)}
             >
               <option value="all">All Types</option>
-              <option value="PDF">PDF</option>
-              <option value="Video">Video</option>
-              <option value="ZIP">ZIP</option>
-              <option value="DOC">Document</option>
+              <option value="Notes">Notes</option>
+              <option value="Assignment">Assignment</option>
+              <option value="Question Bank">Question Bank</option>
+              <option value="Lab Manual">Lab Manual</option>
+              <option value="Reference">Reference</option>
+              <option value="Presentation">Presentation</option>
+              <option value="Other">Other</option>
             </select>
           </div>
         </div>
@@ -137,17 +154,20 @@ const StudyMaterial = () => {
                 <div className="material-info">
                   <h3>{material.title}</h3>
                   <div className="material-meta">
-                    <span className="material-type" style={{ backgroundColor: `${getTypeColor(material.type)}20`, color: getTypeColor(material.type) }}>
-                      {material.type}
+                    <span className="material-type" style={{ backgroundColor: `${getTypeColor(material.category)}20`, color: getTypeColor(material.category) }}>
+                      {material.category}
                     </span>
                     <span className="material-size">{material.size}</span>
                     <span className="material-date">{new Date(material.date).toLocaleDateString()}</span>
-                    <span className="material-subject">{material.subject}</span>
+                    <span className="material-subject">{material.subject || "General"}</span>
+                    {material.course ? <span className="material-subject">{material.course}</span> : null}
+                    {material.division ? <span className="material-subject">{material.division}</span> : null}
                   </div>
                 </div>
                 <div className="material-actions">
-                  <button className="download-btn" onClick={() => handleDownload(material._id || material.id)}>
-                    <i className="bi bi-download"></i> Download
+                  <button className="download-btn" onClick={() => handleOpenMaterial(material)}>
+                    <i className={`bi ${material.resourceType === "link" ? "bi-box-arrow-up-right" : "bi-download"}`}></i>
+                    {material.resourceType === "link" ? " Open Link" : " Open File"}
                   </button>
                 </div>
               </div>

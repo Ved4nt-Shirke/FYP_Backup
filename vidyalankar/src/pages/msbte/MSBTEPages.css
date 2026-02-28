@@ -276,21 +276,47 @@
 }
 
 .k4-print-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
   margin-bottom: 0;
+  border: 1px solid #444;
+  font-size: 11px;
 }
 
 .k4-print-table th,
 .k4-print-table td {
-  border: 1px solid #333 !important;
-  font-size: 12px;
-  padding: 6px;
+  border: 1px solid #444 !important;
+  font-size: 11px;
+  padding: 4px 6px;
   text-align: center;
   vertical-align: middle;
+  background: #fff;
 }
 
 .k4-structure-table {
   table-layout: fixed;
   width: 100%;
+}
+
+.k4-col-roll {
+  width: 16%;
+}
+
+.k4-col-enroll {
+  width: 19%;
+}
+
+.k4-col-name {
+  width: 28%;
+}
+
+.k4-col-seat {
+  width: 12%;
+}
+
+.k4-col-marks {
+  width: 25%;
 }
 
 .k4-sheet-title-cell {
@@ -307,7 +333,7 @@
 .k4-meta-left,
 .k4-meta-right,
 .k4-meta-center {
-  font-size: 12px !important;
+  font-size: 11px !important;
   font-weight: 600;
   text-align: left !important;
   padding: 4px 8px !important;
@@ -339,7 +365,22 @@
   margin-bottom: 6px;
 }
 
+.k4-print-table thead th {
+  background: #f1f3f5 !important;
+  font-weight: 700;
+}
+
+.k4-print-table td.text-start {
+  text-align: left !important;
+  padding-left: 6px !important;
+}
+
 @media print {
+  @page {
+    size: auto;
+    margin: 10mm;
+  }
+
   .k4-print-toolbar,
   .main-content > .btn,
   .main-content > h3,
@@ -356,8 +397,85 @@
     padding: 0 !important;
   }
 
+  .k4-print-container,
+  .k4-print-sheet {
+    background: #fff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
   .k4-print-sheet {
     border: 1px solid #000;
     box-shadow: none;
+  }
+
+  /* Force SA-PR-K4 print table to stay a real table (prevents card-like rows) */
+  .k4-print-table {
+    display: table !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    border: 1px solid #444 !important;
+  }
+
+  .k4-print-table thead {
+    display: table-header-group !important;
+  }
+
+  .k4-print-table tbody {
+    display: table-row-group !important;
+  }
+
+  .k4-print-table tr {
+    display: table-row !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background: #fff !important;
+  }
+
+  .k4-print-table th,
+  .k4-print-table td {
+    display: table-cell !important;
+    float: none !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    border: 1px solid #444 !important;
+    border-top: 1px solid #444 !important;
+    border-bottom: 1px solid #444 !important;
+    border-left: 1px solid #444 !important;
+    border-right: 1px solid #444 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  /* Explicit horizontal grid lines for every student row */
+  .k4-print-table tbody tr td {
+    border-top: 1px solid #444 !important;
+    border-bottom: 1px solid #444 !important;
+  }
+
+  .k4-print-table tbody tr + tr td {
+    border-top: 1px solid #444 !important;
+  }
+
+  .k4-print-table thead th {
+    background: #f1f3f5 !important;
+    font-weight: 700 !important;
+  }
+
+  .k4-print-table tbody td {
+    background: #fff !important;
+  }
+
+  .k4-print-table td.text-start {
+    text-align: left !important;
+    padding-left: 6px !important;
+  }
+
+  .k4-print-table td::before,
+  .k4-print-table th::before {
+    content: none !important;
+    display: none !important;
   }
 }

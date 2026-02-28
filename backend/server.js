@@ -3,9 +3,15 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
+
+const isDummyInstitutionRecord = (institution) => {
+  const matcher = /dummy|test|demo|sample/i;
+  return matcher.test(String(institution?.name || "")) || matcher.test(String(institution?.code || ""));
+};
 
 // --- Middleware ---
 app.use(
@@ -16,6 +22,7 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // --- Database Connection ---
 mongoose
@@ -80,9 +87,10 @@ app.get("/api/institutions", async (req, res) => {
   try {
     const Institution = require("./models/Institution");
     const institutions = await Institution.find({}, "name code isActive");
+    const filteredInstitutions = institutions.filter((institution) => !isDummyInstitutionRecord(institution));
     res.json({
       success: true,
-      institutions,
+      institutions: filteredInstitutions,
     });
   } catch (error) {
     console.error("Error fetching institutions:", error);
@@ -101,6 +109,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "OK",
     message: "Server is running",
+    uptimeSeconds: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
   });
 });
@@ -110,6 +119,9 @@ app.use("/api/cianns", require("./routes/cianns"));
 
 // Student Portal Routes
 app.use("/api/student-portal", require("./routes/studentPortal"));
+
+// Study Materials Routes
+app.use("/api/study-materials", require("./routes/studyMaterials"));
 
 // Student Routes
 app.use("/api/students", require("./routes/students"));
@@ -137,6 +149,9 @@ app.use("/api/practical-attendance", require("./routes/practicalAttendance"));
 
 // Slot Routes
 app.use("/api/slots", require("./routes/slots"));
+
+// Student Timetable Routes (faculty managed for student panel)
+app.use("/api/student-timetables", require("./routes/studentTimetables"));
 
 // Authentication Routes
 app.use("/api/auth", require("./routes/auth"));

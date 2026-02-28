@@ -56,7 +56,10 @@
   color: #ffffff;
   font-size: 1.3rem;
   cursor: pointer;
-  padding: 5px;
+  padding: 5px 7px;
+  line-height: 1;
+  align-items: center;
+  justify-content: center;
   transition: color 0.3s ease;
   display: none; /* Hidden by default, shown only on mobile when needed */
 }
@@ -271,6 +274,41 @@
   margin-left: auto;
 }
 
+.ciann-request-bell {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.ciann-request-bell i {
+  font-size: 16px;
+}
+
+.header-notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .faculty-logout-button {
   display: inline-flex;
   align-items: center;
@@ -446,8 +484,12 @@
   }
 
   .secondary-menu-toggle {
-    display: inline-block;
+    display: none;
     font-size: 1.2rem;
+  }
+
+  .header.has-secondary-toggle .secondary-menu-toggle {
+    display: inline-flex;
   }
 
   .test-dropdown-btn {

@@ -4,6 +4,8 @@ const StudentResult = require('../models/StudentResult');
 const Student = require('../models/Student');
 const CTMarks = require('../models/CTMarks');
 const Notice = require('../models/Notice');
+const StudyMaterial = require('../models/StudyMaterial');
+const Division = require('../models/Division');
 const { authenticate } = require('../middleware/auth');
 
 const normalizeUsername = (value = '') =>
@@ -190,34 +192,75 @@ router.post('/notices/:id/read', verifyStudent, async (req, res) => {
 // GET study materials
 router.get('/study-materials', verifyStudent, async (req, res) => {
   try {
-    // Mock data for study materials - in a real app, this would come from a database
-    const materials = [
-      {
-        _id: '1',
-        title: 'Mathematics Chapter 1 Notes',
-        subject: 'Mathematics',
-        type: 'PDF',
-        size: '2.4 MB',
-        date: new Date('2025-12-01')
-      },
-      {
-        _id: '2',
-        title: 'Physics Lab Manual',
-        subject: 'Physics',
-        type: 'PDF',
-        size: '5.1 MB',
-        date: new Date('2025-11-28')
-      },
-      {
-        _id: '3',
-        title: 'Chemistry Video Lectures',
-        subject: 'Chemistry',
-        type: 'Video',
-        size: 'N/A',
-        date: new Date('2025-11-25')
-      }
-    ];
-    res.json(materials);
+    const { subject } = req.query;
+    const student = await getStudentFromRequest(req.user);
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student record not found' });
+    }
+
+    const institution = String(req.user.college || '').toUpperCase();
+    let mappedDivisionId = student.divisionId || null;
+
+    if (!mappedDivisionId && student.division) {
+      const mappedDivision = await Division.findOne({
+        institution,
+        name: { $regex: exactRegex(student.division) },
+      }).select('_id');
+      mappedDivisionId = mappedDivision?._id || null;
+    }
+
+    const query = {
+      institution,
+      isActive: true,
+    };
+
+    if (student.courseId) {
+      query.courseId = student.courseId;
+    }
+
+    if (mappedDivisionId) {
+      query.divisionId = mappedDivisionId;
+    } else if (student.division) {
+      query.divisionName = { $regex: exactRegex(student.division) };
+    }
+
+    if (subject) {
+      query.subject = { $regex: exactRegex(subject) };
+    }
+
+    const materials = await StudyMaterial.find(query)
+      .populate('courseId', 'courseCode semester scheme')
+      .populate('divisionId', 'name')
+      .sort({ createdAt: -1 });
+
+    const formatted = materials.map((item) => ({
+      _id: item._id,
+      title: item.title,
+      subject: item.subject || 'General',
+      type: item.category,
+      category: item.category,
+      resourceType: item.resourceType,
+      size:
+        item.resourceType === 'file'
+          ? item.fileSize < 1024
+            ? `${item.fileSize} B`
+            : item.fileSize < 1024 * 1024
+              ? `${(item.fileSize / 1024).toFixed(1)} KB`
+              : `${(item.fileSize / (1024 * 1024)).toFixed(1)} MB`
+          : 'Link',
+      date: item.createdAt,
+      description: item.description || '',
+      division: item.divisionId?.name || item.divisionName,
+      course: item.courseId?.courseCode || '',
+      externalUrl: item.externalUrl || '',
+      downloadUrl:
+        item.resourceType === 'file'
+          ? `/api/study-materials/file/${item._id}`
+          : item.externalUrl,
+    }));
+
+    res.json(formatted);
   } catch (err) {
     console.error('Error fetching study materials:', err);
     res.status(500).json({ message: 'Failed to fetch study materials' });

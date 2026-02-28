@@ -4,13 +4,11 @@ const DepartmentSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
   },
   code: {
     type: String,
     required: true,
-    unique: true,
     uppercase: true,
     trim: true,
   },
@@ -29,5 +27,8 @@ const DepartmentSchema = new mongoose.Schema({
     required: true,
   },
 });
+
+DepartmentSchema.index({ institution: 1, name: 1 }, { unique: true });
+DepartmentSchema.index({ institution: 1, code: 1 }, { unique: true });
 
 module.exports = mongoose.model("Department", DepartmentSchema);

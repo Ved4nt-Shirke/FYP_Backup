@@ -5,6 +5,7 @@ const studentSchema = new mongoose.Schema({
   enrollmentNo: { type: String, required: true },
   studentName: { type: String, required: true },
   batch: { type: String, required: true },
+  academicYear: { type: String, default: "" },
 
   // Old text-based division (kept for backward compatibility)
   division: { type: String, default: "" },

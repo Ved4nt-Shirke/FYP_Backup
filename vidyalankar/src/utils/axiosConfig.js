@@ -1,5 +1,17 @@
 import axios from 'axios';
 
+const safeRedirectToLogin = () => {
+  if (window.__AUTH_REDIRECTING__) return;
+
+  const path = window.location.pathname;
+  const isAlreadyOnLogin = path === '/login';
+
+  if (isAlreadyOnLogin) return;
+
+  window.__AUTH_REDIRECTING__ = true;
+  window.location.replace('/login');
+};
+
 // Set default base URL for API requests
 axios.defaults.baseURL = '/api';
 
@@ -27,7 +39,7 @@ axios.interceptors.response.use(
       localStorage.removeItem('username');
       localStorage.removeItem('college');
       localStorage.removeItem('role');
-      window.location.href = '/';
+      safeRedirectToLogin();
     }
     return Promise.reject(error);
   }

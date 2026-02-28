@@ -74,7 +74,20 @@ export const noticesService = {
 export const studyMaterialsService = {
   // Get all study materials
   getMaterials: async () => {
-    return await apiRequest('/study-materials');
+    const token = getAuthToken();
+    const response = await fetch('/api/study-materials/student/current', {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return Array.isArray(data?.materials) ? data.materials : [];
   },
   
   // Get materials by subject
@@ -84,7 +97,18 @@ export const studyMaterialsService = {
   
   // Download material
   downloadMaterial: async (id) => {
-    return await apiRequest(`/study-materials/${id}/download`);
+    const token = getAuthToken();
+    const response = await fetch(`/api/study-materials/file/${id}`, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.blob();
   }
 };
 
@@ -134,10 +158,45 @@ export const elibraryService = {
   }
 };
 
+// Student Timetable API
+export const studentTimetableService = {
+  getCurrent: async () => {
+    const token = getAuthToken();
+    const response = await fetch(`/api/student-timetables/student/current`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch current timetable (${response.status})`);
+    }
+
+    return await response.json();
+  },
+
+  openFile: async (id) => {
+    const token = getAuthToken();
+    const response = await fetch(`/api/student-timetables/file/${id}`, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to open file (${response.status})`);
+    }
+
+    return await response.blob();
+  },
+};
+
 export default {
   resultsService,
   noticesService,
   studyMaterialsService,
   mockTestsService,
-  elibraryService
+  elibraryService,
+  studentTimetableService,
 };

@@ -76,20 +76,41 @@
   padding: 0; /* Let plan-container handle padding */
 }
 
+.lab-layout {
+  min-height: 100vh;
+}
+
+.lab-layout .teaching-main-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-left: 0;
+  padding: 8px 10px 12px 0;
+}
+
+.lab-layout .syllabus-secondary-sidebar-wrapper {
+  width: 200px;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
 /* Plan Container (Laboratory Plan Content) */
 .labplanning-main-content {
-  padding-top: 0; /* rely on container's negative top margin for alignment */
+  flex: 1;
+  min-width: 0;
+  padding-top: 8px;
+  padding-left: 2px;
+  padding-right: 8px;
 }
 .labplanning-main-content .plan-container {
   padding: 18px; /* Reduced padding for compact look */
   background-color: #fefefe;
   border: 1px solid #ccc;
   border-radius: 12px;
-  margin: 0 auto; /* center relative to content area */
-  margin-left: 70px; /* align left similar to TeachingPlan */
+  margin: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 92%; /* Slightly smaller overall width */
-  max-width: 980px; /* Slightly reduce max width */
+  width: min(100%, 1100px);
+  max-width: 1100px;
   /* The container no longer scrolls; the table area will handle vertical scrolling */
 }
 
@@ -676,6 +697,72 @@
   border-bottom: 2px solid black !important;
 }
 
+@media (max-width: 768px) {
+  .lab-layout .teaching-main-row {
+    padding: 8px !important;
+    gap: 0 !important;
+  }
+
+  .lab-layout .syllabus-secondary-sidebar-wrapper {
+    width: 0 !important;
+    min-width: 0 !important;
+    flex: 0 0 0 !important;
+    overflow: visible !important;
+  }
+
+  .labplanning-main-content {
+    width: 100% !important;
+    padding: 8px !important;
+  }
+
+  .labplanning-main-content .plan-container {
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 12px !important;
+  }
+
+  .labplanning-main-content .header-row h3 {
+    font-size: 20px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    margin: 0 0 8px 0 !important;
+  }
+
+  .labplanning-main-content .button-group {
+    width: 100% !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .labplanning-main-content .button-group .start-btn {
+    flex: 0 1 auto !important;
+    min-width: 120px !important;
+    margin: 0 !important;
+    height: auto !important;
+    min-height: 34px !important;
+  }
+
+  .labplanning-main-content .tabs {
+    overflow-x: auto !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 4px;
+  }
+
+  .labplanning-main-content .lab-table {
+    min-width: 980px !important;
+  }
+
+  .labplanning-main-content .pagination {
+    margin-top: 12px !important;
+    justify-content: flex-start !important;
+  }
+}
+
 /* --- TeachingPlan parity overrides for LabPlanning (no cross-linking) --- */
 /* Plan container to match TeachingPlan look */
 .labplanning-main-content .plan-container {
@@ -1036,6 +1123,31 @@
     font-size: 18px !important;
     border-radius: 10px !important;
     font-weight: 700 !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .lab-layout .teaching-main-row {
+    margin-left: 0 !important;
+    gap: 4px !important;
+    padding: 8px 8px 12px 0 !important;
+  }
+
+  .lab-layout .syllabus-secondary-sidebar-wrapper {
+    width: 200px !important;
+    min-width: 200px !important;
+    margin-right: 0 !important;
+  }
+
+  .lab-layout .labplanning-main-content {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  .lab-layout .labplanning-main-content .plan-container {
+    margin: 0 !important;
+    width: min(100%, 1080px) !important;
+    max-width: 1080px !important;
   }
 }
      

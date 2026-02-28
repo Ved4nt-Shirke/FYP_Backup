@@ -1,11 +1,22 @@
-/* ===== THEORY HEADER CARD ===== */
+:root {
+  --header-height: 60px;
+}
+
+.theory-page {
+  padding: calc(var(--header-height) + 20px) 20px 24px;
+  background: #f8fafc;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
 
 .theory-card {
   background: #ffffff;
   border-radius: 14px;
-  padding: 26px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
   border: 1px solid #e5e7eb;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .theory-header {
@@ -13,7 +24,7 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
-  flex-wrap: wrap explained;
+  flex-wrap: wrap;
 }
 
 .theory-header-main {
@@ -23,112 +34,252 @@
 
 .theory-eyebrow {
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  color: #16a34a;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  color: #0f766e;
   text-transform: uppercase;
   margin-bottom: 6px;
 }
 
 .theory-title {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 700;
   margin: 0;
-  color: #1f2937;
+  color: #0f172a;
 }
 
 .theory-subtitle {
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 15px;
-  color: #6b7280;
+  color: #475569;
 }
 
-/* right-side meta card */
 .theory-header-meta {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  background: #f9fafb;
-  padding: 14px 18px;
+  grid-template-columns: repeat(3, minmax(110px, 1fr));
+  gap: 12px;
+  background: #f8fafc;
+  padding: 14px 16px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  min-width: 260px;
+  border: 1px solid #e2e8f0;
 }
 
 .theory-header-meta div {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .theory-header-meta span {
   font-size: 11px;
-  color: #6b7280;
+  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 }
 
 .theory-header-meta strong {
-  font-size: 15px;
-  color: #111827;
+  font-size: 14px;
+  color: #0f172a;
 }
-
-/* ===== METRICS SECTION ===== */
 
 .theory-metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 24px;
+  gap: 14px;
+  margin-top: 20px;
 }
 
 .metric-card {
-  background: #f9fafb;
+  background: #f8fafc;
   border-radius: 12px;
-  padding: 18px;
-  border: 1px solid #e5e7eb;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: all 0.2s ease;
 }
 
 .metric-card span {
   font-size: 12px;
-  color: #6b7280;
+  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 .metric-card strong {
   font-size: 24px;
   font-weight: 700;
-  color: #111827;
+  color: #0f172a;
 }
 
-/* status colors */
 .metric-card.success {
   background: #ecfdf5;
-  border-color: #bbf7d0;
+  border-color: #a7f3d0;
 }
 
 .metric-card.success strong {
-  color: #16a34a;
+  color: #059669;
 }
 
 .metric-card.warning {
-  background: #fef2f2;
-  border-color: #fecaca;
+  background: #fff7ed;
+  border-color: #fed7aa;
 }
 
 .metric-card.warning strong {
-  color: #dc2626;
+  color: #ea580c;
 }
 
-/* responsive */
+.theory-table-section {
+  margin-top: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.theory-table-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.theory-table-head h3 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.theory-table-head p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.theory-badge {
+  background: #e0f2fe;
+  color: #075985;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.theory-table-container {
+  max-height: min(50vh, 460px);
+  overflow: auto;
+}
+
+.theory-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.theory-table th,
+.theory-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 14px;
+}
+
+.theory-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.theory-table td {
+  color: #1e293b;
+}
+
+.checkbox-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.checkbox-pill.is-locked {
+  border-color: #86efac;
+  background: #ecfdf5;
+  color: #15803d;
+  cursor: not-allowed;
+}
+
+.checkbox-pill input {
+  margin: 0;
+}
+
+.theory-loading,
+.theory-empty {
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+}
+
+.theory-empty h4 {
+  margin: 0 0 6px;
+  color: #1e293b;
+}
+
+.theory-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.theory-pagination button {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  font-weight: 700;
+}
+
+.theory-pagination button:not(:disabled):hover {
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.theory-pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.page-indicator {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
-  .theory-header {
-    flex-direction: column;
+  .theory-page {
+    padding: calc(var(--header-height) + 12px) 10px 16px;
+  }
+
+  .theory-card {
+    padding: 14px;
   }
 
   .theory-header-meta {
@@ -139,23 +290,8 @@
   .theory-metrics {
     grid-template-columns: 1fr;
   }
-}
-/* --- ensure page content sits below fixed header --- */
-:root {
-  /* keep in sync with Header.css */
-  --header-height: 60px;
-}
 
-/* main page wrapper used in TheoryEdit.jsx */
-.theory-page {
-  /* if you already have padding-top, merge values; this is additive-safe */
-  padding-top: calc(var(--header-height) + 20px);
-  box-sizing: border-box;
-}
-
-/* if you use .theory-table-wrapper or .theory-table-container for scroll, reduce height to account for header */
-.theory-table-wrapper,
-.theory-table-container {
-  /* keep same visual height but account for header so vertical scrollbar is accurate */
-  max-height: calc(100vh - var(--header-height) - 260px); /* adjust -260 if other fixed footers exist */
+  .theory-table-head {
+    flex-direction: column;
+  }
 }

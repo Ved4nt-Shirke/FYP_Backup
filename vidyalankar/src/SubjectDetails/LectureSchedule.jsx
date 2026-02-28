@@ -66,9 +66,8 @@ function LectureSchedule() {
           font-size: 14px;
           background-color: #4caf50;
           border: none;
-          float: right;
           font-weight: bold;
-          margin-left: 400px;
+          margin-left: 0;
           border-radius: 5px;
           cursor: pointer;
           color: white;
@@ -95,6 +94,8 @@ function LectureSchedule() {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
           margin-bottom: 30px; /* More space below header */
           padding: 20px 25px; /* Increased padding */
           background-color: #fff;
@@ -169,6 +170,35 @@ function LectureSchedule() {
         .table-wrapper {
           overflow-x: auto;
           margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+          .lecture-page-container {
+            padding: 12px;
+          }
+
+          .header-row {
+            padding: 12px;
+            margin-bottom: 16px;
+          }
+
+          .title {
+            width: 100%;
+            font-size: 1.05rem;
+          }
+
+          .button1,
+          .button2 {
+            flex: 1 1 calc(50% - 8px);
+            min-width: 140px;
+            font-size: 13px;
+            padding: 8px 10px;
+          }
+
+          .table10 {
+            min-width: 760px;
+            font-size: 11px;
+          }
         }
 
         .table10 {

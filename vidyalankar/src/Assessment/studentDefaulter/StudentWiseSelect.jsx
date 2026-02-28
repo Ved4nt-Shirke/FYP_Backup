@@ -16,20 +16,27 @@ export default function StudentWiseSelect() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // If batches not provided, fetch from backend
+    // Load division-aware batches when CIANN is selected
     const loadBatches = async () => {
       try {
-        if (batches.length === 0) {
-          const res = await fetch('http://localhost:5000/api/assessments/batches');
-          const data = await res.json();
-          if (data.success) setBatches(data.batches);
-        }
+        const params = new URLSearchParams();
+        if (ciannData?.ciannId) params.append('ciannId', ciannData.ciannId);
+        if (ciannData?.division) params.append('division', ciannData.division);
+
+        const query = params.toString();
+        const url = query
+          ? `http://localhost:5000/api/assessments/batches?${query}`
+          : 'http://localhost:5000/api/assessments/batches';
+
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success) setBatches(data.batches || []);
       } catch (e) {
         console.error('Failed to load batches', e);
       }
     };
     loadBatches();
-  }, []);
+  }, [ciannData?.ciannId, ciannData?.division]);
 
   const handleBatchChange = async (batch) => {
     setSelectedBatch(batch);
@@ -39,7 +46,11 @@ export default function StudentWiseSelect() {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch(`http://localhost:5000/api/assessments/students-by-batch?batch=${encodeURIComponent(batch)}`);
+      const params = new URLSearchParams({ batch: String(batch || '') });
+      if (ciannData?.ciannId) params.append('ciannId', ciannData.ciannId);
+      if (ciannData?.division) params.append('division', ciannData.division);
+
+      const res = await fetch(`http://localhost:5000/api/assessments/students-by-batch?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
         setStudents(data.students || []);

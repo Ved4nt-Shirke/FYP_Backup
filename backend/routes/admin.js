@@ -336,6 +336,27 @@ router.post("/departments", authenticate, authorizeAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating department:", error);
+
+    if (error.code === 11000) {
+      const keyPattern = error.keyPattern || {};
+      const keyValue = error.keyValue || {};
+
+      if (keyPattern.name || keyPattern.code) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "Department duplicate index conflict detected. If this happens across institutions, run `npm run fix:catalog-indexes` in backend and retry.",
+          duplicateKey: keyValue,
+        });
+      }
+
+      return res.status(409).json({
+        success: false,
+        message: "Department already exists in this institution",
+        duplicateKey: keyValue,
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: "Error creating department",

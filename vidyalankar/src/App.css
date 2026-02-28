@@ -105,7 +105,7 @@ body {
 .scrollable-content {
   flex-grow: 1;
   overflow-y: auto;
-  height: 100vh; /* Full height since navbar is now outside wrapper */
+  height: calc(100vh - var(--header-height));
   box-sizing: border-box;
   padding-top: 0; /* Remove default padding */
 }

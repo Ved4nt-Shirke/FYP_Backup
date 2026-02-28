@@ -20,6 +20,7 @@ const DepartmentCourses = () => {
   const [editingDivisionId, setEditingDivisionId] = useState(null);
   const [editingDivisionName, setEditingDivisionName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isAddingCourse, setIsAddingCourse] = useState(false);
 
   const schemeOptions = ["K", "I", "J", "C", "E", "F", "G", "H"];
 
@@ -97,10 +98,30 @@ const DepartmentCourses = () => {
       return;
     }
 
+    const semesterNumber = Number(newCourseSemester);
+    const normalizedScheme = newCourseScheme.trim().toUpperCase();
+    const existingCourse = courses.find(
+      (course) =>
+        Number(course.semester) === semesterNumber &&
+        String(course.scheme || "").toUpperCase() === normalizedScheme,
+    );
+
+    if (existingCourse) {
+      showErrorAlert(
+        `Course already exists: ${existingCourse.courseCode || buildCourseCode(semesterNumber, normalizedScheme)}`,
+      );
+      return;
+    }
+
+    if (isAddingCourse) {
+      return;
+    }
+
     try {
+      setIsAddingCourse(true);
       const response = await axios.post(config.courses.create, {
-        semester: Number(newCourseSemester),
-        scheme: newCourseScheme.trim(),
+        semester: semesterNumber,
+        scheme: normalizedScheme,
         departmentId: id,
       });
 
@@ -125,6 +146,8 @@ const DepartmentCourses = () => {
         "Failed to add course";
       console.error("Course creation error:", errorMsg);
       showErrorAlert(errorMsg);
+    } finally {
+      setIsAddingCourse(false);
     }
   };
 
@@ -291,7 +314,7 @@ const DepartmentCourses = () => {
   };
 
   return (
-    <div className="admin-content">
+    <div className="admin-content department-courses-page">
       <div className="page-header">
         <div>
           <h2>Courses & Divisions</h2>
@@ -341,9 +364,13 @@ const DepartmentCourses = () => {
             value={buildCourseCode(newCourseSemester, newCourseScheme)}
             placeholder="Course code"
           />
-          <button className="btn-primary" onClick={handleAddCourse}>
+          <button
+            className="btn-primary"
+            onClick={handleAddCourse}
+            disabled={isAddingCourse}
+          >
             <i className="bi bi-plus-lg"></i>
-            Add Course
+            {isAddingCourse ? "Adding..." : "Add Course"}
           </button>
         </div>
       </div>

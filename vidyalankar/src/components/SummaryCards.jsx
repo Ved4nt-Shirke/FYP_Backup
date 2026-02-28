@@ -46,7 +46,7 @@ const SummaryCards = () => {
 
   const handleCardClick = (ciannData) => {
     localStorage.setItem("ciannData", JSON.stringify(ciannData));
-    window.open("/summary-pages", "_blank");
+    window.open("/edit-ciann-print", "_blank");
   };
 
   return (
@@ -63,7 +63,7 @@ const SummaryCards = () => {
 
       <div className="edit-ciann-page">
         <div className="edit-ciann-header">
-          <h2 className="text-center py-2 bg-success text-white">Summary</h2>
+          <h2 className="text-center py-2 bg-success text-white">Print CIANN</h2>
         </div>
         <div className="ciann-card-container">
           {loading ? (
@@ -96,7 +96,7 @@ const SummaryCards = () => {
                       <strong>{ciannData.division}</strong>
                     </div>
                   </div>
-                  <div className="card-hover-text">Click to View Summary</div>
+                  <div className="card-hover-text">Click to Print CIANN</div>
                 </div>
               </div>
             ))

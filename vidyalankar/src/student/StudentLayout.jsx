@@ -12,11 +12,6 @@ const StudentLayout = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
-  const dropdownRefs = {
-    elibrary: useRef(null),
-    mockTest: useRef(null),
-    practicalExam: useRef(null),
-  };
 
   // Get student info from localStorage
   const studentName =
@@ -34,30 +29,13 @@ const StudentLayout = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      let isInsideDropdown = false;
       let isInsideSidebar = false;
-      
-      // Check if click is inside dropdowns
-      for (const ref in dropdownRefs) {
-        if (
-          dropdownRefs[ref].current &&
-          dropdownRefs[ref].current.contains(event.target)
-        ) {
-          isInsideDropdown = true;
-          break;
-        }
-      }
       
       // Check if click is inside sidebar
       if (sidebarRef.current && sidebarRef.current.contains(event.target)) {
         isInsideSidebar = true;
       }
 
-      // Close dropdowns if click is outside
-      if (!isInsideDropdown) {
-        setOpenDropdown(null);
-      }
-      
       // Close sidebar on mobile if click is outside
       if (window.innerWidth <= 768 && isSidebarOpen && !isInsideSidebar) {
         setIsSidebarOpen(false);
@@ -67,10 +45,6 @@ const StudentLayout = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSidebarOpen]);
-
-  const handleDropdownToggle = (dropdownName) => {
-    setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
-  };
 
   const handleLogout = () => {
     const confirmLogout = window.confirm("Are you sure you want to logout?");
@@ -85,14 +59,12 @@ const StudentLayout = () => {
 
   const handleNavigation = (path) => {
     navigate(path);
-    setOpenDropdown(null);
     if (window.innerWidth <= 768) {
       setIsSidebarOpen(false);
     }
   };
 
   const isActivePath = (path) => location.pathname === path;
-  const isDropdownActive = (paths) => paths.includes(location.pathname);
 
   return (
     <div className="student-dashboard">
@@ -130,104 +102,15 @@ const StudentLayout = () => {
               <span>Study Material</span>
             </div>
           </li>
-          
-          {/* E-library with dropdown */}
           <li className="sidebar-item">
-            <div className="dropdown" ref={dropdownRefs.elibrary}>
-              <button
-                className={`dropdown-toggle ${isDropdownActive(["/elibrary/coursewise", "/elibrary/search"]) ? "active" : ""}`}
-                onClick={() => handleDropdownToggle("elibrary")}
-              >
-                <i className="bi bi-bookshelf"></i>
-                <span>E-library</span>
-                <i className={`bi bi-chevron-${openDropdown === "elibrary" ? "up" : "down"}`}></i>
-              </button>
-              {openDropdown === "elibrary" && (
-                <ul className="dropdown-menu">
-                  <li>
-                    <div 
-                      className={`dropdown-item ${isActivePath("/elibrary/coursewise") ? "active" : ""}`}
-                      onClick={() => {
-                        handleNavigation("/elibrary/coursewise");
-                        setOpenDropdown(null);
-                      }}
-                    >
-                      <i className="bi bi-collection"></i>
-                      <span>Coursewise</span>
-                    </div>
-                  </li>
-                  <li>
-                    <div 
-                      className={`dropdown-item ${isActivePath("/elibrary/search") ? "active" : ""}`}
-                      onClick={() => {
-                        handleNavigation("/elibrary/search");
-                        setOpenDropdown(null);
-                      }}
-                    >
-                      <i className="bi bi-search"></i>
-                      <span>Search</span>
-                    </div>
-                  </li>
-
-                </ul>
-              )}
+            <div
+              className={`menu-item ${isActivePath("/timetable") ? "active" : ""}`}
+              onClick={() => handleNavigation("/timetable")}
+            >
+              <i className="bi bi-calendar-week"></i>
+              <span>Timetable</span>
             </div>
           </li>
-          
-          {/* Online Exams with Mock Test dropdown */}
-          <li className="sidebar-item">
-            <div className="dropdown" ref={dropdownRefs.mockTest}>
-              <button
-                className={`dropdown-toggle ${isDropdownActive(["/mock-test/exam-list", "/mock-test/exam-result", "/mock-test/exams"]) ? "active" : ""}`}
-                onClick={() => handleDropdownToggle("mockTest")}
-              >
-                <i className="bi bi-laptop"></i>
-                <span>Online Exams</span>
-                <i className={`bi bi-chevron-${openDropdown === "mockTest" ? "up" : "down"}`}></i>
-              </button>
-              {openDropdown === "mockTest" && (
-                <ul className="dropdown-menu">
-                  <li>
-                    <div 
-                      className={`dropdown-item ${isActivePath("/mock-test/exam-list") ? "active" : ""}`}
-                      onClick={() => {
-                        handleNavigation("/mock-test/exam-list");
-                        setOpenDropdown(null);
-                      }}
-                    >
-                      <i className="bi bi-list-task"></i>
-                      <span>Exam List</span>
-                    </div>
-                  </li>
-                  <li>
-                    <div 
-                      className={`dropdown-item ${isActivePath("/mock-test/exam-result") ? "active" : ""}`}
-                      onClick={() => {
-                        handleNavigation("/mock-test/exam-result");
-                        setOpenDropdown(null);
-                      }}
-                    >
-                      <i className="bi bi-bar-chart"></i>
-                      <span>Exam Result</span>
-                    </div>
-                  </li>
-                  <li>
-                    <div 
-                      className={`dropdown-item ${isActivePath("/mock-test/exams") ? "active" : ""}`}
-                      onClick={() => {
-                        handleNavigation("/mock-test/exams");
-                        setOpenDropdown(null);
-                      }}
-                    >
-                      <i className="bi bi-calendar-event"></i>
-                      <span>Upcoming Exams</span>
-                    </div>
-                  </li>
-                </ul>
-              )}
-            </div>
-          </li>
-          
           {/* Practical Exams */}
           <li className="sidebar-item">
             <div

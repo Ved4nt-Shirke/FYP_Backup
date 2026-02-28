@@ -142,6 +142,7 @@ export const config = {
       `${API_BASE_URL}/office/regenerate-password/${studentId}`,
     studentById: (studentId) => `${API_BASE_URL}/office/student/${studentId}`,
     bulkImport: `${API_BASE_URL}/office/bulk-import`,
+    clearStudents: `${API_BASE_URL}/office/students`,
     updateStudent: (studentId) => `${API_BASE_URL}/office/student/${studentId}`,
     deleteStudent: (studentId) => `${API_BASE_URL}/office/student/${studentId}`,
     // New endpoints for department/course/division selection

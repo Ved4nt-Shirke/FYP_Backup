@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ErrorBoundary from "../components/ErrorBoundary";
 import "./NoticesPage.css";
 
@@ -11,6 +11,7 @@ const NoticesPage = () => {
   const [divisions, setDivisions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const editorRef = useRef(null);
 
   const token = localStorage.getItem("token");
   const facultyUsername = localStorage.getItem("username");
@@ -21,6 +22,15 @@ const NoticesPage = () => {
     fetchDivisions();
     fetchNotices();
   }, []);
+
+  useEffect(() => {
+    if (!showForm) return;
+    if (!editorRef.current) return;
+    const nextHtml = noticeContent || "";
+    if (editorRef.current.innerHTML !== nextHtml) {
+      editorRef.current.innerHTML = nextHtml;
+    }
+  }, [showForm, noticeContent, editingId]);
 
   const fetchDivisions = async () => {
     try {
@@ -306,10 +316,11 @@ const NoticesPage = () => {
                   />
                 </div>
                 <div
+                  ref={editorRef}
                   className="editor-content"
                   contentEditable={!loading}
+                  suppressContentEditableWarning
                   onInput={handleEditorInput}
-                  dangerouslySetInnerHTML={{ __html: noticeContent }}
                   data-placeholder="Write your notice here..."
                 />
               </div>

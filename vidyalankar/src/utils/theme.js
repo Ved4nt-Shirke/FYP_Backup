@@ -189,8 +189,9 @@ export const loadAndApplyOfficeTheme = async (college) => {
   return null;
 };
 
-let _autoRefreshAttached = false;
 let _lastAppliedHash = "";
+let _adminThemeIntervalId = null;
+let _adminThemeFocusHandler = null;
 
 const hashPalette = (p) => {
   try {
@@ -204,7 +205,6 @@ const hashPalette = (p) => {
 };
 
 export const attachAdminThemeAutoRefresh = (college) => {
-  // Allow multiple attachments for different roles
   const refresh = async () => {
     const resp = await axios.get("/admin/theme").catch(() => null);
     const pal = resp?.data?.institution?.palette;
@@ -216,9 +216,27 @@ export const attachAdminThemeAutoRefresh = (college) => {
     }
   };
 
-  // Update on tab focus and on a short interval
-  window.addEventListener("focus", refresh);
-  const id = setInterval(refresh, 60000);
-  // Store id if we want to clear later
-  window.__ADMIN_THEME_INTERVAL__ = id;
+  if (_adminThemeFocusHandler) {
+    window.removeEventListener("focus", _adminThemeFocusHandler);
+  }
+
+  if (_adminThemeIntervalId) {
+    clearInterval(_adminThemeIntervalId);
+  }
+
+  _adminThemeFocusHandler = refresh;
+  window.addEventListener("focus", _adminThemeFocusHandler);
+  _adminThemeIntervalId = setInterval(refresh, 60000);
+
+  return () => {
+    if (_adminThemeFocusHandler) {
+      window.removeEventListener("focus", _adminThemeFocusHandler);
+      _adminThemeFocusHandler = null;
+    }
+
+    if (_adminThemeIntervalId) {
+      clearInterval(_adminThemeIntervalId);
+      _adminThemeIntervalId = null;
+    }
+  };
 };

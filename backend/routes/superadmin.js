@@ -38,6 +38,15 @@ const AuditLog = require("../models/AuditLog");
 const { authenticate, authorizeSuperAdmin } = require("../middleware/auth");
 const enhancedSecurity = require("../middleware/enhancedSecurity");
 
+const isDummyInstitutionRecord = (institution) => {
+  const matcher = /dummy|test|demo|sample/i;
+  return (
+    matcher.test(String(institution?.name || "")) ||
+    matcher.test(String(institution?.code || "")) ||
+    matcher.test(String(institution?.adminUsername || ""))
+  );
+};
+
 const institutionLogoDir = path.join(__dirname, "../uploads/institution-logos");
 if (!fs.existsSync(institutionLogoDir)) {
   fs.mkdirSync(institutionLogoDir, { recursive: true });
@@ -62,12 +71,12 @@ const institutionLogoStorage = multer.diskStorage({
 const institutionLogoUpload = multer({
   storage: institutionLogoStorage,
   fileFilter: (req, file, cb) => {
-    const allowed = ["image/png", "image/jpeg"];
+    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
     if (allowed.includes(file.mimetype)) {
       cb(null, true);
       return;
     }
-    cb(new Error("Only PNG and JPEG logos are allowed"));
+    cb(new Error("Only PNG, JPEG/JPG, and WEBP logos are allowed"));
   },
   limits: { fileSize: 2 * 1024 * 1024 },
 });
@@ -776,9 +785,12 @@ router.put(
 router.get("/institutions", async (req, res) => {
   try {
     const institutions = await Institution.find({}, "-adminPassword"); // Exclude password field
+    const filteredInstitutions = institutions.filter(
+      (institution) => !isDummyInstitutionRecord(institution),
+    );
     res.json({
       success: true,
-      institutions,
+      institutions: filteredInstitutions,
     });
   } catch (error) {
     console.error("Error fetching institutions:", error);

@@ -4,18 +4,43 @@ import autoTable from "jspdf-autotable";
 import { config } from "../config/api";
 import "./ManageStudents.css";
 
-// Generate batch options (2024-25 onwards for next 6 years)
-const generateBatchOptions = () => {
-  const options = [];
-  const startYear = 2024;
+const generateBatchOptions = (count = 12) =>
+  Array.from({ length: count }, (_, index) => `Batch ${index + 1}`);
 
-  for (let i = 0; i < 6; i++) {
-    const year = startYear + i;
-    const nextYear = year + 1;
-    const shortYear = nextYear.toString().slice(-2);
-    options.push(`${year}-${shortYear}`);
+const generateAcademicYearOptions = () => {
+  const currentYear = new Date().getFullYear();
+  const startYear = currentYear - 1;
+  return Array.from({ length: 8 }, (_, index) => {
+    const year = startYear + index;
+    return `${year}-${String(year + 1).slice(-2)}`;
+  });
+};
+
+const normalizeBatch = (value) =>
+  (value || "")
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/-/g, "");
+
+const normalizeAcademicYear = (value) => {
+  const raw = (value || "").toString().trim();
+  if (!raw) return "";
+
+  const compact = raw.replace(/\s+/g, "").replace(/\//g, "-");
+  const parts = compact.split("-").filter(Boolean);
+
+  if (parts.length === 2) {
+    const start = parts[0].replace(/\D/g, "");
+    const end = parts[1].replace(/\D/g, "");
+
+    if (start.length === 4 && end.length >= 2) {
+      return `${start}-${end.slice(-2)}`;
+    }
   }
-  return options;
+
+  return compact.toLowerCase();
 };
 
 const ManageStudents = () => {
@@ -32,6 +57,7 @@ const ManageStudents = () => {
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedDivision, setSelectedDivision] = useState("");
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
 
   // Dropdown data
@@ -45,6 +71,7 @@ const ManageStudents = () => {
     studentName: "",
     rollNo: "",
     enrollmentNo: "",
+    academicYear: "",
     batch: "",
     seatNo: "",
     section: "",
@@ -126,6 +153,7 @@ const ManageStudents = () => {
     setSelectedDepartment(deptId);
     setSelectedCourse("");
     setSelectedDivision("");
+    setSelectedAcademicYear("");
     setSelectedBatch("");
     setCourses([]);
     setDivisions([]);
@@ -139,6 +167,7 @@ const ManageStudents = () => {
     const courseId = e.target.value;
     setSelectedCourse(courseId);
     setSelectedDivision("");
+    setSelectedAcademicYear("");
     setSelectedBatch("");
     setDivisions([]);
     setStudents([]);
@@ -149,6 +178,12 @@ const ManageStudents = () => {
 
   const handleDivisionChange = (e) => {
     setSelectedDivision(e.target.value);
+    setStudents([]);
+    setError("");
+  };
+
+  const handleAcademicYearChange = (e) => {
+    setSelectedAcademicYear(e.target.value);
     setStudents([]);
     setError("");
   };
@@ -170,6 +205,8 @@ const ManageStudents = () => {
       if (selectedDepartment) params.append("departmentId", selectedDepartment);
       if (selectedCourse) params.append("courseId", selectedCourse);
       if (selectedDivision) params.append("divisionId", selectedDivision);
+      if (selectedAcademicYear)
+        params.append("academicYear", selectedAcademicYear);
       if (selectedBatch) params.append("batch", selectedBatch.trim());
 
       if (params.toString()) url += `?${params.toString()}`;
@@ -179,6 +216,7 @@ const ManageStudents = () => {
         department: selectedDepartment,
         course: selectedCourse,
         division: selectedDivision,
+        academicYear: selectedAcademicYear,
         batch: selectedBatch,
       });
       console.log("Fetching URL:", url);
@@ -194,6 +232,9 @@ const ManageStudents = () => {
       console.log("Full response data:", data);
       console.log("Is data.students array?", Array.isArray(data.students));
       console.log("Is data.students populated?", data.students?.length);
+      if (data.filterHint) {
+        console.log("Filter hint from server:", data.filterHint);
+      }
 
       // Handle both direct array and object with students property
       let studentList = [];
@@ -209,10 +250,77 @@ const ManageStudents = () => {
       if (studentList.length > 0) {
         console.log("First student:", studentList[0]);
       }
+
+      if (studentList.length === 0 && data.filterHint?.code === "FILTER_MISMATCH") {
+        const relaxedParams = new URLSearchParams(params);
+        relaxedParams.delete("academicYear");
+        relaxedParams.delete("batch");
+
+        if (relaxedParams.toString()) {
+          const relaxedUrl = `${config.office.students}?${relaxedParams.toString()}`;
+          console.log("Retrying with relaxed filters:", relaxedUrl);
+
+          const relaxedRes = await fetch(relaxedUrl, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+
+          const relaxedData = await relaxedRes.json();
+          let relaxedList = [];
+
+          if (Array.isArray(relaxedData)) {
+            relaxedList = relaxedData;
+          } else if (Array.isArray(relaxedData.students)) {
+            relaxedList = relaxedData.students;
+          } else if (Array.isArray(relaxedData.data)) {
+            relaxedList = relaxedData.data;
+          }
+
+          const normalizedSelectedYear = normalizeAcademicYear(selectedAcademicYear);
+          const normalizedSelectedBatch = normalizeBatch(selectedBatch);
+
+          const normalizedMatches = relaxedList.filter((student) => {
+            const studentYear = normalizeAcademicYear(student?.academicYear);
+            const studentBatch = normalizeBatch(student?.batch);
+
+            const yearMatches = normalizedSelectedYear
+              ? studentYear === normalizedSelectedYear
+              : true;
+            const batchMatches = normalizedSelectedBatch
+              ? studentBatch === normalizedSelectedBatch
+              : true;
+
+            return yearMatches && batchMatches;
+          });
+
+          if (normalizedMatches.length > 0) {
+            setStudents(normalizedMatches);
+            setSuccess(
+              `Applied normalized matching and found ${normalizedMatches.length} student(s) for selected filters.`,
+            );
+            setTimeout(() => setSuccess(""), 2500);
+            return;
+          }
+
+          if (relaxedList.length > 0) {
+            setError(
+              `No exact/normalized match for Academic Year \"${selectedAcademicYear}\" and Batch \"${selectedBatch}\". Please verify uploaded values. ${relaxedList.length} students exist for selected Department/Course/Division.`,
+            );
+            setStudents([]);
+            return;
+          }
+        }
+      }
+
       setStudents(studentList);
 
       if (studentList.length === 0) {
-        setError("No students found for the selected filters.");
+        if (data.filterHint?.code === "FILTER_MISMATCH") {
+          setError(
+            "Students exist for selected Department/Course/Division, but Batch or Academic Year does not match uploaded data. Please clear Batch/Academic Year and try again.",
+          );
+        } else {
+          setError("No students found for the selected filters.");
+        }
       }
     } catch (err) {
       console.error("Failed to fetch students", err);
@@ -236,6 +344,7 @@ const ManageStudents = () => {
     setSelectedDepartment("");
     setSelectedCourse("");
     setSelectedDivision("");
+    setSelectedAcademicYear("");
     setSelectedBatch("");
     setFilterSearch("");
     setCourses([]);
@@ -265,6 +374,7 @@ const ManageStudents = () => {
       !editData.studentName?.trim() ||
       !editData.rollNo?.trim() ||
       !editData.enrollmentNo?.trim() ||
+      !editData.academicYear?.trim() ||
       !editData.batch?.trim()
     ) {
       setError("All required fields must be filled.");
@@ -286,6 +396,7 @@ const ManageStudents = () => {
           rollNo: editData.rollNo.trim(),
           enrollmentNo: editData.enrollmentNo.trim(),
           studentName: editData.studentName.trim(),
+          academicYear: editData.academicYear.trim(),
           batch: editData.batch.trim(),
           division: editData.division?.trim() || "",
           aadhaarNo: editData.aadhaarNo?.trim() || "",
@@ -323,12 +434,13 @@ const ManageStudents = () => {
       !newStudent.studentName?.trim() ||
       !newStudent.rollNo?.trim() ||
       !newStudent.enrollmentNo?.trim() ||
+      !newStudent.academicYear?.trim() ||
       !newStudent.batch?.trim() ||
       !selectedDepartment ||
       !selectedCourse ||
       !selectedDivision
     ) {
-      setError("All required fields (Name, Roll No, Enrollment No, Batch, Department, Course, Division) must be filled.");
+      setError("All required fields (Name, Roll No, Enrollment No, Academic Year, Batch, Department, Course, Division) must be filled.");
       return;
     }
 
@@ -361,6 +473,7 @@ const ManageStudents = () => {
         studentName: "",
         rollNo: "",
         enrollmentNo: "",
+        academicYear: "",
         batch: "",
         seatNo: "",
         section: "",
@@ -370,7 +483,7 @@ const ManageStudents = () => {
 
       // Refresh student list
       setTimeout(() => {
-        if (selectedDepartment && selectedCourse && selectedDivision && selectedBatch) {
+        if (selectedDepartment && selectedCourse && selectedDivision) {
           fetchStudents();
         }
       }, 500);
@@ -392,16 +505,23 @@ const ManageStudents = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await fetch(`${config.students}/${deleteConfirmId}`, {
+      const res = await fetch(config.office.deleteStudent(deleteConfirmId), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Failed to delete student");
+      const data = await res.json();
 
-      setSuccess(`"${deleteConfirmName}" deleted successfully.`);
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to remove student");
+      }
+
+      setSuccess(
+        `"${deleteConfirmName}" removed successfully. Login credentials are revoked.`,
+      );
       setStudents(students.filter((s) => s._id !== deleteConfirmId));
       setDeleteConfirmId(null);
+      setDeleteConfirmName("");
 
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
@@ -491,11 +611,17 @@ const ManageStudents = () => {
 
   // Client-side search filter
   const filteredStudents = students.filter((student) => {
-    const term = filterSearch.toLowerCase();
+    const term = (filterSearch || "").toLowerCase().trim();
+    const studentName = (student.studentName || "").toString().toLowerCase();
+    const rollNo = (student.rollNo || "").toString().toLowerCase();
+    const enrollmentNo = (student.enrollmentNo || "").toString().toLowerCase();
+
+    if (!term) return true;
+
     return (
-      student.studentName?.toLowerCase().includes(term) ||
-      student.rollNo?.toLowerCase().includes(term) ||
-      student.enrollmentNo?.toLowerCase().includes(term)
+      studentName.includes(term) ||
+      rollNo.includes(term) ||
+      enrollmentNo.includes(term)
     );
   });
 
@@ -578,6 +704,24 @@ const ManageStudents = () => {
                   }
                   disabled={loading}
                 />
+              </div>
+
+              <div className="form-row">
+                <label>Academic Year <span className="required">*</span></label>
+                <select
+                  value={newStudent.academicYear}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, academicYear: e.target.value })
+                  }
+                  disabled={loading}
+                >
+                  <option value="">-- Select Academic Year --</option>
+                  {generateAcademicYearOptions().map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-row">
@@ -713,6 +857,22 @@ const ManageStudents = () => {
           </div>
 
           <div className="form-row">
+            <label>Academic Year</label>
+            <select
+              value={selectedAcademicYear}
+              onChange={handleAcademicYearChange}
+              disabled={loading}
+            >
+              <option value="">-- Select Academic Year --</option>
+              {generateAcademicYearOptions().map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-row">
             <label>Batch</label>
             <select
               value={selectedBatch}
@@ -792,6 +952,7 @@ const ManageStudents = () => {
                   <th>Enrollment No</th>
                   <th>Name</th>
                   <th>Username</th>
+                  <th>Year</th>
                   <th>Batch</th>
                   <th>Division</th>
                   <th>Aadhaar</th>
@@ -843,6 +1004,21 @@ const ManageStudents = () => {
                         </td>
                         <td>
                           <select
+                            value={editData.academicYear || ""}
+                            onChange={(e) =>
+                              handleEditChange("academicYear", e.target.value)
+                            }
+                          >
+                            <option value="">-- Select Year --</option>
+                            {generateAcademicYearOptions().map((year) => (
+                              <option key={year} value={year}>
+                                {year}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <select
                             value={editData.batch || ""}
                             onChange={(e) =>
                               handleEditChange("batch", e.target.value)
@@ -861,6 +1037,14 @@ const ManageStudents = () => {
                             value={editData.division || ""}
                             onChange={(e) =>
                               handleEditChange("division", e.target.value)
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            value={editData.aadhaarNo || ""}
+                            onChange={(e) =>
+                              handleEditChange("aadhaarNo", e.target.value)
                             }
                           />
                         </td>
@@ -900,6 +1084,7 @@ const ManageStudents = () => {
                             </button>
                           )}
                         </td>
+                        <td>{student.academicYear || "—"}</td>
                         <td>{student.batch}</td>
                         <td>{student.division || "—"}</td>
                         <td>{student.aadhaarMasked || "—"}</td>
@@ -915,7 +1100,7 @@ const ManageStudents = () => {
                               className="btn-delete"
                               onClick={() => handleDeleteConfirm(student)}
                             >
-                              Delete
+                              Remove
                             </button>
                           </div>
                         </td>
@@ -959,12 +1144,15 @@ const ManageStudents = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Confirm Deletion</h2>
             <p>
-              Delete <strong>{deleteConfirmName}</strong>?
+              Remove <strong>{deleteConfirmName}</strong>?
             </p>
-            <p className="warning">This action cannot be undone.</p>
+            <p className="warning">
+              This action cannot be undone. Student login credentials will stop
+              working immediately.
+            </p>
             <div className="modal-buttons">
               <button className="btn-delete" onClick={handleDeleteConfirmed}>
-                Delete
+                Remove
               </button>
               <button
                 className="btn-cancel"

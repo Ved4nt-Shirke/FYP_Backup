@@ -73,6 +73,90 @@ export const ciannUtils = {
     }
   },
 
+  // Share CIANN with another user
+  shareCiann: async (ciannId, username, permission) => {
+    try {
+      const response = await axios.post(
+        `${CIANN_URL}/${ciannId}/share`,
+        { username, permission },
+        { headers: authHeaders() },
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error sharing CIANN ${ciannId}:`, error);
+      throw error;
+    }
+  },
+
+  // Request access to an existing CIANN by CIANN ID
+  requestCiannAccess: async (ciannId, permission = "read") => {
+    try {
+      const response = await axios.post(
+        `${CIANN_URL}/${ciannId}/request-access`,
+        { permission },
+        { headers: authHeaders() },
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error requesting access for CIANN ${ciannId}:`, error);
+      throw error;
+    }
+  },
+
+  // Get incoming share requests for CIANNs owned by current user
+  getIncomingShareRequests: async () => {
+    try {
+      const response = await axios.get(`${CIANN_URL}/share-requests/incoming`, {
+        headers: authHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching incoming share requests:", error);
+      throw error;
+    }
+  },
+
+  // Respond to a share request (owner action)
+  respondToShareRequest: async (ciannId, requestId, action) => {
+    try {
+      const response = await axios.post(
+        `${CIANN_URL}/${ciannId}/share-requests/${requestId}/respond`,
+        { action },
+        { headers: authHeaders() },
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error responding to request ${requestId} for CIANN ${ciannId}:`, error);
+      throw error;
+    }
+  },
+
+  // Get all share entries for a CIANN
+  getCiannShares: async (ciannId) => {
+    try {
+      const response = await axios.get(`${CIANN_URL}/${ciannId}/shares`, {
+        headers: authHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching shares for CIANN ${ciannId}:`, error);
+      throw error;
+    }
+  },
+
+  // Remove a share entry from a CIANN
+  removeCiannShare: async (ciannId, userId) => {
+    try {
+      const response = await axios.delete(`${CIANN_URL}/${ciannId}/share/${userId}`, {
+        headers: authHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error removing CIANN share for ${ciannId}:`, error);
+      throw error;
+    }
+  },
+
   // Get CIANN from localStorage
   getCiannFromStorage: () => {
     try {

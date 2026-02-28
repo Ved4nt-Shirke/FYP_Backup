@@ -18,15 +18,11 @@ import Dashboard from "./components/Dashboard";
 import StudentLayout from "./student/StudentLayout";
 import StudentDashboard from "./student/StudentDashboard";
 import StudyMaterial from "./student/StudyMaterial";
-import ElibraryCoursewise from "./student/ElibraryCoursewise";
-import ElibrarySearch from "./student/ElibrarySearch";
-import MockTestExamList from "./student/MockTestExamList";
-import MockTestExamResult from "./student/MockTestExamResult";
 import Results from "./student/Results";
 import Notices from "./student/Notices";
-import Exams from "./student/Exams";
 import StudentPracticalExamList from "./student/StudentPracticalExamList";
 import StudentPracticalExamUpload from "./student/StudentPracticalExamUpload";
+import StudentTimetable from "./student/StudentTimetable";
 
 // CIANN / Edit CIANN Components
 import CreateCiann from "./components/CreateCiann";
@@ -38,6 +34,7 @@ import Syllabus from "./editCiann/Syllabus";
 import LabPlanningSheet from "./editCiann/LabPlanningSheet";
 import TeachingPlanSheet from "./editCiann/TeachingPlanSheet";
 import Studentlist from "./editCiann/studentlist";
+import PrintCiann from "./editCiann/PrintCiann";
 
 // Subject Details
 import SubjectDetails from "./SubjectDetails/SubjectDetails";
@@ -133,6 +130,7 @@ import OfficeHeader from "./office/OfficeHeader";
 
 // Assessment Components
 import SummaryCards from "./components/SummaryCards";
+import AttendanceSummaryCards from "./components/AttendanceSummaryCards";
 import SummaryPage from "./components/SummaryPage";
 import AssismentCiaanCards from "./Assessment/assess/assismentCiaan";
 import AssessBatchSelect from "./Assessment/assess/assessBatchselect";
@@ -180,6 +178,8 @@ import SAPRK4Print from "./pages/msbte/SAPRK4Print";
 import FATHK5CiannCards from "./pages/msbte/FATHK5CiannCards";
 import FATHK5Print from "./pages/msbte/FATHK5Print";
 import AttendanceReport from "./pages/msbte/AttendanceReport";
+import StudentTimetableManager from "./pages/faculty/StudentTimetableManager";
+import FacultyStudyMaterialManager from "./pages/faculty/FacultyStudyMaterialManager";
 
 // CT / PT / Course Components
 import CTCiannCards from "./CT/CTCiannCards";
@@ -288,6 +288,7 @@ const AppContent = () => {
       "view-attend2",
       "view-practical3",
       "summary-pages",
+      "edit-ciann-print",
     ].some((p) => location.pathname.includes(p));
 
     if (!token && !isLoginPage && !isPublicPage) {
@@ -343,8 +344,20 @@ const AppContent = () => {
       "/view-extra-theory-attend2",
       "/view-tutorial-attendance2",
       "/summary-pages",
+      "/edit-ciann-print",
     ].includes(location.pathname) ||
     location.pathname.match(/^\/public\/practical-exam\/.*/);
+
+  const showGlobalSecondaryToggle = [
+    "/course-diary",
+    "/course-diary2",
+    "/timetable",
+    "/syllabus",
+    "/teaching-plan",
+    "/laboratory-plan",
+    "/student-list",
+    "/subject-details",
+  ].some((path) => location.pathname.startsWith(path));
 
   if (isSpecialPage) {
     return (
@@ -362,6 +375,7 @@ const AppContent = () => {
         />
         <Route path="/view-tutorial-attendance2" element={<ViewT2 />} />
         <Route path="/summary-pages" element={<SummaryPage />} />
+        <Route path="/edit-ciann-print" element={<PrintCiann />} />
         <Route
           path="/public/practical-exam/:publicLink"
           element={<PublicPracticalExam />}
@@ -378,22 +392,12 @@ const AppContent = () => {
           <Route path="/" element={<StudentLayout />}>
             <Route path="dashboard" element={<StudentDashboard />} />
             <Route path="study-material" element={<StudyMaterial />} />
-            <Route
-              path="elibrary/coursewise"
-              element={<ElibraryCoursewise />}
-            />
-            <Route path="elibrary/search" element={<ElibrarySearch />} />
-            <Route path="mock-test/exam-list" element={<MockTestExamList />} />
-            <Route
-              path="mock-test/exam-result"
-              element={<MockTestExamResult />}
-            />
-            <Route path="mock-test/exams" element={<Exams />} />
             <Route path="practical-exams" element={<StudentPracticalExamList />} />
             <Route
               path="practical-exam-upload/:examId"
               element={<StudentPracticalExamUpload />}
             />
+            <Route path="timetable" element={<StudentTimetable />} />
             <Route path="results" element={<Results />} />
             <Route path="notices" element={<Notices />} />
           </Route>
@@ -440,6 +444,15 @@ const AppContent = () => {
       ) : userRole !== "admin" ? (
         <Header
           onMenuToggle={handleMenuToggle}
+          onSecondaryMenuToggle={
+            showGlobalSecondaryToggle
+              ? () => {
+                  window.dispatchEvent(
+                    new CustomEvent("faculty:toggle-secondary-sidebar"),
+                  );
+                }
+              : undefined
+          }
           showUserDropdown={showUserDropdown}
           setShowUserDropdown={setShowUserDropdown}
           userDropdownRef={userDropdownRef}
@@ -473,6 +486,14 @@ const AppContent = () => {
             <Route path="/course-diary" element={<CourseDiary />} />
             <Route path="/course-diary2" element={<CourseDiary2 />} />
             <Route path="/timetable" element={<TimeTable />} />
+            <Route
+              path="/faculty/student-timetable"
+              element={<StudentTimetableManager />}
+            />
+            <Route
+              path="/faculty/study-material"
+              element={<FacultyStudyMaterialManager />}
+            />
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/laboratory-plan" element={<LabPlanningSheet />} />
             <Route path="/teaching-plan" element={<TeachingPlanSheet />} />
@@ -620,6 +641,10 @@ const AppContent = () => {
             <Route path="/view-tutorial-attendance" element={<ViewT1 />} />
             {/* Assessment Routes */}
             <Route path="/summary-cards" element={<SummaryCards />} />
+            <Route
+              path="/attendance-summary-cards"
+              element={<AttendanceSummaryCards />}
+            />
             <Route path="/assess-ciann" element={<AssismentCiaanCards />} />
             <Route
               path="/assess-batch-select"

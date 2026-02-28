@@ -45,30 +45,40 @@
 }
 
 .course-card {
-  background: var(--admin-bg-card);
+  background: #ffffff;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-lg);
-  padding: var(--admin-space-lg);
-  box-shadow: var(--admin-shadow-sm);
+  padding: var(--admin-space-xl);
+  box-shadow: var(--admin-shadow-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.course-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-lg);
 }
 
 .course-card-header {
   display: flex;
   flex-direction: column;
-  gap: var(--admin-space-sm);
+  gap: var(--admin-space-md);
   margin-bottom: var(--admin-space-lg);
+  padding-bottom: var(--admin-space-md);
+  border-bottom: 1px solid var(--admin-border-light);
 }
 
 .course-card-header h3 {
   margin: 0;
-  font-size: var(--admin-text-lg);
+  font-size: var(--admin-text-xl);
+  font-weight: var(--admin-font-bold);
   color: var(--admin-text-primary);
 }
 
 .course-meta {
-  margin: 4px 0 0;
+  margin: 0;
   font-size: var(--admin-text-sm);
   color: var(--admin-text-secondary);
+  font-weight: var(--admin-font-medium);
 }
 
 .course-card-header input {
@@ -94,22 +104,36 @@
   display: flex;
   gap: var(--admin-space-sm);
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .btn-ghost {
-  background: transparent;
+  background: #ffffff;
   border: 1px solid var(--admin-border);
-  color: var(--admin-text-secondary);
-  padding: 6px 10px;
+  color: var(--admin-text-primary);
+  padding: 8px 12px;
   border-radius: var(--admin-radius-md);
+  font-weight: var(--admin-font-medium);
+}
+
+.btn-ghost:hover {
+  background: var(--admin-bg-secondary);
+  border-color: var(--admin-primary);
+  color: var(--admin-primary-dark);
 }
 
 .btn-danger-outline {
-  background: transparent;
+  background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.45);
   color: #ef4444;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: var(--admin-radius-md);
+  font-weight: var(--admin-font-semibold);
+}
+
+.btn-danger-outline:hover {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.75);
 }
 
 .division-section {
@@ -137,9 +161,10 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--admin-space-sm);
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-radius: var(--admin-radius-md);
-  background: var(--admin-bg-secondary);
+  background: #f8fafc;
+  border: 1px solid var(--admin-border-light);
 }
 
 .division-item input {
@@ -162,6 +187,17 @@
   border: 1px solid var(--admin-border);
 }
 
+.course-add-row input:focus,
+.course-add-row select:focus,
+.course-card-header input:focus,
+.course-edit-grid select:focus,
+.division-item input:focus,
+.division-add-row input:focus {
+  outline: none;
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
 @media (max-width: 720px) {
   .course-add-row,
   .division-add-row,
@@ -170,4 +206,45 @@
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+/* Page-scoped overrides to prevent global .course-card styles leaking here */
+.department-courses-page .course-card {
+  background: #ffffff !important;
+  color: var(--admin-text-primary) !important;
+  border: 1px solid var(--admin-border) !important;
+}
+
+.department-courses-page .course-card:hover {
+  background: #ffffff !important;
+}
+
+.department-courses-page .course-card h3 {
+  color: var(--admin-text-primary) !important;
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.department-courses-page .course-card li {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+.department-courses-page .course-meta {
+  color: var(--admin-text-secondary) !important;
+}
+
+.department-courses-page .division-section,
+.department-courses-page .division-header,
+.department-courses-page .division-list,
+.department-courses-page .division-item,
+.department-courses-page .division-add-row,
+.department-courses-page .division-add-row input {
+  color: var(--admin-text-primary);
+}
+
+.department-courses-page .division-item {
+  background: #f8fafc !important;
+  border: 1px solid var(--admin-border-light) !important;
 }

@@ -16,6 +16,7 @@ const CreateInstitution = () => {
   const [createdInstitution, setCreatedInstitution] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [copiedField, setCopiedField] = useState("");
   const [palette, setPalette] = useState(DEFAULT_PALETTE);
   const [logoFile, setLogoFile] = useState(null);
 
@@ -130,17 +131,26 @@ const CreateInstitution = () => {
     }
   };
 
-  const copyToClipboard = (text) => {
-    if (!navigator?.clipboard) {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      return;
+  const copyToClipboard = async (fieldKey, text) => {
+    try {
+      if (!navigator?.clipboard) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      } else {
+        await navigator.clipboard.writeText(text);
+      }
+
+      setCopiedField(fieldKey);
+      window.setTimeout(() => {
+        setCopiedField((prev) => (prev === fieldKey ? "" : prev));
+      }, 1500);
+    } catch {
+      setError("Unable to copy right now. Please copy manually.");
     }
-    navigator.clipboard.writeText(text);
   };
 
   const resetForm = () => {
@@ -222,6 +232,7 @@ const CreateInstitution = () => {
                   </div>
 
                   <div className="credentials-display">
+                    <div className="credentials-title">Institution Credentials</div>
                     <div className="credential-row">
                       <div className="credential-label">Name</div>
                       <div className="credential-box">
@@ -249,28 +260,50 @@ const CreateInstitution = () => {
                     <div className="credential-row">
                       <div className="credential-label">Admin Username</div>
                       <div className="credential-box">
-                        <span>{createdInstitution.adminUsername}</span>
+                        <span className="credential-value">
+                          {createdInstitution.adminUsername}
+                        </span>
                         <button
-                          className="btn btn-sm btn-outline"
+                          className="credential-copy-btn"
+                          type="button"
+                          title="Copy admin username"
+                          aria-label="Copy admin username"
                           onClick={() =>
-                            copyToClipboard(createdInstitution.adminUsername)
+                            copyToClipboard(
+                              "adminUsername",
+                              createdInstitution.adminUsername,
+                            )
                           }
                         >
-                          <i className="fas fa-copy" />
+                          <i className="fas fa-copy" aria-hidden="true" />
+                          <span>
+                            {copiedField === "adminUsername" ? "Copied" : "Copy"}
+                          </span>
                         </button>
                       </div>
                     </div>
                     <div className="credential-row">
                       <div className="credential-label">Admin Password</div>
                       <div className="credential-box">
-                        <span>{createdInstitution.adminPassword}</span>
+                        <span className="credential-value">
+                          {createdInstitution.adminPassword}
+                        </span>
                         <button
-                          className="btn btn-sm btn-outline"
+                          className="credential-copy-btn"
+                          type="button"
+                          title="Copy admin password"
+                          aria-label="Copy admin password"
                           onClick={() =>
-                            copyToClipboard(createdInstitution.adminPassword)
+                            copyToClipboard(
+                              "adminPassword",
+                              createdInstitution.adminPassword,
+                            )
                           }
                         >
-                          <i className="fas fa-copy" />
+                          <i className="fas fa-copy" aria-hidden="true" />
+                          <span>
+                            {copiedField === "adminPassword" ? "Copied" : "Copy"}
+                          </span>
                         </button>
                       </div>
                     </div>

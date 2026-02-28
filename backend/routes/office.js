@@ -12,6 +12,12 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { authenticate, authorizeOffice } = require("../middleware/auth");
 
+const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const institutionFilter = (institutionCode = "") => ({
+  $regex: new RegExp(`^${escapeRegex(String(institutionCode || "").trim())}$`, "i"),
+});
+
 // ============================================
 // OFFICE STAFF ENDPOINTS - All require auth
 // ============================================
@@ -88,7 +94,7 @@ router.get(
  */
 router.get("/students", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const { batch, division, departmentId, courseId, divisionId } = req.query;
+    const { batch, division, departmentId, courseId, divisionId, academicYear } = req.query;
     let query = {};
 
     if (batch) {
@@ -106,6 +112,9 @@ router.get("/students", authenticate, authorizeOffice, async (req, res) => {
     if (divisionId) {
       query.divisionId = divisionId;
     }
+    if (academicYear) {
+      query.academicYear = academicYear;
+    }
 
     const students = await Student.find(query)
       .populate("departmentId", "name code")
@@ -116,6 +125,50 @@ router.get("/students", authenticate, authorizeOffice, async (req, res) => {
   } catch (err) {
     console.error("Error fetching office students:", err);
     res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * DELETE /api/office/students
+ * Clear students (and associated user accounts) with optional filters
+ * Auth: Office staff or admin
+ * Body: { departmentId?, courseId?, divisionId?, batch? }
+ */
+router.delete("/students", authenticate, authorizeOffice, async (req, res) => {
+  try {
+    const { departmentId, courseId, divisionId, batch, academicYear } = req.body || {};
+    const query = {};
+
+    if (departmentId) query.departmentId = departmentId;
+    if (courseId) query.courseId = courseId;
+    if (divisionId) query.divisionId = divisionId;
+    if (batch) query.batch = batch;
+    if (academicYear) query.academicYear = academicYear;
+
+    const matchedStudents = await Student.find(query).select("username");
+    const usernames = matchedStudents
+      .map((student) => student.username)
+      .filter(Boolean);
+
+    const studentDeleteResult = await Student.deleteMany(query);
+    let deletedUsers = 0;
+
+    if (usernames.length > 0) {
+      const userDeleteResult = await User.deleteMany({
+        username: { $in: usernames },
+      });
+      deletedUsers = userDeleteResult.deletedCount || 0;
+    }
+
+    return res.json({
+      success: true,
+      deletedStudents: studentDeleteResult.deletedCount || 0,
+      deletedUsers,
+      message: "Student database cleared successfully",
+    });
+  } catch (error) {
+    console.error("Clear student DB error:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
 
@@ -164,7 +217,10 @@ router.get("/batches", authenticate, authorizeOffice, async (req, res) => {
  */
 router.get("/departments", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const departments = await Department.find({})
+    const institution = String(req.user?.college || "").trim();
+    const departments = await Department.find({
+      institution: institutionFilter(institution),
+    })
       .sort({ name: 1 })
       .select("_id name code");
 
@@ -190,8 +246,10 @@ router.get(
   async (req, res) => {
     try {
       const { departmentId } = req.params;
+      const institution = String(req.user?.college || "").trim();
 
       const courses = await Course.find({ departmentId })
+        .find({ institution: institutionFilter(institution) })
         .sort({ semester: 1, courseCode: 1 })
         .select("_id semester scheme courseCode departmentId");
 
@@ -218,8 +276,10 @@ router.get(
   async (req, res) => {
     try {
       const { courseId } = req.params;
+      const institution = String(req.user?.college || "").trim();
 
       const divisions = await Division.find({ courseId })
+        .find({ institution: institutionFilter(institution) })
         .sort({ name: 1 })
         .select("_id name courseId departmentId");
 
@@ -372,7 +432,7 @@ router.get("/student/:id", authenticate, authorizeOffice, async (req, res) => {
  */
 router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const { students, batch, departmentId, courseId, divisionId, batchAllocations } = req.body;
+    const { students, batch, departmentId, courseId, divisionId, batchAllocations, academicYear } = req.body;
 
     if (!Array.isArray(students) || students.length === 0) {
       return res.status(400).json({
@@ -543,6 +603,7 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
           enrollmentNo,
           studentName,
           batch: assignedBatch,
+          academicYear: (academicYear || "").toString().trim(),
           division: division.name, // Store division name for backward compatibility
           departmentId,
           courseId,
@@ -602,7 +663,9 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
       enrollmentNo,
       studentName,
       batch,
+      academicYear,
       division,
+      aadhaarNo,
       departmentId,
       courseId,
       divisionId,
@@ -620,7 +683,9 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
       enrollmentNo,
       studentName,
       batch,
+      academicYear: (academicYear || "").toString().trim(),
       division: division || "",
+      aadhaarNo: (aadhaarNo || "").toString().trim(),
     };
 
     // If new department/course/division IDs are provided, validate and update them

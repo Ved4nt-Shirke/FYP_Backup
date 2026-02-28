@@ -9,9 +9,9 @@ const ctMarksSchema = new mongoose.Schema({
   studentName: { type: String, required: true },
   rollNo: { type: String, required: false },
 
-  // Marks (typically out of 20 for CT)
-  marks: { type: Number, required: true, min: 0, max: 20 },
-  totalMarks: { type: Number, default: 20 }, // Maximum marks for the CT
+  // Marks (typically out of 20 for CT, but can be customized)
+  marks: { type: Number, required: true, min: 0, max: 100 }, // Allow up to 100 to be flexible with totalMarks
+  totalMarks: { type: Number, default: 20 }, // Maximum marks for the CT (can be customized)
 
   // Context (to allow correct loading per CIANN/Course)
   program: { type: String, required: false },

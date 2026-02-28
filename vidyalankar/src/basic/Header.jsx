@@ -7,6 +7,7 @@ import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
 } from "../utils/institutionBranding";
+import { ciannUtils } from "../utils/ciannUtils";
 import "./Header.css";
 
 const Header = ({
@@ -34,6 +35,7 @@ const Header = ({
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [pendingCiannRequests, setPendingCiannRequests] = useState(0);
   const searchRef = useRef(null);
   const searchTimeoutRef = useRef(null);
 
@@ -202,11 +204,29 @@ const Header = ({
   const isSuperAdmin = userRole === "superadmin";
   const isFaculty = userRole === "faculty";
 
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      if (!isFaculty) {
+        setPendingCiannRequests(0);
+        return;
+      }
+
+      try {
+        const response = await ciannUtils.getIncomingShareRequests();
+        setPendingCiannRequests(Array.isArray(response?.incoming) ? response.incoming.length : 0);
+      } catch (error) {
+        setPendingCiannRequests(0);
+      }
+    };
+
+    fetchPendingRequests();
+  }, [isFaculty]);
+
   // Test dropdown state
   const [showTestDropdown, setShowTestDropdown] = useState(false);
 
   return (
-    <div className="header">
+    <div className={`header ${onSecondaryMenuToggle ? "has-secondary-toggle" : ""}`}>
       <div className="header-left">
         {/* This button's onClick calls the function passed from App.jsx */}
         <button className="menu-toggle" onClick={onMenuToggle}>
@@ -217,6 +237,7 @@ const Header = ({
           <button
             className="secondary-menu-toggle"
             onClick={onSecondaryMenuToggle}
+            aria-label="Toggle secondary sidebar"
           >
             <i className="bi bi-layout-sidebar"></i>
           </button>
@@ -295,6 +316,18 @@ const Header = ({
         </div>
       )}
       <div className="header-right">
+        {isFaculty && (
+          <button
+            className="ciann-request-bell"
+            title={`Pending CIANN requests: ${pendingCiannRequests}`}
+            onClick={() => navigate("/edit-ciann")}
+          >
+            <i className="bi bi-bell"></i>
+            {pendingCiannRequests > 0 && (
+              <span className="header-notification-badge">{pendingCiannRequests}</span>
+            )}
+          </button>
+        )}
         {isFaculty && (
           <button className="faculty-logout-button" onClick={handleLogout}>
             <i className="bi bi-box-arrow-right"></i>

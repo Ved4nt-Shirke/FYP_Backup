@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Ciann = require("../models/Ciann");
 const Faculty = require("../models/Faculty");
+const User = require("../models/user");
 const { authenticate } = require("../middleware/auth");
 
 // All CIANN routes require authentication to scope data per faculty
@@ -24,7 +25,9 @@ function buildScopedFilter(user) {
   if (!user) return {};
 
   if (user.role === "faculty" || user.role === "office") {
-    return { owner: user._id };
+    return {
+      $or: [{ owner: user._id }, { "sharedWith.user": user._id }],
+    };
   }
 
   if (user.role === "admin") {
@@ -37,18 +40,377 @@ function buildScopedFilter(user) {
   return {};
 }
 
-// Helper: ensure the current user can access the CIANN
-function ensureAccess(ciann, user) {
-  if (!ciann || !user) return false;
+function getSharedPermission(ciann, user) {
+  if (!ciann || !user || !Array.isArray(ciann.sharedWith)) return null;
+  const entry = ciann.sharedWith.find(
+    (share) => share?.user?.toString() === user._id.toString(),
+  );
+  return entry?.permission || null;
+}
 
-  if (user.role === "superadmin") return true;
+// Request access to a CIANN by ciannId (for non-owners)
+router.post("/:ciannId/request-access", async (req, res) => {
+  try {
+    const numericCiannId = parseInt(req.params.ciannId);
+    const permission = (req.body?.permission || "read").toString().trim().toLowerCase();
+
+    if (isNaN(numericCiannId)) {
+      return res.status(400).json({ message: "Invalid ciannId format" });
+    }
+
+    if (!["read", "edit"].includes(permission)) {
+      return res.status(400).json({ message: "permission must be read or edit" });
+    }
+
+    const ciann = await Ciann.findOne({ ciannId: numericCiannId });
+    if (!ciann) {
+      return res.status(404).json({ message: "CIANN not found" });
+    }
+
+    if (ciann.owner?.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: "Owner already has full access" });
+    }
+
+    const alreadyShared = (ciann.sharedWith || []).some(
+      (share) => share.user?.toString() === req.user._id.toString(),
+    );
+    if (alreadyShared) {
+      return res.status(400).json({ message: "You already have access to this CIANN" });
+    }
+
+    if (
+      req.user.role !== "superadmin" &&
+      ciann.college &&
+      req.user.college !== ciann.college
+    ) {
+      return res.status(400).json({ message: "Cannot request CIANN access across colleges" });
+    }
+
+    const pendingIndex = (ciann.shareRequests || []).findIndex(
+      (request) =>
+        request.requester?.toString() === req.user._id.toString() &&
+        request.status === "pending",
+    );
+
+    if (pendingIndex >= 0) {
+      ciann.shareRequests[pendingIndex].permission = permission;
+      ciann.shareRequests[pendingIndex].requestedAt = new Date();
+    } else {
+      ciann.shareRequests.push({
+        requester: req.user._id,
+        permission,
+        status: "pending",
+        requestedAt: new Date(),
+      });
+    }
+
+    await ciann.save();
+
+    return res.status(200).json({
+      message: "Access request sent to CIANN owner",
+      ciannId: ciann.ciannId,
+      requestedPermission: permission,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+// Get pending incoming share requests for CIANNs owned by current user
+router.get("/share-requests/incoming", async (req, res) => {
+  try {
+    const requests = await Ciann.find({
+      owner: req.user._id,
+      "shareRequests.status": "pending",
+    })
+      .select("ciannId subject division shareRequests")
+      .populate("shareRequests.requester", "username role college");
+
+    const incoming = [];
+    requests.forEach((ciann) => {
+      (ciann.shareRequests || []).forEach((request) => {
+        if (request.status === "pending") {
+          incoming.push({
+            requestId: request._id,
+            ciannId: ciann.ciannId,
+            subject: ciann.subject,
+            division: ciann.division,
+            requester: {
+              userId: request.requester?._id,
+              username: request.requester?.username,
+              role: request.requester?.role,
+              college: request.requester?.college,
+            },
+            permission: request.permission,
+            requestedAt: request.requestedAt,
+          });
+        }
+      });
+    });
+
+    return res.status(200).json({ incoming });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+// Owner accepts or rejects a share request
+router.post("/:ciannId/share-requests/:requestId/respond", async (req, res) => {
+  try {
+    const numericCiannId = parseInt(req.params.ciannId);
+    const { requestId } = req.params;
+    const action = (req.body?.action || "").toString().trim().toLowerCase();
+
+    if (isNaN(numericCiannId)) {
+      return res.status(400).json({ message: "Invalid ciannId format" });
+    }
+
+    if (!["accept", "reject"].includes(action)) {
+      return res.status(400).json({ message: "action must be accept or reject" });
+    }
+
+    const ciann = await Ciann.findOne({ ciannId: numericCiannId }).populate(
+      "shareRequests.requester",
+      "username role college",
+    );
+
+    if (!ciann) {
+      return res.status(404).json({ message: "CIANN not found" });
+    }
+
+    if (!ensureAccess(ciann, req.user, "owner")) {
+      return res.status(403).json({ message: "Only owner can respond to share requests" });
+    }
+
+    const request = (ciann.shareRequests || []).find(
+      (item) => item._id?.toString() === requestId,
+    );
+
+    if (!request) {
+      return res.status(404).json({ message: "Share request not found" });
+    }
+
+    if (request.status !== "pending") {
+      return res.status(400).json({ message: "This request has already been processed" });
+    }
+
+    request.status = action === "accept" ? "accepted" : "rejected";
+    request.respondedAt = new Date();
+    request.respondedBy = req.user._id;
+
+    if (action === "accept") {
+      const requesterId = request.requester?._id?.toString() || request.requester?.toString();
+      const existingShareIndex = (ciann.sharedWith || []).findIndex(
+        (share) => share.user?.toString() === requesterId,
+      );
+
+      if (existingShareIndex >= 0) {
+        ciann.sharedWith[existingShareIndex].permission = request.permission;
+        ciann.sharedWith[existingShareIndex].sharedBy = req.user._id;
+        ciann.sharedWith[existingShareIndex].sharedAt = new Date();
+      } else {
+        ciann.sharedWith.push({
+          user: requesterId,
+          permission: request.permission,
+          sharedBy: req.user._id,
+          sharedAt: new Date(),
+        });
+      }
+    }
+
+    await ciann.save();
+
+    return res.status(200).json({
+      message: action === "accept" ? "Share request accepted" : "Share request rejected",
+      ciannId: ciann.ciannId,
+      requestId,
+      status: request.status,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+// Get shares for a CIANN (owner/admin/superadmin only)
+router.get("/:ciannId/shares", async (req, res) => {
+  try {
+    const numericCiannId = parseInt(req.params.ciannId);
+    if (isNaN(numericCiannId)) {
+      return res.status(400).json({ message: "Invalid ciannId format" });
+    }
+
+    const ciann = await Ciann.findOne({ ciannId: numericCiannId }).populate(
+      "sharedWith.user",
+      "username role college",
+    );
+    if (!ciann) {
+      return res.status(404).json({ message: "CIANN not found" });
+    }
+
+    if (!ensureAccess(ciann, req.user, "owner")) {
+      return res.status(403).json({ message: "Only owner can view share list" });
+    }
+
+    const shares = (ciann.sharedWith || []).map((item) => ({
+      userId: item.user?._id,
+      username: item.user?.username,
+      role: item.user?.role,
+      college: item.user?.college,
+      permission: item.permission,
+      sharedAt: item.sharedAt,
+    }));
+
+    res.status(200).json({ ciannId: ciann.ciannId, shares });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Share a CIANN with another user by username
+router.post("/:ciannId/share", async (req, res) => {
+  try {
+    const numericCiannId = parseInt(req.params.ciannId);
+    const { username, permission } = req.body;
+
+    if (isNaN(numericCiannId)) {
+      return res.status(400).json({ message: "Invalid ciannId format" });
+    }
+    if (!username || typeof username !== "string") {
+      return res.status(400).json({ message: "username is required" });
+    }
+    if (!["read", "edit"].includes(permission)) {
+      return res.status(400).json({ message: "permission must be read or edit" });
+    }
+
+    const ciann = await Ciann.findOne({ ciannId: numericCiannId });
+    if (!ciann) {
+      return res.status(404).json({ message: "CIANN not found" });
+    }
+
+    if (!ensureAccess(ciann, req.user, "owner")) {
+      return res.status(403).json({ message: "Only owner can share this CIANN" });
+    }
+
+    const targetUser = await User.findOne({ username: username.trim() });
+    if (!targetUser) {
+      return res.status(404).json({ message: "Target user not found" });
+    }
+
+    if (targetUser._id.toString() === ciann.owner.toString()) {
+      return res.status(400).json({ message: "Owner already has full access" });
+    }
+
+    if (
+      req.user.role !== "superadmin" &&
+      ciann.college &&
+      targetUser.college !== ciann.college
+    ) {
+      return res.status(400).json({ message: "Cannot share CIANN across colleges" });
+    }
+
+    const existingShareIndex = (ciann.sharedWith || []).findIndex(
+      (share) => share.user?.toString() === targetUser._id.toString(),
+    );
+
+    if (existingShareIndex >= 0) {
+      ciann.sharedWith[existingShareIndex].permission = permission;
+      ciann.sharedWith[existingShareIndex].sharedBy = req.user._id;
+      ciann.sharedWith[existingShareIndex].sharedAt = new Date();
+    } else {
+      ciann.sharedWith.push({
+        user: targetUser._id,
+        permission,
+        sharedBy: req.user._id,
+        sharedAt: new Date(),
+      });
+    }
+
+    await ciann.save();
+
+    res.status(200).json({
+      message: `CIANN shared with ${targetUser.username} as ${permission}`,
+      ciannId: ciann.ciannId,
+      sharedWith: {
+        userId: targetUser._id,
+        username: targetUser.username,
+        permission,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Remove CIANN share from a user
+router.delete("/:ciannId/share/:sharedUserId", async (req, res) => {
+  try {
+    const numericCiannId = parseInt(req.params.ciannId);
+    const { sharedUserId } = req.params;
+
+    if (isNaN(numericCiannId)) {
+      return res.status(400).json({ message: "Invalid ciannId format" });
+    }
+
+    const ciann = await Ciann.findOne({ ciannId: numericCiannId });
+    if (!ciann) {
+      return res.status(404).json({ message: "CIANN not found" });
+    }
+
+    if (!ensureAccess(ciann, req.user, "owner")) {
+      return res.status(403).json({ message: "Only owner can remove shares" });
+    }
+
+    const originalLength = (ciann.sharedWith || []).length;
+    ciann.sharedWith = (ciann.sharedWith || []).filter(
+      (share) => share.user?.toString() !== sharedUserId,
+    );
+
+    if (ciann.sharedWith.length === originalLength) {
+      return res.status(404).json({ message: "Share entry not found" });
+    }
+
+    await ciann.save();
+    res.status(200).json({ message: "Share removed successfully", ciannId: ciann.ciannId });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+function getAccessLevel(ciann, user) {
+  if (!ciann || !user) return "none";
+
+  if (user.role === "superadmin") return "owner";
 
   if (user.role === "admin") {
-    return !ciann.college || ciann.college === user.college;
+    return !ciann.college || ciann.college === user.college ? "owner" : "none";
   }
 
-  // Faculty and office staff can only access their own CIANNs
-  return ciann.owner?.toString() === user._id.toString();
+  if (ciann.owner?.toString() === user._id.toString()) return "owner";
+
+  const sharedPermission = getSharedPermission(ciann, user);
+  if (sharedPermission === "edit") return "edit";
+  if (sharedPermission === "read") return "read";
+  return "none";
+}
+
+function canShareCiann(ciann, user) {
+  const accessLevel = getAccessLevel(ciann, user);
+  return accessLevel === "owner";
+}
+
+// Helper: ensure the current user can access the CIANN
+function ensureAccess(ciann, user, requiredPermission = "read") {
+  const accessLevel = getAccessLevel(ciann, user);
+  if (requiredPermission === "read") {
+    return accessLevel === "owner" || accessLevel === "edit" || accessLevel === "read";
+  }
+  if (requiredPermission === "edit") {
+    return accessLevel === "owner" || accessLevel === "edit";
+  }
+  if (requiredPermission === "owner") {
+    return accessLevel === "owner";
+  }
+  return false;
 }
 
 // Create CIANN
@@ -132,6 +494,8 @@ router.get("/", async (req, res) => {
             );
           }
         }
+        ciannObj.accessLevel = getAccessLevel(ciann, req.user);
+        ciannObj.canShare = canShareCiann(ciann, req.user);
         return ciannObj;
       }),
     );
@@ -157,7 +521,7 @@ router.get("/:ciannId", async (req, res) => {
       return res.status(404).json({ message: "CIANN not found" });
     }
 
-    if (!ensureAccess(ciann, req.user)) {
+    if (!ensureAccess(ciann, req.user, "read")) {
       return res.status(403).json({ message: "Access denied" });
     }
 
@@ -199,6 +563,8 @@ router.get("/:ciannId", async (req, res) => {
       }
     }
 
+    ciannObj.accessLevel = getAccessLevel(ciann, req.user);
+    ciannObj.canShare = canShareCiann(ciann, req.user);
     res.status(200).json(ciannObj);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -220,7 +586,7 @@ router.put("/:ciannId", async (req, res) => {
       return res.status(404).json({ message: "CIANN not found" });
     }
 
-    if (!ensureAccess(existing, req.user)) {
+    if (!ensureAccess(existing, req.user, "edit")) {
       return res.status(403).json({ message: "Access denied" });
     }
 
@@ -231,6 +597,7 @@ router.put("/:ciannId", async (req, res) => {
     delete safeBody.college;
     delete safeBody.ciannId;
     delete safeBody.faculty;
+    delete safeBody.sharedWith;
 
     const updatedCiann = await Ciann.findOneAndUpdate(
       { ciannId: numericCiannId },
@@ -260,7 +627,7 @@ router.delete("/:ciannId", async (req, res) => {
       return res.status(404).json({ message: "CIANN not found" });
     }
 
-    if (!ensureAccess(existing, req.user)) {
+    if (!ensureAccess(existing, req.user, "owner")) {
       return res.status(403).json({ message: "Access denied" });
     }
 

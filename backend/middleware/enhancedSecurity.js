@@ -20,12 +20,17 @@ const enhancedSecurity = (actionType) => async (req, res, next) => {
       });
     }
 
-    // Verify superadmin password against environment variable
+    // Determine the expected superadmin password
+    // Keep this in sync with initializeSuperAdmin in server.js
+    const expectedSuperadminPassword =
+      process.env.SUPERADMIN_PASSWORD || "superadmin123";
+
+    // Verify superadmin password
     const isPasswordValid =
       (await bcrypt.compare(
         superadminPassword,
-        await bcrypt.hash(process.env.SUPERADMIN_PASSWORD, 10)
-      )) || superadminPassword === process.env.SUPERADMIN_PASSWORD;
+        await bcrypt.hash(expectedSuperadminPassword, 10),
+      )) || superadminPassword === expectedSuperadminPassword;
 
     if (!isPasswordValid) {
       return res.status(401).json({

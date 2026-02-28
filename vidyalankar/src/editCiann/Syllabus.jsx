@@ -56,20 +56,61 @@ function Syllabus() {
     }
   }, [ciannData]);
 
-  const handleImagesSubmit = (selectedFiles) => {
-    let updatedImages;
-    if (images.length === 0) {
-      updatedImages = selectedFiles.map((file) =>
-        file ? URL.createObjectURL(file) : ""
-      );
-    } else {
-      updatedImages = images.map((img, index) =>
-        selectedFiles[index] ? URL.createObjectURL(selectedFiles[index]) : img
-      );
+  useEffect(() => {
+    if (!ciannData?.ciannId) return;
+    try {
+      const stored = localStorage.getItem(`syllabusImages:${ciannData.ciannId}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setImages(parsed);
+          setSelectedPage(0);
+          setCurrentImage(parsed[0] || null);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading syllabus images from storage:", error);
     }
+  }, [ciannData?.ciannId]);
+
+  const convertFileToDataUrl =
+    (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const handleImagesSubmit = async (selectedFiles) => {
+    let updatedImages = [...images];
+    if (updatedImages.length === 0) {
+      updatedImages = ["", "", "", ""];
+    }
+
+    for (let index = 0; index < selectedFiles.length; index += 1) {
+      const file = selectedFiles[index];
+      if (file) {
+        try {
+          const dataUrl = await convertFileToDataUrl(file);
+          updatedImages[index] = dataUrl;
+        } catch (error) {
+          console.error("Error converting syllabus image:", error);
+        }
+      }
+    }
+
     setImages(updatedImages);
     setSelectedPage(0);
     setCurrentImage(updatedImages[0] || null);
+
+    if (ciannData?.ciannId) {
+      localStorage.setItem(
+        `syllabusImages:${ciannData.ciannId}`,
+        JSON.stringify(updatedImages),
+      );
+    }
+
     setShowEditForm(false);
   };
 
@@ -117,18 +158,13 @@ function Syllabus() {
             <div className="syllabus-container">
               <button
                 className="edit-btn"
-                style={{
-                  alignSelf: "flex-end",
-                  marginBottom: "8px",
-                  backgroundColor: "green",
-                  borderRadius: "0px",
-                }}
+                type="button"
                 onClick={() => setShowEditForm(true)}
               >
                 Edit Syllabus Content
               </button>
 
-              <h2 style={{ fontSize: "18px", margin: "0 0 8px 0" }}>
+              <h2 className="syllabus-title">
                 Syllabus Content
               </h2>
               <p className="note">

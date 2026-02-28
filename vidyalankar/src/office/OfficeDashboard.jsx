@@ -5,18 +5,16 @@ import ManageStudents from "./ManageStudents";
 import NoticesPage from "./NoticesPage";
 import "./OfficeDashboard.css";
 
-// Generate batch options (2024-25 onwards for next 6 years)
-const generateBatchOptions = () => {
-  const options = [];
-  const startYear = 2024;
+const generateBatchOptions = (count = 12) =>
+  Array.from({ length: count }, (_, index) => `Batch ${index + 1}`);
 
-  for (let i = 0; i < 6; i++) {
-    const year = startYear + i;
-    const nextYear = year + 1;
-    const shortYear = nextYear.toString().slice(-2);
-    options.push(`${year}-${shortYear}`);
-  }
-  return options;
+const generateAcademicYearOptions = () => {
+  const currentYear = new Date().getFullYear();
+  const startYear = currentYear - 1;
+  return Array.from({ length: 8 }, (_, index) => {
+    const year = startYear + index;
+    return `${year}-${String(year + 1).slice(-2)}`;
+  });
 };
 
 const headerOptions = [
@@ -62,6 +60,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedDivision, setSelectedDivision] = useState("");
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [batch, setBatch] = useState("");
 
   // Dropdown data
@@ -149,6 +148,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
     setSelectedDepartment(deptId);
     setSelectedCourse("");
     setSelectedDivision("");
+    setSelectedAcademicYear("");
     setCourses([]);
     setDivisions([]);
 
@@ -159,6 +159,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
     const courseId = e.target.value;
     setSelectedCourse(courseId);
     setSelectedDivision("");
+    setSelectedAcademicYear("");
     setDivisions([]);
 
     if (courseId) fetchDivisions(courseId);
@@ -166,6 +167,10 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
 
   const handleDivisionChange = (e) => {
     setSelectedDivision(e.target.value);
+  };
+
+  const handleAcademicYearChange = (e) => {
+    setSelectedAcademicYear(e.target.value);
   };
 
   const handleFileChange = (event) => {
@@ -252,24 +257,24 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
     if (
       !selectedDepartment ||
       !selectedCourse ||
-      !selectedDivision
+      !selectedDivision ||
+      !selectedAcademicYear
     ) {
       const missing = [];
       if (!selectedDepartment) missing.push("Department");
       if (!selectedCourse) missing.push("Course");
       if (!selectedDivision) missing.push("Division");
+      if (!selectedAcademicYear) missing.push("Academic Year");
       setError(
         `Please select: ${missing.join(", ")}`,
       );
       return;
     }
 
-    const fallbackBatch =
-      batch.trim() || generateBatchOptions()[0] || "";
     setBatchAllocationCount(1);
     setBatchAllocations([
       {
-        batch: fallbackBatch,
+        batch: "Batch 1",
         count: parsedRows.length,
       },
     ]);
@@ -287,16 +292,12 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
 
     const safeCount = Math.min(parsed, Math.max(1, parsedRows.length));
     setBatchAllocationCount(safeCount);
-    setBatchAllocations((prev) => {
-      const current = [...prev];
-      if (current.length < safeCount) {
-        const fallbackBatch = batch.trim() || "";
-        while (current.length < safeCount) {
-          current.push({ batch: fallbackBatch, count: 0 });
-        }
-      }
-      return current.slice(0, safeCount);
-    });
+    setBatchAllocations((prev) =>
+      Array.from({ length: safeCount }, (_, index) => ({
+        batch: `Batch ${index + 1}`,
+        count: Number(prev[index]?.count || 0),
+      })),
+    );
   };
 
   const handleBatchAllocationFieldChange = (index, field, value) => {
@@ -357,6 +358,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
     const payload = {
       students: parsedRows,
       batch: batch.trim() || batchAllocations[0]?.batch || "",
+      academicYear: selectedAcademicYear,
       departmentId: selectedDepartment,
       courseId: selectedCourse,
       divisionId: selectedDivision,
@@ -415,6 +417,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
       setParsedRows([]);
       setFileName("");
       setBatch("");
+      setSelectedAcademicYear("");
       setTimeout(() => fetchStudents(), 500);
     } catch (err) {
       console.error("Upload error:", err);
@@ -423,6 +426,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
       setUploading(false);
     }
   };
+
 
   return (
     <div className="office-page">
@@ -506,20 +510,33 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
 
               <div className="form-row">
                 <label>
-                  Default Batch <span className="hint">(optional)</span>
+                  Academic Year <span className="required">*</span>
                 </label>
                 <select
-                  value={batch}
-                  onChange={(e) => setBatch(e.target.value)}
+                  value={selectedAcademicYear}
+                  onChange={handleAcademicYearChange}
                   disabled={uploading}
                 >
-                  <option value="">-- Select Batch --</option>
-                  {generateBatchOptions().map((b) => (
-                    <option key={b} value={b}>
-                      {b}
+                  <option value="">-- Select Academic Year --</option>
+                  {generateAcademicYearOptions().map((year) => (
+                    <option key={year} value={year}>
+                      {year}
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="form-row">
+                <label>
+                  Default Batch <span className="hint">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={batch}
+                  onChange={(e) => setBatch(e.target.value)}
+                  placeholder="Enter batch name (e.g. Batch 1)"
+                  disabled={uploading}
+                />
               </div>
             </div>
 
@@ -536,6 +553,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                     !selectedDepartment ||
                     !selectedCourse ||
                     !selectedDivision ||
+                    !selectedAcademicYear ||
                     uploading
                   }
                 />
@@ -569,10 +587,12 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                   className="modal-content batch-allocation-modal"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <h2>Batch Allocation</h2>
-                  <p>
-                    Uploaded students: <strong>{parsedRows.length}</strong>
-                  </p>
+                  <div className="batch-modal-header">
+                    <h2>Batch Allocation</h2>
+                    <p>
+                      Uploaded students: <strong>{parsedRows.length}</strong>
+                    </p>
+                  </div>
 
                   <div className="form-row">
                     <label>How many batches to divide?</label>
@@ -591,27 +611,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                   <div className="batch-allocation-grid">
                     {batchAllocations.map((allocation, index) => (
                       <div key={index} className="batch-allocation-row">
-                        <div className="form-row">
-                          <label>Batch {index + 1}</label>
-                          <select
-                            value={allocation.batch}
-                            onChange={(e) =>
-                              handleBatchAllocationFieldChange(
-                                index,
-                                "batch",
-                                e.target.value,
-                              )
-                            }
-                            disabled={uploading}
-                          >
-                            <option value="">-- Select Batch --</option>
-                            {generateBatchOptions().map((b) => (
-                              <option key={`${b}-${index}`} value={b}>
-                                {b}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                        <div className="batch-name-display">Batch {index + 1}</div>
 
                         <div className="form-row">
                           <label>Students in Batch</label>
