@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import CiannSelector from "../components/CiannSelector";
 import "./Sidebar1.css";
@@ -10,9 +10,40 @@ const SecondarySidebar = ({
   setIsSecondarySidebarVisible,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showCiannSelector, setShowCiannSelector] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  const menuItems = [
+    { label: "Front Page", path: "/course-diary", icon: "bi-journal-text" },
+    {
+      label: "Time Table & Load",
+      path: "/timetable",
+      icon: "bi-calendar3-week",
+    },
+    {
+      label: "Syllabus Contents",
+      path: "/syllabus",
+      icon: "bi-card-list",
+    },
+    {
+      label: "Subject Details",
+      path: "/subject-details",
+      icon: "bi-book",
+    },
+    { label: "Students List", path: "/student-list", icon: "bi-people" },
+    {
+      label: "Teaching Plan (TP)",
+      path: "/teaching-plan",
+      icon: "bi-clipboard-data",
+    },
+    {
+      label: "Laboratory Plan (LP)",
+      path: "/laboratory-plan",
+      icon: "bi-beaker",
+    },
+  ];
 
   useEffect(() => {
     const checkMobile = () => {
@@ -117,13 +148,16 @@ const SecondarySidebar = ({
         ></div>
       )}
       <div
-        className={`secondary-sidebar-wrapper ${
+        className={`secondary-sidebar-wrapper ciann-secondary-sidebar-wrapper ${
           isMobile && isSecondarySidebarVisible ? "visible" : ""
         }`}
       >
         <div className={sidebarClasses}>
           <div className="secondary-sidebar-header">
-            CIAAN
+            <div className="secondary-sidebar-title-wrap">
+              <span className="secondary-sidebar-eyebrow">CIANN Workspace</span>
+              <span className="secondary-sidebar-title">CIAAN</span>
+            </div>
             {isMobile && (
               <button
                 className="secondary-sidebar-close-btn"
@@ -133,18 +167,21 @@ const SecondarySidebar = ({
               </button>
             )}
           </div>
-          <ul>
-            {[
-              "Front Page",
-              "Time Table & Load",
-              "Syllabus Contents",
-              "Subject Details",
-              "Students List",
-              "Teaching Plan (TP)",
-              "Laboratory Plan (LP)",
-            ].map((item, index) => (
-              <li key={index} onClick={() => handleClick(item)}>
-                {index + 1}. {item}
+          <ul className="secondary-nav-list">
+            {menuItems.map((item, index) => (
+              <li
+                key={item.label}
+                className={`secondary-nav-item ${
+                  location.pathname === item.path ||
+                  location.pathname.startsWith(`${item.path}/`)
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() => handleClick(item.label)}
+              >
+                <span className="secondary-nav-index">{index + 1}</span>
+                <i className={`bi ${item.icon} secondary-nav-icon`}></i>
+                <span className="secondary-nav-label">{item.label}</span>
               </li>
             ))}
           </ul>
@@ -157,7 +194,10 @@ const SecondarySidebar = ({
     <>
       {isMobile ? createPortal(sidebarContent, document.body) : sidebarContent}
       {showCiannSelector && (
-        <CiannSelector onSelect={handleCiannSelect} onCancel={handleCiannCancel} />
+        <CiannSelector
+          onSelect={handleCiannSelect}
+          onCancel={handleCiannCancel}
+        />
       )}
     </>
   );

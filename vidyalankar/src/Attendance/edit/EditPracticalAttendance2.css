@@ -2,9 +2,12 @@
 
 .edit-practical-attendance-container {
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(31, 95, 191, 0.12), transparent 38%),
+    radial-gradient(circle at 92% 2%, rgba(19, 73, 150, 0.08), transparent 35%),
+    linear-gradient(180deg, #f2f7ff 0%, #eaf2ff 100%);
   padding: 20px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .page-title {
@@ -15,7 +18,8 @@
   margin-bottom: 30px;
 }
 
-.loading-message, .error-message {
+.loading-message,
+.error-message {
   text-align: center;
   padding: 40px;
   font-size: 18px;
@@ -64,10 +68,10 @@
 .record-title {
   font-size: 24px;
   font-weight: 600;
-  color: #2E7D32;
+  color: #1f5fbf;
   margin-bottom: 25px;
   text-align: center;
-  border-bottom: 2px solid #2E7D32;
+  border-bottom: 2px solid #1f5fbf;
   padding-bottom: 10px;
 }
 
@@ -180,7 +184,8 @@
   margin-top: 30px;
 }
 
-.back-button, .edit-button {
+.back-button,
+.edit-button {
   padding: 12px 24px;
   border-radius: 8px;
   font-size: 16px;
@@ -204,12 +209,12 @@
 }
 
 .edit-button {
-  background-color: #2E7D32;
+  background-color: #1f5fbf;
   color: #ffffff;
 }
 
 .edit-button:hover {
-  background-color: #1B5E20;
+  background-color: #134996;
   transform: translateY(-2px);
 }
 
@@ -218,34 +223,35 @@
   .edit-practical-attendance-container {
     padding: 15px;
   }
-  
+
   .record-details-card {
     padding: 20px;
   }
-  
+
   .page-title {
     font-size: 24px;
     margin-bottom: 20px;
   }
-  
+
   .record-title {
     font-size: 20px;
   }
-  
+
   .record-info-grid {
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  
+
   .students-preview-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .action-buttons {
     flex-direction: column;
   }
-  
-  .back-button, .edit-button {
+
+  .back-button,
+  .edit-button {
     width: 100%;
     justify-content: center;
   }

@@ -3,6 +3,22 @@ const router = express.Router();
 const Assessment = require('../models/Assessment');
 const Student = require('../models/Student');
 const Experiment = require('../models/Experiment');
+const Ciann = require('../models/Ciann');
+
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const resolveDivisionFromQuery = async ({ ciannId, division }) => {
+  const normalizedDivision = String(division || '').trim();
+  if (normalizedDivision) return normalizedDivision;
+
+  const numericCiannId = parseInt(ciannId, 10);
+  if (!Number.isNaN(numericCiannId)) {
+    const ciann = await Ciann.findOne({ ciannId: numericCiannId }).select('division');
+    return String(ciann?.division || '').trim();
+  }
+
+  return '';
+};
 
 // GET all experiment documents (for debugging)
 router.get('/all-experiments', async (req, res) => {
@@ -389,7 +405,7 @@ router.get('/assessed-experiments', async (req, res) => {
 // GET students by batch for assessment
 router.get('/students-by-batch', async (req, res) => {
   try {
-    const { batch } = req.query;
+    const { batch, ciannId, division } = req.query;
     
     if (!batch) {
       return res.status(400).json({ 
@@ -398,7 +414,16 @@ router.get('/students-by-batch', async (req, res) => {
       });
     }
 
-    const students = await Student.find({ batch: batch })
+    const resolvedDivision = await resolveDivisionFromQuery({ ciannId, division });
+    const query = { batch: batch };
+
+    if (resolvedDivision) {
+      query.division = {
+        $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
+      };
+    }
+
+    const students = await Student.find(query)
       .select('rollNo studentName batch')
       .sort({ rollNo: 1 });
 
@@ -414,7 +439,8 @@ router.get('/students-by-batch', async (req, res) => {
       success: true, 
       students: students,
       count: students.length,
-      batch: batch
+      batch: batch,
+      division: resolvedDivision || null
     });
   } catch (error) {
     console.error('Error fetching students by batch:', error);
@@ -425,12 +451,23 @@ router.get('/students-by-batch', async (req, res) => {
 // GET all available batches
 router.get('/batches', async (req, res) => {
   try {
-    const batches = await Student.distinct('batch');
+    const { ciannId, division } = req.query;
+    const resolvedDivision = await resolveDivisionFromQuery({ ciannId, division });
+    const query = {};
+
+    if (resolvedDivision) {
+      query.division = {
+        $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
+      };
+    }
+
+    const batches = await Student.distinct('batch', query);
     
     res.json({ 
       success: true, 
       batches: batches.sort(),
-      count: batches.length
+      count: batches.length,
+      division: resolvedDivision || null
     });
   } catch (error) {
     console.error('Error fetching batches:', error);

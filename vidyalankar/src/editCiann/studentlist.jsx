@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { config } from "../config/api";
-import Sidebar from "../basic/Sidebar";
 import SecondarySidebar from "./SecondarySidebar"; // Added import
-import Header from "../basic/Header";
 import "./studentlist.css";
+import "./EditCiannModern.css";
 
 function Studentlist() {
   const location = useLocation();
@@ -12,7 +11,6 @@ function Studentlist() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   // State for the secondary sidebar from your first code
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
@@ -69,22 +67,7 @@ function Studentlist() {
 
   return (
     <div className="student-layout">
-      <Header
-        showSearch={false}
-        onMenuToggle={() => {
-          setIsSidebarVisible((v) => !v);
-          window.dispatchEvent(new CustomEvent("faculty:toggle-main-sidebar"));
-        }}
-        // Added the toggle prop for the secondary sidebar
-        onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
-      />
       <div className="student-main-row">
-        <Sidebar
-          isSidebarVisible={isSidebarVisible}
-          setIsSidebarVisible={setIsSidebarVisible}
-        />
-
-        {/* Added the Secondary Sidebar component and its wrapper */}
         <div className="student-secondary-sidebar-wrapper">
           <SecondarySidebar
             ciannData={ciannData}

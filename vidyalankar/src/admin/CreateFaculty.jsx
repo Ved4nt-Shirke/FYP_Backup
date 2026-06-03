@@ -9,6 +9,7 @@ const CreateFaculty = () => {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [whatsappPhone, setWhatsappPhone] = useState("");
   const [skills, setSkills] = useState([""]);
   const [department, setDepartment] = useState("");
   const [departments, setDepartments] = useState([]);
@@ -68,6 +69,7 @@ const CreateFaculty = () => {
       const payload = {
         fullName,
         email,
+        whatsappPhone: whatsappPhone.trim(),
         skills: skills.filter((s) => s.trim()),
         institution: adminInstitution,
         department: department || null,
@@ -84,6 +86,7 @@ const CreateFaculty = () => {
         // Reset form
         setFullName("");
         setEmail("");
+        setWhatsappPhone("");
         setSkills([""]);
         setDepartment("");
       } else {
@@ -194,7 +197,24 @@ const CreateFaculty = () => {
             </div>
 
             <div className="form-row">
-              <div className="form-field col">
+              <div className="form-field col" style={{ flex: "1 1 50%" }}>
+                <label htmlFor="whatsappPhone">
+                  📱 WhatsApp Number <span style={{ fontSize: "0.78rem", color: "#6b7280", fontWeight: 400 }}>(for Attendance Bot)</span>
+                </label>
+                <input
+                  type="tel"
+                  id="whatsappPhone"
+                  placeholder="e.g. 919876543210 (with country code)"
+                  value={whatsappPhone}
+                  onChange={(e) => setWhatsappPhone(e.target.value)}
+                  disabled={loading}
+                />
+                <p className="field-hint">
+                  Include country code (India: 91). Faculty uses this number to send attendance.
+                </p>
+              </div>
+
+              <div className="form-field col" style={{ flex: "1 1 50%" }}>
                 <label htmlFor="skills">Skills (Optional)</label>
                 <input
                   type="text"
@@ -255,6 +275,7 @@ const CreateFaculty = () => {
                 onClick={() => {
                   setFullName("");
                   setEmail("");
+                  setWhatsappPhone("");
                   setSkills([""]);
                   setDepartment("");
                 }}

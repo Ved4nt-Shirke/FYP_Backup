@@ -18,6 +18,7 @@ const FacultyForm = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    whatsappPhone: "",
     skills: [""],
     department: "",
     status: "active",
@@ -74,6 +75,7 @@ const FacultyForm = () => {
     setFormData({
       fullName: faculty.fullName || "",
       email: faculty.email || "",
+      whatsappPhone: faculty.whatsappPhone || "",
       skills: faculty.skills?.length > 0 ? faculty.skills : [""],
       department: faculty.department?._id || "",
       status: faculty.status || "active",
@@ -176,13 +178,13 @@ const FacultyForm = () => {
           const lastNumber =
             existingFaculty.length > 0
               ? Math.max(
-                  ...existingFaculty.map((f) => {
-                    const match = f.employeeId.match(
-                      new RegExp(`${currentYear}${instituteCode}(\\d+)`)
-                    );
-                    return match ? parseInt(match[1]) : 0;
-                  })
-                )
+                ...existingFaculty.map((f) => {
+                  const match = f.employeeId.match(
+                    new RegExp(`${currentYear}${instituteCode}(\\d+)`)
+                  );
+                  return match ? parseInt(match[1]) : 0;
+                })
+              )
               : 0;
           const nextNumber = (lastNumber + 1).toString().padStart(2, "0");
           employeeId = `${currentYear}${instituteCode}${nextNumber}`;
@@ -194,6 +196,7 @@ const FacultyForm = () => {
       const submitData = {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
+        whatsappPhone: formData.whatsappPhone.trim(),
         skills: formData.skills.filter((s) => s.trim()),
         department: formData.department || null,
         institution: adminInstitution,
@@ -321,7 +324,26 @@ const FacultyForm = () => {
               )}
             </div>
 
-            {/* Department */}
+            {/* WhatsApp Phone for Bot */}
+            <div className="form-field">
+              <label htmlFor="whatsappPhone">
+                📱 WhatsApp Number <span style={{ fontSize: "0.78rem", color: "#6b7280", fontWeight: 400 }}>(for Attendance Bot)</span>
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="tel"
+                  id="whatsappPhone"
+                  name="whatsappPhone"
+                  value={formData.whatsappPhone}
+                  onChange={handleChange}
+                  placeholder="e.g. 919876543210 (with country code)"
+                  disabled={loading}
+                />
+              </div>
+              <div style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "4px" }}>
+                Include country code (India: 91). Faculty uses this number to send attendance via WhatsApp bot.
+              </div>
+            </div>
             <div className="form-field">
               <label htmlFor="department">Department</label>
               <select
@@ -414,9 +436,8 @@ const FacultyForm = () => {
               ) : (
                 <>
                   <i
-                    className={`bi ${
-                      isEdit ? "bi-check-lg" : "bi-person-plus"
-                    }`}
+                    className={`bi ${isEdit ? "bi-check-lg" : "bi-person-plus"
+                      }`}
                   ></i>
                   {isEdit ? "Update Faculty" : "Create Faculty"}
                 </>

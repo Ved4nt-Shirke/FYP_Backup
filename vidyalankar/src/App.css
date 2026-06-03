@@ -1,6 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap");
+
 :root {
   --header-height: 60px;
-  --sidebar-width: 280px; /* Updated to match AdminSidebar width */
+  --sidebar-width: 240px; /* Updated to match AdminSidebar width */
   --page-bg: #f8f9fa;
   --surface-color: #ffffff;
   --border-color: #dee2e6;
@@ -51,6 +53,57 @@ body {
   height: 100vh;
 }
 
+/* Attendance Design System: shared font + unified card/hero polish */
+.ats-page,
+.sah-page,
+.attendance-main-content,
+.theory-page,
+.practical-page,
+.ea1-page,
+.ea2-page,
+.eia-page,
+.edit-practical-attendance-container,
+.edit-practical-attendance-page-container,
+.edit-attendance-container {
+  font-family: "Nunito Sans", "Segoe UI", sans-serif !important;
+}
+
+.ats-hero,
+.sah-header,
+.ea1-hero,
+.ea2-hero,
+.eia-hero,
+.theory-attendance-container,
+.theory-card,
+.practical-card,
+.record-details-card,
+.edit-practical-attendance-card,
+.eia-form,
+.eia-context-card,
+.ea2-record-card,
+.ea1-card,
+.ats-card,
+.sah-card,
+.form-box {
+  border-radius: 16px !important;
+  border-color: #d7e5f8 !important;
+  box-shadow: 0 10px 24px rgba(18, 43, 82, 0.08) !important;
+}
+
+.ats-hero h2,
+.sah-header h1,
+.ea1-hero-title,
+.ea2-hero-title,
+.eia-hero-title,
+.theory-title,
+.practical-title,
+.page-title,
+.record-title,
+.edit-practical-attendance-heading {
+  letter-spacing: -0.2px;
+  font-weight: 800 !important;
+}
+
 /* Allow overflow for mobile to show sidebars */
 @media (max-width: 768px) {
   body {
@@ -80,9 +133,7 @@ body {
   overflow-y: hidden;
   overflow-x: visible;
   transition: margin-left var(--transition-speed) ease;
-  margin-left: var(
-    --sidebar-width
-  ); /* Add margin to account for fixed sidebar */
+  margin-left: calc(var(--sidebar-width) + 1rem); /* Add 1rem gap */
   margin-top: 60px; /* Add margin to account for fixed navbar */
 }
 
@@ -98,6 +149,7 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   padding: 1.5rem;
+  padding-left: 2rem;
   box-sizing: border-box;
 }
 
@@ -112,15 +164,24 @@ body {
 
 /* Adjust for superadmin navbar */
 .superadmin-page .scrollable-content {
-  height: calc(100vh - 112px); /* Fit remaining viewport below superadmin header */
+  height: calc(
+    100vh - 112px
+  ); /* Fit remaining viewport below superadmin header */
   overflow-x: hidden;
   padding-bottom: 20px;
 }
 
-/* Admin page specific styles */
+/* Admin page specific styles with improved spacing */
 .admin-page .main-content-wrapper {
   margin-top: 60px; /* Account for fixed admin header */
   padding-top: 0;
+  /* Add gap between sidebar and main content */
+  margin-left: calc(var(--sidebar-width, 280px) + 1rem);
+  transition: margin-left var(--transition-speed) ease;
+}
+
+.admin-page.sidebar-collapsed .main-content-wrapper {
+  margin-left: 0; /* Remove margin when sidebar is collapsed */
 }
 
 .admin-page .scrollable-content {
@@ -128,6 +189,7 @@ body {
   padding-bottom: 220px;
   overflow-y: auto;
   height: calc(100vh - 60px);
+  padding-left: 2rem;
 }
 
 .admin-page.admin-dashboard-page .scrollable-content {
@@ -139,10 +201,26 @@ body {
 .office-page .main-content-wrapper {
   /* margin-top: 70px; Account for fixed office header height */
   padding-top: 0;
+  margin-top: 0px;
 }
 
 .office-page .scrollable-content {
   padding-top: 0;
+}
+
+/* Faculty panel background: reduce pure-white glare with a soft neutral tone */
+.faculty-page {
+  background-color: #eef2f7 !important;
+}
+
+.faculty-page .main-content-wrapper,
+.faculty-page .scrollable-content {
+  background-color: #eef2f7 !important;
+  background-image: linear-gradient(
+    180deg,
+    #f3f6fa 0%,
+    #e9eef5 100%
+  ) !important;
 }
 
 .admin-content {
@@ -183,7 +261,9 @@ body {
 
 @media (max-width: 768px) {
   .superadmin-page .scrollable-content {
-    height: calc(100vh - 104px) !important; /* Fit remaining viewport below mobile superadmin header */
+    height: calc(
+      100vh - 104px
+    ) !important; /* Fit remaining viewport below mobile superadmin header */
     padding-bottom: 20px !important;
   }
 }
@@ -200,7 +280,9 @@ body {
     margin-left: 0 !important;
     width: 100% !important;
     margin-top: 0 !important; /* Remove margin since header is fixed */
-    padding-top: var(--header-height) !important; /* Match actual mobile header height */
+    padding-top: var(
+      --header-height
+    ) !important; /* Match actual mobile header height */
   }
 
   .scrollable-content {
@@ -349,9 +431,7 @@ table:not(.timetable) {
 /* Override any hardcoded green colors in attendance components */
 .attendance-status-present,
 .attendance-marker.present,
-.status-present,
-[class*="present"],
-[class*="success"] {
+.status-present {
   background-color: var(--app-header-bg) !important;
   border-color: var(--app-header-bg) !important;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./FacultyStudyMaterialManager.css";
 
 const API_BASE = "/api";
@@ -43,6 +43,16 @@ const FacultyStudyMaterialManager = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const fileResourceCount = useMemo(
+    () => materials.filter((item) => item.resourceType !== "link").length,
+    [materials],
+  );
+
+  const linkResourceCount = useMemo(
+    () => materials.filter((item) => item.resourceType === "link").length,
+    [materials],
+  );
+
   const fetchDepartments = async () => {
     const response = await fetch(`${API_BASE}/catalog/departments`, {
       headers: {
@@ -65,12 +75,15 @@ const FacultyStudyMaterialManager = () => {
       return;
     }
 
-    const response = await fetch(`${API_BASE}/catalog/courses/${departmentId}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders(),
+    const response = await fetch(
+      `${API_BASE}/catalog/courses/${departmentId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch courses");
@@ -105,12 +118,15 @@ const FacultyStudyMaterialManager = () => {
     setListLoading(true);
     setError("");
     try {
-      const response = await fetch(`${API_BASE}/study-materials/faculty?activeOnly=true`, {
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(),
+      const response = await fetch(
+        `${API_BASE}/study-materials/faculty?activeOnly=true`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeaders(),
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch study materials");
@@ -196,7 +212,12 @@ const FacultyStudyMaterialManager = () => {
     setError("");
     setSuccessMessage("");
 
-    if (!selectedDepartment || !selectedCourse || !selectedDivision || !title.trim()) {
+    if (
+      !selectedDepartment ||
+      !selectedCourse ||
+      !selectedDivision ||
+      !title.trim()
+    ) {
       setError("Please select department/course/division and enter title");
       return;
     }
@@ -240,7 +261,9 @@ const FacultyStudyMaterialManager = () => {
         throw new Error(data.message || "Unable to publish study material");
       }
 
-      setSuccessMessage("Study material published successfully and visible in student panel.");
+      setSuccessMessage(
+        "Study material published successfully and visible in student panel.",
+      );
       resetForm();
       await fetchMaterials();
     } catch (err) {
@@ -251,20 +274,25 @@ const FacultyStudyMaterialManager = () => {
   };
 
   const handleRemove = async (materialId) => {
-    const confirmed = window.confirm("Remove this study material from student panel?");
+    const confirmed = window.confirm(
+      "Remove this study material from student panel?",
+    );
     if (!confirmed) return;
 
     setError("");
     setSuccessMessage("");
 
     try {
-      const response = await fetch(`${API_BASE}/study-materials/faculty/${materialId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(),
+      const response = await fetch(
+        `${API_BASE}/study-materials/faculty/${materialId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeaders(),
+          },
         },
-      });
+      );
 
       const data = await response.json();
       if (!response.ok || !data.success) {
@@ -285,11 +313,14 @@ const FacultyStudyMaterialManager = () => {
         return;
       }
 
-      const response = await fetch(`${API_BASE}/study-materials/file/${material._id}`, {
-        headers: {
-          ...authHeaders(),
+      const response = await fetch(
+        `${API_BASE}/study-materials/file/${material._id}`,
+        {
+          headers: {
+            ...authHeaders(),
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Unable to open file");
@@ -306,23 +337,52 @@ const FacultyStudyMaterialManager = () => {
 
   return (
     <div className="faculty-study-material-manager">
-      <div className="faculty-study-material-manager__header">
-        <h1>Study Material Management</h1>
-        <p>
-          Add professional study resources for any course/division within your institution. Students will see only their mapped materials.
-        </p>
-      </div>
+      <section className="fsm-hero">
+        <div className="fsm-hero-copy">
+          <h1>Study Material Management</h1>
+          <p>
+            Publish division-wise resources for students with consistent
+            categorization and instant availability control.
+          </p>
+        </div>
+        <div className="fsm-hero-stats">
+          <div>
+            <span>Total Materials</span>
+            <strong>{materials.length}</strong>
+          </div>
+          <div>
+            <span>File Resources</span>
+            <strong>{fileResourceCount}</strong>
+          </div>
+          <div>
+            <span>External Links</span>
+            <strong>{linkResourceCount}</strong>
+          </div>
+        </div>
+      </section>
 
-      {error ? <div className="faculty-study-material-manager__alert error">{error}</div> : null}
+      {error ? <div className="fsm-alert error">{error}</div> : null}
       {successMessage ? (
-        <div className="faculty-study-material-manager__alert success">{successMessage}</div>
+        <div className="fsm-alert success">{successMessage}</div>
       ) : null}
 
-      <form className="faculty-study-material-manager__form" onSubmit={handleSubmit}>
-        <div className="form-grid">
-          <label>
-            Department
-            <select value={selectedDepartment} onChange={(e) => setSelectedDepartment(e.target.value)} required>
+      <form className="fsm-form" onSubmit={handleSubmit}>
+        <div className="fsm-form-head">
+          <h2>Publish New Study Material</h2>
+          <p>
+            Select context, set resource type, and provide title and content
+            source.
+          </p>
+        </div>
+
+        <div className="fsm-form-grid">
+          <label className="fsm-field">
+            <span>Department</span>
+            <select
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              required
+            >
               <option value="">Select department</option>
               {departments.map((department) => (
                 <option key={department._id} value={department._id}>
@@ -332,8 +392,8 @@ const FacultyStudyMaterialManager = () => {
             </select>
           </label>
 
-          <label>
-            Course
+          <label className="fsm-field">
+            <span>Course / Semester</span>
             <select
               value={selectedCourse}
               onChange={(e) => setSelectedCourse(e.target.value)}
@@ -349,8 +409,8 @@ const FacultyStudyMaterialManager = () => {
             </select>
           </label>
 
-          <label>
-            Division
+          <label className="fsm-field">
+            <span>Division</span>
             <select
               value={selectedDivision}
               onChange={(e) => setSelectedDivision(e.target.value)}
@@ -366,9 +426,13 @@ const FacultyStudyMaterialManager = () => {
             </select>
           </label>
 
-          <label>
-            Category
-            <select value={category} onChange={(e) => setCategory(e.target.value)} required>
+          <label className="fsm-field">
+            <span>Category</span>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              required
+            >
               {categoryOptions.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -377,16 +441,20 @@ const FacultyStudyMaterialManager = () => {
             </select>
           </label>
 
-          <label>
-            Resource Type
-            <select value={resourceType} onChange={(e) => setResourceType(e.target.value)} required>
+          <label className="fsm-field">
+            <span>Resource Type</span>
+            <select
+              value={resourceType}
+              onChange={(e) => setResourceType(e.target.value)}
+              required
+            >
               <option value="file">File Upload</option>
               <option value="link">External Link</option>
             </select>
           </label>
 
-          <label>
-            Subject
+          <label className="fsm-field">
+            <span>Subject</span>
             <input
               type="text"
               value={subject}
@@ -396,8 +464,8 @@ const FacultyStudyMaterialManager = () => {
             />
           </label>
 
-          <label className="full-width">
-            Title
+          <label className="fsm-field fsm-field-wide">
+            <span>Title</span>
             <input
               type="text"
               value={title}
@@ -408,8 +476,8 @@ const FacultyStudyMaterialManager = () => {
             />
           </label>
 
-          <label className="full-width">
-            Description
+          <label className="fsm-field fsm-field-wide">
+            <span>Description</span>
             <textarea
               rows={3}
               value={description}
@@ -418,20 +486,28 @@ const FacultyStudyMaterialManager = () => {
               maxLength={2000}
             />
           </label>
+        </div>
 
-          {resourceType === "file" ? (
-            <label className="full-width file-input-wrap">
-              Upload File (PDF, DOC, PPT, ZIP, Image, MP4)
+        {resourceType === "file" ? (
+          <div className="fsm-upload-block">
+            <div>
+              <h3>Upload File</h3>
+              <p>Accepted: PDF, DOC, PPT, ZIP, Image, MP4</p>
+            </div>
+            <label className="fsm-file-label">
               <input
                 type="file"
                 accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.png,.jpg,.jpeg,.mp4"
                 onChange={(e) => setResourceFile(e.target.files?.[0] || null)}
                 required
               />
+              <span>{resourceFile ? resourceFile.name : "Choose file"}</span>
             </label>
-          ) : (
-            <label className="full-width">
-              External URL
+          </div>
+        ) : (
+          <div className="fsm-upload-block fsm-link-block">
+            <label className="fsm-field fsm-field-wide">
+              <span>External URL</span>
               <input
                 type="url"
                 value={externalUrl}
@@ -440,18 +516,18 @@ const FacultyStudyMaterialManager = () => {
                 required
               />
             </label>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="actions-row">
+        <div className="fsm-actions-row">
           <button type="submit" disabled={loading}>
             {loading ? "Publishing..." : "Publish Study Material"}
           </button>
         </div>
       </form>
 
-      <div className="faculty-study-material-manager__list">
-        <div className="list-head">
+      <section className="fsm-list">
+        <div className="fsm-list-head">
           <h2>Published Materials</h2>
           <button type="button" onClick={fetchMaterials} disabled={listLoading}>
             {listLoading ? "Refreshing..." : "Refresh"}
@@ -459,29 +535,42 @@ const FacultyStudyMaterialManager = () => {
         </div>
 
         {listLoading ? (
-          <p className="empty-state">Loading materials...</p>
+          <p className="fsm-empty-state">Loading materials...</p>
         ) : materials.length === 0 ? (
-          <p className="empty-state">No study materials published yet.</p>
+          <p className="fsm-empty-state">No study materials published yet.</p>
         ) : (
-          <div className="material-cards">
+          <div className="fsm-cards">
             {materials.map((item) => (
-              <article key={item._id} className="material-card">
-                <div className="material-card__meta">
+              <article key={item._id} className="fsm-card">
+                <div className="fsm-card-meta">
                   <span>{item.category}</span>
                   <span>{item.divisionId?.name || item.divisionName}</span>
                 </div>
                 <h3>{item.title}</h3>
-                <p className="muted">
-                  Subject: {item.subject || "General"} • Course: {item.courseId?.courseCode || "-"}
-                  {item.courseId?.semester ? ` • Semester ${item.courseId.semester}` : ""}
+                <p>
+                  Subject: {item.subject || "General"} • Course:{" "}
+                  {item.courseId?.courseCode || "-"}
+                  {item.courseId?.semester
+                    ? ` • Semester ${item.courseId.semester}`
+                    : ""}
                 </p>
                 {item.description ? <p>{item.description}</p> : null}
-                <p className="muted">Published on {new Date(item.createdAt).toLocaleDateString()}</p>
-                <div className="material-card__actions">
-                  <button type="button" className="secondary" onClick={() => handleOpen(item)}>
+                <p>
+                  Published on {new Date(item.createdAt).toLocaleDateString()}
+                </p>
+                <div className="fsm-card-actions">
+                  <button
+                    type="button"
+                    className="fsm-secondary"
+                    onClick={() => handleOpen(item)}
+                  >
                     Open
                   </button>
-                  <button type="button" className="danger" onClick={() => handleRemove(item._id)}>
+                  <button
+                    type="button"
+                    className="fsm-danger"
+                    onClick={() => handleRemove(item._id)}
+                  >
                     Remove
                   </button>
                 </div>
@@ -489,7 +578,7 @@ const FacultyStudyMaterialManager = () => {
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };

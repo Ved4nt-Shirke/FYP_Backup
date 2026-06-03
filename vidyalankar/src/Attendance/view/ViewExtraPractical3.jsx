@@ -24,12 +24,14 @@ const ViewExtraPractical3 = () => {
     const fetchBatchAttendanceData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/view-extra-practical/${ciannId}/${batch}`
+          `http://localhost:5000/api/view-extra-practical/${ciannId}/${batch}`,
         );
         setBatchAttendanceData(response.data);
       } catch (err) {
         console.error("Error fetching batch attendance data:", err);
-        setError("Failed to fetch batch attendance data. Please try again later.");
+        setError(
+          "Failed to fetch batch attendance data. Please try again later.",
+        );
       } finally {
         setLoading(false);
       }
@@ -45,60 +47,74 @@ const ViewExtraPractical3 = () => {
 
   // Helper to format date as DD-MM
   const formatDate = (dateString) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     return `${day}-${month}`;
   };
 
   // Render Logic
   if (loading) {
-    return <p className="text-center p-4">Loading extra practical attendance details...</p>;
+    return (
+      <div className="vat2-state">
+        Loading extra practical attendance details...
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="text-center text-danger p-4">{error}</p>;
+    return <div className="vat2-state">{error}</div>;
   }
 
-  if (!batchAttendanceData || !batchAttendanceData.experiments || batchAttendanceData.experiments.length === 0) {
-    return <p className="text-center p-4">No extra practical attendance data found for this batch.</p>;
+  if (
+    !batchAttendanceData ||
+    !batchAttendanceData.experiments ||
+    batchAttendanceData.experiments.length === 0
+  ) {
+    return (
+      <div className="vat2-state">
+        No extra practical attendance data found for this batch.
+      </div>
+    );
   }
 
   const { batch, experiments } = batchAttendanceData;
 
   // Get all unique students from all experiments
   const allStudents = new Map();
-  experiments.forEach(experiment => {
+  experiments.forEach((experiment) => {
     if (experiment.students) {
-      experiment.students.forEach(student => {
+      experiment.students.forEach((student) => {
         if (!allStudents.has(student.rollId)) {
           allStudents.set(student.rollId, {
             rollId: student.rollId,
-            name: student.name
+            name: student.name,
           });
         }
       });
     }
   });
 
-  const studentsList = Array.from(allStudents.values()).sort((a, b) => 
-    a.rollId.localeCompare(b.rollId, undefined, { numeric: true })
+  const studentsList = Array.from(allStudents.values()).sort((a, b) =>
+    a.rollId.localeCompare(b.rollId, undefined, { numeric: true }),
   );
 
   return (
-    <div className="course-diary-wrapper">
-      {/* GREEN HEADER */}
-      <header className="view-header">
-        <h1>Extra Practical Attendance - {batch}</h1>
+    <div className="vat2-page">
+      <header className="vat2-hero">
+        <h1>View Extra Practical Attendance - Batch {batch}</h1>
+        <p>
+          {studentsList.length} students and {experiments.length} experiments
+        </p>
       </header>
-      
-      <section className="attendance-section">
-        <div className="attendance-table-wrapper">
-          <table className="attendance-table">
+
+      <section className="vat2-panel">
+        <div className="vat2-table-wrapper">
+          <table className="vat2-table">
             <thead>
               <tr>
-                <th className="first-col">ROLL NO.</th>
+                <th>ROLL NO.</th>
                 {experiments.map((experiment, index) => (
                   <th key={index}>
                     {experiment.experiments}
@@ -113,20 +129,33 @@ const ViewExtraPractical3 = () => {
             <tbody>
               {studentsList.map((student) => (
                 <tr key={student.rollId}>
-                  <td className="first-col">{student.rollId}</td>
+                  <td>{student.rollId}</td>
                   {experiments.map((experiment, expIndex) => {
-                    let studentStatus = '-';
-                    
+                    let studentStatus = "-";
+
                     if (experiment.students) {
-                      const studentRecord = experiment.students.find(s => s.rollId === student.rollId);
+                      const studentRecord = experiment.students.find(
+                        (s) => s.rollId === student.rollId,
+                      );
                       if (studentRecord) {
-                        studentStatus = studentRecord.attendance === "Present" ? "P" : "A";
+                        studentStatus =
+                          studentRecord.attendance === "Present" ? "P" : "A";
                       }
                     }
-                    
+
                     return (
                       <td key={`${student.rollId}-${expIndex}`}>
-                        {studentStatus}
+                        <span
+                          className={
+                            studentStatus === "P"
+                              ? "vat2-status vat2-status--present"
+                              : studentStatus === "A"
+                                ? "vat2-status vat2-status--absent"
+                                : ""
+                          }
+                        >
+                          {studentStatus}
+                        </span>
                       </td>
                     );
                   })}
@@ -135,7 +164,7 @@ const ViewExtraPractical3 = () => {
             </tbody>
           </table>
         </div>
-        
+
         {/* Summary for experiments */}
         <div className="mt-4">
           <h5>Summary:</h5>
@@ -146,8 +175,10 @@ const ViewExtraPractical3 = () => {
                   <div className="card-body">
                     <h6 className="card-title">{experiment.experiments}</h6>
                     <p className="card-text">
-                      <strong>Date:</strong> {formatDate(experiment.actualDate)}<br />
-                      <strong>Present:</strong> {experiment.presentCount}/{experiment.studentsCount}
+                      <strong>Date:</strong> {formatDate(experiment.actualDate)}
+                      <br />
+                      <strong>Present:</strong> {experiment.presentCount}/
+                      {experiment.studentsCount}
                     </p>
                   </div>
                 </div>
@@ -155,9 +186,13 @@ const ViewExtraPractical3 = () => {
             ))}
           </div>
         </div>
-        
-        <div className="mt-4">
-          <button className="btn btn-secondary" onClick={handlePrint}>
+
+        <div className="vat2-actions">
+          <button
+            type="button"
+            className="vat2-print-btn"
+            onClick={handlePrint}
+          >
             Print
           </button>
         </div>

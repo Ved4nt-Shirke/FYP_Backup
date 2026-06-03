@@ -66,42 +66,91 @@ const PracticalExamSection = () => {
   const fetchCoursesForDepartment = async (deptId) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${config.apiBaseUrl}/practical-exams/courses/by-department?departmentId=${deptId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await fetch(config.catalog.courses(deptId), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
       if (!response.ok) throw new Error("Failed to fetch courses");
 
       const data = await response.json();
-      setCourses(data.courses || []);
-      if (data.courses && data.courses.length > 0) {
-        setSelectedCourse(data.courses[0]._id);
-        fetchPracticalExamsForDepartment(deptId);
+      const mappedCourses = (data.courses || []).map((course) => ({
+        ...course,
+        code: course.courseCode || course.code || "-",
+        name: course.name || `Semester ${course.semester || ""}`.trim(),
+      }));
+
+      setCourses(mappedCourses);
+
+      if (mappedCourses.length > 0) {
+        setSelectedCourse(mappedCourses[0]._id);
+        fetchPracticalExamsForDepartment(mappedCourses, token);
+      } else {
+        setCourseWiseExams({});
       }
     } catch (err) {
       console.error("Error fetching courses:", err);
+      setCourses([]);
+      setCourseWiseExams({});
     }
   };
 
-  const fetchPracticalExamsForDepartment = async (deptId) => {
+  const fetchPracticalExamsForDepartment = async (courseList, authToken) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${config.apiBaseUrl}/practical-exams/by-department/${deptId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      if (!Array.isArray(courseList) || courseList.length === 0) {
+        setCourseWiseExams({});
+        return;
+      }
 
-      if (!response.ok) throw new Error("Failed to fetch exams");
+      const token = authToken || localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      const data = await response.json();
-      setCourseWiseExams(data.exams || {});
+      const [examsResponse, ...divisionResponses] = await Promise.all([
+        fetch(`${config.apiBaseUrl}/practical-exams`, { headers }),
+        ...courseList.map((course) =>
+          fetch(config.catalog.divisions(course._id), { headers }),
+        ),
+      ]);
+
+      if (!examsResponse.ok) throw new Error("Failed to fetch exams");
+
+      const examsData = await examsResponse.json();
+      const allExams = examsData?.success ? examsData.practicalExams || [] : [];
+
+      const divisionsByCourseId = {};
+      for (let i = 0; i < courseList.length; i += 1) {
+        const res = divisionResponses[i];
+        if (!res?.ok) {
+          divisionsByCourseId[courseList[i]._id] = [];
+          continue;
+        }
+        const payload = await res.json();
+        divisionsByCourseId[courseList[i]._id] = (payload.divisions || []).map(
+          (division) => division.name || "",
+        );
+      }
+
+      const grouped = {};
+      courseList.forEach((course) => {
+        const courseCode = course.code || "-";
+        const courseDivisions = divisionsByCourseId[course._id] || [];
+        const lowerCaseDivisions = new Set(
+          courseDivisions.map((d) => String(d).toLowerCase()),
+        );
+
+        grouped[courseCode] = allExams.filter((exam) => {
+          const examDivisions = Array.isArray(exam.divisions)
+            ? exam.divisions
+            : [];
+          return examDivisions.some((division) =>
+            lowerCaseDivisions.has(String(division).toLowerCase()),
+          );
+        });
+      });
+
+      setCourseWiseExams(grouped);
     } catch (err) {
       console.error("Error fetching practical exams:", err);
+      setCourseWiseExams({});
     }
   };
 
@@ -147,44 +196,104 @@ const PracticalExamSection = () => {
   };
 
   if (loading) {
-    return <div className="practical-exam-loading">Loading departments...</div>;
+    return (
+      <div className="practical-exam-loading">
+        Loading practical exam workspace...
+      </div>
+    );
   }
+
+  const selectedCourseData = courses.find(
+    (course) => course._id === selectedCourse,
+  );
+  const selectedCourseExamCount = selectedCourseData?.code
+    ? courseWiseExams[selectedCourseData.code]?.length || 0
+    : 0;
+
+  const flowSteps = [
+    {
+      id: 1,
+      title: "Choose Department",
+      done: Boolean(selectedDepartment),
+    },
+    {
+      id: 2,
+      title: "Choose Course",
+      done: Boolean(selectedCourse),
+    },
+    {
+      id: 3,
+      title: "Take Action",
+      done: Boolean(selectedDepartment && selectedCourse),
+    },
+  ];
 
   return (
     <div className="practical-exam-section">
-      <div className="section-header">
-        <h1>Practical Exam Management</h1>
-        <p>
-          Organize practical exams by department and course (CO1K, CO2K, etc.)
-        </p>
+      <div className="practical-hero">
+        <div>
+          <h1>Practical Exam Workspace</h1>
+          <p>
+            Create, manage, and publish practical exams with a clear 3-step
+            flow.
+          </p>
+        </div>
+        <div className="practical-hero-meta">
+          <div>
+            <strong>{departments.length}</strong>
+            <span>Departments</span>
+          </div>
+          <div>
+            <strong>{courses.length}</strong>
+            <span>Courses</span>
+          </div>
+          <div>
+            <strong>{selectedCourseExamCount}</strong>
+            <span>Exams in selected course</span>
+          </div>
+        </div>
       </div>
 
-      <div className="section-controls">
-        <div className="control-group">
-          <label htmlFor="department">Select Department:</label>
-          <select
-            id="department"
-            value={selectedDepartment}
-            onChange={(e) => handleDepartmentChange(e.target.value)}
-            className="form-control"
+      <div className="practical-flow-steps">
+        {flowSteps.map((step) => (
+          <div
+            key={step.id}
+            className={`flow-step ${step.done ? "is-done" : ""}`}
           >
-            <option value="">Choose Department</option>
-            {departments.map((dept) => (
-              <option key={dept._id} value={dept._id}>
-                {dept.name} ({dept.code})
-              </option>
-            ))}
-          </select>
-        </div>
+            <span className="flow-index">{step.id}</span>
+            <span className="flow-title">{step.title}</span>
+          </div>
+        ))}
+      </div>
 
-        {selectedDepartment && courses.length > 0 && (
+      <div className="practical-section-card">
+        <h2 className="section-card-title">Step 1 & 2: Academic Context</h2>
+        <div className="section-controls">
           <div className="control-group">
-            <label htmlFor="course">Select Course:</label>
+            <label htmlFor="department">Department</label>
+            <select
+              id="department"
+              value={selectedDepartment}
+              onChange={(e) => handleDepartmentChange(e.target.value)}
+              className="form-control"
+            >
+              <option value="">Choose Department</option>
+              {departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name} ({dept.code})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="control-group">
+            <label htmlFor="course">Course</label>
             <select
               id="course"
               value={selectedCourse}
               onChange={(e) => setSelectedCourse(e.target.value)}
               className="form-control"
+              disabled={!selectedDepartment || courses.length === 0}
             >
               <option value="">Choose Course</option>
               {courses.map((course) => (
@@ -194,48 +303,69 @@ const PracticalExamSection = () => {
               ))}
             </select>
           </div>
-        )}
+        </div>
       </div>
 
-      <div className="section-actions">
-        <button
-          className="btn btn-primary"
-          onClick={() => handleNavigate("add")}
-          disabled={!selectedDepartment || !selectedCourse}
-        >
-          <i className="bi bi-plus-circle"></i> Add Practical Exam
-        </button>
-        <button
-          className="btn btn-info"
-          onClick={() => handleNavigate("manage")}
-          disabled={!selectedDepartment}
-        >
-          <i className="bi bi-list-check"></i> Manage Exams
-        </button>
-        <button
-          className="btn btn-warning"
-          onClick={() => handleNavigate("status")}
-          disabled={!selectedDepartment}
-        >
-          <i className="bi bi-eye-slash"></i> Enable/Disable
-        </button>
+      <div className="practical-section-card">
+        <h2 className="section-card-title">Step 3: Choose Action</h2>
+        <div className="section-actions-grid">
+          <button
+            className="action-card action-add"
+            onClick={() => handleNavigate("add")}
+            disabled={!selectedDepartment || !selectedCourse}
+          >
+            <i className="bi bi-plus-circle"></i>
+            <span>Add Practical Exam</span>
+            <small>
+              Create a new exam for the selected course and division.
+            </small>
+          </button>
+
+          <button
+            className="action-card action-manage"
+            onClick={() => handleNavigate("manage")}
+            disabled={!selectedDepartment}
+          >
+            <i className="bi bi-list-check"></i>
+            <span>Manage Exams</span>
+            <small>Edit exam structure, questions, and exam metadata.</small>
+          </button>
+
+          <button
+            className="action-card action-status"
+            onClick={() => handleNavigate("status")}
+            disabled={!selectedDepartment}
+          >
+            <i className="bi bi-eye-slash"></i>
+            <span>Enable or Disable</span>
+            <small>Control exam visibility for students instantly.</small>
+          </button>
+        </div>
       </div>
 
       {selectedDepartment && Object.keys(courseWiseExams).length > 0 && (
-        <div className="course-wise-exams">
-          <h2>Practical Exams by Course</h2>
+        <div className="practical-section-card">
+          <h2 className="section-card-title">
+            Existing Practical Exams by Course
+          </h2>
           <div className="exams-grid">
             {Object.entries(courseWiseExams).map(([courseCode, exams]) => (
               <div key={courseCode} className="course-card">
-                <h3>{courseCode}</h3>
+                <div className="course-card-head">
+                  <h3>{courseCode}</h3>
+                  <span>{exams.length} exam(s)</span>
+                </div>
                 <ul>
-                  {exams.map((exam) => (
+                  {exams.slice(0, 4).map((exam) => (
                     <li key={exam._id}>
                       <span className="exam-title">{exam.title}</span>
                       <small>{exam.batch}</small>
                     </li>
                   ))}
                 </ul>
+                {exams.length > 4 && (
+                  <p className="course-more">+{exams.length - 4} more</p>
+                )}
               </div>
             ))}
           </div>

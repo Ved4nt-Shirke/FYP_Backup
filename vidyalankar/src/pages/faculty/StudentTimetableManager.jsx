@@ -42,6 +42,13 @@ const StudentTimetableManager = () => {
     [courses, selectedCourse],
   );
 
+  const visibleCount = useMemo(
+    () =>
+      timetables.filter((item) => new Date(item.semesterEndDate) <= new Date())
+        .length,
+    [timetables],
+  );
+
   const fetchDepartments = async () => {
     const response = await fetch(`${API_BASE}/catalog/departments`, {
       headers: {
@@ -64,12 +71,15 @@ const StudentTimetableManager = () => {
       return;
     }
 
-    const response = await fetch(`${API_BASE}/catalog/courses/${departmentId}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders(),
+    const response = await fetch(
+      `${API_BASE}/catalog/courses/${departmentId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch courses");
@@ -103,12 +113,15 @@ const StudentTimetableManager = () => {
   const fetchTimetables = async () => {
     setListLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/student-timetables/faculty?activeOnly=true`, {
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(),
+      const response = await fetch(
+        `${API_BASE}/student-timetables/faculty?activeOnly=true`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeaders(),
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch timetables");
@@ -189,8 +202,17 @@ const StudentTimetableManager = () => {
     setError("");
     setSuccessMessage("");
 
-    if (!selectedDepartment || !selectedCourse || !selectedDivision || !selectedYear || !semesterEndDate || !timetableFile) {
-      setError("Please complete all required fields and upload a timetable file");
+    if (
+      !selectedDepartment ||
+      !selectedCourse ||
+      !selectedDivision ||
+      !selectedYear ||
+      !semesterEndDate ||
+      !timetableFile
+    ) {
+      setError(
+        "Please complete all required fields and upload a timetable file",
+      );
       return;
     }
 
@@ -231,7 +253,9 @@ const StudentTimetableManager = () => {
   };
 
   const handleRemove = async (timetableId) => {
-    const confirmed = window.confirm("Remove this timetable from student panel?");
+    const confirmed = window.confirm(
+      "Remove this timetable from student panel?",
+    );
     if (!confirmed) {
       return;
     }
@@ -240,13 +264,16 @@ const StudentTimetableManager = () => {
     setSuccessMessage("");
 
     try {
-      const response = await fetch(`${API_BASE}/student-timetables/faculty/${timetableId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(),
+      const response = await fetch(
+        `${API_BASE}/student-timetables/faculty/${timetableId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeaders(),
+          },
         },
-      });
+      );
 
       const result = await response.json();
       if (!response.ok || !result.success) {
@@ -262,11 +289,14 @@ const StudentTimetableManager = () => {
 
   const handlePreview = async (timetableId) => {
     try {
-      const response = await fetch(`${API_BASE}/student-timetables/file/${timetableId}`, {
-        headers: {
-          ...authHeaders(),
+      const response = await fetch(
+        `${API_BASE}/student-timetables/file/${timetableId}`,
+        {
+          headers: {
+            ...authHeaders(),
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Unable to open timetable file");
@@ -283,23 +313,49 @@ const StudentTimetableManager = () => {
 
   return (
     <div className="student-timetable-manager">
-      <div className="student-timetable-manager__header">
-        <h1>Student Timetable</h1>
-        <p>
-          Publish a division-wise timetable for the student panel. It becomes visible only after the selected semester end date.
-        </p>
-      </div>
+      <section className="stm-hero">
+        <div className="stm-hero-copy">
+          <h1>Student Timetable Publisher</h1>
+          <p>
+            Publish a division-wise timetable for the student panel. Visibility
+            starts only after the selected semester end date.
+          </p>
+        </div>
+        <div className="stm-hero-stats">
+          <div>
+            <span>Active Records</span>
+            <strong>{timetables.length}</strong>
+          </div>
+          <div>
+            <span>Visible Now</span>
+            <strong>{visibleCount}</strong>
+          </div>
+          <div>
+            <span>Pending Release</span>
+            <strong>{Math.max(timetables.length - visibleCount, 0)}</strong>
+          </div>
+        </div>
+      </section>
 
-      {error ? <div className="student-timetable-manager__alert error">{error}</div> : null}
+      {error ? <div className="stm-alert error">{error}</div> : null}
       {successMessage ? (
-        <div className="student-timetable-manager__alert success">{successMessage}</div>
+        <div className="stm-alert success">{successMessage}</div>
       ) : null}
 
-      <form className="student-timetable-manager__form" onSubmit={handleSubmit}>
-        <div className="form-grid">
-          <label>
-            Department
-            <select value={selectedDepartment} onChange={(e) => setSelectedDepartment(e.target.value)} required>
+      <form className="stm-form" onSubmit={handleSubmit}>
+        <div className="stm-form-head">
+          <h2>Publish New Timetable</h2>
+          <p>Complete academic context, set release date, and upload file.</p>
+        </div>
+
+        <div className="stm-form-grid">
+          <label className="stm-field">
+            <span>Department</span>
+            <select
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              required
+            >
               <option value="">Select department</option>
               {departments.map((department) => (
                 <option key={department._id} value={department._id}>
@@ -309,14 +365,14 @@ const StudentTimetableManager = () => {
             </select>
           </label>
 
-          <label>
-            Year
-            <input type="text" value={selectedYear} readOnly placeholder="Auto from selected course" />
-          </label>
-
-          <label>
-            Course / Semester
-            <select value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)} required disabled={!selectedDepartment}>
+          <label className="stm-field">
+            <span>Course / Semester</span>
+            <select
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              required
+              disabled={!selectedDepartment}
+            >
               <option value="">Select course</option>
               {courses.map((course) => (
                 <option key={course._id} value={course._id}>
@@ -326,8 +382,8 @@ const StudentTimetableManager = () => {
             </select>
           </label>
 
-          <label>
-            Division
+          <label className="stm-field">
+            <span>Division</span>
             <select
               value={selectedDivision}
               onChange={(e) => setSelectedDivision(e.target.value)}
@@ -343,8 +399,18 @@ const StudentTimetableManager = () => {
             </select>
           </label>
 
-          <label>
-            Semester End Date
+          <label className="stm-field">
+            <span>Year</span>
+            <input
+              type="text"
+              value={selectedYear}
+              readOnly
+              placeholder="Auto from selected course"
+            />
+          </label>
+
+          <label className="stm-field">
+            <span>Semester End Date</span>
             <input
               type="date"
               value={semesterEndDate}
@@ -353,8 +419,8 @@ const StudentTimetableManager = () => {
             />
           </label>
 
-          <label>
-            Timetable Title
+          <label className="stm-field">
+            <span>Timetable Title</span>
             <input
               type="text"
               value={title}
@@ -363,29 +429,39 @@ const StudentTimetableManager = () => {
               maxLength={120}
             />
           </label>
+        </div>
 
-          <label className="file-input-wrap">
-            Timetable File (PDF / PNG / JPG / WEBP)
+        <div className="stm-upload-block">
+          <div>
+            <h3>Timetable File</h3>
+            <p>Allowed formats: PDF, PNG, JPG, WEBP</p>
+          </div>
+          <label className="stm-file-label">
             <input
               type="file"
               accept=".pdf,image/png,image/jpeg,image/jpg,image/webp"
               onChange={(e) => setTimetableFile(e.target.files?.[0] || null)}
               required
             />
+            <span>{timetableFile?.name || "Choose file"}</span>
           </label>
         </div>
 
-        <div className="actions-row">
+        <div className="stm-actions-row">
           <button type="submit" disabled={loading}>
             {loading ? "Publishing..." : "Publish Timetable"}
           </button>
         </div>
       </form>
 
-      <div className="student-timetable-manager__list">
-        <div className="list-head">
+      <section className="stm-list">
+        <div className="stm-list-head">
           <h2>Active Timetables</h2>
-          <button type="button" onClick={fetchTimetables} disabled={listLoading}>
+          <button
+            type="button"
+            onClick={fetchTimetables}
+            disabled={listLoading}
+          >
             {listLoading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
@@ -393,27 +469,37 @@ const StudentTimetableManager = () => {
         {listLoading ? (
           <p className="empty-state">Loading timetable records...</p>
         ) : timetables.length === 0 ? (
-          <p className="empty-state">No active timetable published yet.</p>
+          <p className="stm-empty-state">No active timetable published yet.</p>
         ) : (
-          <div className="timetable-cards">
+          <div className="stm-cards">
             {timetables.map((item) => (
-              <article key={item._id} className="timetable-card">
-                <div className="timetable-card__meta">
+              <article key={item._id} className="stm-card">
+                <div className="stm-card-meta">
                   <span>{item.year}</span>
                   <span>{item.divisionId?.name || item.divisionName}</span>
                 </div>
                 <h3>{item.title || "Class Timetable"}</h3>
                 <p>
-                  Course: {item.courseId?.courseCode || "-"} • Semester: {item.courseId?.semester || "-"}
+                  Course: {item.courseId?.courseCode || "-"} • Semester:{" "}
+                  {item.courseId?.semester || "-"}
                 </p>
                 <p>
-                  Visible to students from: {new Date(item.semesterEndDate).toLocaleDateString()}
+                  Visible to students from:{" "}
+                  {new Date(item.semesterEndDate).toLocaleDateString()}
                 </p>
-                <div className="timetable-card__actions">
-                  <button type="button" className="secondary" onClick={() => handlePreview(item._id)}>
+                <div className="stm-card-actions">
+                  <button
+                    type="button"
+                    className="stm-secondary"
+                    onClick={() => handlePreview(item._id)}
+                  >
                     View File
                   </button>
-                  <button type="button" className="danger" onClick={() => handleRemove(item._id)}>
+                  <button
+                    type="button"
+                    className="stm-danger"
+                    onClick={() => handleRemove(item._id)}
+                  >
                     Remove
                   </button>
                 </div>
@@ -421,7 +507,7 @@ const StudentTimetableManager = () => {
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };

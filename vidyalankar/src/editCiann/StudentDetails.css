@@ -21,7 +21,6 @@
   min-height: 300px;
 }
 
-
 .modal-box {
   background-color: #fff;
   padding: 20px;
@@ -47,7 +46,7 @@
 }
 
 .close-btn {
-  background-color: #90ee90;
+  background-color: var(--primary-color, #90ee90);
   border: none;
   padding: 5px 10px;
   border-radius: 50%;
@@ -58,7 +57,7 @@
 }
 
 .close-btn:hover {
-  background-color: #7fd47f;
+  background-color: var(--primary-accent-dark, #7fd47f);
 }
 
 .modal-box input {
@@ -76,7 +75,7 @@
 }
 
 .submit-btn {
-  background-color: #90ee90;
+  background-color: var(--primary-color, #90ee90);
   border: none;
   padding: 7px 14px;
   border-radius: 4px;
@@ -85,7 +84,7 @@
 }
 
 .submit-btn:hover {
-  background-color: #7fd47f;
+  background-color: var(--primary-accent-dark, #7fd47f);
 }
 
 .modal-close {
@@ -103,4 +102,3 @@
 .modal-close:hover {
   color: red;
 }
-

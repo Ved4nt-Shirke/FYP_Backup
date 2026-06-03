@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Sidebar from "../basic/Sidebar";
 import SecondarySidebar from "./SecondarySidebar";
-import Header from "../basic/Header";
 import "./WeekwisePlan1.css";
 import "./TeachingPlanSheet.css";
+import "./EditCiannModern.css";
 
 // UPDATED modalStyles to match the WeekwisePlan component's look
 const modalStyles = {
@@ -102,7 +101,6 @@ const TeachingPlan = () => {
   const [view, setView] = useState("sheet");
   const [plans, setPlans] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
   const [teachingPlans, setTeachingPlans] = useState([]);
@@ -606,19 +604,7 @@ const TeachingPlan = () => {
 
   return (
     <div className="teaching-layout">
-      <Header
-        showSearch={false}
-        onMenuToggle={() => {
-          setIsSidebarVisible((v) => !v);
-          window.dispatchEvent(new CustomEvent("faculty:toggle-main-sidebar"));
-        }}
-        onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
-      />
       <div className="teaching-main-row">
-        <Sidebar
-          isSidebarVisible={isSidebarVisible}
-          setIsSidebarVisible={setIsSidebarVisible}
-        />
         <div className="syllabus-secondary-sidebar-wrapper">
           <SecondarySidebar
             ciannData={ciannData}
@@ -626,9 +612,7 @@ const TeachingPlan = () => {
             setIsSecondarySidebarVisible={setIsSecondarySidebarVisible}
           />
         </div>
-        <div
-          className="teaching-main-content syllabus-main-content has-secondary-sidebar"
-        >
+        <div className="teaching-main-content syllabus-main-content has-secondary-sidebar">
           <div className="plan-container">
             <div className="header-row">
               <h3 className="plan-title">6. Teaching Plan (TP)</h3>

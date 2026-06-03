@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Sidebar from "../basic/Sidebar";
 import SecondarySidebar from "./SecondarySidebar";
-import Header from "../basic/Header";
 import "./Syllabus.css";
 import EditSyllabusForm from "./EditSyllabusForm";
+import "./EditCiannModern.css";
 
 function Syllabus() {
   const location = useLocation();
@@ -13,7 +12,6 @@ function Syllabus() {
   const [currentImage, setCurrentImage] = useState(null);
   const [selectedPage, setSelectedPage] = useState(0);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
 
@@ -42,7 +40,7 @@ function Syllabus() {
             setCiannData(parsedData);
             sessionStorage.setItem(
               "currentCiannData",
-              JSON.stringify(parsedData)
+              JSON.stringify(parsedData),
             );
             return;
           }
@@ -59,7 +57,9 @@ function Syllabus() {
   useEffect(() => {
     if (!ciannData?.ciannId) return;
     try {
-      const stored = localStorage.getItem(`syllabusImages:${ciannData.ciannId}`);
+      const stored = localStorage.getItem(
+        `syllabusImages:${ciannData.ciannId}`,
+      );
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -73,8 +73,7 @@ function Syllabus() {
     }
   }, [ciannData?.ciannId]);
 
-  const convertFileToDataUrl =
-    (file) =>
+  const convertFileToDataUrl = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
@@ -121,30 +120,7 @@ function Syllabus() {
 
   return (
     <div className="timetable-layout">
-      <Header
-        showSearch={false}
-        onMenuToggle={() => {
-          setIsSidebarVisible((v) => !v);
-          window.dispatchEvent(new CustomEvent("faculty:toggle-main-sidebar"));
-        }}
-        onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
-      />
-
       <div className="timetable-main-row">
-        <Sidebar
-          isSidebarVisible={isSidebarVisible}
-          setIsSidebarVisible={setIsSidebarVisible}
-        />
-
-        {/* Secondary Sidebar Overlay */}
-        {isSecondarySidebarVisible && (
-          <div
-            className="secondary-sidebar-overlay"
-            onClick={() => setIsSecondarySidebarVisible(false)}
-          ></div>
-        )}
-
-        {/* Secondary Sidebar */}
         <div className="timetable-secondary-sidebar-wrapper">
           <SecondarySidebar
             ciannData={ciannData}
@@ -164,9 +140,7 @@ function Syllabus() {
                 Edit Syllabus Content
               </button>
 
-              <h2 className="syllabus-title">
-                Syllabus Content
-              </h2>
+              <h2 className="syllabus-title">Syllabus Content</h2>
               <p className="note">
                 Note: Upload only <span>Theory</span> and <span>Practical</span>{" "}
                 images

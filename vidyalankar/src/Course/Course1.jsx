@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { config } from "../config/api";
-import "./Course1.css";
+import "./CourseSectionShared.css";
 
 const CourseForm = () => {
   const navigate = useNavigate();
@@ -165,10 +165,10 @@ const CourseForm = () => {
 
   return (
     <div className="course-form-container">
-      <h1>Select Course To Find Experiments</h1>
+      <h1>Select Course To Add Experiments</h1>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
-        <div>
+        <div className="form-group">
           <label>Select Department</label>
           <select
             value={selectedDepartment}
@@ -184,7 +184,7 @@ const CourseForm = () => {
           </select>
         </div>
 
-        <div>
+        <div className="form-group">
           <label>Select Course (Semester)</label>
           <select
             value={selectedCourse}
@@ -201,7 +201,7 @@ const CourseForm = () => {
           </select>
         </div>
 
-        <div>
+        <div className="form-group">
           <label>Select Subject</label>
           <select
             value={selectedSubject}
@@ -217,21 +217,11 @@ const CourseForm = () => {
           </select>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "10px",
-            backgroundColor: loading ? "#ccc" : "green",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Loading..." : "Submit"}
-        </button>
+        <div className="form-actions">
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? "Loading..." : "Submit"}
+          </button>
+        </div>
       </form>
     </div>
   );

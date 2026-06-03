@@ -1,0 +1,208 @@
+.ats-page {
+  --ats-bg-a: #eaf3ff;
+  --ats-bg-b: #dfeeff;
+  --ats-card: #ffffff;
+  --ats-border: #c8dcf7;
+  --ats-text: #132844;
+  --ats-muted: #4f6483;
+  --ats-primary: #1f5fbf;
+  --ats-primary-deep: #134996;
+
+  min-height: calc(100vh - 64px);
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(31, 95, 191, 0.2), transparent 40%),
+    radial-gradient(circle at 92% 2%, rgba(19, 73, 150, 0.13), transparent 36%),
+    linear-gradient(180deg, var(--ats-bg-a), var(--ats-bg-b));
+}
+
+.ats-hero,
+.ats-grid,
+.ats-state {
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ats-hero {
+  border: 1px solid var(--ats-border);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #ffffff, #e9f2ff);
+  box-shadow: 0 14px 30px rgba(18, 43, 82, 0.11);
+  padding: 1.25rem 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.ats-hero h2 {
+  margin: 0;
+  color: var(--ats-text);
+  font-size: 2.05rem;
+  font-weight: 800;
+}
+
+.ats-hero p {
+  margin: 0.45rem 0 0;
+  color: var(--ats-muted);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.ats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 380px));
+  justify-content: center;
+  gap: 1rem;
+}
+
+.ats-card {
+  appearance: none;
+  width: min(100%, 380px);
+  font: inherit;
+  color: inherit;
+  outline: none;
+  text-decoration: none;
+  border: 1px solid #bfd6f6;
+  border-radius: 16px;
+  background: linear-gradient(150deg, #ffffff, #f3f8ff);
+  box-shadow: 0 12px 24px rgba(18, 43, 82, 0.09);
+  padding: 1rem 1rem 1.05rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin: 0 auto;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.ats-card:hover {
+  transform: translateY(-3px);
+  border-color: #8fb6ee;
+  box-shadow: 0 16px 30px rgba(31, 95, 191, 0.2);
+}
+
+.ats-card:focus-visible {
+  border-color: #6ea2ea;
+  box-shadow: 0 0 0 3px rgba(31, 95, 191, 0.18);
+}
+
+.ats-card-top {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.ats-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #edf4ff, #dfeeff);
+  border: 1px solid #b5cff4;
+  color: var(--ats-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.ats-card-headtext {
+  min-width: 0;
+  flex: 1;
+}
+
+.ats-card h3 {
+  margin: 0;
+  color: #16335a;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.ats-code {
+  margin: 0.25rem 0 0;
+  color: #60728c;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.ats-details {
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f5f9ff, #ecf4ff);
+  border: 1px solid #d0e1f8;
+  padding: 0.65rem 0.75rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.ats-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ats-label {
+  font-size: 0.92rem;
+  color: #5f7392;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ats-value {
+  font-size: 1.08rem;
+  color: #16335a;
+  font-weight: 700;
+  text-align: right;
+  word-break: break-word;
+}
+
+.ats-card-footer {
+  margin-top: auto;
+  border-radius: 10px;
+  border: 1px solid #1f5fbf;
+  background: linear-gradient(135deg, #1f5fbf, #134996);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 48px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.ats-card:hover .ats-card-footer {
+  border-color: #134996;
+  background: linear-gradient(135deg, #2a6ccb, #1a57af);
+}
+
+.ats-state {
+  border: 1px solid var(--ats-border);
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 1.5rem;
+  color: #60728c;
+  text-align: center;
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .ats-page {
+    padding: 0.9rem;
+  }
+
+  .ats-hero h2 {
+    font-size: 1.6rem;
+  }
+
+  .ats-hero p {
+    font-size: 0.94rem;
+  }
+
+  .ats-grid {
+    grid-template-columns: 1fr;
+  }
+}

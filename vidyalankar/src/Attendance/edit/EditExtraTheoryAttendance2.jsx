@@ -18,7 +18,7 @@ const EditExtraTheoryAttendance2 = ({ onAttendanceUpdated }) => {
         const response = await fetch("http://localhost:5000/api/cianns");
         if (!response.ok) throw new Error("Failed to fetch CIANN IDs");
         const cianns = await response.json();
-        setValidCiannIds(cianns.map(ciann => ciann.ciannId));
+        setValidCiannIds(cianns.map((ciann) => ciann.ciannId));
       } catch (err) {
         console.error("Error fetching valid CIANN IDs:", err);
         setError("Could not load necessary course data.");
@@ -30,12 +30,17 @@ const EditExtraTheoryAttendance2 = ({ onAttendanceUpdated }) => {
 
   useEffect(() => {
     if (validCiannIds.length === 0) {
-      if(!error) setIsLoading(true);
+      if (!error) setIsLoading(true);
       return;
     }
 
-    if (!selectedCiannId || !validCiannIds.includes(parseInt(selectedCiannId))) {
-      setError(`Invalid or missing CIAAN ID. Please go back and select a valid course.`);
+    if (
+      !selectedCiannId ||
+      !validCiannIds.includes(parseInt(selectedCiannId))
+    ) {
+      setError(
+        `Invalid or missing CIAAN ID. Please go back and select a valid course.`,
+      );
       setIsLoading(false);
       return;
     }
@@ -49,10 +54,12 @@ const EditExtraTheoryAttendance2 = ({ onAttendanceUpdated }) => {
 
         if (!response.ok) {
           if (response.status === 404) {
-             setAttendanceRecords([]);
+            setAttendanceRecords([]);
           } else {
             const errorText = await response.text();
-            throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+            throw new Error(
+              `HTTP error! status: ${response.status} - ${errorText}`,
+            );
           }
         } else {
           const data = await response.json();
@@ -71,64 +78,108 @@ const EditExtraTheoryAttendance2 = ({ onAttendanceUpdated }) => {
   }, [selectedCiannId, validCiannIds, onAttendanceUpdated, error]);
 
   const handleEdit = (record) => {
-    navigate('/edit-individual-extra-theory-attendance', {
+    navigate("/edit-individual-extra-theory-attendance", {
       state: {
         recordToEdit: record,
         selectedCiannId: selectedCiannId,
       },
     });
   };
-  
-  // Main render logic
-  if (isLoading) return <div className="loading-message">Loading extra theory attendance records...</div>;
-  if (error) return <div className="error-message">Error: {error}</div>;
 
   return (
-    <div className="edit-attendance-container">
-      <h1 className="page-title">Edit Extra Theory Attendance (CIAAN ID: {selectedCiannId})</h1>
-      
-      {attendanceRecords.length === 0 ? (
-        <div className="no-data-message">
-          <p>No extra theory attendance records found for this course.</p>
-        </div>
-      ) : (
-        <div className="table-wrapper">
-          <table className="attendance-table">
-            <thead>
-              <tr>
-                <th>Topic</th>
-                <th>Date</th>
-                <th>Total Students</th>
-                <th>Present Count</th>
-                <th>Absent Count</th>
-                <th style={{ textAlign: 'center' }}>Edit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {attendanceRecords.map((record) => {
-                const presentCount = record.students?.filter(s => s.attendance === 'Present').length || 0;
-                const absentCount = record.students?.filter(s => s.attendance === 'Absent').length || 0;
-                const totalStudents = record.students?.length || 0;
-                
-                return (
-                  <tr key={record._id}>
-                    <td data-label="Topic">{record.topic || "N/A"}</td>
-                    <td data-label="Date">{record.date || "N/A"}</td>
-                    <td data-label="Total Students">{totalStudents}</td>
-                    <td data-label="Present Count">{presentCount}</td>
-                    <td data-label="Absent Count">{absentCount}</td>
-                    <td data-label="Edit" style={{ textAlign: 'center' }}>
-                      <button onClick={() => handleEdit(record)} className="edit-button">
-                        ✏️
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+    <div className="ea2-page">
+      <div className="ea2-hero">
+        <h1 className="ea2-hero-title">Edit Extra Theory Attendance Records</h1>
+        <p className="ea2-hero-subtitle">
+          CIAAN ID:{" "}
+          <span className="ea2-ciann-highlight">{selectedCiannId}</span>
+        </p>
+      </div>
+
+      <div className="ea2-container">
+        {isLoading && (
+          <div className="ea2-state-container ea2-loading">
+            <div className="ea2-spinner"></div>
+            <p>Loading extra theory attendance records...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="ea2-state-container ea2-error">
+            <i className="bi bi-exclamation-circle"></i>
+            <p>{error}</p>
+          </div>
+        )}
+
+        {!isLoading && !error && attendanceRecords.length === 0 && (
+          <div className="ea2-state-container ea2-no-data">
+            <i className="bi bi-inbox"></i>
+            <p>No extra theory attendance records found for this course.</p>
+          </div>
+        )}
+
+        {!isLoading && !error && attendanceRecords.length > 0 && (
+          <div className="ea2-list">
+            {attendanceRecords.map((record, index) => {
+              const presentCount =
+                record.students?.filter((s) => s.attendance === "Present")
+                  .length || 0;
+              const absentCount =
+                record.students?.filter((s) => s.attendance === "Absent")
+                  .length || 0;
+              const totalStudents = record.students?.length || 0;
+
+              return (
+                <div
+                  key={record._id}
+                  className="ea2-record-card"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="ea2-card-header">
+                    <div className="ea2-chapter-badge">
+                      <i className="bi bi-plus-circle"></i>
+                    </div>
+                    <div className="ea2-card-title">
+                      {record.topic || "Untitled Topic"}
+                    </div>
+                  </div>
+
+                  <div className="ea2-card-content">
+                    <div className="ea2-detail-grid">
+                      <div className="ea2-detail-item">
+                        <span className="ea2-label">Date</span>
+                        <span className="ea2-value">
+                          {record.date || "N/A"}
+                        </span>
+                      </div>
+                      <div className="ea2-detail-item">
+                        <span className="ea2-label">Students</span>
+                        <span className="ea2-value">{totalStudents}</span>
+                      </div>
+                      <div className="ea2-detail-item">
+                        <span className="ea2-label">Present</span>
+                        <span className="ea2-value">{presentCount}</span>
+                      </div>
+                      <div className="ea2-detail-item">
+                        <span className="ea2-label">Absent</span>
+                        <span className="ea2-value">{absentCount}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleEdit(record)}
+                    className="ea2-edit-button"
+                  >
+                    <i className="bi bi-pencil-square"></i>
+                    Edit Record
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

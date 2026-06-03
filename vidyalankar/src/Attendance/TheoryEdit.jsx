@@ -119,7 +119,7 @@ const TheoryAt = () => {
     return (
       <div className="theory-page">
         <div className="theory-card">
-          <h2 className="theory-title">Theory Attendance</h2>
+          <h2 className="theory-title">Mark Theory Attendance</h2>
           <p className="theory-subtitle">
             No CIAAN selected. Please choose a CIAAN card first.
           </p>
@@ -137,7 +137,7 @@ const TheoryAt = () => {
         <header className="theory-header">
           <div className="theory-header-main">
             <p className="theory-eyebrow">Attendance Console</p>
-            <h2 className="theory-title">Theory Attendance</h2>
+            <h2 className="theory-title">Mark Theory Attendance</h2>
             <p className="theory-subtitle">
               {selectedCiann.subject?.name} ({selectedCiann.subject?.code})
             </p>

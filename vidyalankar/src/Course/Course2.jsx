@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom"; // ✅ 1. Import useNavigate
 import axios from "axios";
+import { config } from "../config/api";
 import AddPracticalModal from "./Course3";
-import "./Course2.css";
+import "./CourseTableShared.css";
 
 const PracticalTable = () => {
   const [practicals, setPracticals] = useState([]);
@@ -28,8 +29,8 @@ const PracticalTable = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/get-experiments/add-experiment",
-        payload
+        `${config.course.experiments}/add-experiment`,
+        payload,
       );
 
       if (response.data.success) {
@@ -54,14 +55,11 @@ const PracticalTable = () => {
     if (program && className && course) {
       const fetchExperiments = async () => {
         try {
-          const response = await axios.post(
-            "http://localhost:5000/api/get-experiments/get-experiments",
-            {
-              program,
-              className,
-              course,
-            }
-          );
+          const response = await axios.post(config.course.experiments, {
+            program,
+            className,
+            course,
+          });
 
           if (response.data.success) {
             setPracticals(response.data.experiments);

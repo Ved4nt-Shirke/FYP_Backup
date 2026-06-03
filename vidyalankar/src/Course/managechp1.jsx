@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { config } from "../config/api";
-import "./managechp1.css";
+import "./CourseSectionShared.css";
 
 const ManageChapters1 = () => {
   const navigate = useNavigate();

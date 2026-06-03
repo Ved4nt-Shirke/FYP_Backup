@@ -3,12 +3,15 @@
 /* General Body/Page Container */
 .edit-practical-attendance-page-container {
   min-height: 100vh;
-  background-color: #f8f9fa; /* Simple light background */
+  background:
+    radial-gradient(circle at 8% 8%, rgba(31, 95, 191, 0.12), transparent 38%),
+    radial-gradient(circle at 92% 2%, rgba(19, 73, 150, 0.08), transparent 35%),
+    linear-gradient(180deg, #f2f7ff 0%, #eaf2ff 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   box-sizing: border-box;
 }
 
@@ -155,7 +158,7 @@
   background-color: #ffffff;
   cursor: pointer;
   appearance: none;
-  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23616161%22%20d%3D%22M287%2C197.3L159.3%2C69.6c-3.7-3.7-8.6-5.7-13.9-5.7s-10.2%2C2-13.9%2C5.7L5.4%2C197.3c-7.3%2C7.3-7.3%2C19.1%2C0%2C26.4s19.1%2C7.3%2C26.4%2C0l113.5-113.5l113.5%2C113.5c7.3%2C7.3%2C19.1%2C7.3%2C26.4%2C0S294.3%2C204.6%2C287%2C197.3z%22%2F%3E%3C%2Fsvg%3E');
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23616161%22%20d%3D%22M287%2C197.3L159.3%2C69.6c-3.7-3.7-8.6-5.7-13.9-5.7s-10.2%2C2-13.9%2C5.7L5.4%2C197.3c-7.3%2C7.3-7.3%2C19.1%2C0%2C26.4s19.1%2C7.3%2C26.4%2C0l113.5-113.5l113.5%2C113.5c7.3%2C7.3%2C19.1%2C7.3%2C26.4%2C0S294.3%2C204.6%2C287%2C197.3z%22%2F%3E%3C%2Fsvg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 10px;
@@ -200,12 +203,12 @@
 }
 
 .button-primary {
-  background-color: #2E7D32; /* Your desired header color */
+  background-color: #1f5fbf;
   color: #ffffff;
 }
 
 .button-primary:hover {
-  background-color: #1B5E20; /* Darker shade on hover */
+  background-color: #134996;
 }
 
 .button-secondary {

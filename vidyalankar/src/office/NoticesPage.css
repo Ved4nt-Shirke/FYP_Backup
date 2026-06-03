@@ -1,10 +1,20 @@
-/* Notices Page Full Layout */
+@import "./OfficeTheme.css";
+
+/* ===== NOTICES PAGE - Modern Cards & Rich Editor ===== */
+
 .notices-page {
-  padding: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
-  background: #f8f9fa;
-  min-height: 100vh;
+  animation: pageSlideIn 0.4s ease-out;
+}
+
+@keyframes pageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .notices-page-header {
@@ -22,7 +32,7 @@
   margin: 0 0 8px 0;
   font-size: 28px;
   font-weight: 700;
-  color: var(--app-header-bg, #2e7d32);
+  color: var(--office-primary);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -30,12 +40,12 @@
 
 .notices-page-header .subtitle {
   margin: 0;
-  color: #6c757d;
+  color: var(--office-text-secondary);
   font-size: 14px;
 }
 
 .btn-add-notice-page {
-  background: var(--primary-accent, #10b981);
+  background: var(--office-primary);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -51,7 +61,7 @@
 }
 
 .btn-add-notice-page:hover:not(:disabled) {
-  background: var(--primary-accent-dark, #059669);
+  background: var(--office-primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
@@ -106,7 +116,7 @@
 
 .form-input:focus {
   outline: none;
-  border-color: var(--primary-accent, #10b981);
+  border-color: var(--office-primary);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
@@ -147,9 +157,9 @@
 }
 
 .toolbar-btn:hover:not(:disabled) {
-  background: var(--primary-accent, #10b981);
+  background: var(--office-primary);
   color: white;
-  border-color: var(--primary-accent, #10b981);
+  border-color: var(--office-primary);
 }
 
 .toolbar-btn:disabled {
@@ -228,12 +238,12 @@
 }
 
 .btn-primary {
-  background: var(--primary-accent, #10b981);
+  background: var(--office-primary);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-accent-dark, #059669);
+  background: var(--office-primary-dark);
   transform: translateY(-2px);
 }
 
@@ -300,7 +310,11 @@
 
 .badge {
   display: inline-block;
-  background: linear-gradient(135deg, var(--primary-accent, #10b981) 0%, var(--primary-accent-dark, #059669) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--office-primary) 0%,
+    var(--office-primary-dark) 100%
+  );
   color: white;
   padding: 6px 14px;
   border-radius: 20px;
@@ -326,7 +340,7 @@
 }
 
 .notice-content a {
-  color: var(--primary-accent, #10b981);
+  color: var(--office-primary);
   text-decoration: none;
 }
 
@@ -367,7 +381,7 @@
 }
 
 .btn-icon.edit:hover:not(:disabled) {
-  color: var(--primary-accent, #10b981);
+  color: var(--office-primary);
   background: rgba(16, 185, 129, 0.1);
 }
 

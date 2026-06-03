@@ -51,6 +51,21 @@ export const config = {
   // Subject details
   subjectDetails: `${API_BASE_URL}/subject-details`,
 
+  // Chat endpoints
+  chat: {
+    unreadCount: `${API_BASE_URL}/chat/unread-count`,
+    conversations: `${API_BASE_URL}/chat/conversations`,
+    messages: `${API_BASE_URL}/chat/messages`,
+    startConversation: `${API_BASE_URL}/chat/conversations/start`,
+    facultyList: `${API_BASE_URL}/chat/faculty-list`,
+    conversationMessages: (conversationId) =>
+      `${API_BASE_URL}/chat/conversations/${conversationId}/messages`,
+    toggleMute: (conversationId) =>
+      `${API_BASE_URL}/chat/conversations/${conversationId}/mute`,
+    toggleArchive: (conversationId) =>
+      `${API_BASE_URL}/chat/conversations/${conversationId}/archive`,
+  },
+
   // Teaching & Lab Planning
   teachingPlan: `${API_BASE_URL}/teaching-plan`,
   labPlanning: `${API_BASE_URL}/lab-planning`,

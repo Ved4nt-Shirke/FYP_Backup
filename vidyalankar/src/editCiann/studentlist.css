@@ -178,9 +178,9 @@ body {
     display: none;
   }
 
-  .table, 
-  .table tbody, 
-  .table tr, 
+  .table,
+  .table tbody,
+  .table tr,
   .table td {
     display: block;
     width: 100% !important; /* prevent horizontal scroll */
@@ -192,14 +192,14 @@ body {
     border: 1px solid #ddd;
     border-radius: 10px;
     background: #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     padding: 0;
     overflow: hidden;
   }
 
   .table td {
     display: flex;
-    flex-wrap: wrap;   /* allow wrapping to prevent overlap */
+    flex-wrap: wrap; /* allow wrapping to prevent overlap */
     justify-content: flex-start;
     align-items: flex-start;
     padding: 10px;
@@ -219,7 +219,7 @@ body {
     content: attr(data-label) ": ";
     font-weight: 600;
     color: #222;
-    flex: 1 1 40%;   /* responsive share */
+    flex: 1 1 40%; /* responsive share */
     text-align: left;
     white-space: normal; /* allow wrapping */
     padding-right: 5px;
@@ -261,3 +261,44 @@ body {
     flex: 100%;
   }
 } */
+
+/* Final header-safe override for Edit CIANN */
+.student-layout {
+  position: relative;
+  min-height: 100%;
+}
+
+.student-main-row {
+  overflow: visible;
+}
+
+.student-secondary-sidebar-wrapper {
+  position: static !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  height: 0 !important;
+  overflow: visible !important;
+  padding-right: 0 !important;
+}
+
+.student-main-content {
+  margin-left: 310px !important;
+  margin-top: 0 !important;
+  min-height: calc(100dvh - var(--header-height, 60px));
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1024px) {
+  .student-main-content {
+    margin-left: 300px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-main-content {
+    margin-left: 0 !important;
+    min-height: auto;
+  }
+}

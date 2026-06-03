@@ -1,963 +1,285 @@
-/* Defaulter.css */
-
-/* Main Container - FULL WIDTH */
-.defaulter-detail-page {
-  width: 100%; /* Fill available space managed by app layout */
-  max-width: none;
-  margin: 0;
-  padding: 20px 24px;
-  background-color: #ececec;
-  min-height: calc(100vh - var(--header-height));
-  border-radius: 10px;
-  margin-left: 0; /* Remove extra gap; Sidebar spacing handled by App */
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-  /* Added for smoother rendering */
-  will-change: transform;
-  transform: translateZ(0);
+﻿:root {
+  --def-primary: #1f5fbf;
+  --def-primary-dark: #134996;
+  --def-soft: #edf4ff;
+  --def-border: #d7e5f8;
+  --def-text: #143257;
+  --def-muted: #5d7090;
+  --def-success: #1d8f5f;
+  --def-danger: #dc3545;
+  --def-warning: #f59e0b;
 }
 
-/* Header */
+.defaulter-page-container {
+  min-height: calc(100vh - 64px);
+  background:
+    radial-gradient(circle at 8% 8%, rgba(31, 95, 191, 0.12), transparent 38%),
+    radial-gradient(circle at 92% 2%, rgba(19, 73, 150, 0.08), transparent 35%),
+    linear-gradient(180deg, #f2f7ff 0%, #eaf2ff 100%);
+}
+
+.defaulter-select-page {
+  padding: 1.1rem;
+}
+
+.defaulter-select-hero {
+  border: 1px solid var(--def-border);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #ffffff, #edf5ff);
+  box-shadow: 0 12px 26px rgba(18, 43, 82, 0.08);
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.defaulter-select-hero h2 {
+  margin: 0;
+  color: var(--def-text);
+  font-size: 1.9rem;
+  font-weight: 800;
+}
+
+.defaulter-select-hero p {
+  margin: 0.35rem 0 0;
+  color: var(--def-muted);
+  font-weight: 600;
+}
+
+.defaulter-ciann-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.9rem;
+}
+
+.defaulter-ciann-card {
+  border: 1px solid var(--def-border);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(18, 43, 82, 0.08);
+  padding: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.defaulter-ciann-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 26px rgba(18, 43, 82, 0.12);
+}
+
+.defaulter-ciann-icon {
+  font-size: 1.4rem;
+  color: var(--def-primary);
+}
+
+.defaulter-ciann-card h3 {
+  margin: 0.2rem 0;
+  color: var(--def-text);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.defaulter-ciann-card p {
+  margin: 0;
+  color: var(--def-muted);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.defaulter-ciann-cta {
+  margin-top: 0.5rem;
+  color: var(--def-primary);
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.defaulter-state {
+  border: 1px solid var(--def-border);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--def-muted);
+  font-weight: 700;
+  padding: 1rem;
+  text-align: center;
+}
+
+.defaulter-state-error {
+  border-color: #f8c6cc;
+  background: #fff1f2;
+  color: #842029;
+}
+
+.defaulter-detail-page {
+  padding: 1rem;
+}
+
 .defaulter-header {
-  background-color: #198754;
-  color: #fff;
-  padding: 18px 25px;
-  border-radius: 10px 10px 0 0;
+  border: 1px solid var(--def-border);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #ffffff, #edf5ff);
+  box-shadow: 0 12px 26px rgba(18, 43, 82, 0.08);
+  padding: 1rem 1.2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
-
-  /* Added for GPU acceleration */
-  will-change: transform;
-  transform: translateZ(0);
+  gap: 0.9rem;
+  margin-bottom: 1rem;
 }
 
 .defaulter-header h1 {
-  font-size: 26px;
-  font-weight: 700;
   margin: 0;
-  letter-spacing: 1.2px;
-  user-select: none;
+  color: var(--def-text);
+  font-size: 1.8rem;
+  font-weight: 800;
 }
 
-.defaulter-header button {
-  background-color: #145c35;
-  color: white;
+.header-buttons {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.print-button,
+.back-button {
   border: none;
-  padding: 12px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.12);
-}
-
-.defaulter-header button:hover {
-  background-color: #0f4427;
-  box-shadow: 0 4px 10px rgb(0 0 0 / 0.2);
-}
-
-/* Card View */
-.defaulter-ciann-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 25px;
-  padding: 25px 10px;
-  justify-content: center;
-}
-
-.ciann-card {
-  background-color: #fff;
   border-radius: 10px;
-  box-shadow: 0 6px 15px rgb(0 0 0 / 0.07);
-  padding: 25px 20px;
-  width: 280px;
-  text-align: center;
+  min-height: 40px;
+  padding: 0 1rem;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  user-select: none;
-
-  /* Added GPU acceleration for transform */
-  will-change: transform;
-  transform: translateZ(0);
+  background: linear-gradient(135deg, var(--def-primary), var(--def-primary-dark));
 }
 
-.ciann-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 25px rgb(0 0 0 / 0.12);
+.back-button {
+  background: #edf4ff;
+  color: var(--def-primary);
+  border: 1px solid #bfd6f7;
 }
 
-.ciann-card-icon {
-  font-size: 42px;
-  color: #198754;
-  margin-bottom: 14px;
-  user-select: none;
+.attendance-section {
+  border: 1px solid var(--def-border);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(18, 43, 82, 0.08);
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
-.ciann-card h4 {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0 0 10px 0;
-  color: #333;
+.attendance-section h2,
+.attendance-section h3 {
+  margin: 0 0 0.9rem;
+  color: var(--def-text);
+  font-weight: 800;
 }
 
-.ciann-card p {
-  margin: 0;
-  color: #555;
-  font-size: 15px;
-  line-height: 1.4;
+.attendance-summary-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
 }
 
-/* Section Box */
-.defaulter-detail-page .attendance-section {
-  padding: 25px 30px;
-  background-color: #fff;
-  border-radius: 0 0 10px 10px;
-  box-shadow: 0 6px 15px rgb(0 0 0 / 0.08);
-  margin-bottom: 30px;
-
-  /* GPU acceleration */
-  will-change: transform;
-  transform: translateZ(0);
+.summary-card {
+  border: 1px solid var(--def-border);
+  border-radius: 12px;
+  background: #f7fbff;
+  padding: 0.8rem;
 }
 
-/* Table */
-.defaulter-detail-page .attendance-table {
-  width: 100%;
-   border-collapse: separate; /* change from collapse to separate */
-  border-spacing: 0;          /* remove spacing between cells */
-  margin-top: 20px;
-  table-layout: fixed;
-  min-width: 600px;
-  font-size: 15px; 
-  user-select: none;
-  border: 1px solid #cccccc !important;
-border-radius: 10px; 
-  /* Prevent excessive reflow */
-  will-change: contents;
-}
-
-.defaulter-detail-page .attendance-table th,
-.defaulter-detail-page .attendance-table td {
-  border: 1px solid #cccccc;
-  padding: 14px 18px;
-  text-align: left;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  max-width: 220px;
-  vertical-align: middle;
-  color: #222;
-}
-
-.defaulter-detail-page .attendance-table th {
-  background-color: #e6f2ec;
-  font-weight: 700;
-  color: #198754;
-  letter-spacing: 0.03em;
-  background-color: #d1e7dd !important;
-  color: black !important;
-  opacity: 1 !important;
-  filter: none !important;
-  backdrop-filter: none !important;
-  box-shadow: none !important;
-   text-align: center;
-   font-size: 16px;
-}
-
-/* Summary Cards */
-.defaulter-detail-page .attendance-summary-box {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  user-select: none;
-}
-
-.defaulter-detail-page .summary-card {
-  background-color: #f9f9f9;
-  border: 1px solid #cccccc;
-  border-radius: 6px;
-  padding: 15px 20px;
-  text-align: center;
-  flex: 1;
-  transition: background-color 0.3s ease;
-}
-
-.defaulter-detail-page .summary-card:hover {
-  background-color: #e6f2ec;
-  border-color: #198754;
-}
-
-.defaulter-detail-page .summary-card span {
-  font-weight: 700;
-  color: #0c2c40;
+.summary-card span {
+  color: var(--def-primary);
+  font-size: 1.4rem;
+  font-weight: 800;
   display: block;
-  font-size: 17px;
-  margin-bottom: 5px;
 }
 
-.defaulter-detail-page .summary-card p {
-  margin: 0;
-  color: #666;
-  font-size: 14px;
+.summary-card p {
+  margin: 0.2rem 0 0;
+  color: var(--def-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
-/* Mobile Responsive Styles */
+.table-container {
+  overflow: auto;
+  border: 1px solid var(--def-border);
+  border-radius: 12px;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.attendance-table th,
+.attendance-table td {
+  border: 1px solid #e6eefb;
+  padding: 0.65rem 0.7rem;
+  font-size: 0.88rem;
+}
+
+.attendance-table th {
+  background: #edf4ff;
+  color: #355ea8;
+  font-weight: 800;
+  text-align: center;
+}
+
+.attendance-table td {
+  color: #183861;
+}
+
+.attendance-table tbody tr:nth-child(even) td {
+  background: #fbfdff;
+}
+
+.print-only-header,
+.print-only-footer {
+  display: none;
+}
+
 @media (max-width: 768px) {
-  /* Main container adjustments */
-  .defaulter-detail-page {
-    width: 100%;
-    margin-left: 0;
-    padding: 10px 15px;
-    min-height: calc(100vh - 60px);
-  }
-
-  .defaulter-page-container {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* Header adjustments */
   .defaulter-header {
     flex-direction: column;
-    gap: 15px;
-    text-align: center;
-    padding: 15px 20px;
-  }
-
-  .defaulter-header h1 {
-    font-size: 20px;
-    line-height: 1.3;
-    margin: 0;
+    align-items: flex-start;
   }
 
   .header-buttons {
-    flex-direction: column;
     width: 100%;
-    gap: 10px;
   }
 
   .print-button,
   .back-button {
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 16px;
-  }
-
-  /* Section adjustments */
-  .attendance-section {
-    padding: 15px 20px;
-    margin-bottom: 20px;
-  }
-
-  .defaulter-detail-page h2 {
-    font-size: 20px;
-    margin-bottom: 15px;
-    text-align: center;
-  }
-
-  .defaulter-detail-page h3 {
-    font-size: 18px;
-    margin-bottom: 10px;
-    text-align: center;
-  }
-
-  /* Summary cards - stack vertically on mobile */
-  .attendance-summary-box {
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .summary-card {
-    width: 100%;
-    padding: 15px;
-    text-align: center;
-  }
-
-  .summary-card span {
-    font-size: 24px;
-  }
-
-  .summary-card p {
-    font-size: 13px;
-    margin-top: 5px;
-  }
-
-  /* Mobile Table - Horizontal Scroll - Override all desktop styles */
-  .table-container {
-    width: 100% !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid #dee2e6 !important;
-    border-radius: 8px !important;
-    margin-bottom: 20px !important;
-    background-color: white !important;
-  }
-
-  .defaulter-detail-page .attendance-table {
-    width: 100% !important;
-    min-width: 600px !important;
-    border-collapse: collapse !important;
-    margin: 0 !important;
-    font-size: 14px !important;
-    display: table !important;
-  }
-
-  .defaulter-detail-page .attendance-table thead {
-    display: table-header-group !important;
-  }
-
-  .defaulter-detail-page .attendance-table tbody {
-    display: table-row-group !important;
-  }
-
-  .defaulter-detail-page .attendance-table tr {
-    display: table-row !important;
-  }
-
-  .defaulter-detail-page .attendance-table th,
-  .defaulter-detail-page .attendance-table td {
-    display: table-cell !important;
-    padding: 12px 8px !important;
-    text-align: center !important;
-    vertical-align: middle !important;
-    border: 1px solid #dee2e6 !important;
-    white-space: nowrap !important;
-    max-width: none !important;
-    word-wrap: normal !important;
-    overflow-wrap: normal !important;
-  }
-
-  .defaulter-detail-page .attendance-table th {
-    background-color: #28a745 !important;
-    color: white !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-  .defaulter-detail-page .attendance-table td {
-    font-size: 13px !important;
-    background-color: white !important;
-  }
-
-  .defaulter-detail-page .attendance-table tbody tr:nth-child(even) td {
-    background-color: #f8f9fa !important;
-  }
-
-  .defaulter-detail-page .attendance-table tbody tr:hover td {
-    background-color: #e3f2fd !important;
-  }
-
-  /* Batch container adjustments */
-  .batch-container {
-    margin-bottom: 30px;
-  }
-
-  /* CIANN cards container for mobile */
-  .defaulter-ciann-cards {
-    gap: 15px;
-    padding: 15px 5px;
-  }
-
-  .ciann-card {
-    width: 100%;
-    max-width: 320px;
-  }
-
-  /* Scroll indicator for mobile */
-  .table-container::after {
-    content: "← Swipe to see more data →";
-    display: block;
-    text-align: center;
-    padding: 8px;
-    background-color: #f8f9fa;
-    color: #6c757d;
-    font-size: 12px;
-    border-top: 1px solid #dee2e6;
-    font-style: italic;
-  }
-
-  /* Improve table readability on mobile */
-  .attendance-table th {
-    font-size: 11px;
-    padding: 10px 6px;
-  }
-
-  .attendance-table td {
-    font-size: 12px;
-    padding: 8px 6px;
-  }
-
-  /* Color coding for percentages */
-  .attendance-table td[style*="color: #dc3545"] {
-    background-color: #f8d7da !important;
-  }
-
-  .attendance-table td[style*="color: #fd7e14"] {
-    background-color: #ffeaa7 !important;
-  }
-
-  .attendance-table td[style*="color: #ffc107"] {
-    background-color: #fff3cd !important;
+    flex: 1;
   }
 }
 
-/* Extra small mobile devices */
-@media (max-width: 480px) {
-  .defaulter-detail-page {
-    padding: 8px 10px;
-  }
-
-  .defaulter-header {
-    padding: 12px 15px;
-  }
-
-  .defaulter-header h1 {
-    font-size: 18px;
-  }
-
-  .attendance-section {
-    padding: 12px 15px;
-  }
-
-  .defaulter-detail-page h2 {
-    font-size: 18px;
-  }
-
-  .defaulter-detail-page h3 {
-    font-size: 16px;
-  }
-
-  .summary-card {
-    padding: 12px;
-  }
-
-  .summary-card span {
-    font-size: 20px;
-  }
-
-  .summary-card p {
-    font-size: 12px;
-  }
-
-  .defaulter-detail-page .attendance-table {
-    min-width: 500px !important;
-    font-size: 12px !important;
-  }
-
-  .defaulter-detail-page .attendance-table th,
-  .defaulter-detail-page .attendance-table td {
-    padding: 8px 6px !important;
-    font-size: 12px !important;
-  }
-
-  .table-container::after {
-    font-size: 11px;
-    padding: 6px;
-  }
-}
-
-.defaulter-detail-page .attendance-table tbody tr:hover {
-  background-color: #d4edda !important; /* or any color you want */
-  color: #155724 !important; /* ensure text color changes too */
-}
-
-.defaulter-detail-page .attendance-table tbody tr:nth-child(even) {
-  background-color: #f8f9fa !important;
-}
-
-.defaulter-detail-page .attendance-table tbody tr:nth-child(odd) {
-  background-color: #ffffff !important;
-}
-
-.defaulter-detail-page .attendance-table th:nth-child(1) { width: 5%; }   /* Roll No */
-.defaulter-detail-page .attendance-table th:nth-child(2) { width: 20%; }   /* Student Name */
-.defaulter-detail-page .attendance-table th:nth-child(3) { width: 10%; }   /* Theory Lecture Attd */
-.defaulter-detail-page .attendance-table th:nth-child(4) { width: 10%; }   /* Extra Lecture Attd */
-.defaulter-detail-page .attendance-table th:nth-child(5) { width: 10%; }   /* % of Theory Attd */
-
-.defaulter-detail-page h2 {
-  font-weight: 700 !important;
-  font-size: 26px;
-}
-
-.defaulter-detail-page h3 {
-  font-weight: 600 !important;
-  font-size: 22px;
-  margin-bottom: 1rem;
-  margin-top: 1rem;
-}
-
-h2 {
-  font-weight: 700; /* bold */
-  margin-top: 0.5rem;   /* adds space above */
-  margin-bottom: 1.7rem;  /* adds space below */
-  letter-spacing: 0.03em; /* optional: for neat spacing */
-}
-
-/* --- REGULAR SCREEN STYLES --- */
-
-.defaulter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.print-button,
-.back-button {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f0f0f0;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.print-button:hover,
-.back-button:hover {
-  background-color: #e0e0e0;
-}
-
-/* Hide print-specific elements from the screen by default */
-.print-only-header, 
-.print-only-hr {
-  display: none;
-}
-
-
-/* --- REGULAR SCREEN STYLES --- */
-
-.defaulter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 20px;
-}
-
-.header-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.print-button,
-.back-button {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f0f0f0;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.print-button:hover,
-.back-button:hover {
-  background-color: #e0e0e0;
-}
-
-
-/* --- REGULAR SCREEN STYLES --- */
-
-.defaulter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 20px;
-}
-
-.header-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.print-button,
-.back-button {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f0f0f0;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.print-button:hover,
-.back-button:hover {
-  background-color: #e0e0e0;
-}
-
-
-/* === COMPREHENSIVE PRINT STYLES === */
 @media print {
-  /* Page setup */
-  @page {
-    size: A4;
-    margin: 0.5in;
-  }
-
-  /* Reset and base styles */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  body {
-    background: white !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    font-family: Arial, sans-serif !important;
-    font-size: 12pt !important;
-    line-height: 1.3 !important;
-    color: black !important;
-  }
-
-  /* Hide everything except the content we want to print (only in defaulter print mode) */
-  body.printing-defaulter * {
-    visibility: hidden !important;
-  }
-
-  body.printing-defaulter .defaulter-detail-page,
-  body.printing-defaulter .defaulter-detail-page * {
-    visibility: visible !important;
-  }
-
-  /* Hide elements that shouldn't be printed */
   .header-buttons,
   .print-button,
   .back-button,
+  .no-print,
+  .defaulter-select-page,
+  .defaulter-select-hero,
+  .defaulter-ciann-grid,
   .sidebar,
-  .sidebar-overlay,
-  .no-print {
+  .sidebar-overlay {
     display: none !important;
-    visibility: hidden !important;
   }
 
-  /* Hide React components that shouldn't be printed */
-  .defaulter-page-container > *:not(.defaulter-detail-page) {
-    display: none !important;
-    visibility: hidden !important;
+  .defaulter-detail-page,
+  .attendance-section,
+  .table-container {
+    box-shadow: none !important;
+    border: 1px solid #999 !important;
   }
 
-  /* Show print-only elements */
   .print-only-header,
   .print-only-footer {
     display: block !important;
-    visibility: visible !important;
-  }
-
-  /* Main container */
-  .defaulter-detail-page {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: white !important;
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-  }
-
-  /* Header styling */
-  .defaulter-header {
-    background: white !important;
-    color: black !important;
-    padding: 10pt 0 !important;
-    margin-bottom: 15pt !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    text-align: center !important;
-    page-break-after: avoid !important;
-  }
-
-  .defaulter-header h1 {
-    font-size: 16pt !important;
-    font-weight: bold !important;
-    margin: 0 !important;
-    color: black !important;
-    text-align: center !important;
-    border-bottom: 2px solid black !important;
-    padding-bottom: 5pt !important;
-  }
-
-  /* Section headers */
-  .attendance-section {
-    background: white !important;
-    padding: 0 !important;
-    margin: 15pt 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    page-break-inside: avoid !important;
-  }
-
-  .attendance-section h2 {
-    font-size: 14pt !important;
-    font-weight: bold !important;
-    color: black !important;
-    margin: 15pt 0 10pt 0 !important;
-    padding: 5pt 0 !important;
-    border-bottom: 1px solid black !important;
-    page-break-after: avoid !important;
-  }
-
-  .attendance-section h3 {
-    font-size: 12pt !important;
-    font-weight: bold !important;
-    color: black !important;
-    margin: 10pt 0 5pt 0 !important;
-    page-break-after: avoid !important;
-  }
-
-  /* Batch containers */
-  .batch-container {
-    margin-bottom: 20pt !important;
-    page-break-inside: avoid !important;
-  }
-
-  /* Summary cards */
-  .attendance-summary-box {
-    display: flex !important;
-    justify-content: space-between !important;
-    gap: 10pt !important;
-    margin: 10pt 0 !important;
-    page-break-inside: avoid !important;
-  }
-
-  .summary-card {
-    border: 1px solid black !important;
-    padding: 8pt !important;
-    text-align: center !important;
-    flex: 1 !important;
-    background: white !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-  }
-
-  .summary-card span {
-    font-size: 14pt !important;
-    font-weight: bold !important;
-    color: black !important;
-    display: block !important;
-    margin-bottom: 3pt !important;
-  }
-
-  .summary-card p {
-    font-size: 10pt !important;
-    color: black !important;
-    margin: 0 !important;
-    line-height: 1.2 !important;
-  }
-
-  /* Table container */
-  .table-container {
-    width: 100% !important;
-    overflow: visible !important;
-    border: none !important;
-    margin: 10pt 0 !important;
-    page-break-inside: avoid !important;
-  }
-
-  /* Table styling */
-  .attendance-table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    margin: 0 !important;
-    font-size: 10pt !important;
-    background: white !important;
-    page-break-inside: auto !important;
-  }
-
-  .attendance-table thead {
-    display: table-header-group !important;
-  }
-
-  .attendance-table tbody {
-    display: table-row-group !important;
-  }
-
-  .attendance-table tr {
-    page-break-inside: avoid !important;
-    page-break-after: auto !important;
-  }
-
-  .attendance-table th,
-  .attendance-table td {
-    border: 1px solid black !important;
-    padding: 4pt 6pt !important;
-    text-align: center !important;
-    vertical-align: middle !important;
-    font-size: 9pt !important;
-    color: black !important;
-    background: white !important;
-    word-wrap: break-word !important;
-    max-width: none !important;
-  }
-
-  .attendance-table th {
-    background: #f0f0f0 !important;
-    font-weight: bold !important;
-    font-size: 9pt !important;
-    color: black !important;
-    text-align: center !important;
-    padding: 6pt 4pt !important;
-  }
-
-  /* Specific column widths for better layout */
-  .attendance-table th:nth-child(1),
-  .attendance-table td:nth-child(1) {
-    width: 12% !important;
-    text-align: center !important;
-  }
-
-  .attendance-table th:nth-child(2),
-  .attendance-table td:nth-child(2) {
-    width: 35% !important;
-    text-align: left !important;
-    padding-left: 8pt !important;
-  }
-
-  .attendance-table th:nth-child(3),
-  .attendance-table td:nth-child(3),
-  .attendance-table th:nth-child(4),
-  .attendance-table td:nth-child(4),
-  .attendance-table th:nth-child(5),
-  .attendance-table td:nth-child(5) {
-    width: 15% !important;
-    text-align: center !important;
-  }
-
-  /* Zebra striping for better readability */
-  .attendance-table tbody tr:nth-child(even) td {
-    background: #f8f8f8 !important;
-  }
-
-  .attendance-table tbody tr:nth-child(odd) td {
-    background: white !important;
-  }
-
-  /* Color coding for attendance percentages */
-  .attendance-table td[style*="color: #dc3545"] {
-    background: #ffebee !important;
-    color: black !important;
-    font-weight: bold !important;
-  }
-
-  .attendance-table td[style*="color: #fd7e14"] {
-    background: #fff3e0 !important;
-    color: black !important;
-    font-weight: bold !important;
-  }
-
-  /* Special styling for "No defaulters" message */
-  .attendance-table td[colspan="5"] {
-    background: #e8f5e8 !important;
-    color: black !important;
-    font-weight: bold !important;
-    text-align: center !important;
-    padding: 15pt !important;
-    font-size: 11pt !important;
-  }
-
-  /* Page breaks */
-  .attendance-section:not(:first-child) {
-    page-break-before: auto !important;
-  }
-
-  .batch-container:not(:first-child) {
-    page-break-before: auto !important;
-  }
-
-  /* Ensure tables don't break awkwardly */
-  .attendance-table thead tr {
-    page-break-after: avoid !important;
-  }
-
-  .attendance-table tbody tr {
-    page-break-inside: avoid !important;
-  }
-
-  /* Hide mobile-specific elements */
-  .table-container::after {
-    display: none !important;
-  }
-
-  /* Remove any transforms or animations */
-  * {
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-    will-change: auto !important;
-  }
-
-  /* Ensure proper text rendering */
-  p, span, div, td, th {
-    text-shadow: none !important;
-    filter: none !important;
-    backdrop-filter: none !important;
-  }
-
-  /* Print-only header and footer styling */
-  .print-only-header {
-    margin-bottom: 20pt !important;
-    page-break-after: avoid !important;
-  }
-
-  .print-only-footer {
-    margin-top: 20pt !important;
-    page-break-before: avoid !important;
-    position: fixed !important;
-    bottom: 0 !important;
-    width: 100% !important;
-  }
-
-  /* Improve table readability */
-  .attendance-table {
-    border: 2px solid black !important;
-  }
-
-  .attendance-table th {
-    border: 1px solid black !important;
-    background: #e8e8e8 !important;
-  }
-
-  .attendance-table td {
-    border: 1px solid black !important;
-  }
-
-  /* Better spacing for sections */
-  .attendance-section:not(:last-child) {
-    margin-bottom: 25pt !important;
-  }
-
-  /* Ensure batch containers have proper spacing */
-  .batch-container:not(:last-child) {
-    margin-bottom: 20pt !important;
-    border-bottom: 1px solid #ccc !important;
-    padding-bottom: 15pt !important;
-  }
-
-  /* Page break controls for large tables */
-  .attendance-table tbody tr:nth-child(20n) {
-    page-break-after: auto !important;
-  }
-
-  /* Ensure no orphaned headers */
-  .attendance-section h2 + .attendance-summary-box + .table-container {
-    page-break-before: avoid !important;
   }
 }

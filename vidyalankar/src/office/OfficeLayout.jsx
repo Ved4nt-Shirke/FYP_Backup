@@ -1,5 +1,4 @@
 import React from "react";
-import OfficeHeader from "./OfficeHeader";
 import OfficeSidebar from "./OfficeSidebar";
 import "./OfficeLayout.css";
 
@@ -13,10 +12,6 @@ const OfficeLayout = ({ children }) => {
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = "/login";
-  };
-
-  const handleMenuToggle = () => {
-    setSidebarVisible(!sidebarVisible);
   };
 
   return (

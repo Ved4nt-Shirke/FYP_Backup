@@ -23,6 +23,7 @@ import Notices from "./student/Notices";
 import StudentPracticalExamList from "./student/StudentPracticalExamList";
 import StudentPracticalExamUpload from "./student/StudentPracticalExamUpload";
 import StudentTimetable from "./student/StudentTimetable";
+import ChatPage from "./chat/ChatPage";
 
 // CIANN / Edit CIANN Components
 import CreateCiann from "./components/CreateCiann";
@@ -55,6 +56,7 @@ import MarkAttendance from "./components/MarkAttendance";
 import ViewAttendance from "./components/ViewAttendance";
 import EditAttendance from "./components/EditAttendance";
 import TheoryCiannCards from "./Attendance/TheoryAttend";
+import SmartAttendanceHub from "./Attendance/SmartAttendanceHub";
 import ExtraTheoryCiannCards from "./Attendance/EtheoryCard";
 import ExtraPracticalCiannCards from "./Attendance/EpractCard";
 import TutorialCiannCards from "./Attendance/tutCard";
@@ -251,17 +253,36 @@ const applyTheme = async (college, role) => {
     return;
   }
 
-  const themeMap = {
-    VSIT: { header: "#c62828", accent: "#ef4444", accentDark: "#b91c1c" },
-    VIT: { header: "#1565c0", accent: "#3b82f6", accentDark: "#1d4ed8" },
-    VP: { header: "#2e7d32", accent: "#10b981", accentDark: "#059669" },
-  };
+  // For faculty/other roles, apply institution palette from backend
+  // or use fallback to hardcoded theme
+  if (!institutionPalette && !cachedPalette) {
+    // Create a complete fallback theme palette and apply it
+    const themeMap = {
+      VSIT: { header: "#c62828", accent: "#ef4444", accentDark: "#b91c1c" },
+      VIT: { header: "#1565c0", accent: "#3b82f6", accentDark: "#1d4ed8" },
+      VP: { header: "#2e7d32", accent: "#10b981", accentDark: "#059669" },
+    };
 
-  const theme = themeMap[college] || themeMap.VP;
+    const theme = themeMap[college] || themeMap.VP;
 
-  root.style.setProperty("--app-header-bg", theme.header);
-  root.style.setProperty("--primary-accent", theme.accent);
-  root.style.setProperty("--primary-accent-dark", theme.accentDark);
+    // Create a palette object and apply it using the same applyPalette function
+    // This ensures ALL CSS variables are set consistently
+    const fallbackPalette = {
+      name: `fallback-${college}`,
+      colors: {
+        primary: theme.header,
+        primaryLight: theme.accent, // Use accent as light variant
+        background: "#f9fafb",
+        surface: "#ffffff",
+        border: "#e5e7eb",
+        text: "#111827",
+        textMuted: "#6b7280",
+        accent: theme.accent,
+      },
+    };
+
+    applyPalette(fallbackPalette);
+  }
 };
 
 const AppContent = () => {
@@ -392,7 +413,11 @@ const AppContent = () => {
           <Route path="/" element={<StudentLayout />}>
             <Route path="dashboard" element={<StudentDashboard />} />
             <Route path="study-material" element={<StudyMaterial />} />
-            <Route path="practical-exams" element={<StudentPracticalExamList />} />
+            <Route path="messages" element={<ChatPage />} />
+            <Route
+              path="practical-exams"
+              element={<StudentPracticalExamList />}
+            />
             <Route
               path="practical-exam-upload/:examId"
               element={<StudentPracticalExamUpload />}
@@ -494,6 +519,7 @@ const AppContent = () => {
               path="/faculty/study-material"
               element={<FacultyStudyMaterialManager />}
             />
+            <Route path="/messages" element={<ChatPage />} />
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/laboratory-plan" element={<LabPlanningSheet />} />
             <Route path="/teaching-plan" element={<TeachingPlanSheet />} />
@@ -517,6 +543,7 @@ const AppContent = () => {
             <Route path="/mark-attendance" element={<MarkAttendance />} />
             <Route path="/view-attendance" element={<ViewAttendance />} />
             <Route path="/edit-attendance" element={<EditAttendance />} />
+            <Route path="/smart-attendance" element={<SmartAttendanceHub />} />
             <Route path="/theory-ciann-cards" element={<TheoryCiannCards />} />
             <Route
               path="/extra-theory-ciann-cards"
@@ -745,6 +772,10 @@ const AppContent = () => {
             <Route path="/ct-dashboard/:ciannId" element={<CTDashboard />} />
             <Route
               path="/pt-microproject/microproject"
+              element={<Microproject />}
+            />
+            <Route
+              path="/pt-microproject/microproject/step-3"
               element={<Microproject />}
             />
             {/* Course Management */}

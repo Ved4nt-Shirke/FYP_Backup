@@ -58,7 +58,7 @@ router.post(
   async (req, res) => {
     try {
       console.log("Creating faculty with data:", req.body);
-      const { fullName, email, skills, institution, department } = req.body;
+      const { fullName, email, whatsappPhone, skills, institution, department } = req.body;
 
       // Check if the institution matches the admin's institution (from auth middleware)
       if (req.user && req.user.college && req.user.college !== institution) {
@@ -109,6 +109,7 @@ router.post(
         department: department || null,
         institution,
         skills: skills || [],
+        whatsappPhone: whatsappPhone || "",
         generatedUsername: username,
         currentPassword: password, // store plain password for admin reference
         createdBy: req.user._id,
@@ -121,6 +122,7 @@ router.post(
         department: department || null,
         institution,
         skills: skills || [],
+        whatsappPhone: whatsappPhone || "",
         generatedUsername: username,
       });
 
@@ -537,6 +539,7 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
       department: facultyData.department || null,
       institution,
       skills: facultyData.skills || [],
+      whatsappPhone: facultyData.whatsappPhone || "",
       generatedUsername: facultyData.generatedUsername,
       createdBy: req.user._id,
       currentPassword: generatedPassword, // Store plain text password for admin access
@@ -1181,13 +1184,13 @@ router.post("/office-staff", authenticate, authorizeAdmin, async (req, res) => {
         const lastNumber =
           existingStaff.length > 0
             ? Math.max(
-                ...existingStaff.map((s) => {
-                  const match = s.employeeId?.match(
-                    new RegExp(`${currentYear}${instituteCode}(\\d+)`),
-                  );
-                  return match ? parseInt(match[1]) : 0;
-                }),
-              )
+              ...existingStaff.map((s) => {
+                const match = s.employeeId?.match(
+                  new RegExp(`${currentYear}${instituteCode}(\\d+)`),
+                );
+                return match ? parseInt(match[1]) : 0;
+              }),
+            )
             : 0;
         const nextNumber = (lastNumber + 1).toString().padStart(2, "0");
         employeeId = `${currentYear}${instituteCode}${nextNumber}`;

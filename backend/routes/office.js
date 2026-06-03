@@ -95,25 +95,41 @@ router.get(
 router.get("/students", authenticate, authorizeOffice, async (req, res) => {
   try {
     const { batch, division, departmentId, courseId, divisionId, academicYear } = req.query;
-    let query = {};
+    const normalizedBatch = (batch || "").toString().trim();
+    const normalizedDivision = (division || "").toString().trim();
+    const normalizedDepartmentId = (departmentId || "").toString().trim();
+    const normalizedCourseId = (courseId || "").toString().trim();
+    const normalizedDivisionId = (divisionId || "").toString().trim();
+    const normalizedAcademicYear = (academicYear || "").toString().trim();
 
-    if (batch) {
-      query.batch = batch;
+    const baseQuery = {};
+
+    if (normalizedDivision) {
+      baseQuery.division = {
+        $regex: new RegExp(`^${escapeRegex(normalizedDivision)}$`, "i"),
+      };
     }
-    if (division) {
-      query.division = division;
+    if (normalizedDepartmentId) {
+      baseQuery.departmentId = normalizedDepartmentId;
     }
-    if (departmentId) {
-      query.departmentId = departmentId;
+    if (normalizedCourseId) {
+      baseQuery.courseId = normalizedCourseId;
     }
-    if (courseId) {
-      query.courseId = courseId;
+    if (normalizedDivisionId) {
+      baseQuery.divisionId = normalizedDivisionId;
     }
-    if (divisionId) {
-      query.divisionId = divisionId;
+
+    const query = { ...baseQuery };
+
+    if (normalizedBatch) {
+      query.batch = {
+        $regex: new RegExp(`^${escapeRegex(normalizedBatch)}$`, "i"),
+      };
     }
-    if (academicYear) {
-      query.academicYear = academicYear;
+    if (normalizedAcademicYear) {
+      query.academicYear = {
+        $regex: new RegExp(`^${escapeRegex(normalizedAcademicYear)}$`, "i"),
+      };
     }
 
     const students = await Student.find(query)
@@ -121,7 +137,24 @@ router.get("/students", authenticate, authorizeOffice, async (req, res) => {
       .populate("courseId", "semester scheme courseCode")
       .populate("divisionId", "name");
 
-    res.json({ success: true, students });
+    let filterHint = null;
+    if (
+      students.length === 0 &&
+      (normalizedBatch || normalizedAcademicYear) &&
+      (normalizedDepartmentId || normalizedCourseId || normalizedDivisionId)
+    ) {
+      const coreCount = await Student.countDocuments(baseQuery);
+      if (coreCount > 0) {
+        filterHint = {
+          code: "FILTER_MISMATCH",
+          message:
+            "Students exist for selected Department/Course/Division, but Batch or Academic Year did not match.",
+          coreMatchCount: coreCount,
+        };
+      }
+    }
+
+    res.json({ success: true, students, filterHint });
   } catch (err) {
     console.error("Error fetching office students:", err);
     res.status(500).json({ success: false, message: err.message });

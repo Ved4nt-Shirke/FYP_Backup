@@ -1,31 +1,21 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import { showSuccessAlert, showErrorAlert } from "../utils/alertUtils.jsx";
-import "./TheoryEdit.css";
+import { showErrorAlert } from "../utils/alertUtils.jsx";
+import "./edit/EditIndividualAttendance.css";
 
 const StudentAttendancePage = () => {
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
-  const [columnsVisible, setColumnsVisible] = useState({
-    rollId: true,
-    name: true,
-    mark: true,
-  });
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showHeaders, setShowHeaders] = useState(true);
-  const [arrowOpen, setArrowOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch students from backend based on batch from attendanceMeta
   useEffect(() => {
-    console.log("Component mounted, checking localStorage...");
     const metaString = localStorage.getItem("attendanceMeta");
-    console.log("Raw localStorage data:", metaString);
 
     if (!metaString) {
-      console.error("No attendanceMeta found in localStorage");
       showErrorAlert("Missing attendance information. Redirecting to form...");
       navigate("/extra-practical");
       return;
@@ -34,7 +24,6 @@ const StudentAttendancePage = () => {
     let meta;
     try {
       meta = JSON.parse(metaString);
-      console.log("Parsed meta data:", meta);
     } catch (parseError) {
       console.error("Error parsing localStorage data:", parseError);
       showErrorAlert(
@@ -44,62 +33,46 @@ const StudentAttendancePage = () => {
     }
 
     if (!meta || !meta.batch) {
-      console.error("Missing batch in meta data:", meta);
       showErrorAlert(
         "Missing batch information. Please go back and select a batch.",
       );
       return;
     }
 
-    console.log("Fetching students for batch:", meta.batch);
-
-    // Build query params with batch and division
     const params = { batch: meta.batch };
     if (meta.ciannData?.division) {
       params.division = meta.ciannData.division;
     }
 
-    const apiUrl = `http://localhost:5000/api/students`;
-    console.log("API URL:", apiUrl, "Params:", params);
-
     axios
-      .get(apiUrl, { params })
+      .get("http://localhost:5000/api/students", { params })
       .then((res) => {
-        console.log("API Response status:", res.status);
-        console.log("Students fetched:", res.data);
-
         if (!res.data || res.data.length === 0) {
-          console.warn("No students found for batch:", meta.batch);
-          // Try fetching all students as fallback
-          console.log("Trying to fetch all students as fallback...");
           return axios.get("http://localhost:5000/api/students");
         }
 
-        // Map backend fields to frontend fields
         const studentList = res.data.map((student) => ({
           rollId: student.rollNo,
           name: student.studentName,
           enrollmentNo: student.enrollmentNo || "N/A",
           batch: student.batch || "N/A",
-          attendance: "Absent", // Make sure this is a string
+          attendance: "Absent",
         }));
-        console.log("Mapped student list:", studentList);
         setStudents(studentList);
+        return null;
       })
       .then((fallbackRes) => {
         if (fallbackRes) {
-          console.log("Fallback API Response:", fallbackRes.data);
-          // Filter students by batch on frontend if backend filtering failed
           const filteredStudents = fallbackRes.data.filter(
             (student) => student.batch === meta.batch,
           );
-          console.log("Frontend filtered students:", filteredStudents);
 
           if (filteredStudents.length === 0) {
-            alert(
-              `No students found for batch ${meta.batch}. Please check if students are added to this batch.`,
-            );
             setStudents([]);
+            setIsSuccess(false);
+            setMessage(
+              `No students found for batch ${meta.batch}. Please add students to this batch first.`,
+            );
             return;
           }
 
@@ -110,33 +83,18 @@ const StudentAttendancePage = () => {
             batch: student.batch || "N/A",
             attendance: "Absent",
           }));
-          console.log("Fallback mapped student list:", studentList);
           setStudents(studentList);
         }
       })
       .catch((err) => {
         console.error("Failed to fetch students:", err);
-        console.error("Error status:", err.response?.status);
-        console.error("Error data:", err.response?.data);
-        console.error("Error message:", err.message);
-        console.error("Full error object:", err);
-
-        if (err.response?.status === 404) {
-          alert(
-            "API endpoint not found. Please check if the backend server is running correctly.",
-          );
-        } else if (err.code === "ECONNREFUSED") {
-          alert(
-            "Cannot connect to backend server. Please check if the server is running on port 5000.",
-          );
-        } else {
-          alert(
-            `Failed to fetch students: ${err.response?.data?.message || err.message}`,
-          );
-        }
         setStudents([]);
+        setIsSuccess(false);
+        setMessage(
+          `Failed to fetch students: ${err.response?.data?.message || err.message}`,
+        );
       });
-  }, []);
+  }, [navigate]);
 
   const toggleAttendance = (index) => {
     setStudents((prevStudents) => {
@@ -149,7 +107,6 @@ const StudentAttendancePage = () => {
             }
           : student,
       );
-      console.log(updated); // Debug: See if attendance is toggling
       return updated;
     });
   };
@@ -158,24 +115,27 @@ const StudentAttendancePage = () => {
     try {
       const meta = JSON.parse(localStorage.getItem("attendanceMeta"));
       if (!meta) {
-        alert("Missing attendance meta info");
+        setIsSuccess(false);
+        setMessage("Missing attendance meta info.");
         return;
       }
 
-      // Get ciannData from meta instead of separate localStorage item
       const ciannData = meta.ciannData;
       if (!ciannData) {
-        alert("Missing CIANN data. Please select a CIANN first.");
+        setIsSuccess(false);
+        setMessage("Missing CIANN data. Please select a CIANN first.");
         return;
       }
 
       if (!ciannData.ciannId) {
-        alert("Missing CIANN ID. Please select a valid CIANN.");
+        setIsSuccess(false);
+        setMessage("Missing CIANN ID. Please select a valid CIANN.");
         return;
       }
 
       if (students.length === 0) {
-        alert("No students found. Please refresh and try again.");
+        setIsSuccess(false);
+        setMessage("No students found. Please refresh and try again.");
         return;
       }
 
@@ -184,23 +144,27 @@ const StudentAttendancePage = () => {
         students,
         ciannId: ciannData.ciannId,
       };
-      console.log("Payload to be sent:", payload);
 
-      const response = await axios.post(
-        "http://localhost:5000/api/extra-pract",
-        payload,
-      );
-      console.log("Response:", response.data);
+      setIsSubmitting(true);
+      setMessage("");
 
-      alert("Extra practical attendance submitted successfully!");
+      await axios.post("http://localhost:5000/api/extra-pract", payload);
+
+      setIsSuccess(true);
+      setMessage("Extra practical attendance submitted successfully.");
       localStorage.removeItem("attendanceMeta");
 
-      // Navigate back or refresh
-      window.location.href = "/dashboard";
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 600);
     } catch (err) {
       console.error("Submission failed:", err);
-      console.error("Error details:", err.response?.data || err.message);
-      alert(`Submission failed: ${err.response?.data?.message || err.message}`);
+      setIsSuccess(false);
+      setMessage(
+        `Submission failed: ${err.response?.data?.message || err.message}`,
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -216,180 +180,196 @@ const StudentAttendancePage = () => {
     XLSX.writeFile(workbook, "Student_Attendance.xlsx");
   };
 
-  const toggleColumn = (column) => {
-    setColumnsVisible((prev) => ({ ...prev, [column]: !prev[column] }));
-  };
+  const presentCount = students.filter(
+    (student) => student.attendance === "Present",
+  ).length;
+  const totalCount = students.length;
+  const absentCount = totalCount - presentCount;
+  const attendancePercentage =
+    totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
 
-  const handleGridView = () => setShowDropdown((prev) => !prev);
+  const metaString = localStorage.getItem("attendanceMeta");
+  let meta = null;
+  try {
+    meta = metaString ? JSON.parse(metaString) : null;
+  } catch (err) {
+    console.error("Error parsing metadata:", err);
+  }
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const ciannData = meta?.ciannData;
 
   return (
-    <div className="timetable-main-content">
-      <div className="theory-attendance-container">
-        <div className="header-row">
-          <h3>Extra Practical Attendance</h3>
-        </div>
+    <div className="eia-page">
+      <div className="eia-hero">
+        <h1 className="eia-hero-title">Mark Extra Practical Attendance</h1>
+        <p className="eia-hero-subtitle">
+          {ciannData?.subject?.name || "Extra Practical Session"}
+        </p>
+      </div>
 
-        {/* Subject Context Header */}
-        {(() => {
-          const metaString = localStorage.getItem("attendanceMeta");
-          let meta = null;
-          try {
-            meta = metaString ? JSON.parse(metaString) : null;
-          } catch (err) {
-            console.error("Error parsing metadata:", err);
-          }
-
-          const ciannData = meta?.ciannData;
-          return ciannData ? (
-            <div
-              className="subject-info"
-              style={{
-                backgroundColor: "#f0f7ff",
-                padding: "15px",
-                marginBottom: "15px",
-                borderRadius: "8px",
-                borderLeft: "4px solid #4CAF50",
-              }}
-            >
-              <h4 style={{ margin: "0 0 10px 0", color: "#2c5282" }}>
-                {ciannData.subject?.name} - Extra Practical
-              </h4>
-              <p style={{ margin: "5px 0", fontSize: "14px" }}>
-                <strong>Subject Code:</strong> {ciannData.subject?.code} |
-                <strong> Division:</strong> {ciannData.division} |
-                <strong> Batch:</strong> {meta.batch}
-              </p>
-              {meta.experiments && (
-                <p style={{ margin: "5px 0", fontSize: "14px" }}>
-                  <strong>Experiments:</strong> {meta.experiments}
-                </p>
-              )}
-              {meta.actualDate && (
-                <p style={{ margin: "5px 0", fontSize: "14px" }}>
-                  <strong>Date:</strong> {meta.actualDate}
-                </p>
-              )}
-            </div>
-          ) : null;
-        })()}
-
-        <div className="toolbar toolbar-icons">
-          <input type="text" placeholder="Search" className="search-input" />
-          <button
-            className="icon-btn"
-            onClick={() => setArrowOpen((prev) => !prev)}
+      <div className="eia-container">
+        {message && (
+          <div
+            className={`eia-alert eia-alert-${isSuccess ? "success" : "error"}`}
           >
             <i
-              className={`bi ${arrowOpen ? "bi-chevron-up" : "bi-chevron-down"}`}
+              className={`bi bi-${isSuccess ? "check-circle" : "x-circle"}`}
             ></i>
-          </button>
-          <button className="icon-btn" onClick={() => window.location.reload()}>
-            <i className="bi bi-arrow-clockwise"></i>
-          </button>
-          <button
-            className="icon-btn"
-            onClick={() => setShowHeaders((prev) => !prev)}
-          >
-            <i className="bi bi-list"></i>
-          </button>
-          <div style={{ position: "relative" }} ref={dropdownRef}>
-            <button className="icon-btn" onClick={handleGridView}>
-              <i className="bi bi-grid-3x3-gap-fill"></i>
-            </button>
-            {showDropdown && (
-              <div className="dropdown-menu">
-                <label className="dropdown-label">
-                  <input
-                    type="checkbox"
-                    checked={columnsVisible.rollId}
-                    onChange={() => toggleColumn("rollId")}
-                  />
-                  Roll ID
-                </label>
-                <label className="dropdown-label">
-                  <input
-                    type="checkbox"
-                    checked={columnsVisible.name}
-                    onChange={() => toggleColumn("name")}
-                  />
-                  Name
-                </label>
-                <label className="dropdown-label">
-                  <input
-                    type="checkbox"
-                    checked={columnsVisible.mark}
-                    onChange={() => toggleColumn("mark")}
-                  />
-                  Mark
-                </label>
-              </div>
-            )}
+            {message}
           </div>
-          <button className="icon-btn" onClick={handleExport}>
-            <i className="bi bi-box-arrow-down"></i>
-          </button>
+        )}
+
+        <div className="eia-context-card">
+          <div className="eia-context-header">
+            <span>Extra Practical Context</span>
+          </div>
+          <div className="eia-context-grid">
+            <div className="eia-context-item">
+              <span className="eia-context-label">Subject</span>
+              <span className="eia-context-value">
+                {ciannData?.subject?.name || "N/A"}
+              </span>
+            </div>
+            <div className="eia-context-item">
+              <span className="eia-context-label">Subject Code</span>
+              <span className="eia-context-value">
+                {ciannData?.subject?.code || "N/A"}
+              </span>
+            </div>
+            <div className="eia-context-item">
+              <span className="eia-context-label">Division</span>
+              <span className="eia-context-value">
+                {ciannData?.division || "N/A"}
+              </span>
+            </div>
+            <div className="eia-context-item">
+              <span className="eia-context-label">Batch</span>
+              <span className="eia-context-value">{meta?.batch || "N/A"}</span>
+            </div>
+            <div className="eia-context-item">
+              <span className="eia-context-label">Experiments</span>
+              <span className="eia-context-value">
+                {meta?.experiments || "N/A"}
+              </span>
+            </div>
+            <div className="eia-context-item">
+              <span className="eia-context-label">Date</span>
+              <span className="eia-context-value">
+                {meta?.actualDate || "N/A"}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div className="table-container">
-          <table>
-            {showHeaders && (
-              <thead>
-                <tr>
-                  {columnsVisible.rollId && <th>Roll No</th>}
-                  {columnsVisible.name && <th>Name</th>}
-                  <th>Enrollment No</th>
-                  <th>Batch</th>
-                  {columnsVisible.mark && <th>Mark Present</th>}
-                </tr>
-              </thead>
-            )}
-            <tbody>
-              {students.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ textAlign: "center" }}>
-                    No students found for this batch and division.
-                  </td>
-                </tr>
-              ) : (
-                students.map((student, index) => (
-                  <tr key={index}>
-                    {columnsVisible.rollId && <td>{student.rollId}</td>}
-                    {columnsVisible.name && <td>{student.name}</td>}
-                    <td>{student.enrollmentNo}</td>
-                    <td>{student.batch}</td>
-                    {columnsVisible.mark && (
-                      <td style={{ textAlign: "center" }}>
-                        <label className="custom-checkbox">
-                          <input
-                            type="checkbox"
-                            checked={student.attendance === "Present"}
-                            onChange={() => toggleAttendance(index)}
-                          />
-                          <span className="checkmark"></span>
-                        </label>
-                      </td>
+        <div className="eia-stats-grid">
+          <div className="eia-stat-card eia-stat-present">
+            <div className="eia-stat-icon">
+              <i className="bi bi-check-circle"></i>
+            </div>
+            <div className="eia-stat-content">
+              <div className="eia-stat-value">{presentCount}</div>
+              <div className="eia-stat-label">Present</div>
+            </div>
+          </div>
+          <div className="eia-stat-card eia-stat-absent">
+            <div className="eia-stat-icon">
+              <i className="bi bi-x-circle"></i>
+            </div>
+            <div className="eia-stat-content">
+              <div className="eia-stat-value">{absentCount}</div>
+              <div className="eia-stat-label">Absent</div>
+            </div>
+          </div>
+          <div className="eia-stat-card eia-stat-total">
+            <div className="eia-stat-icon">
+              <i className="bi bi-people"></i>
+            </div>
+            <div className="eia-stat-content">
+              <div className="eia-stat-value">{totalCount}</div>
+              <div className="eia-stat-label">Total</div>
+            </div>
+          </div>
+          <div className="eia-stat-card eia-stat-percentage">
+            <div className="eia-stat-icon">
+              <i className="bi bi-percent"></i>
+            </div>
+            <div className="eia-stat-content">
+              <div className="eia-stat-value">{attendancePercentage}%</div>
+              <div className="eia-stat-label">Attendance</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="eia-form">
+          <div className="eia-section-header">
+            <h3>Mark Student Attendance</h3>
+            <span className="eia-section-badge">{totalCount} students</span>
+          </div>
+
+          {students.length > 0 ? (
+            <div className="eia-students-grid">
+              {students.map((student, index) => (
+                <div
+                  key={`${student.rollId}-${index}`}
+                  className={`eia-student-card ${student.attendance === "Present" ? "eia-present" : "eia-absent"}`}
+                >
+                  <div className="eia-student-header">
+                    <div className="eia-student-roll">{student.rollId}</div>
+                    <label className="eia-custom-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={student.attendance === "Present"}
+                        onChange={() => toggleAttendance(index)}
+                      />
+                      <span className="eia-checkmark"></span>
+                    </label>
+                  </div>
+                  <div className="eia-student-name">{student.name}</div>
+                  <div className="eia-student-meta">
+                    Enrollment: {student.enrollmentNo}
+                  </div>
+                  <div className="eia-student-meta">Batch: {student.batch}</div>
+                  <div className="eia-student-status">
+                    {student.attendance === "Present" ? (
+                      <>
+                        <i className="bi bi-check-circle-fill"></i>
+                        Present
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-x-circle-fill"></i>
+                        Absent
+                      </>
                     )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="eia-no-students">
+              <i className="bi bi-inbox"></i>
+              <p>No students found for this batch and division.</p>
+            </div>
+          )}
 
-        <div className="submit-wrapper">
-          <button className="submit-button" onClick={handleSubmitAttendance}>
-            Submit Attendance
-          </button>
+          <div className="eia-actions">
+            <button
+              type="button"
+              className="eia-button eia-button-secondary"
+              onClick={handleExport}
+              disabled={students.length === 0 || isSubmitting}
+            >
+              Export
+            </button>
+            <button
+              type="button"
+              className="eia-button eia-button-primary"
+              onClick={handleSubmitAttendance}
+              disabled={students.length === 0 || isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Attendance"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

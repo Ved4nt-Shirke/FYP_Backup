@@ -4,16 +4,15 @@
   max-width: 1100px !important;
   margin: 0 !important;
   overflow-x: hidden; /* hide horizontal scroll on outer container */
-  background-color: #fefefe;
-  border: 1px solid #ccc;
-  border-radius: 0px!important;
+  background-color: var(--card-bg, #fefefe);
+  border: 1px solid var(--card-border, #ccc);
+  border-radius: 0px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 18px; /* Reduced padding for more compact look */
   height: auto !important;
   min-height: 60vh !important;
-  
 }
-.teaching-layout{
+.teaching-layout {
   min-height: 100vh;
   padding-left: 0;
 }
@@ -48,7 +47,6 @@
   gap: 0px; /* for wrapping on narrow screens */
   margin-bottom: 0 !important;
 }
-
 
 .teaching-main-content.syllabus-main-content .plan-actions-top-right {
   display: flex;
@@ -87,11 +85,11 @@
   border: none;
 }
 .teaching-main-content.syllabus-main-content .btn.submit {
-  background-color: green;
-  color: white;
+  background-color: var(--primary-color, green);
+  color: var(--text-on-primary, white);
 }
 .teaching-main-content.syllabus-main-content .btn.submit:hover {
-  background-color: green;
+  background-color: var(--primary-accent-dark, green);
 }
 
 /* ---- CIAAN Details small line ---- */
@@ -106,27 +104,29 @@
   display: flex;
   gap: 10px;
   margin-bottom: 18px;
-   margin-top: -8px;
+  margin-top: -8px;
 }
 .teaching-main-content.syllabus-main-content .tab {
-  background-color: #f5f5f5;
-  border: 1px solid #ccc;
+  background-color: var(--primary-light, #f5f5f5);
+  border: 1px solid var(--card-border, #ccc);
   padding: 8px 18px;
   margin-right: 8px;
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .teaching-main-content .tabs button:hover {
-  background-color: green;
-  color: white;
+  background-color: var(--primary-color, green);
+  color: var(--text-on-primary, white);
 }
 .teaching-main-content.syllabus-main-content .tab.active,
 .teaching-main-content.syllabus-main-content .tab:active {
-  background: green;
-  color: #fff;
+  background: var(--primary-color, green);
+  color: var(--text-on-primary, #fff);
   font-weight: bold;
 }
 
@@ -135,17 +135,19 @@
   width: 100%;
   overflow-x: auto; /* keep horizontal scroll for table */
   overflow-y: auto; /* add vertical scroll for table only */
-  max-height: calc(100% - 220px); /* ensure table area gets its own vertical scroll within container */
+  max-height: calc(
+    100% - 220px
+  ); /* ensure table area gets its own vertical scroll within container */
   padding-bottom: 8px;
-  border: 2px solid #000 !important; /* outer border same shade as inner borders */
+  border: 2px solid var(--text-color-primary, #000) !important; /* outer border same shade as inner borders */
   border-radius: 8px; /* keep slight curve */
 }
 .teaching-main-content.syllabus-main-content .teaching table {
   min-width: 1250px;
   width: 100%;
   border-collapse: collapse;
-  border: 2px solid #000; /* ensure solid black outer border */
-  border-bottom: 2px solid #000 !important; /* force bottom line black above hint */
+  border: 2px solid var(--text-color-primary, #000); /* ensure solid outer border */
+  border-bottom: 2px solid var(--text-color-primary, #000) !important; /* force bottom line above hint */
   table-layout: fixed;
 }
 .teaching-main-content.syllabus-main-content .teaching th,
@@ -153,11 +155,11 @@
   padding: 8px 4px;
   text-align: center;
   font-size: 12px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--card-border, #ccc);
   word-wrap: break-word;
 }
 .teaching-main-content.syllabus-main-content .teaching th {
-  background: #f8f9fa;
+  background: var(--primary-light, #f8f9fa);
   font-weight: bold;
   text-align: center;
   white-space: normal;
@@ -198,22 +200,22 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  border-top: 2px solid black;
-  border-bottom: 2px solid black;
-  border-left: 2px solid black;
-  border-right: 2px solid black;
+  border-top: 2px solid var(--text-color-primary, black);
+  border-bottom: 2px solid var(--text-color-primary, black);
+  border-left: 2px solid var(--text-color-primary, black);
+  border-right: 2px solid var(--text-color-primary, black);
   padding: 12px;
 }
 .teaching-main-content.syllabus-main-content .teaching thead th:first-child {
-  border-left: 2px solid black;
+  border-left: 2px solid var(--text-color-primary, black);
 }
 .teaching-main-content.syllabus-main-content .teaching thead th:last-child {
-  border-right: 2px solid black;
+  border-right: 2px solid var(--text-color-primary, black);
 }
 .teaching-main-content.syllabus-main-content .teaching tbody td {
-  border-left: 2px solid black;
-  border-right: 2px solid black;
-  border-bottom: 1px solid #ccc;
+  border-left: 2px solid var(--text-color-primary, black);
+  border-right: 2px solid var(--text-color-primary, black);
+  border-bottom: 1px solid var(--card-border, #ccc);
   vertical-align: top;
 }
 
@@ -222,12 +224,12 @@
 .teaching-main-content.syllabus-main-content .teaching tr:nth-child(11) td,
 .teaching-main-content.syllabus-main-content .teaching tr:nth-child(16) td,
 .teaching-main-content.syllabus-main-content .teaching tr:nth-child(21) td {
-  border-top: 2px solid black !important; /* keep separators */
-  border-bottom: 1px solid #ccc !important; /* ensure consistent inner grid */
+  border-top: 2px solid var(--text-color-primary, black) !important; /* keep separators */
+  border-bottom: 1px solid var(--card-border, #ccc) !important; /* ensure consistent inner grid */
 }
 
 .teaching-main-content.syllabus-main-content .teaching tbody tr:last-child td {
-  border-bottom: 2px solid black !important;
+  border-bottom: 2px solid var(--text-color-primary, black) !important;
 }
 .teaching-main-content.syllabus-main-content .teaching tbody tr:first-child td {
   border-top: none;
@@ -250,28 +252,30 @@
   margin-bottom: -30px;
 }
 .teaching-main-content.syllabus-main-content .pagination-btn {
-  background-color: white;
-  color: black;
+  background-color: var(--card-bg, white);
+  color: var(--text-color-primary, black);
   padding: 6px 14px;
   font-weight: 700;
-  border: 1px solid #ccc;
+  border: 1px solid var(--card-border, #ccc);
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   margin-left: 10px;
-  
 }
 
 .teaching-main-content.syllabus-main-content
   .pagination-btn:hover:not(:disabled) {
-  background-color: green;
+  background-color: var(--primary-color, green);
+  color: var(--text-on-primary, white);
 }
 
 .teaching-main-content.syllabus-main-content .pagination-btn:disabled {
-  background-color: #ddd;
-  color: #888;
-  border: 1px solid #bbb;
+  background-color: var(--primary-light, #ddd);
+  color: var(--text-color-secondary, #888);
+  border: 1px solid var(--card-border, #bbb);
   cursor: not-allowed;
 }
 
@@ -325,7 +329,7 @@
   }
 
   .teaching-main-content.syllabus-main-content .teaching .table-container {
-    overflow-x: auto;  /* allow horizontal scroll */
+    overflow-x: auto; /* allow horizontal scroll */
     overflow-y: auto;
   }
 
@@ -365,10 +369,10 @@
   .teaching-main-content.syllabus-main-content .teaching th {
     text-align: center !important;
     padding: 8px 4px !important;
-    border-top: 1px solid #ccc !important;    /* lighter horizontal lines */
+    border-top: 1px solid #ccc !important; /* lighter horizontal lines */
     border-bottom: 1px solid #ccc !important; /* lighter horizontal lines */
-    border-left: 2px solid #000 !important;   /* darker vertical separators */
-    border-right: 2px solid #000 !important;  /* darker vertical separators */
+    border-left: 2px solid #000 !important; /* darker vertical separators */
+    border-right: 2px solid #000 !important; /* darker vertical separators */
     position: static !important;
     white-space: normal !important;
   }
@@ -385,7 +389,11 @@
   .teaching-main-content.syllabus-main-content .teaching tbody td:last-child {
     border-right: 2px solid #000 !important;
   }
-  .teaching-main-content.syllabus-main-content .teaching tbody tr:last-child td {
+  .teaching-main-content.syllabus-main-content
+    .teaching
+    tbody
+    tr:last-child
+    td {
     border-bottom: 2px solid #000 !important;
   }
   .teaching-main-content.syllabus-main-content .teaching td::before {
@@ -402,7 +410,7 @@
   .teaching-main-content.syllabus-main-content .ciann-details {
     font-size: 14px !important; /* smaller text, keep layout */
   }
-  
+
   .teaching-main-content.syllabus-main-content .ciann-details strong {
     font-size: 15px !important; /* emphasize but smaller than desktop */
   }
@@ -410,34 +418,35 @@
   .teaching-main-content.syllabus-main-content .pagination {
     display: flex !important;
     flex-wrap: nowrap !important;
-    gap: 6px !important;           /* use gap instead of margins */
+    gap: 6px !important; /* use gap instead of margins */
     justify-content: flex-end !important;
-    overflow-x: auto !important;   /* allow horizontal scroll if very narrow */
-    scrollbar-width: none;          /* Firefox: hide scrollbar (optional) */
+    overflow-x: auto !important; /* allow horizontal scroll if very narrow */
+    scrollbar-width: none; /* Firefox: hide scrollbar (optional) */
   }
-  .teaching-main-content.syllabus-main-content .pagination::-webkit-scrollbar { /* Chrome/Safari */
+  .teaching-main-content.syllabus-main-content .pagination::-webkit-scrollbar {
+    /* Chrome/Safari */
     display: none;
   }
   .teaching-main-content.syllabus-main-content .pagination-btn {
-    flex: 0 0 auto !important;     /* prevent wrapping/shrinking issues */
-    margin-left: 0 !important;     /* rely on gap */
-    padding: 6px 10px !important;  /* compact */
-    font-size: 12px !important;    /* slightly smaller text */
+    flex: 0 0 auto !important; /* prevent wrapping/shrinking issues */
+    margin-left: 0 !important; /* rely on gap */
+    padding: 6px 10px !important; /* compact */
+    font-size: 12px !important; /* slightly smaller text */
   }
 
   /* Keep tabs (Page 1-4) in one line on mobile */
   .teaching-main-content.syllabus-main-content .tabs {
     display: flex !important;
-    flex-wrap: nowrap !important;  /* force single line */
+    flex-wrap: nowrap !important; /* force single line */
     gap: 6px !important;
     justify-content: center !important; /* keep visual position */
     align-items: center !important;
   }
   .teaching-main-content.syllabus-main-content .tab {
-    flex: 0 1 auto !important;     /* allow slight shrink but no wrap */
-    padding: 6px 10px !important;  /* compact */
-    font-size: 12px !important;    /* compact */
-    margin-right: 0 !important;    /* use gap instead */
+    flex: 0 1 auto !important; /* allow slight shrink but no wrap */
+    padding: 6px 10px !important; /* compact */
+    font-size: 12px !important; /* compact */
+    margin-right: 0 !important; /* use gap instead */
   }
 
   /* Remove desktop left padding that pushes content off-screen on mobile */
@@ -486,11 +495,16 @@
     flex-wrap: nowrap !important; /* keep buttons on one line */
   }
   .teaching-main-content.syllabus-main-content .plan-actions-top-right .btn,
-  .teaching-main-content.syllabus-main-content .plan-actions-top-right .start-btn,
-  .teaching-main-content.syllabus-main-content .plan-actions-top-right .action-buttons .start-btn {
+  .teaching-main-content.syllabus-main-content
+    .plan-actions-top-right
+    .start-btn,
+  .teaching-main-content.syllabus-main-content
+    .plan-actions-top-right
+    .action-buttons
+    .start-btn {
     padding: 18px 14px !important; /* compact */
-    font-size: 12px !important;   /* compact */
-    height: 30px !important;      /* compact */
+    font-size: 12px !important; /* compact */
+    height: 30px !important; /* compact */
     line-height: 1.1 !important;
     border-radius: 6px !important;
     white-space: nowrap !important; /* prevent text wrap */
@@ -518,8 +532,8 @@
   .teaching-main-content.syllabus-main-content .pagination-btn {
     padding: 7px 10px;
     font-size: 13px;
-      margin-bottom: 30px;
-   margin-top: -10px;
+    margin-bottom: 30px;
+    margin-top: -10px;
   }
 }
 /* CIAAN Details Hover Effect */
@@ -528,7 +542,9 @@
   text-align: left;
   margin-top: 5px;
   padding: 5px 0; /* Added for hover effect */
-  transition: background-color 0.3s ease, color 0.3s ease; /* Added for smooth transition */
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease; /* Added for smooth transition */
   cursor: default; /* Added to indicate non-clickable */
 }
 
@@ -643,7 +659,9 @@
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 /* Disabled state for Previous */
@@ -660,10 +678,10 @@
 /* --- ADD THIS CODE TO CONTROL THE GREEN LINE --- */
 /* --- CORRECTED CODE FOR THE GREEN LINE --- */
 .teaching-main-content.syllabus-main-content .plan-title::after {
-  content: '';
+  content: "";
   display: block;
   height: 2.5px; /* Controls the thickness */
-  background-color: #28a745; /* The color */
+  background-color: var(--primary-color, #28a745); /* The color */
   width: 60%; /* The width */
   margin-left: -300px;
 
@@ -676,12 +694,12 @@
   font-size: 32px;
   color: #000000;
   font-weight: 700;
-  line-height: 1.2 ;
+  line-height: 1.2;
   margin: -40px 80px 0 -10px;
   padding: 0;
 
   /* This is the new line that removes the old underline */
-  border-bottom: none !important; 
+  border-bottom: none !important;
 }
 
 @media (max-width: 768px) {
@@ -732,8 +750,13 @@
   }
 
   .teaching-main-content.syllabus-main-content .plan-actions-top-right .btn,
-  .teaching-main-content.syllabus-main-content .plan-actions-top-right .start-btn,
-  .teaching-main-content.syllabus-main-content .plan-actions-top-right .action-buttons .start-btn {
+  .teaching-main-content.syllabus-main-content
+    .plan-actions-top-right
+    .start-btn,
+  .teaching-main-content.syllabus-main-content
+    .plan-actions-top-right
+    .action-buttons
+    .start-btn {
     margin: 0 !important;
     height: auto !important;
     min-height: 34px !important;
@@ -753,5 +776,239 @@
   .teaching-main-content.syllabus-main-content .pagination {
     margin: 12px 0 0 0 !important;
     justify-content: flex-start !important;
+  }
+}
+
+/* Final header-safe override for Edit CIANN */
+.teaching-layout {
+  position: relative !important;
+  min-height: 100% !important;
+}
+
+.teaching-main-row {
+  overflow: visible !important;
+}
+
+.teaching-layout .syllabus-secondary-sidebar-wrapper {
+  position: static !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  height: 0 !important;
+  overflow: visible !important;
+}
+
+.teaching-main-content.syllabus-main-content {
+  margin-left: 310px !important;
+  margin-top: 0 !important;
+  min-height: calc(100dvh - var(--header-height, 60px)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+@media (max-width: 1024px) {
+  .teaching-main-content.syllabus-main-content {
+    margin-left: 300px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .teaching-main-content.syllabus-main-content {
+    margin-left: 0 !important;
+    min-height: auto !important;
+  }
+}
+
+/* Teaching Plan final palette refresh */
+.teaching-layout {
+  background: linear-gradient(
+    180deg,
+    var(--primary-light, #f7faff) 0%,
+    var(--dash-bg, #eef3fb) 100%
+  ) !important;
+}
+
+.teaching-main-content.syllabus-main-content .plan-container {
+  border-radius: 16px !important;
+  border: 1px solid var(--card-border, #d8e3f2) !important;
+  box-shadow: 0 12px 30px rgba(13, 35, 72, 0.08) !important;
+  background: var(--card-bg, #ffffff) !important;
+}
+
+.teaching-main-content.syllabus-main-content .header-row {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--card-border, #e2eaf5);
+  margin-bottom: 10px !important;
+}
+
+.teaching-main-content.syllabus-main-content .plan-title {
+  margin: 0 !important;
+  font-size: 2rem !important;
+  color: var(--text-color-primary, #132b4d) !important;
+  border-bottom: none !important;
+}
+
+.teaching-main-content.syllabus-main-content .plan-title::after {
+  content: none !important;
+}
+
+.teaching-main-content.syllabus-main-content .plan-actions-top-right .btn,
+.teaching-main-content.syllabus-main-content .plan-actions-top-right .start-btn,
+.teaching-main-content.syllabus-main-content
+  .plan-actions-top-right
+  .action-buttons
+  .start-btn,
+.teaching-main-content.syllabus-main-content .btn.submit {
+  background: linear-gradient(
+    180deg,
+    var(--primary-color, #2f74e0) 0%,
+    var(--primary-accent-dark, #1f62cf) 100%
+  ) !important;
+  border: 1px solid var(--primary-accent-dark, #1f5bbd) !important;
+  color: var(--text-on-primary, #ffffff) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 5px 14px rgba(31, 98, 207, 0.2) !important;
+}
+
+.teaching-main-content.syllabus-main-content .plan-actions-top-right .btn:hover,
+.teaching-main-content.syllabus-main-content
+  .plan-actions-top-right
+  .start-btn:hover,
+.teaching-main-content.syllabus-main-content
+  .plan-actions-top-right
+  .action-buttons
+  .start-btn:hover,
+.teaching-main-content.syllabus-main-content .btn.submit:hover {
+  filter: brightness(0.95);
+}
+
+.teaching-main-content.syllabus-main-content .ciann-details {
+  background: var(--primary-light, #f3f7ff);
+  border: 1px solid var(--card-border, #d9e5f8);
+  border-radius: 10px;
+  padding: 9px 12px !important;
+  color: var(--text-color-secondary, #425a7d) !important;
+}
+
+.teaching-main-content.syllabus-main-content .ciann-details:hover {
+  background: var(--primary-accent-light, #edf4ff) !important;
+  color: var(--text-color-primary, #2a4570) !important;
+}
+
+.teaching-main-content.syllabus-main-content .ciann-details strong,
+.teaching-main-content.syllabus-main-content .ciann-details:hover strong {
+  color: var(--text-color-primary, #14335f) !important;
+}
+
+.teaching-main-content.syllabus-main-content .tabs {
+  gap: 8px !important;
+  margin-top: 10px !important;
+  margin-bottom: 14px !important;
+}
+
+.teaching-main-content.syllabus-main-content .tab {
+  background: var(--primary-light, #f4f8ff) !important;
+  border: 1px solid var(--card-border, #cfdef2) !important;
+  color: var(--text-color-secondary, #3b567f) !important;
+  border-radius: 10px !important;
+  font-weight: 600;
+}
+
+.teaching-main-content.syllabus-main-content .tab.active,
+.teaching-main-content.syllabus-main-content .tab:active,
+.teaching-main-content.syllabus-main-content .tab:hover {
+  background: var(--primary-color, #e6f0ff) !important;
+  border-color: var(--primary-color, #aac5eb) !important;
+  color: var(--text-on-primary, #ffffff) !important;
+}
+
+.teaching-main-content.syllabus-main-content .teaching .table-container {
+  border: 1px solid var(--card-border, #d6e2f0) !important;
+  border-radius: 12px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.teaching-main-content.syllabus-main-content .teaching table {
+  border: 1px solid var(--card-border, #d6e2f0) !important;
+  border-bottom: 1px solid var(--card-border, #d6e2f0) !important;
+}
+
+.teaching-main-content.syllabus-main-content .teaching thead th {
+  background: var(--primary-light, #edf4ff) !important;
+  color: var(--text-color-primary, #233f64) !important;
+  border-top: 1px solid var(--card-border, #d6e2f0) !important;
+  border-bottom: 1px solid var(--card-border, #d6e2f0) !important;
+  border-left: 1px solid var(--card-border, #d6e2f0) !important;
+  border-right: 1px solid var(--card-border, #d6e2f0) !important;
+}
+
+.teaching-main-content.syllabus-main-content .teaching tbody td {
+  border-left: 1px solid var(--card-border, #dbe5f1) !important;
+  border-right: 1px solid var(--card-border, #dbe5f1) !important;
+  border-bottom: 1px solid var(--card-border, #dbe5f1) !important;
+}
+
+.teaching-main-content.syllabus-main-content
+  .teaching
+  tbody
+  tr:nth-child(odd)
+  td {
+  background: var(--card-bg, #fcfdff);
+}
+
+.teaching-main-content.syllabus-main-content .teaching tr:nth-child(6) td,
+.teaching-main-content.syllabus-main-content .teaching tr:nth-child(11) td,
+.teaching-main-content.syllabus-main-content .teaching tr:nth-child(16) td,
+.teaching-main-content.syllabus-main-content .teaching tr:nth-child(21) td {
+  border-top: 1px solid var(--card-border, #dbe5f1) !important;
+}
+
+.teaching-main-content.syllabus-main-content .teaching tbody tr:last-child td,
+.teaching-main-content.syllabus-main-content .teaching tbody td[rowspan] {
+  border-bottom: 1px solid var(--card-border, #dbe5f1) !important;
+}
+
+.teaching-main-content.syllabus-main-content .pagination {
+  margin: 14px 0 0 0 !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+
+.teaching-main-content.syllabus-main-content .pagination-btn {
+  background: var(--primary-color, #1f63d3) !important;
+  color: var(--text-on-primary, #ffffff) !important;
+  border: 1px solid var(--primary-accent-dark, #1f5bbd) !important;
+  border-radius: 10px !important;
+  font-size: 0.92rem !important;
+  padding: 8px 14px !important;
+}
+
+.teaching-main-content.syllabus-main-content
+  .pagination-btn:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+@media (max-width: 768px) {
+  .teaching-main-content.syllabus-main-content .plan-title {
+    font-size: 1.35rem !important;
+    white-space: normal !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .plan-actions-top-right {
+    margin: 0 !important;
+    gap: 8px !important;
+  }
+
+  .teaching-main-content.syllabus-main-content .plan-actions-top-right .btn,
+  .teaching-main-content.syllabus-main-content
+    .plan-actions-top-right
+    .start-btn,
+  .teaching-main-content.syllabus-main-content
+    .plan-actions-top-right
+    .action-buttons
+    .start-btn {
+    min-height: 36px !important;
+    padding: 8px 12px !important;
+    font-size: 0.82rem !important;
   }
 }

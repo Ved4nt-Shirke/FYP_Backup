@@ -36,7 +36,7 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.9px;
-  color: #0f766e;
+  color: #1f5fbf;
   text-transform: uppercase;
   margin-bottom: 6px;
 }
@@ -113,12 +113,12 @@
 }
 
 .metric-card.success {
-  background: #ecfdf5;
-  border-color: #a7f3d0;
+  background: #eef4ff;
+  border-color: #c7daf7;
 }
 
 .metric-card.success strong {
-  color: #059669;
+  color: #1f5fbf;
 }
 
 .metric-card.warning {
@@ -216,9 +216,9 @@
 }
 
 .checkbox-pill.is-locked {
-  border-color: #86efac;
-  background: #ecfdf5;
-  color: #15803d;
+  border-color: #9dc0f0;
+  background: #eef4ff;
+  color: #1f5fbf;
   cursor: not-allowed;
 }
 

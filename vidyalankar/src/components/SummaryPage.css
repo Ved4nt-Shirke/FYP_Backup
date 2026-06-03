@@ -1,485 +1,197 @@
-/* SummaryPage.css */
+﻿.summary-scroll-container {
+  min-height: calc(100vh - 64px);
+  overflow-y: auto;
+  padding: 1.1rem;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(31, 95, 191, 0.12), transparent 38%),
+    radial-gradient(circle at 92% 2%, rgba(19, 73, 150, 0.08), transparent 35%),
+    linear-gradient(180deg, #f2f7ff 0%, #eaf2ff 100%);
+}
 
 .summary-container {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #fdfdfd;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
+  max-width: 1280px;
+  margin: 0 auto;
+  border: 1px solid #d7e5f8;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 26px rgba(18, 43, 82, 0.08);
+  padding: 1.1rem;
 }
 
 .summary-header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 20px;
-    background:#009540;
-    color: white;
-    border-radius: 8px;
+  border: 1px solid #d7e5f8;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #ffffff, #edf5ff);
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
 .summary-header h1 {
-    margin: 0 0 15px 0;
-    font-size: 28px;
-    font-weight: 600;
+  margin: 0;
+  color: #143257;
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
 }
 
 .ciann-info {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 15px;
+  margin-top: 0.7rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.5rem;
 }
 
 .ciann-info p {
-    margin: 5px 0;
-    font-size: 14px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px 12px;
-    border-radius: 4px;
+  margin: 0;
+  border: 1px solid #d7e5f8;
+  border-radius: 10px;
+  background: #f5f9ff;
+  color: #355ea8;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
 .summary-container h3 {
-    font-size: 24px;
-    margin-top: 40px;
-    margin-bottom: 20px;
-    color: #333;
-    border-bottom: 3px solid #009540;
-    padding-bottom: 8px;
-    text-align: center;
-    font-weight: 600;
+  margin: 1rem 0 0.6rem;
+  color: #143257;
+  font-size: 1.7rem;
+  font-weight: 800;
+  text-align: center;
 }
 
 .overflow-x-auto {
-    overflow-x: auto;
-    overflow-y: hidden;
-    margin-bottom: 30px;
-    padding: 2px;
-    /* Custom scrollbar styling */
-    scrollbar-width: thin;
-    scrollbar-color: #009540 #f1f1f1;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  border: 1px solid #d7e5f8;
+  border-radius: 12px;
 }
 
-/* Webkit browsers (Chrome, Safari, Edge) scrollbar styling */
-.overflow-x-auto::-webkit-scrollbar {
-    height: 12px;
-}
-
-.overflow-x-auto::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 6px;
-}
-
-.overflow-x-auto::-webkit-scrollbar-thumb {
-    background: #009540;
-    border-radius: 6px;
-    border: 2px solid #f1f1f1;
-}
-
-.overflow-x-auto::-webkit-scrollbar-thumb:hover {
-    background: #007a35;
-}
-
-/* MODIFIED: Generic table style now enforces a fixed layout for all tables */
 .summary-container table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed; /* This is the most important change */
-    margin-bottom: 30px;
-    font-size: 0.95em;
-    border-radius: 8px;
-    overflow: hidden;
-    min-width: 600px;
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
 }
 
-/* MODIFIED: This general style now applies to all cells in all tables consistently */
-.summary-container th, .summary-container td {
-    border: 1px solid #e0e0e0;
-    padding: 12px;
-    text-align: center;
-    vertical-align: middle;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: normal;
+.summary-container th,
+.summary-container td {
+  border: 1px solid #e6eefb;
+  padding: 0.65rem;
+  text-align: center;
+  color: #183861;
+  font-size: 0.88rem;
 }
 
-/* MODIFIED: Header styling now applies to all table headers consistently */
 .summary-container th {
-    background: #009540;
-    color: white;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85em;
-    letter-spacing: 0.5px;
+  background: #edf4ff;
+  color: #355ea8;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 800;
 }
 
-/* MODIFIED: Data row styling for better visual hierarchy */
-.summary-container .data-label-row td {
-    background: #f8f9fa;
-    font-weight: 600;
-    color: #495057;
-    font-size: 0.9em;
-}
-
-.summary-container .data-value-row td {
-    background: #ffffff;
-    font-weight: 500;
-    color: #212529;
-}
-
-/* MODIFIED: Alternating row colors for better readability */
 .summary-container tbody tr:nth-child(even) td {
-    background: #f8f9fa;
-}
-
-.summary-container tbody tr:nth-child(odd) td {
-    background: #ffffff;
-}
-
-/* Override for specific data rows */
-.summary-container .data-label-row td {
-    background: #e9ecef !important;
-}
-
-.summary-container .data-value-row td {
-    background: #ffffff !important;
+  background: #fbfdff;
 }
 
 .footer-summary {
-    text-align: center;
-    margin-top: 50px;
-    padding: 20px;
-    border-top: 2px solid #e9ecef;
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #d7e5f8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.8rem;
 }
 
 .footer-summary p {
-    font-size: 14px;
-    color: #6c757d;
-    margin: 10px 0 0 0;
+  margin: 0;
+  color: #5d7090;
+  font-size: 0.85rem;
 }
 
 .footer-summary a {
-    color: #009540;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.footer-summary a:hover {
-    text-decoration: underline;
+  color: #1f5fbf;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .print-button {
-    margin-bottom: 15px;
-    padding: 12px 24px;
-    background: #009540;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 149, 64, 0.3);
-}
-
-.print-button:hover {
-    background: #007a35;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 149, 64, 0.4);
+  border: none;
+  border-radius: 10px;
+  min-height: 40px;
+  padding: 0 1rem;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #1f5fbf, #134996);
 }
 
 .summary-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    color: #6c757d;
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  color: #5d7090;
+  font-weight: 700;
 }
 
 .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #e9ecef;
-    border-top: 4px solid #009540;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 20px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid #d7e5f8;
+  border-top-color: #1f5fbf;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* MODIFIED: Responsive design with consistent equal column widths */
 @media (max-width: 768px) {
-    .summary-container {
-        margin: 20px;
-        padding: 15px;
-    }
-    
-    .summary-header h1 {
-        font-size: 24px;
-    }
-    
-    .ciann-info {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .summary-container h3 {
-        font-size: 20px;
-        margin-top: 30px;
-    }
-    
-    .summary-container table {
-        font-size: 0.85em;
-        min-width: 500px;
-    }
-    
-    .summary-container th, .summary-container td {
-        padding: 8px;
-    }
-    
-    .print-button {
-        padding: 10px 20px;
-        font-size: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    .summary-container {
-        margin: 10px;
-        padding: 10px;
-    }
-    
-    .summary-header {
-        padding: 15px;
-    }
-    
-    .summary-header h1 {
-        font-size: 20px;
-    }
-    
-    .summary-container h3 {
-        font-size: 18px;
-        margin-top: 25px;
-    }
-    
-    .summary-container table {
-        font-size: 0.75em;
-        min-width: 400px;
-    }
-    
-    .summary-container th, .summary-container td {
-        padding: 6px;
-    }
-    
-    .print-button {
-        padding: 8px 16px;
-        font-size: 11px;
-    }
-}.summary-scroll-container {
-  height: calc(100vh - 60px); /* Adjust if navbar exists */
-  overflow-y: auto;
-  padding: 20px;
-  background-color: #f8f9fa;
-}
-
-/* Optional scrollbar styling */
-.summary-scroll-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.summary-scroll-container::-webkit-scrollbar-thumb {
-  background-color: #aaa;
-  border-radius: 4px;
-}
-
-.summary-scroll-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* Print Styles */
-@media print {
-  /* Force landscape orientation with multiple approaches */
-  @page {
-    size: landscape;
-    margin: 0.5in;
-  }
-  
-  @page :first {
-    size: landscape;
-    margin: 0.5in;
-  }
-  
-  @page :left {
-    size: landscape;
-    margin: 0.5in;
-  }
-  
-  @page :right {
-    size: landscape;
-    margin: 0.5in;
-  }
-
-  /* Hide scroll container and show content directly */
   .summary-scroll-container {
-    height: auto !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    background: white !important;
+    padding: 0.8rem;
   }
 
-  .summary-container {
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 20px !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    background: white !important;
-  }
-
-  /* Ensure tables fit on page */
-  .overflow-x-auto {
-    overflow: visible !important;
-    margin-bottom: 20px !important;
-  }
-
-  .summary-container table {
-    width: 100% !important;
-    min-width: auto !important;
-    table-layout: fixed !important;
-    font-size: 0.8em !important;
-    page-break-inside: avoid;
-    border-collapse: collapse !important;
-  }
-
-  .summary-container th, .summary-container td {
-    min-width: auto !important;
-    max-width: none !important;
-    padding: 8px 4px !important;
-    font-size: 0.75em !important;
-    border: 1px solid #000 !important;
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-    white-space: normal !important;
-  }
-
-  /* Print-friendly colors */
-  .summary-header {
-    background: #009540 !important;
-    color: white !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .summary-container th {
-    background: #009540 !important;
-    color: white !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  .summary-header h1 {
+    font-size: 1.5rem;
   }
 
   .summary-container h3 {
-    border-bottom: 2px solid #009540 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    page-break-after: avoid;
+    font-size: 1.35rem;
   }
 
-  /* Hide print button when printing */
+  .footer-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media print {
+  .summary-scroll-container,
+  .summary-container,
+  .overflow-x-auto {
+    background: #fff !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
   .print-button {
     display: none !important;
   }
 
-  /* Ensure page breaks work well */
-  .summary-section {
+  .summary-container table {
+    min-width: auto !important;
     page-break-inside: avoid;
-  }
-
-  /* Adjust font sizes for print */
-  .summary-header h1 {
-    font-size: 24px !important;
-  }
-
-  .ciann-info p {
-    font-size: 12px !important;
-    background: rgba(0, 149, 64, 0.1) !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .summary-container h3 {
-    font-size: 18px !important;
-    margin-top: 25px !important;
-    margin-bottom: 15px !important;
-  }
-
-  /* Footer styling for print */
-  .footer-summary {
-    margin-top: 30px !important;
-    border-top: 1px solid #000 !important;
-    page-break-inside: avoid;
-  }
-
-  .footer-summary p {
-    font-size: 12px !important;
-    color: #000 !important;
-  }
-
-  .footer-summary a {
-    color: #009540 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  /* Ensure data rows are readable */
-  .summary-container .data-label-row td {
-    background: #f0f0f0 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .summary-container .data-value-row td {
-    background: white !important;
-  }
-
-  /* Page margins and orientation handled above */
-
-  /* Ensure content fits well on page */
-  body {
-    font-size: 12px !important;
-  }
-
-  /* Make sure tables don't break across pages */
-  .summary-container table,
-  .summary-section {
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-
-  /* Ensure headers stay with content */
-  .summary-container thead {
-    display: table-header-group;
-  }
-
-  .summary-container tbody {
-    display: table-row-group;
-  }
-
-  /* Better spacing for print */
-  .summary-container {
-    line-height: 1.2 !important;
-  }
-
-  /* Hide scrollbars in print */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 }

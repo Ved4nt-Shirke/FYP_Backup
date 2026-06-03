@@ -1,205 +1,427 @@
 .student-timetable-manager {
+  --stm-accent: var(--primary-accent, #10b981);
+  --stm-accent-strong: var(--primary-accent-dark, #059669);
+  --stm-accent-header: var(--app-header-bg, var(--primary-accent, #10b981));
+  --stm-bg-a: color-mix(in srgb, var(--stm-accent) 12%, #ffffff 88%);
+  --stm-bg-b: color-mix(in srgb, var(--stm-accent) 18%, #ffffff 82%);
+  --stm-card: #ffffff;
+  --stm-border: color-mix(in srgb, var(--stm-accent) 28%, #d7dee8 72%);
+  --stm-text: #0f2f2a;
+  --stm-muted: color-mix(in srgb, var(--stm-accent-strong) 46%, #64748b 54%);
+  --stm-primary: var(--stm-accent);
+  --stm-primary-deep: var(--stm-accent-strong);
+
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  color: var(--text-main, #0f172a);
+  gap: 1rem;
+  min-height: calc(100vh - 64px);
+  padding: 1.25rem;
+  color: var(--stm-text);
+  background:
+    radial-gradient(
+      circle at 8% 8%,
+      color-mix(in srgb, var(--stm-accent) 25%, transparent),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 92% 2%,
+      color-mix(in srgb, var(--stm-accent-strong) 20%, transparent),
+      transparent 34%
+    ),
+    linear-gradient(180deg, var(--stm-bg-a), var(--stm-bg-b));
 }
 
-.student-timetable-manager__header {
+.stm-hero,
+.stm-alert,
+.stm-form,
+.stm-list {
+  max-width: 1180px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stm-hero {
+  border: 1px solid var(--stm-border);
+  border-radius: 18px;
   background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--primary-accent, #2563eb) 12%, #ffffff 88%) 0%,
-    #ffffff 100%
+    130deg,
+    var(--stm-accent-header),
+    var(--stm-primary) 58%,
+    var(--stm-primary-deep)
   );
-  border: 1px solid var(--border-color, #dbe5f1);
-  border-radius: 14px;
-  padding: 18px;
+  box-shadow: 0 16px 30px
+    color-mix(in srgb, var(--stm-primary-deep) 34%, transparent);
+  padding: 1rem 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
 }
 
-.student-timetable-manager__header h1 {
-  margin: 0 0 6px;
-  font-size: 1.4rem;
-  font-weight: 800;
-}
-
-.student-timetable-manager__header p {
+.stm-hero-copy h1 {
   margin: 0;
-  color: var(--text-muted, #64748b);
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #f7fbff;
 }
 
-.student-timetable-manager__alert {
+.stm-hero-copy p {
+  margin: 0.35rem 0 0;
+  color: rgba(238, 246, 255, 0.9);
+  max-width: 720px;
+}
+
+.stm-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(90px, 1fr));
+  gap: 0.55rem;
+}
+
+.stm-hero-stats > div {
+  border: 1px solid rgba(207, 225, 251, 0.34);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(2px);
+  padding: 0.45rem 0.58rem;
+}
+
+.stm-hero-stats span {
+  display: block;
+  margin-bottom: 0.1rem;
+  color: rgba(226, 237, 255, 0.9);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 700;
+}
+
+.stm-hero-stats strong {
+  color: #ffffff;
+  font-size: 1.1rem;
+}
+
+.stm-alert {
   border-radius: 10px;
-  padding: 10px 12px;
-  font-weight: 500;
+  padding: 0.7rem 0.85rem;
 }
 
-.student-timetable-manager__alert.error {
+.stm-alert.error {
   background: #fff1f2;
   border: 1px solid #fecdd3;
   color: #be123c;
 }
 
-.student-timetable-manager__alert.success {
+.stm-alert.success {
   background: #ecfdf5;
   border: 1px solid #bbf7d0;
   color: #166534;
 }
 
-.student-timetable-manager__form,
-.student-timetable-manager__list {
-  border: 1px solid var(--border-color, #dbe5f1);
-  border-radius: 14px;
-  background: #ffffff;
-  padding: 16px;
+.stm-form,
+.stm-list {
+  border: 1px solid var(--stm-border);
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    #ffffff,
+    color-mix(in srgb, var(--stm-accent) 5%, #ffffff 95%)
+  );
+  padding: 1rem;
+  box-shadow: 0 12px 24px
+    color-mix(in srgb, var(--stm-primary-deep) 12%, transparent);
 }
 
-.form-grid {
+.stm-form-head {
+  margin-bottom: 0.8rem;
+}
+
+.stm-form-head h2 {
+  margin: 0;
+  font-size: 1.12rem;
+  color: color-mix(in srgb, var(--stm-primary-deep) 60%, #0f172a 40%);
+  font-weight: 800;
+}
+
+.stm-form-head p {
+  margin: 0.3rem 0 0;
+  color: var(--stm-muted);
+  font-size: 0.9rem;
+}
+
+.stm-form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
 }
 
-.form-grid label {
+.stm-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-weight: 600;
-  color: var(--text-main, #0f172a);
+  gap: 0.3rem;
 }
 
-.form-grid input,
-.form-grid select {
-  border: 1px solid var(--border-color, #dbe5f1);
-  border-radius: 9px;
-  padding: 10px 12px;
+.stm-field > span {
+  color: var(--stm-muted);
+  font-size: 0.79rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 700;
+}
+
+.stm-field input,
+.stm-field select {
+  min-height: 42px;
+  border: 1px solid color-mix(in srgb, var(--stm-accent) 24%, #d7dee8 76%);
+  border-radius: 10px;
+  padding: 0 0.75rem;
+  color: var(--stm-text);
   font-size: 0.94rem;
-  color: var(--text-main, #0f172a);
-  background: #ffffff;
 }
 
-.form-grid input:focus,
-.form-grid select:focus {
+.stm-field input:focus,
+.stm-field select:focus {
   outline: none;
-  border-color: var(--primary-accent, #2563eb);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-accent, #2563eb) 16%, transparent);
+  border-color: color-mix(in srgb, var(--stm-accent) 55%, #ffffff 45%);
+  box-shadow: 0 0 0 0.2rem
+    color-mix(in srgb, var(--stm-accent) 22%, transparent);
 }
 
-.file-input-wrap input {
-  padding: 7px;
+.stm-upload-block {
+  margin-top: 0.8rem;
+  border: 1px dashed color-mix(in srgb, var(--stm-accent) 46%, #d7dee8 54%);
+  border-radius: 12px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--stm-accent) 10%, #ffffff 90%),
+    #ffffff
+  );
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
 }
 
-.actions-row {
-  margin-top: 14px;
+.stm-upload-block h3 {
+  margin: 0;
+  color: color-mix(in srgb, var(--stm-primary-deep) 62%, #0f172a 38%);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.stm-upload-block p {
+  margin: 0.22rem 0 0;
+  color: var(--stm-muted);
+  font-size: 0.84rem;
+}
+
+.stm-file-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.stm-file-label input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.stm-file-label span {
+  min-height: 42px;
+  border: 1px solid color-mix(in srgb, var(--stm-accent) 38%, #d7dee8 62%);
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    #ffffff,
+    color-mix(in srgb, var(--stm-accent) 11%, #ffffff 89%)
+  );
+  color: color-mix(in srgb, var(--stm-primary-deep) 62%, #0f172a 38%);
+  padding: 0 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.stm-actions-row {
+  margin-top: 0.85rem;
   display: flex;
   justify-content: flex-end;
 }
 
-.actions-row button,
-.list-head button,
-.timetable-card__actions button {
-  border: none;
-  border-radius: 9px;
-  padding: 9px 13px;
-  font-weight: 600;
+.stm-actions-row button,
+.stm-list-head button,
+.stm-card-actions button {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  min-height: 42px;
+  padding: 0 0.95rem;
+  font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    filter 0.2s ease;
 }
 
-.actions-row button,
-.list-head button {
+.stm-actions-row button,
+.stm-list-head button {
   color: #ffffff;
   background: linear-gradient(
     135deg,
-    var(--primary-accent, #2563eb) 0%,
-    var(--primary-accent-dark, #1d4ed8) 100%
+    var(--stm-primary),
+    var(--stm-primary-deep)
   );
+  box-shadow: 0 12px 20px
+    color-mix(in srgb, var(--stm-primary-deep) 30%, transparent);
 }
 
-.list-head {
+.stm-actions-row button:hover,
+.stm-list-head button:hover,
+.stm-card-actions button:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.98);
+}
+
+.stm-list-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 0.75rem;
 }
 
-.list-head h2 {
+.stm-list-head h2 {
   margin: 0;
-  font-size: 1.1rem;
+  color: color-mix(in srgb, var(--stm-primary-deep) 62%, #0f172a 38%);
+  font-size: 1.12rem;
+  font-weight: 800;
 }
 
+.stm-empty-state,
 .empty-state {
   margin: 0;
-  color: var(--text-muted, #64748b);
+  color: var(--stm-muted);
+  font-size: 0.92rem;
 }
 
-.timetable-cards {
+.stm-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 0.75rem;
 }
 
-.timetable-card {
-  border: 1px solid var(--border-color, #dbe5f1);
-  border-radius: 12px;
-  padding: 14px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+.stm-card {
+  border: 1px solid color-mix(in srgb, var(--stm-accent) 30%, #d7dee8 70%);
+  border-radius: 14px;
+  padding: 0.8rem;
+  background: linear-gradient(
+    130deg,
+    #ffffff 0%,
+    color-mix(in srgb, var(--stm-accent) 8%, #ffffff 92%) 74%,
+    color-mix(in srgb, var(--stm-accent) 14%, #ffffff 86%) 100%
+  );
+  box-shadow: 0 10px 22px
+    color-mix(in srgb, var(--stm-primary-deep) 14%, transparent);
 }
 
-.timetable-card__meta {
+.stm-card-meta {
   display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 0.4rem;
+  margin-bottom: 0.45rem;
+  flex-wrap: wrap;
 }
 
-.timetable-card__meta span {
-  background: color-mix(in srgb, var(--primary-accent, #2563eb) 12%, #ffffff 88%);
-  color: var(--primary-accent-dark, #1d4ed8);
-  border: 1px solid color-mix(in srgb, var(--primary-accent, #2563eb) 26%, #ffffff 74%);
+.stm-card-meta span {
+  background: color-mix(in srgb, var(--stm-accent) 18%, #ffffff 82%);
+  color: color-mix(in srgb, var(--stm-primary-deep) 72%, #0f172a 28%);
+  border: 1px solid color-mix(in srgb, var(--stm-accent) 40%, #d7dee8 60%);
   border-radius: 999px;
-  padding: 2px 9px;
-  font-size: 0.78rem;
+  padding: 0.12rem 0.52rem;
+  font-size: 0.74rem;
   font-weight: 700;
 }
 
-.timetable-card h3 {
-  margin: 0 0 6px;
-  font-size: 1rem;
+.stm-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.01rem;
+  color: color-mix(in srgb, var(--stm-primary-deep) 62%, #0f172a 38%);
+  font-weight: 800;
 }
 
-.timetable-card p {
-  margin: 0 0 6px;
-  color: var(--text-muted, #64748b);
-  font-size: 0.9rem;
+.stm-card p {
+  margin: 0 0 0.34rem;
+  color: var(--stm-muted);
+  font-size: 0.88rem;
 }
 
-.timetable-card__actions {
-  margin-top: 10px;
+.stm-card-actions {
+  margin-top: 0.6rem;
   display: flex;
-  gap: 8px;
+  gap: 0.45rem;
+  flex-wrap: wrap;
 }
 
-.timetable-card__actions .secondary {
-  color: var(--primary-accent-dark, #1d4ed8);
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+.stm-secondary {
+  color: color-mix(in srgb, var(--stm-primary-deep) 74%, #0f172a 26%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--stm-accent) 14%, #ffffff 86%),
+    color-mix(in srgb, var(--stm-accent) 21%, #ffffff 79%)
+  );
+  border: 1px solid color-mix(in srgb, var(--stm-accent) 42%, #d7dee8 58%);
 }
 
-.timetable-card__actions .danger {
+.stm-danger {
   color: #ffffff;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #e94a58 0%, #c82635 100%);
+  border: 1px solid #b81f2d;
 }
 
-@media (max-width: 768px) {
-  .student-timetable-manager__header,
-  .student-timetable-manager__form,
-  .student-timetable-manager__list {
-    padding: 14px;
+@media (max-width: 980px) {
+  .stm-hero {
+    flex-direction: column;
   }
 
-  .actions-row {
+  .stm-hero-stats {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .stm-upload-block {
+    align-items: flex-start;
+  }
+
+  .stm-actions-row {
     justify-content: stretch;
   }
 
-  .actions-row button {
+  .stm-actions-row button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .student-timetable-manager {
+    padding: 0.9rem;
+  }
+
+  .stm-hero-stats,
+  .stm-form-grid,
+  .stm-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .stm-list-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+  }
+
+  .stm-list-head button {
     width: 100%;
   }
 }

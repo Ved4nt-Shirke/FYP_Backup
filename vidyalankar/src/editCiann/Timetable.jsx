@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Header from "../basic/Header";
-import Sidebar from "../basic/Sidebar";
 import SecondarySidebar from "./SecondarySidebar";
-import Footer from "../basic/Footer";
 import { config } from "../config/api";
 import "./Timetable.css";
+import "./EditCiannModern.css";
 
 const days = [
   "Monday",
@@ -94,7 +92,6 @@ const TimeTable = () => {
   const [selectedDay, setSelectedDay] = useState(days[0]);
   const [selectedTime, setSelectedTime] = useState(times[0]);
   const [selectedRoom, setSelectedRoom] = useState(rooms[0]);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
 
@@ -130,7 +127,7 @@ const TimeTable = () => {
             // Also store in sessionStorage for consistency
             sessionStorage.setItem(
               "currentCiannData",
-              JSON.stringify(parsedData)
+              JSON.stringify(parsedData),
             );
             return;
           }
@@ -198,7 +195,7 @@ const TimeTable = () => {
 
         if (!response || !response.ok) {
           throw new Error(
-            `HTTP error! Status: ${response ? response.status : "Unknown"}`
+            `HTTP error! Status: ${response ? response.status : "Unknown"}`,
           );
         }
         const data = await response.json();
@@ -240,7 +237,7 @@ const TimeTable = () => {
 
       if (!response || !response.ok) {
         throw new Error(
-          `HTTP error! Status: ${response ? response.status : "Unknown"}`
+          `HTTP error! Status: ${response ? response.status : "Unknown"}`,
         );
       }
       setSlots((prev) => ({ ...prev, [key]: value }));
@@ -308,12 +305,12 @@ const TimeTable = () => {
                 // Ignore network errors on retries for exponential backoff
               }
               await new Promise((res) =>
-                setTimeout(res, Math.pow(2, i) * 1000)
+                setTimeout(res, Math.pow(2, i) * 1000),
               );
             }
             reject(new Error("Failed after retries"));
           });
-        })
+        }),
       );
 
       if (!responses[0].ok || !responses[1].ok) {
@@ -355,7 +352,7 @@ const TimeTable = () => {
 
       if (!response || !response.ok) {
         throw new Error(
-          `HTTP error! Status: ${response ? response.status : "Unknown"}`
+          `HTTP error! Status: ${response ? response.status : "Unknown"}`,
         );
       }
       setSlots((prev) => ({ ...prev, [key]: value }));
@@ -379,7 +376,7 @@ const TimeTable = () => {
             ...getAuthHeaders(),
           },
           body: JSON.stringify({ weekday: day, time }),
-        })
+        }),
       );
 
       const responses = await Promise.all(
@@ -396,18 +393,18 @@ const TimeTable = () => {
                 // Ignore network errors on retries for exponential backoff
               }
               await new Promise((res) =>
-                setTimeout(res, Math.pow(2, i) * 1000)
+                setTimeout(res, Math.pow(2, i) * 1000),
               );
             }
             reject(new Error("Failed after retries"));
           });
-        })
+        }),
       );
 
       const allOk = responses.every((res) => res.ok);
       if (!allOk) {
         const errorData = await Promise.all(
-          responses.map((res) => res.json())
+          responses.map((res) => res.json()),
         ).catch(() => null);
         console.error("Delete failed for one or more slots:", errorData);
         // Use a custom message box instead of alert
@@ -435,29 +432,19 @@ const TimeTable = () => {
 
   // Navigation handlers for previous/forward buttons
   const handlePrevious = () => {
-    navigate('/course-dairy', { state: { ciannData } });
+    navigate("/course-dairy", { state: { ciannData } });
   };
 
   const handleForward = () => {
-    navigate('/syllabus', { state: { ciannData } });
+    navigate("/syllabus", { state: { ciannData } });
   };
 
   return (
     <div className="timetable-layout">
-      <Header
-        showSearch={false}
-        onMenuToggle={() => {
-          setIsSidebarVisible((v) => !v);
-          window.dispatchEvent(new CustomEvent("faculty:toggle-main-sidebar"));
-        }}
-        onSecondaryMenuToggle={() => setIsSecondarySidebarVisible((v) => !v)}
-      />
       <div className="timetable-main-row">
-        <Sidebar
-          isSidebarVisible={isSidebarVisible}
-          setIsSidebarVisible={setIsSidebarVisible}
-        />
-        <div className={`timetable-secondary-sidebar-wrapper ${isSecondarySidebarVisible ? 'visible' : ''}`}>
+        <div
+          className={`timetable-secondary-sidebar-wrapper ${isSecondarySidebarVisible ? "visible" : ""}`}
+        >
           <SecondarySidebar
             ciannData={ciannData}
             isSecondarySidebarVisible={isSecondarySidebarVisible}
@@ -467,16 +454,26 @@ const TimeTable = () => {
         <div className="timetable-main-content">
           <div className="plan-container">
             <div className="timetable-header">
-              <h2>Time Table</h2>
+              <div className="timetable-header-main">
+                <h2>Time Table & Load</h2>
+                <p>
+                  Manage theory, practical, tutorial, and delete actions from
+                  this toolbar.
+                </p>
+              </div>
               <div className="button-group">
-                <button onClick={handleAddTheorySlot}>Add Theory</button>
+                <button onClick={handleAddTheorySlot}>
+                  <span>+</span> Add Theory
+                </button>
                 <button onClick={() => setShowPracticalPopup(true)}>
-                  Add Practical
+                  <span>+</span> Add Practical
                 </button>
                 <button onClick={() => setShowTutorialPopup(true)}>
-                  Add Tutorial
+                  <span>+</span> Add Tutorial
                 </button>
-                <button onClick={() => setShowDeletePopup(true)}>Delete</button>
+                <button onClick={() => setShowDeletePopup(true)}>
+                  <span>🗑</span> Delete Slot
+                </button>
               </div>
             </div>
             {showPopup && (
@@ -766,7 +763,7 @@ const TimeTable = () => {
                               if (!value) continue;
 
                               const typeMatch = value.match(
-                                /(Theory|Practical|Tutorial)/i
+                                /(Theory|Practical|Tutorial)/i,
                               );
                               const type = typeMatch
                                 ? typeMatch[0].slice(0, 2).toUpperCase()
@@ -846,54 +843,56 @@ const TimeTable = () => {
                 </div>
               </div>
             )}
-            <table className="timetable">
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  {days.map((day) => (
-                    <th key={day}>{day}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {times.map((time, tIdx) => (
-                  <tr key={time}>
-                    <td>{time}</td>
-                    {days.map((day) => {
-                      const key = `${time}-${day}`;
-                      const value = slots[key];
-                      const isPractical =
-                        typeof value === "string" &&
-                        value.startsWith("Practical");
-
-                      // If this cell is the continuation of a 2-hour practical,
-                      // skip rendering because the previous row will have rowSpan=2
-                      if (tIdx > 0) {
-                        const prevKey = `${times[tIdx - 1]}-${day}`;
-                        if (isPractical && slots[prevKey] === value) {
-                          return null;
-                        }
-                      }
-
-                      // If this is the start of a 2-hour practical, render with rowSpan=2
-                      if (isPractical && tIdx < times.length - 1) {
-                        const nextKey = `${times[tIdx + 1]}-${day}`;
-                        if (slots[nextKey] === value) {
-                          return (
-                            <td key={key} rowSpan={2}>
-                              {value}
-                            </td>
-                          );
-                        }
-                      }
-
-                      // Default single-hour cell
-                      return <td key={key}>{value || ""}</td>;
-                    })}
+            <div className="table-scroll-shell">
+              <table className="timetable">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    {days.map((day) => (
+                      <th key={day}>{day}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {times.map((time, tIdx) => (
+                    <tr key={time}>
+                      <td>{time}</td>
+                      {days.map((day) => {
+                        const key = `${time}-${day}`;
+                        const value = slots[key];
+                        const isPractical =
+                          typeof value === "string" &&
+                          value.startsWith("Practical");
+
+                        // If this cell is the continuation of a 2-hour practical,
+                        // skip rendering because the previous row will have rowSpan=2
+                        if (tIdx > 0) {
+                          const prevKey = `${times[tIdx - 1]}-${day}`;
+                          if (isPractical && slots[prevKey] === value) {
+                            return null;
+                          }
+                        }
+
+                        // If this is the start of a 2-hour practical, render with rowSpan=2
+                        if (isPractical && tIdx < times.length - 1) {
+                          const nextKey = `${times[tIdx + 1]}-${day}`;
+                          if (slots[nextKey] === value) {
+                            return (
+                              <td key={key} rowSpan={2}>
+                                {value}
+                              </td>
+                            );
+                          }
+                        }
+
+                        // Default single-hour cell
+                        return <td key={key}>{value || ""}</td>;
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <div className="pagination">
               <button onClick={handlePrevious}>← Previous</button>
               <button onClick={handleForward}>Forward →</button>
@@ -901,7 +900,6 @@ const TimeTable = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

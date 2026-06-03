@@ -1,283 +1,137 @@
-/* Main content area within the layout - original for timetable compatibility */
-.timetable-main-content {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 0;
-  box-sizing: border-box;
-  margin: 0;
-  width: 100%;
-  max-width: none;
-  padding-left: 260px;
-  max-height: calc(100vh - 80px); /* Reduced height calculation for better fit */
-  overflow-y: auto; /* Add scroll if content exceeds height */
-  overflow-x: hidden; /* Hide horizontal scroll */
-}
-
-/* Fixed version for attendance pages - works with sidebar layout */
 .attendance-main-content {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 0 15px;
-  box-sizing: border-box;
-  margin: 0;
-  width: 100%;
-  max-width: none;
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
-  overflow-x: hidden;
+  --atf-bg-a: #f3f8ff;
+  --atf-bg-b: #ecf4ff;
+  --atf-panel: #ffffff;
+  --atf-border: #d9e5f6;
+  --atf-text: #132844;
+  --atf-muted: #60728c;
+  --atf-primary: #0f5cc0;
+  --atf-primary-deep: #084892;
+
+  min-height: calc(100vh - 64px);
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(15, 92, 192, 0.12), transparent 38%),
+    radial-gradient(circle at 92% 2%, rgba(8, 72, 146, 0.1), transparent 34%),
+    linear-gradient(180deg, var(--atf-bg-a), var(--atf-bg-b));
 }
 
-/* Specific container for the Extra Practical Attendance form and controls */
 .theory-attendance-container {
-  width: 90%;
-  max-width: 600px; /* Much smaller max-width */
-  margin: 5px auto; /* Minimal margins */
-  background: #fff;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  padding: 12px; /* Minimal padding */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-height: auto;
-  height: fit-content;
+  width: min(860px, 100%);
+  margin: 0 auto;
+  border: 1px solid var(--atf-border);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #ffffff, #eff6ff);
+  box-shadow: 0 12px 26px rgba(18, 43, 82, 0.08);
+  padding: 1rem;
 }
 
 .header-row {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 6px; /* Minimal margin */
-  border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 4px; /* Minimal padding */
+  margin-bottom: 0.8rem;
 }
 
 .header-row h3 {
-  font-size: 1.1rem; /* Much smaller title */
-  color: var(--app-header-bg, #28a745); /* Use theme variable */
-  font-weight: 600;
   margin: 0;
-  letter-spacing: -0.02em;
+  color: var(--atf-text);
+  font-size: 1.35rem;
+  font-weight: 800;
 }
 
 .ciann-info {
-  width: 100%;
-  margin-bottom: 6px; /* Minimal margin */
-  padding: 4px 8px; /* Minimal padding */
-  background-color: #f8f9fa;
-  border-radius: 3px;
-  border-left: 2px solid var(--app-header-bg, #28a745); /* Use theme variable */
-  font-size: 11px; /* Much smaller font */
-  color: #495057;
+  margin-bottom: 0.9rem;
+  border: 1px solid #cadeff;
+  border-radius: 10px;
+  background: #eef4ff;
+  color: #2c4f7e;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.84rem;
 }
 
-/* Main form container */
 .form-wrapper {
   width: 100%;
-  max-width: 500px; /* Much smaller width */
-  margin: 0 auto;
 }
 
-/* The box containing the input fields */
 .form-box {
-  border: 1px solid #e0e0e0;
-  border-radius: 3px;
+  border: 1px solid #dce8f9;
+  border-radius: 12px;
+  background: #ffffff;
+  margin-bottom: 0.7rem;
   overflow: hidden;
-  margin-bottom: 6px; /* Minimal margin between form boxes */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
-/* The green bar used as a label */
 .label-bar {
-  background-color: var(--app-header-bg, #28a745) !important; /* Use theme variable with !important */
-  color: white !important;
-  padding: 5px 8px; /* Minimal padding */
-  font-weight: 600;
-  font-size: 11px; /* Much smaller font */
-  text-align: left;
-  margin: 0;
+  background: #f5f9ff;
+  border-bottom: 1px solid #e1ebf9;
+  color: #426590;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 700;
+  padding: 0.5rem 0.65rem;
 }
 
-/* Wrapper for the input fields for proper padding */
 .ea-input-wrapper {
-  padding: 5px; /* Minimal padding */
-  background-color: #fff;
+  padding: 0.65rem;
 }
 
 .ea-input-wrapper input,
 .ea-input-wrapper select {
   width: 100%;
-  padding: 6px 8px; /* Minimal padding */
-  border: 1px solid #ddd;
-  border-radius: 3px;
-  font-size: 12px; /* Much smaller font */
-  box-sizing: border-box;
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  background-color: white;
+  min-height: 42px;
+  border: 1px solid #c8d8ef;
+  border-radius: 10px;
+  padding: 0 0.72rem;
+  color: #173058;
+  font-size: 0.95rem;
 }
 
 .ea-input-wrapper input:focus,
 .ea-input-wrapper select:focus {
   outline: none;
-  border-color: var(--app-header-bg, #28a745); /* Use theme variable */
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+  border-color: #9fbee4;
+  box-shadow: 0 0 0 0.2rem rgba(15, 92, 192, 0.14);
 }
 
-.ea-input-wrapper input::placeholder {
-  color: #6c757d;
-}
-
-.ea-input-wrapper select {
-  cursor: pointer;
-}
-
-.ea-input-wrapper select option {
-  padding: 8px;
-}
-
-/* Wrapper for the submit button */
 .ea-submit-wrapper {
-  margin-top: 8px; /* Minimal margin */
-  text-align: center;
-  width: 100%;
+  margin-top: 0.95rem;
+  text-align: right;
 }
 
-/* Mobile: submit should only appear at the end (not sticky) and stay above site footer */
-@media (max-width: 768px) {
-  .ea-submit-wrapper {
-    position: static;          /* default flow */
-    margin-bottom: 80px;       /* ensure visible above fixed site footer */
-  }
-}
-
-/* Submit button styling to match TheoryEdit */
 .submit-btn {
-  background-color: var(--app-header-bg, #28a745); /* Use theme variable */
-  color: white;
-  padding: 6px 20px; /* Minimal padding */
-  font-size: 12px; /* Much smaller font */
-  font-weight: 600;
+  min-height: 42px;
   border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  box-shadow: 0 1px 3px rgba(40, 167, 69, 0.2);
+  border-radius: 10px;
+  padding: 0 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(
+    135deg,
+    var(--atf-primary),
+    var(--atf-primary-deep)
+  );
+  box-shadow: 0 10px 22px rgba(15, 92, 192, 0.26);
 }
 
 .submit-btn:hover {
-  background-color: var(--primary-accent-dark, #218838); /* Use theme dark variable */
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  filter: brightness(1.03);
 }
 
-.submit-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(40, 167, 69, 0.2);
-}
-
-/* Responsive adjustments for smaller screens */
-@media (max-width: 1024px) {
-  .timetable-main-content {
-    padding-left: 200px; /* Adjust for smaller sidebar */
+@media (max-width: 700px) {
+  .attendance-main-content {
+    padding: 0.9rem;
   }
-  
+
   .theory-attendance-container {
-    padding: 10px; /* Minimal padding */
-    width: 95%;
-    margin: 5px auto;
+    padding: 0.85rem;
   }
-  .form-wrapper {
-    max-width: 100%;
-  }
-}
 
-@media (max-width: 768px) {
-  .timetable-main-content {
-    padding-left: 0;
-    padding: 8px;
-    max-height: none;            /* use full page scroll */
-    overflow-y: visible;         /* let body handle scrolling */
-    overflow-x: hidden;
-  }
-  
-  .theory-attendance-container {
-    width: 100%;
-    margin: 5px auto;
-    padding: 8px; /* Minimal padding */
-    padding-bottom: 16px;        /* normal bottom spacing */
-    border-radius: 4px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-  
-  .header-row {
-    margin-bottom: 4px;
-    padding-bottom: 3px;
-  }
-  
-  .header-row h3 {
-    font-size: 1rem; /* Much smaller title for mobile */
-  }
-  
-  .form-box {
-    margin-bottom: 4px; /* Minimal spacing */
-  }
-  
-  .label-bar {
-    padding: 4px 6px; /* Minimal padding */
-    font-size: 10px;
-  }
-  
-  .ea-input-wrapper {
-    padding: 4px; /* Minimal padding */
-  }
-  
-  .ea-input-wrapper input,
-  .ea-input-wrapper select {
-    padding: 5px 6px; /* Minimal padding */
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 480px) {
-  .theory-attendance-container {
-    padding: 6px; /* Minimal padding */
-    margin: 3px auto;
-  }
-  
-  .header-row h3 {
-    font-size: 0.9rem; /* Very small title */
-  }
-  
-  .ciann-info {
-    font-size: 10px; /* Very small font */
-    padding: 3px 6px; /* Minimal padding */
-    margin-bottom: 4px;
-  }
-  
-  .form-box {
-    margin-bottom: 3px; /* Minimal spacing */
-  }
-  
-  .label-bar {
-    padding: 3px 6px; /* Minimal padding */
-    font-size: 10px;
-  }
-  
-  .ea-input-wrapper {
-    padding: 3px; /* Minimal padding */
-  }
-  
   .ea-submit-wrapper {
-    margin-top: 6px; /* Minimal margin */
+    text-align: stretch;
   }
-  
+
   .submit-btn {
-    padding: 5px 16px; /* Minimal padding */
-    font-size: 11px; /* Very small font */
+    width: 100%;
   }
 }

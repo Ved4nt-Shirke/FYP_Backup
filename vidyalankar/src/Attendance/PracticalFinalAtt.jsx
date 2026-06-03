@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import "./PracticalAttendance.css";
+import "./PracticalFinalAtt.css";
 
 const PracticalFinalAtt = () => {
   const location = useLocation();
@@ -24,6 +24,8 @@ const PracticalFinalAtt = () => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // Generate batch options (academic years)
   const generateBatchOptions = () => {
@@ -149,6 +151,57 @@ const PracticalFinalAtt = () => {
   const presentCount = Object.values(attendance).filter(Boolean).length;
   const absentCount = students.length - presentCount;
 
+  const handleSelectAll = (value) => {
+    const updated = {};
+    students.forEach((student) => {
+      updated[student.rollNo] = value;
+    });
+    setAttendance(updated);
+  };
+
+  const handleToggleAll = () => {
+    const updated = {};
+    students.forEach((student) => {
+      updated[student.rollNo] = !attendance[student.rollNo];
+    });
+    setAttendance(updated);
+  };
+
+  const handleReset = () => {
+    const updated = {};
+    students.forEach((student) => {
+      updated[student.rollNo] = false;
+    });
+    setAttendance(updated);
+  };
+
+  const filteredStudents = students.filter((student) => {
+    const query = searchTerm.trim().toLowerCase();
+    const studentName = (student.studentName || "").toLowerCase();
+    const enrollment = (student.enrollmentNo || "").toLowerCase();
+    const roll = String(student.rollNo || "").toLowerCase();
+
+    const matchesSearch =
+      !query ||
+      studentName.includes(query) ||
+      enrollment.includes(query) ||
+      roll.includes(query);
+
+    if (!matchesSearch) {
+      return false;
+    }
+
+    if (statusFilter === "present") {
+      return Boolean(attendance[student.rollNo]);
+    }
+
+    if (statusFilter === "absent") {
+      return !attendance[student.rollNo];
+    }
+
+    return true;
+  });
+
   return (
     <div className="practical-page">
       <div className="practical-card">
@@ -176,36 +229,46 @@ const PracticalFinalAtt = () => {
           </div>
         </header>
 
-        {/* Batch Filter */}
-        <div
-          style={{
-            padding: "1rem",
-            backgroundColor: "#f8f9fa",
-            borderRadius: "8px",
-            marginBottom: "1rem",
-          }}
-        >
-          <label
-            htmlFor="batch-filter"
-            style={{
-              display: "block",
-              marginBottom: "0.5rem",
-              fontWeight: 600,
-            }}
+        <div className="practical-bulk-actions">
+          <button
+            type="button"
+            className="practical-action-btn"
+            onClick={() => handleSelectAll(true)}
           >
+            Mark All Present
+          </button>
+          <button
+            type="button"
+            className="practical-action-btn"
+            onClick={() => handleSelectAll(false)}
+          >
+            Mark All Absent
+          </button>
+          <button
+            type="button"
+            className="practical-action-btn"
+            onClick={handleToggleAll}
+          >
+            Toggle All
+          </button>
+          <button
+            type="button"
+            className="practical-action-btn ghost"
+            onClick={handleReset}
+          >
+            Reset
+          </button>
+        </div>
+
+        <div className="practical-filter-panel">
+          <label htmlFor="batch-filter" className="practical-filter-label">
             Filter by Academic Year Batch:
           </label>
           <select
             id="batch-filter"
             value={selectedBatch}
             onChange={(e) => setSelectedBatch(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              borderRadius: "4px",
-              border: "1px solid #ddd",
-              fontSize: "1rem",
-            }}
+            className="practical-filter-select"
           >
             <option value="">-- All Batches --</option>
             {batchOptions.map((batchYear) => (
@@ -231,6 +294,39 @@ const PracticalFinalAtt = () => {
           </div>
         </section>
 
+        <div className="practical-toolbar">
+          <input
+            type="text"
+            className="practical-search"
+            placeholder="Search by roll, name, enrollment..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <div className="practical-filter-chips">
+            <button
+              type="button"
+              className={`practical-filter-chip ${statusFilter === "all" ? "active" : ""}`}
+              onClick={() => setStatusFilter("all")}
+            >
+              All ({students.length})
+            </button>
+            <button
+              type="button"
+              className={`practical-filter-chip ${statusFilter === "present" ? "active" : ""}`}
+              onClick={() => setStatusFilter("present")}
+            >
+              Present ({presentCount})
+            </button>
+            <button
+              type="button"
+              className={`practical-filter-chip ${statusFilter === "absent" ? "active" : ""}`}
+              onClick={() => setStatusFilter("absent")}
+            >
+              Absent ({absentCount})
+            </button>
+          </div>
+        </div>
+
         <section className="practical-table-section">
           <div className="practical-table-head">
             <div>
@@ -248,50 +344,57 @@ const PracticalFinalAtt = () => {
                 <h4>{submitError}</h4>
                 <p>Please try again.</p>
               </div>
+            ) : students.length === 0 ? (
+              <div className="practical-empty">
+                <h4>No students found for this batch.</h4>
+              </div>
+            ) : filteredStudents.length === 0 ? (
+              <div className="practical-empty">
+                <h4>No students match the selected filter.</h4>
+              </div>
             ) : (
-              <table className="practical-table">
-                <thead>
-                  <tr>
-                    <th>Roll No</th>
-                    <th>Student Name</th>
-                    <th>Enrollment No</th>
-                    <th>Batch</th>
-                    <th>Attendance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.length === 0 ? (
-                    <tr>
-                      <td colSpan={5}>No students found for this batch.</td>
-                    </tr>
-                  ) : (
-                    students.map((student) => (
-                      <tr key={student.rollNo}>
-                        <td>{student.rollNo}</td>
-                        <td>{student.studentName}</td>
-                        <td>{student.enrollmentNo || "N/A"}</td>
-                        <td>{student.batch || "N/A"}</td>
-                        <td>
-                          <button
-                            type="button"
-                            className={`attendance-toggle ${
-                              attendance[student.rollNo] ? "present" : "absent"
-                            }`}
-                            onClick={() => {
-                              setAttendance((prev) => ({
-                                ...prev,
-                                [student.rollNo]: !prev[student.rollNo],
-                              }));
-                            }}
-                          >
-                            {attendance[student.rollNo] ? "PRESENT" : "ABSENT"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+              <div className="practical-students-grid">
+                {filteredStudents.map((student) => (
+                  <div
+                    key={student.rollNo}
+                    className={`practical-student-card ${attendance[student.rollNo] ? "present" : "absent"}`}
+                    onClick={() => {
+                      setAttendance((prev) => ({
+                        ...prev,
+                        [student.rollNo]: !prev[student.rollNo],
+                      }));
+                    }}
+                  >
+                    <div className="practical-student-header">
+                      <span className="practical-roll-badge">
+                        {student.rollNo}
+                      </span>
+                      <button
+                        type="button"
+                        className={`attendance-toggle ${attendance[student.rollNo] ? "present" : "absent"}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setAttendance((prev) => ({
+                            ...prev,
+                            [student.rollNo]: !prev[student.rollNo],
+                          }));
+                        }}
+                      >
+                        {attendance[student.rollNo] ? "Present" : "Absent"}
+                      </button>
+                    </div>
+                    <div className="practical-student-name">
+                      {student.studentName}
+                    </div>
+                    <div className="practical-student-meta">
+                      Enrollment: {student.enrollmentNo || "N/A"}
+                    </div>
+                    <div className="practical-student-meta">
+                      Batch: {student.batch || "N/A"}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </section>
@@ -300,7 +403,7 @@ const PracticalFinalAtt = () => {
           <div className="practical-error">{submitError}</div>
         )}
 
-        <div className="practical-pagination">
+        <div className="practical-pagination practical-pagination--submit">
           <button
             className="action-pill"
             onClick={handleSubmit}

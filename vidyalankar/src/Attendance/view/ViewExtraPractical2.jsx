@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import "../../components/EditCiann.css";
+import Header from "../../basic/Header";
+import "./ViewBatchSelect.css";
 
 const ViewExtraPractical2 = () => {
   const [extraPracticalData, setExtraPracticalData] = useState(null);
@@ -24,7 +25,7 @@ const ViewExtraPractical2 = () => {
     const fetchExtraPracticalData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/view-extra-practical/${ciannId}`
+          `http://localhost:5000/api/view-extra-practical/${ciannId}`,
         );
         setExtraPracticalData(response.data);
         // Set first batch as default if available
@@ -33,7 +34,9 @@ const ViewExtraPractical2 = () => {
         }
       } catch (err) {
         console.error("Error fetching extra practical data:", err);
-        setError("Failed to fetch extra practical attendance data. Please try again later.");
+        setError(
+          "Failed to fetch extra practical attendance data. Please try again later.",
+        );
       } finally {
         setLoading(false);
       }
@@ -52,56 +55,36 @@ const ViewExtraPractical2 = () => {
       alert("Please select a batch first.");
       return;
     }
-    
+
     const searchParams = new URLSearchParams(location.search);
     const ciannId = searchParams.get("ciannId");
-    window.open(`/view-extra-practical3?ciannId=${ciannId}&batch=${selectedBatch}`, '_blank');
+    window.open(
+      `/view-extra-practical3?ciannId=${ciannId}&batch=${selectedBatch}`,
+      "_blank",
+    );
   };
 
   // Render Logic
   if (loading) {
     return (
-      <div className="edit-ciann-page">
-        <div className="edit-ciann-header">
-          <h2 className="text-center py-2 bg-success text-white">
-            Loading Extra Practical Attendance Data...
-          </h2>
-        </div>
-        <div className="text-center p-4">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
+      <div className="vbs-state">
+        Loading extra practical attendance data...
       </div>
     );
   }
 
   if (error) {
-    return (
-      <div className="edit-ciann-page">
-        <div className="edit-ciann-header">
-          <h2 className="text-center py-2 bg-danger text-white">
-            Error Loading Data
-          </h2>
-        </div>
-        <div className="text-center p-4">
-          <p className="text-danger">{error}</p>
-        </div>
-      </div>
-    );
+    return <div className="vbs-state error">{error}</div>;
   }
 
-  if (!extraPracticalData || !extraPracticalData.batches || extraPracticalData.batches.length === 0) {
+  if (
+    !extraPracticalData ||
+    !extraPracticalData.batches ||
+    extraPracticalData.batches.length === 0
+  ) {
     return (
-      <div className="edit-ciann-page">
-        <div className="edit-ciann-header">
-          <h2 className="text-center py-2 bg-warning text-white">
-            No Data Found
-          </h2>
-        </div>
-        <div className="text-center p-4">
-          <p>No extra practical attendance data found for this CIAAN.</p>
-        </div>
+      <div className="vbs-state">
+        No extra practical attendance data found for this CIANN.
       </div>
     );
   }
@@ -110,71 +93,37 @@ const ViewExtraPractical2 = () => {
 
   return (
     <>
-      {/* Bootstrap Icons */}
-      <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-        rel="stylesheet"
-      />
-
-      <div className="edit-ciann-page">
-        <div className="edit-ciann-header">
-          <h2 className="text-center py-2 bg-success text-white">
-            View Extra Practical Attendance - Select Batch
-          </h2>
-        </div>
-        
-        <div className="container mt-4">
-          <div className="row justify-content-center">
-            <div className="col-md-6">
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title text-center mb-4">
-                    <i className="bi bi-people-fill me-2"></i>
-                    Select Batch to View Extra Practical Attendance
-                  </h5>
-                  
-                  <div className="mb-3">
-                    <label htmlFor="batchSelect" className="form-label">
-                      <strong>Available Batches:</strong>
-                    </label>
-                    <select
-                      id="batchSelect"
-                      className="form-select form-select-lg"
-                      value={selectedBatch}
-                      onChange={handleBatchChange}
-                    >
-                      <option value="">-- Select a Batch --</option>
-                      {batches.map((batch) => (
-                        <option key={batch.batch} value={batch.batch}>
-                          {batch.batch}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div className="text-center">
-                    <button
-                      className="btn btn-primary btn-lg"
-                      onClick={handleSubmit}
-                      disabled={!selectedBatch}
-                    >
-                      <i className="bi bi-eye me-2"></i>
-                      View Extra Practical Attendance
-                    </button>
-                  </div>
-                  
-                  {selectedBatch && (
-                    <div className="mt-3 text-center">
-                      <small className="text-muted">
-                        Selected: <strong>{selectedBatch}</strong>
-                      </small>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+      <Header showSearch={false} />
+      <div className="vbs-page">
+        <section className="vbs-hero">
+          <h2>View Extra Practical Attendance</h2>
+          <p>Select a batch to continue.</p>
+        </section>
+        <section className="vbs-panel">
+          <div className="vbs-field">
+            <label htmlFor="batchSelect">Available Batches</label>
+            <select
+              id="batchSelect"
+              value={selectedBatch}
+              onChange={handleBatchChange}
+            >
+              <option value="">-- Select a Batch --</option>
+              {batches.map((batch) => (
+                <option key={batch.batch} value={batch.batch}>
+                  {batch.batch}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
+          <button
+            type="button"
+            className="vbs-submit"
+            onClick={handleSubmit}
+            disabled={!selectedBatch}
+          >
+            View Extra Practical Attendance
+          </button>
+        </section>
       </div>
     </>
   );

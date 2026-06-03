@@ -1,154 +1,166 @@
-/* --- GREEN HEADER STYLES --- */
-.view-header {
-  background-color: #198754; /* Green color similar to Bootstrap success */
-  color: white;
-  padding: 1rem;
-  text-align: center;
-  width: 100%;
-}
-
-.view-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 500;
-}
-
-/* Main page wrapper */
-.course-diary-wrapper {
-  width: 100%;
+﻿.vat2-page {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  padding: 1.2rem;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(31, 95, 191, 0.12), transparent 38%),
+    radial-gradient(circle at 92% 2%, rgba(19, 73, 150, 0.08), transparent 35%),
+    linear-gradient(180deg, #f2f7ff 0%, #eaf2ff 100%);
 }
 
-/* Section containing the table */
-.attendance-section {
-  width: 100%;
-  padding: 1.5rem;
-  box-sizing: border-box;
+.vat2-hero {
+  border: 1px solid #d7e5f8;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #ffffff, #edf5ff);
+  box-shadow: 0 12px 26px rgba(18, 43, 82, 0.08);
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 0.9rem;
 }
 
-/* This wrapper creates the horizontal scrollbar */
-.attendance-table-wrapper {
-  width: 100%;
-  min-height: 640px;
-  overflow-x: auto;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+.vat2-hero h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #143257;
 }
 
-/* The Table itself */
-.attendance-table {
-  border-collapse: collapse;
-  table-layout: fixed;
-  width: 100%;
-}
-
-/* Table Cells & Header */
-.attendance-table th,
-.attendance-table td {
-  border: 1px solid #ccc;
-  padding: 4px 6px;              /* Smaller padding */
-  font-size: 10px;
-  white-space: nowrap;           /* Prevents line break */
-  text-align: center;
-  width: 60px;                   /* Fixed width for all date columns */
-  min-width: 60px;
-  max-width: 60px;
-}
-
-.attendance-table thead th {
-  background-color: #f8f9fa;
+.vat2-hero p {
+  margin: 0.35rem 0 0;
+  color: #5d7090;
   font-weight: 600;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  width: auto;
 }
 
-/* First column styling - ROLL NO. column */
-.attendance-table .first-col {
-  background-color: #f8f9fa;
-  text-align: left;
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  width: 80px !important;
-  min-width: 80px !important;
-  max-width: 80px !important;
+.vat2-panel {
+  border: 1px solid #d7e5f8;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(18, 43, 82, 0.08);
+  padding: 0.95rem;
+  margin-bottom: 0.9rem;
 }
 
-/* Ensure the top-left header cell is above everything */
-.attendance-table thead .first-col {
-    z-index: 3;
+.vat2-table-wrapper {
+  min-width: 0;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e6eefb;
 }
 
-/* Ensure all date columns have equal width */
-.attendance-table th:not(.first-col),
-.attendance-table td:not(.first-col) {
-  width: 60px !important;
-  min-width: 60px !important;
-  max-width: 60px !important;
+.vat2-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+  margin: 0;
 }
 
-/* Print button styling */
-.mt-4 {
-  margin-top: 1.5rem;
+.vat2-table thead {
+  background: #edf4ff;
 }
 
-/* --- Print-Specific Styles --- */
+.vat2-table th {
+  padding: 0.85rem;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #355ea8;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border: 1px solid #e6eefb;
+}
+
+.vat2-table td {
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #183861;
+  border: 1px solid #e6eefb;
+}
+
+.vat2-table tbody tr:nth-child(even) td {
+  background: #fbfdff;
+}
+
+.vat2-status {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.vat2-status--present {
+  background: rgba(29, 143, 95, 0.12);
+  color: #1d8f5f;
+}
+
+.vat2-status--absent {
+  background: rgba(220, 53, 69, 0.12);
+  color: #dc3545;
+}
+
+.vat2-actions {
+  margin-top: 0.9rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.vat2-print-btn {
+  border: none;
+  border-radius: 10px;
+  min-height: 40px;
+  padding: 0 1.1rem;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #1f5fbf, #134996);
+  transition: all 0.2s ease;
+}
+
+.vat2-print-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(31, 95, 191, 0.25);
+}
+
+.vat2-state {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5d7090;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .vat2-hero h1 {
+    font-size: 1.5rem;
+  }
+
+  .vat2-panel {
+    padding: 0.7rem;
+  }
+
+  .vat2-table th,
+  .vat2-table td {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.75rem;
+  }
+}
+
 @media print {
-  /* Hide elements you don't want on the printed page */
-  .view-header, .mt-4 .btn-secondary, .btn {
-    display: none !important;
-  }
-
-  /*
-   * THE KEY FIX: Reset sticky positioning for print.
-   * This is what's causing the out-of-order page printing.
-  */
-  .attendance-table thead th,
-  .attendance-table .first-col {
-    position: static !important; /* CRITICAL: Disables sticky behavior for print */
-    background-color: #fff !important; /* Optional: remove grey background for print */
-  }
-
-  /* Reset layout for the main containers to ensure normal document flow */
-  body, .course-diary-wrapper, .attendance-section {
-    display: block !important;
-    position: static !important;
-    margin: 0 !important;
+  .vat2-page {
+    background: #fff !important;
     padding: 0 !important;
   }
 
-  /* Ensure the table itself can flow across pages correctly */
-  .attendance-table-wrapper {
-    overflow: visible !important; /* Show all content, don't scroll */
-    border: none !important;      /* Optional: remove the border for a cleaner print */
+  .vat2-print-btn,
+  .vat2-actions {
+    display: none !important;
   }
 
-  .attendance-table {
-    width: 100% !important; /* Allow table to use full page width */
-  }
-
-  tr, td {
-    page-break-inside: avoid !important; /* Try not to split a single row across two pages */
-  }
-
-  /* Add a print-only title */
-  .course-diary-wrapper::before {
-    content: "Extra Theory Attendance";
-    display: block;
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    padding: 10px 0;
-    border-bottom: 2px solid #000;
-  }
-
-  @page {
-    size: auto;
-    margin: 15mm;
+  .vat2-table {
+    min-width: auto !important;
+    page-break-inside: avoid;
   }
 }

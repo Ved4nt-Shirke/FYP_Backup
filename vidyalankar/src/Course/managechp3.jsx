@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import './managechp3.css';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import "./CourseTableShared.css";
 
 function UpdateChapter() {
   const location = useLocation();
@@ -8,10 +8,10 @@ function UpdateChapter() {
 
   // Extract data passed from the previous page
   const { program, className, course, chapter } = location.state || {};
-  
+
   // State for the form fields, pre-populated with chapter data
-  const [chapterNumber, setChapterNumber] = useState('');
-  const [chapterName, setChapterName] = useState('');
+  const [chapterNumber, setChapterNumber] = useState("");
+  const [chapterName, setChapterName] = useState("");
 
   // Use useEffect to set state when component mounts with data
   useEffect(() => {
@@ -26,32 +26,32 @@ function UpdateChapter() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
-      const response = await fetch('/api/course-chapters/update-chapter', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/course-chapters/update-chapter", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           program,
           className,
           course,
           originalChapterNo: chapter.chapterNo, // The original number to find the record
-          newChapterNo: chapterNumber,        // The new number from the form
-          newChapterName: chapterName,        // The new name from the form
+          newChapterNo: chapterNumber, // The new number from the form
+          newChapterName: chapterName, // The new name from the form
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        alert('Chapter updated successfully!');
+        alert("Chapter updated successfully!");
         navigate(-1); // Go back to the previous page
       } else {
         alert(`Update failed: ${data.message}`);
       }
     } catch (error) {
-      console.error('Error updating chapter:', error);
-      alert('An error occurred during the update.');
+      console.error("Error updating chapter:", error);
+      alert("An error occurred during the update.");
     }
   };
 
@@ -82,7 +82,9 @@ function UpdateChapter() {
             required
           />
         </div>
-        <button type="submit" className="update-button">Update</button>
+        <button type="submit" className="update-button">
+          Update
+        </button>
       </form>
     </div>
   );

@@ -1,26 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import "./TheoryEdit.css";
+import "./edit/EditIndividualAttendance.css";
 
 const StudentAttendance = () => {
-  // State Management
   const [students, setStudents] = useState([]);
-  const [columnsVisible, setColumnsVisible] = useState({
-    rollId: true,
-    name: true,
-    mark: true,
-  });
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showHeaders, setShowHeaders] = useState(true);
-  const [arrowOpen, setArrowOpen] = useState(false);
-  const dropdownRef = useRef(null);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  // Data Initialization
   useEffect(() => {
-    // Get ciannData from localStorage to filter by division
     const ciannDataStr = localStorage.getItem("ciannData");
 
     const params = {};
@@ -53,13 +44,11 @@ const StudentAttendance = () => {
       });
   }, []);
 
-  // Handlers
   const toggleAttendance = (index) => {
     const updated = [...students];
     updated[index].attendance =
       updated[index].attendance === "Present" ? "Absent" : "Present";
     setStudents(updated);
-    console.log("Updated attendance:", updated[index]); // Debug log
   };
 
   const handleSubmit = async () => {
@@ -69,12 +58,14 @@ const StudentAttendance = () => {
       const ciannDataStr = localStorage.getItem("ciannData");
 
       if (!topic || !actualDate) {
-        alert("Missing topic or date from local storage.");
+        setIsSuccess(false);
+        setMessage("Missing topic or date from local storage.");
         return;
       }
 
       if (!ciannDataStr) {
-        alert("Missing CIANN data. Please select a CIANN first.");
+        setIsSuccess(false);
+        setMessage("Missing CIANN data. Please select a CIANN first.");
         return;
       }
 
@@ -88,23 +79,30 @@ const StudentAttendance = () => {
         division: ciannData.division,
       };
 
-      console.log("Payload to be sent:", payload);
+      setIsSubmitting(true);
+      setMessage("");
+
       await axios.post(
         "http://localhost:5000/api/tutorial-attendance",
         payload,
       );
-      alert("Student attendance submitted!");
 
-      // Clear localStorage after successful submission
+      setIsSuccess(true);
+      setMessage("Tutorial attendance submitted successfully.");
+
       localStorage.removeItem("topic");
       localStorage.removeItem("date");
       localStorage.removeItem("ciannData");
 
-      // Navigate to dashboard
-      navigate("/dashboard");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 600);
     } catch (err) {
       console.error("Error submitting attendance:", err);
-      alert("Submission failed. Check the console for details.");
+      setIsSuccess(false);
+      setMessage("Submission failed. Check the console for details.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -120,184 +118,188 @@ const StudentAttendance = () => {
     XLSX.writeFile(workbook, "Student_Attendance.xlsx");
   };
 
-  const toggleColumn = (column) => {
-    setColumnsVisible((prev) => ({ ...prev, [column]: !prev[column] }));
-  };
+  const presentCount = students.filter(
+    (student) => student.attendance === "Present",
+  ).length;
+  const totalCount = students.length;
+  const absentCount = totalCount - presentCount;
+  const attendancePercentage =
+    totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
 
-  const handleGridView = () => setShowDropdown((prev) => !prev);
-
-  // Effect for closing dropdown
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const ciannDataStr = localStorage.getItem("ciannData");
+  const topic = localStorage.getItem("topic");
+  const date = localStorage.getItem("date");
+  let ciannData = null;
+  try {
+    ciannData = ciannDataStr ? JSON.parse(ciannDataStr) : null;
+  } catch (err) {
+    console.error("Error parsing ciannData:", err);
+  }
 
   return (
-    <div className="timetable-main-content">
-      <div className="theory-attendance-container">
-        <div className="header-row">
-          <h3>Tutorial Attendance</h3>
-        </div>
+    <div className="eia-page">
+      <div className="eia-hero">
+        <h1 className="eia-hero-title">Mark Tutorial Attendance</h1>
+        <p className="eia-hero-subtitle">
+          {ciannData?.subject?.name || "Tutorial Session"}
+        </p>
+      </div>
 
-        {/* Subject Context Header */}
-        {(() => {
-          const ciannDataStr = localStorage.getItem("ciannData");
-          const topic = localStorage.getItem("topic");
-          const date = localStorage.getItem("date");
-          let ciannData = null;
-          try {
-            ciannData = ciannDataStr ? JSON.parse(ciannDataStr) : null;
-          } catch (err) {
-            console.error("Error parsing ciannData:", err);
-          }
-
-          return ciannData ? (
-            <div
-              className="subject-info"
-              style={{
-                backgroundColor: "#f0f7ff",
-                padding: "15px",
-                marginBottom: "15px",
-                borderRadius: "8px",
-                borderLeft: "4px solid #4CAF50",
-              }}
-            >
-              <h4 style={{ margin: "0 0 10px 0", color: "#2c5282" }}>
-                {ciannData.subject?.name} ({ciannData.subject?.code})
-              </h4>
-              <p style={{ margin: "5px 0", fontSize: "14px" }}>
-                <strong>Division:</strong> {ciannData.division} |
-                <strong> Department:</strong>{" "}
-                {ciannData.department?.name || "N/A"}
-              </p>
-              {topic && (
-                <p style={{ margin: "5px 0", fontSize: "14px" }}>
-                  <strong>Topic:</strong> {topic}
-                </p>
-              )}
-              {date && (
-                <p style={{ margin: "5px 0", fontSize: "14px" }}>
-                  <strong>Date:</strong> {date}
-                </p>
-              )}
-            </div>
-          ) : null;
-        })()}
-
-        <div className="toolbar toolbar-icons">
-          <input type="text" placeholder="Search" className="search-input" />
-          <button
-            className="icon-btn"
-            onClick={() => setArrowOpen((prev) => !prev)}
+      <div className="eia-container">
+        {message && (
+          <div
+            className={`eia-alert eia-alert-${isSuccess ? "success" : "error"}`}
           >
             <i
-              className={
-                arrowOpen ? "bi bi-caret-up-fill" : "bi bi-caret-down-fill"
-              }
+              className={`bi bi-${isSuccess ? "check-circle" : "x-circle"}`}
             ></i>
-          </button>
-          <button className="icon-btn" onClick={() => window.location.reload()}>
-            <i className="bi bi-arrow-clockwise"></i>
-          </button>
-          <button
-            className="icon-btn"
-            onClick={() => setShowHeaders((prev) => !prev)}
-          >
-            <i className="bi bi-list"></i>
-          </button>
-          <div style={{ position: "relative" }} ref={dropdownRef}>
-            <button className="icon-btn" onClick={handleGridView}>
-              <i className="bi bi-grid-3x3-gap-fill"></i>
-            </button>
-            {showDropdown && (
-              <div className="dropdown-menu">
-                <label className="dropdown-label">
-                  <input
-                    type="checkbox"
-                    checked={columnsVisible.rollId}
-                    onChange={() => toggleColumn("rollId")}
-                  />
-                  Roll ID
-                </label>
-                <label className="dropdown-label">
-                  <input
-                    type="checkbox"
-                    checked={columnsVisible.name}
-                    onChange={() => toggleColumn("name")}
-                  />
-                  Name
-                </label>
-                <label className="dropdown-label">
-                  <input
-                    type="checkbox"
-                    checked={columnsVisible.mark}
-                    onChange={() => toggleColumn("mark")}
-                  />
-                  Mark
-                </label>
-              </div>
-            )}
+            {message}
           </div>
-          <button className="icon-btn" onClick={handleExport}>
-            <i className="bi bi-box-arrow-down"></i>
-          </button>
+        )}
+
+        <div className="eia-context-card">
+          <div className="eia-context-header">
+            <span>Tutorial Context</span>
+          </div>
+          <div className="eia-context-grid">
+            <div className="eia-context-item">
+              <span className="eia-context-label">Subject</span>
+              <span className="eia-context-value">
+                {ciannData?.subject?.name || "N/A"}
+              </span>
+            </div>
+            <div className="eia-context-item">
+              <span className="eia-context-label">Subject Code</span>
+              <span className="eia-context-value">
+                {ciannData?.subject?.code || "N/A"}
+              </span>
+            </div>
+            <div className="eia-context-item">
+              <span className="eia-context-label">Division</span>
+              <span className="eia-context-value">
+                {ciannData?.division || "N/A"}
+              </span>
+            </div>
+            <div className="eia-context-item">
+              <span className="eia-context-label">Topic</span>
+              <span className="eia-context-value">{topic || "N/A"}</span>
+            </div>
+            <div className="eia-context-item">
+              <span className="eia-context-label">Date</span>
+              <span className="eia-context-value">{date || "N/A"}</span>
+            </div>
+          </div>
         </div>
 
-        <div className="table-container">
-          <table>
-            {showHeaders && (
-              <thead>
-                <tr>
-                  {columnsVisible.rollId && <th>Roll No</th>}
-                  {columnsVisible.name && <th>Name</th>}
-                  <th>Enrollment No</th>
-                  <th>Batch</th>
-                  {columnsVisible.mark && <th>Mark Present</th>}
-                </tr>
-              </thead>
-            )}
-            <tbody>
-              {students.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ textAlign: "center" }}>
-                    No students found for this division.
-                  </td>
-                </tr>
-              ) : (
-                students.map((student, index) => (
-                  <tr key={index}>
-                    {columnsVisible.rollId && <td>{student.rollId}</td>}
-                    {columnsVisible.name && <td>{student.name}</td>}
-                    <td>{student.enrollmentNo}</td>
-                    <td>{student.batch}</td>
-                    {columnsVisible.mark && (
-                      <td style={{ textAlign: "center" }}>
-                        <label className="custom-checkbox">
-                          <input
-                            type="checkbox"
-                            checked={student.attendance === "Present"}
-                            onChange={() => toggleAttendance(index)}
-                          />
-                          <span className="checkmark"></span>
-                        </label>
-                      </td>
+        <div className="eia-stats-grid">
+          <div className="eia-stat-card eia-stat-present">
+            <div className="eia-stat-icon">
+              <i className="bi bi-check-circle"></i>
+            </div>
+            <div className="eia-stat-content">
+              <div className="eia-stat-value">{presentCount}</div>
+              <div className="eia-stat-label">Present</div>
+            </div>
+          </div>
+          <div className="eia-stat-card eia-stat-absent">
+            <div className="eia-stat-icon">
+              <i className="bi bi-x-circle"></i>
+            </div>
+            <div className="eia-stat-content">
+              <div className="eia-stat-value">{absentCount}</div>
+              <div className="eia-stat-label">Absent</div>
+            </div>
+          </div>
+          <div className="eia-stat-card eia-stat-total">
+            <div className="eia-stat-icon">
+              <i className="bi bi-people"></i>
+            </div>
+            <div className="eia-stat-content">
+              <div className="eia-stat-value">{totalCount}</div>
+              <div className="eia-stat-label">Total</div>
+            </div>
+          </div>
+          <div className="eia-stat-card eia-stat-percentage">
+            <div className="eia-stat-icon">
+              <i className="bi bi-percent"></i>
+            </div>
+            <div className="eia-stat-content">
+              <div className="eia-stat-value">{attendancePercentage}%</div>
+              <div className="eia-stat-label">Attendance</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="eia-form">
+          <div className="eia-section-header">
+            <h3>Mark Student Attendance</h3>
+            <span className="eia-section-badge">{totalCount} students</span>
+          </div>
+
+          {students.length > 0 ? (
+            <div className="eia-students-grid">
+              {students.map((student, index) => (
+                <div
+                  key={`${student.rollId}-${index}`}
+                  className={`eia-student-card ${student.attendance === "Present" ? "eia-present" : "eia-absent"}`}
+                >
+                  <div className="eia-student-header">
+                    <div className="eia-student-roll">{student.rollId}</div>
+                    <label className="eia-custom-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={student.attendance === "Present"}
+                        onChange={() => toggleAttendance(index)}
+                      />
+                      <span className="eia-checkmark"></span>
+                    </label>
+                  </div>
+                  <div className="eia-student-name">{student.name}</div>
+                  <div className="eia-student-meta">
+                    Enrollment: {student.enrollmentNo}
+                  </div>
+                  <div className="eia-student-meta">Batch: {student.batch}</div>
+                  <div className="eia-student-status">
+                    {student.attendance === "Present" ? (
+                      <>
+                        <i className="bi bi-check-circle-fill"></i>
+                        Present
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-x-circle-fill"></i>
+                        Absent
+                      </>
                     )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="eia-no-students">
+              <i className="bi bi-inbox"></i>
+              <p>No students found for this division.</p>
+            </div>
+          )}
 
-        <div className="submit-wrapper">
-          <button className="submit-button" onClick={handleSubmit}>
-            Submit Attendance
-          </button>
+          <div className="eia-actions">
+            <button
+              type="button"
+              className="eia-button eia-button-secondary"
+              onClick={handleExport}
+              disabled={students.length === 0 || isSubmitting}
+            >
+              Export
+            </button>
+            <button
+              type="button"
+              className="eia-button eia-button-primary"
+              onClick={handleSubmit}
+              disabled={students.length === 0 || isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Attendance"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import CiannCard from "./CiannCard";
 import Header from "../basic/Header";
 import { config } from "../config/api";
 import { TokenManager } from "../utils/authUtils.js";
@@ -60,7 +59,7 @@ const Defaulter = () => {
         } catch (err) {
           console.error(
             `Error fetching data from ${url}:`,
-            err.response?.data?.error || err.message
+            err.response?.data?.error || err.message,
           );
           if (err.response && err.response.status === 404) {
             return [];
@@ -71,19 +70,19 @@ const Defaulter = () => {
 
       try {
         const studentsRes = await fetchApi(
-          "http://localhost:5000/api/students"
+          "http://localhost:5000/api/students",
         );
         const theoryRes = await fetchApi(
-          `http://localhost:5000/api/theory-attendance?ciannId=${ciannId}`
+          `http://localhost:5000/api/theory-attendance?ciannId=${ciannId}`,
         );
         const practicalRes = await fetchApi(
-          `http://localhost:5000/api/practical-attendance?ciannId=${ciannId}`
+          `http://localhost:5000/api/practical-attendance?ciannId=${ciannId}`,
         );
         const extraTheoryRes = await fetchApi(
-          `http://localhost:5000/api/extra-attendance/ciann/${ciannId}`
+          `http://localhost:5000/api/extra-attendance/ciann/${ciannId}`,
         );
         const extraPractRes = await fetchApi(
-          `http://localhost:5000/api/extra-pract?ciannId=${ciannId}`
+          `http://localhost:5000/api/extra-pract?ciannId=${ciannId}`,
         );
 
         const normalizeBatchKey = (val) => {
@@ -113,7 +112,7 @@ const Defaulter = () => {
         });
       } catch (err) {
         setError(
-          "Failed to fetch all attendance data. Please check the console for details."
+          "Failed to fetch all attendance data. Please check the console for details.",
         );
       } finally {
         setLoading(false);
@@ -162,7 +161,7 @@ const Defaulter = () => {
             ...batchAcc,
             [batch]: { regular: 0, extra: 0, present: 0 },
           }),
-          {}
+          {},
         ),
         overall: { theory: 0, practical: 0, total: 0 },
       };
@@ -175,7 +174,7 @@ const Defaulter = () => {
           studentAttendance[s.rollNo].theory.regular += 1;
           studentAttendance[s.rollNo].theory.present += 1;
         }
-      })
+      }),
     );
     extraTheory.forEach((record) =>
       record.students.forEach((s) => {
@@ -183,7 +182,7 @@ const Defaulter = () => {
           studentAttendance[s.rollId].theory.extra += 1;
           studentAttendance[s.rollId].theory.present += 1;
         }
-      })
+      }),
     );
     practical.forEach((record) =>
       record.students.forEach((s) => {
@@ -195,7 +194,7 @@ const Defaulter = () => {
           studentAttendance[s.rollNo].practical[record.batch].regular += 1;
           studentAttendance[s.rollNo].practical[record.batch].present += 1;
         }
-      })
+      }),
     );
     extraPract.forEach((record) =>
       record.students.forEach((s) => {
@@ -207,7 +206,7 @@ const Defaulter = () => {
           studentAttendance[s.rollId].practical[record.batch].extra += 1;
           studentAttendance[s.rollId].practical[record.batch].present += 1;
         }
-      })
+      }),
     );
 
     Object.keys(studentAttendance).forEach((rollNo) => {
@@ -263,26 +262,39 @@ const Defaulter = () => {
     return (
       <div className="defaulter-page-container">
         <Header />
-        <div className="edit-ciann-page">
-          <div className="edit-ciann-header">
-            <h2 className="text-center py-2 bg-success text-white">
-              Defaulter Analysis - Select CIAAN
-            </h2>
-          </div>
-          <div className="ciann-card-container">
-            {loading && <p className="text-center">Loading CIANNs...</p>}
-            {error && <p className="error text-center">{error}</p>}
-            {!loading && cianns.length === 0 && (
-              <p className="text-center">No CIANNs found.</p>
-            )}
-            {cianns.map((ciann) => (
-              <CiannCard
-                key={ciann.ciannId}
-                ciann={ciann}
-                onClick={setSelectedCiann}
-              />
-            ))}
-          </div>
+        <div className="defaulter-select-page">
+          <section className="defaulter-select-hero">
+            <h2>Defaulter Analysis</h2>
+            <p>Select a CIANN to generate defaulter report</p>
+          </section>
+
+          {loading && <p className="defaulter-state">Loading CIANNs...</p>}
+          {error && (
+            <p className="defaulter-state defaulter-state-error">{error}</p>
+          )}
+          {!loading && !error && cianns.length === 0 && (
+            <p className="defaulter-state">No CIANNs found.</p>
+          )}
+
+          {!loading && !error && cianns.length > 0 && (
+            <div className="defaulter-ciann-grid">
+              {cianns.map((ciann) => (
+                <button
+                  key={ciann._id || ciann.ciannId}
+                  type="button"
+                  className="defaulter-ciann-card"
+                  onClick={() => setSelectedCiann(ciann)}
+                >
+                  <i className="bi bi-person-exclamation defaulter-ciann-icon"></i>
+                  <h3>{ciann.subject?.name || "Unknown Subject"}</h3>
+                  <p>{ciann.subject?.code || "-"}</p>
+                  <p>CIANN ID: {ciann.ciannId || "-"}</p>
+                  <p>Division: {ciann.division || "-"}</p>
+                  <span className="defaulter-ciann-cta">Open Report</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -373,7 +385,7 @@ const Defaulter = () => {
                   </thead>
                   <tbody>
                     {Object.entries(
-                      attendanceSummary.studentAttendance || {}
+                      attendanceSummary.studentAttendance || {},
                     ).filter(([, data]) => data.overall.theory < 75).length ===
                     0 ? (
                       <tr>
@@ -464,11 +476,11 @@ const Defaulter = () => {
                         </thead>
                         <tbody>
                           {Object.entries(
-                            attendanceSummary.studentAttendance || {}
+                            attendanceSummary.studentAttendance || {},
                           ).filter(
                             ([, data]) =>
                               data.batch === batch &&
-                              data.overall.practical < 75
+                              data.overall.practical < 75,
                           ).length === 0 ? (
                             <tr>
                               <td
@@ -486,12 +498,12 @@ const Defaulter = () => {
                             </tr>
                           ) : (
                             Object.entries(
-                              attendanceSummary.studentAttendance || {}
+                              attendanceSummary.studentAttendance || {},
                             )
                               .filter(
                                 ([, data]) =>
                                   data.batch === batch &&
-                                  data.overall.practical < 75
+                                  data.overall.practical < 75,
                               )
                               .map(([rollNo, data]) => (
                                 <tr key={rollNo}>
@@ -535,7 +547,7 @@ const Defaulter = () => {
                   </thead>
                   <tbody>
                     {Object.entries(
-                      attendanceSummary.studentAttendance || {}
+                      attendanceSummary.studentAttendance || {},
                     ).filter(([, data]) => data.overall.total < 75).length ===
                     0 ? (
                       <tr>
@@ -575,8 +587,8 @@ const Defaulter = () => {
                                   data.overall.total < 50
                                     ? "#dc3545"
                                     : data.overall.total < 65
-                                    ? "#fd7e14"
-                                    : "#ffc107",
+                                      ? "#fd7e14"
+                                      : "#ffc107",
                               }}
                             >
                               {data.overall.total.toFixed(2)}%

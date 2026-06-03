@@ -251,7 +251,10 @@ const ManageStudents = () => {
         console.log("First student:", studentList[0]);
       }
 
-      if (studentList.length === 0 && data.filterHint?.code === "FILTER_MISMATCH") {
+      if (
+        studentList.length === 0 &&
+        data.filterHint?.code === "FILTER_MISMATCH"
+      ) {
         const relaxedParams = new URLSearchParams(params);
         relaxedParams.delete("academicYear");
         relaxedParams.delete("batch");
@@ -275,7 +278,8 @@ const ManageStudents = () => {
             relaxedList = relaxedData.data;
           }
 
-          const normalizedSelectedYear = normalizeAcademicYear(selectedAcademicYear);
+          const normalizedSelectedYear =
+            normalizeAcademicYear(selectedAcademicYear);
           const normalizedSelectedBatch = normalizeBatch(selectedBatch);
 
           const normalizedMatches = relaxedList.filter((student) => {
@@ -440,7 +444,9 @@ const ManageStudents = () => {
       !selectedCourse ||
       !selectedDivision
     ) {
-      setError("All required fields (Name, Roll No, Enrollment No, Academic Year, Batch, Department, Course, Division) must be filled.");
+      setError(
+        "All required fields (Name, Roll No, Enrollment No, Academic Year, Batch, Department, Course, Division) must be filled.",
+      );
       return;
     }
 
@@ -648,7 +654,9 @@ const ManageStudents = () => {
           <button
             className="btn-add-student"
             onClick={() => setShowAddStudentModal(true)}
-            disabled={!selectedDepartment || !selectedCourse || !selectedDivision}
+            disabled={
+              !selectedDepartment || !selectedCourse || !selectedDivision
+            }
             title="Select Department, Course, and Division first"
           >
             ➕ Add Student
@@ -661,27 +669,37 @@ const ManageStudents = () => {
 
       {/* Add Student Modal */}
       {showAddStudentModal && (
-        <div className="modal-overlay" onClick={() => setShowAddStudentModal(false)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowAddStudentModal(false)}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Add New Student</h2>
             <p>Create a new student record</p>
-            
+
             <div className="modal-form">
               <div className="form-row">
-                <label>Student Name <span className="required">*</span></label>
+                <label>
+                  Student Name <span className="required">*</span>
+                </label>
                 <input
                   type="text"
                   placeholder="Enter student name"
                   value={newStudent.studentName}
                   onChange={(e) =>
-                    setNewStudent({ ...newStudent, studentName: e.target.value })
+                    setNewStudent({
+                      ...newStudent,
+                      studentName: e.target.value,
+                    })
                   }
                   disabled={loading}
                 />
               </div>
 
               <div className="form-row">
-                <label>Roll Number <span className="required">*</span></label>
+                <label>
+                  Roll Number <span className="required">*</span>
+                </label>
                 <input
                   type="text"
                   placeholder="e.g., 101"
@@ -694,24 +712,34 @@ const ManageStudents = () => {
               </div>
 
               <div className="form-row">
-                <label>Enrollment Number <span className="required">*</span></label>
+                <label>
+                  Enrollment Number <span className="required">*</span>
+                </label>
                 <input
                   type="text"
                   placeholder="e.g., 2024001"
                   value={newStudent.enrollmentNo}
                   onChange={(e) =>
-                    setNewStudent({ ...newStudent, enrollmentNo: e.target.value })
+                    setNewStudent({
+                      ...newStudent,
+                      enrollmentNo: e.target.value,
+                    })
                   }
                   disabled={loading}
                 />
               </div>
 
               <div className="form-row">
-                <label>Academic Year <span className="required">*</span></label>
+                <label>
+                  Academic Year <span className="required">*</span>
+                </label>
                 <select
                   value={newStudent.academicYear}
                   onChange={(e) =>
-                    setNewStudent({ ...newStudent, academicYear: e.target.value })
+                    setNewStudent({
+                      ...newStudent,
+                      academicYear: e.target.value,
+                    })
                   }
                   disabled={loading}
                 >
@@ -725,7 +753,9 @@ const ManageStudents = () => {
               </div>
 
               <div className="form-row">
-                <label>Batch <span className="required">*</span></label>
+                <label>
+                  Batch <span className="required">*</span>
+                </label>
                 <select
                   value={newStudent.batch}
                   onChange={(e) =>

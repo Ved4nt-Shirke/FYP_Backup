@@ -19,18 +19,24 @@ const StudentLayout = () => {
     localStorage.getItem("username") ||
     "Student";
   const institutionCode = (
-    localStorage.getItem("institutionCode") || localStorage.getItem("college") || "VP"
+    localStorage.getItem("institutionCode") ||
+    localStorage.getItem("college") ||
+    "VP"
   ).toUpperCase();
-  const institutionName = localStorage.getItem("institutionName") || institutionCode;
+  const institutionName =
+    localStorage.getItem("institutionName") || institutionCode;
   const institutionLogoUrl = buildInstitutionLogoUrl(
     localStorage.getItem("institutionLogoUrl") || "",
   );
-  const institutionFallback = getInstitutionInitials(institutionName, institutionCode);
+  const institutionFallback = getInstitutionInitials(
+    institutionName,
+    institutionCode,
+  );
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       let isInsideSidebar = false;
-      
+
       // Check if click is inside sidebar
       if (sidebarRef.current && sidebarRef.current.contains(event.target)) {
         isInsideSidebar = true;
@@ -69,13 +75,22 @@ const StudentLayout = () => {
   return (
     <div className="student-dashboard">
       {/* Sidebar */}
-      <div className={`student-sidebar ${isSidebarOpen ? "mobile-visible" : ""}`} ref={sidebarRef}>
+      <div
+        className={`student-sidebar ${isSidebarOpen ? "mobile-visible" : ""}`}
+        ref={sidebarRef}
+      >
         <div className="sidebar-header">
           <div className="student-brand">
             {institutionLogoUrl ? (
-              <img src={institutionLogoUrl} alt={institutionName} className="student-brand-logo" />
+              <img
+                src={institutionLogoUrl}
+                alt={institutionName}
+                className="student-brand-logo"
+              />
             ) : (
-              <span className="student-brand-fallback">{institutionFallback}</span>
+              <span className="student-brand-fallback">
+                {institutionFallback}
+              </span>
             )}
             <div>
               <h2 className="sidebar-title">{institutionName}</h2>
@@ -104,6 +119,15 @@ const StudentLayout = () => {
           </li>
           <li className="sidebar-item">
             <div
+              className={`menu-item ${isActivePath("/messages") ? "active" : ""}`}
+              onClick={() => handleNavigation("/messages")}
+            >
+              <i className="bi bi-chat-dots"></i>
+              <span>Messages</span>
+            </div>
+          </li>
+          <li className="sidebar-item">
+            <div
               className={`menu-item ${isActivePath("/timetable") ? "active" : ""}`}
               onClick={() => handleNavigation("/timetable")}
             >
@@ -121,7 +145,7 @@ const StudentLayout = () => {
               <span>Practical Exams</span>
             </div>
           </li>
-          
+
           {/* Results */}
           <li className="sidebar-item">
             <div
@@ -132,7 +156,7 @@ const StudentLayout = () => {
               <span>Results</span>
             </div>
           </li>
-          
+
           {/* Notices */}
           <li className="sidebar-item">
             <div
@@ -156,16 +180,25 @@ const StudentLayout = () => {
         {/* Header with logout button */}
         <div className="student-header">
           <div className="header-left">
-            <button className="mobile-menu-toggle" onClick={() => {
-              setIsSidebarOpen((prev) => !prev);
-            }}>
+            <button
+              className="mobile-menu-toggle"
+              onClick={() => {
+                setIsSidebarOpen((prev) => !prev);
+              }}
+            >
               <i className="bi bi-list"></i>
             </button>
             <div className="student-header-brand">
               {institutionLogoUrl ? (
-                <img src={institutionLogoUrl} alt={institutionName} className="student-header-logo" />
+                <img
+                  src={institutionLogoUrl}
+                  alt={institutionName}
+                  className="student-header-logo"
+                />
               ) : (
-                <span className="student-header-fallback">{institutionFallback}</span>
+                <span className="student-header-fallback">
+                  {institutionFallback}
+                </span>
               )}
               <h1>{institutionName}</h1>
             </div>

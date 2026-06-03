@@ -72,15 +72,13 @@ const ManagePractical = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
 
       const data = await response.json();
 
       if (data.success) {
-        setPracticalExams((prev) =>
-          prev.filter((exam) => exam._id !== examId)
-        );
+        setPracticalExams((prev) => prev.filter((exam) => exam._id !== examId));
         setDeleteConfirm(null);
       } else {
         setError(data.message || "Failed to delete exam");
@@ -104,8 +102,12 @@ const ManagePractical = () => {
   };
 
   const filteredExams = practicalExams.filter((exam) =>
-    exam.title.toLowerCase().includes(searchTerm.toLowerCase())
+    exam.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  const totalExams = practicalExams.length;
+  const totalFiltered = filteredExams.length;
+  const totalEnabled = practicalExams.filter((exam) => exam.isEnabled).length;
 
   if (loading) {
     return (
@@ -120,16 +122,41 @@ const ManagePractical = () => {
 
   return (
     <div className="manage-practical-container">
-      <div className="page-header">
-        <h1 className="page-title">Manage Practical Exams</h1>
-        <p className="page-subtitle">
-          View, edit, and manage your practical exams
-        </p>
+      <div className="manage-practical-hero">
+        <div className="mp-hero-copy">
+          <h1 className="mp-title">Manage Practical Exams</h1>
+          <p className="mp-subtitle">
+            Find exams quickly and use clear action buttons to edit structure,
+            questions, responses, and visibility.
+          </p>
+        </div>
+        <button
+          className="hero-add-btn"
+          onClick={() => navigate("/faculty/practical-exams/add")}
+        >
+          <i className="bi bi-plus-circle"></i>
+          Create Practical Exam
+        </button>
       </div>
 
-      <div className="filters-section">
-        <div className="filter-group">
-          <label htmlFor="search" className="filter-label">
+      <div className="summary-strip">
+        <div className="mp-summary-tile">
+          <span>Total Exams</span>
+          <strong>{totalExams}</strong>
+        </div>
+        <div className="mp-summary-tile">
+          <span>Visible to Students</span>
+          <strong>{totalEnabled}</strong>
+        </div>
+        <div className="mp-summary-tile">
+          <span>Filtered Results</span>
+          <strong>{totalFiltered}</strong>
+        </div>
+      </div>
+
+      <div className="filters-panel">
+        <div className="mp-filter-group">
+          <label htmlFor="search" className="mp-filter-label">
             Search by Title
           </label>
           <input
@@ -138,19 +165,19 @@ const ManagePractical = () => {
             placeholder="Search exams..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="filter-input"
+            className="mp-filter-input"
           />
         </div>
 
-        <div className="filter-group">
-          <label htmlFor="batch" className="filter-label">
+        <div className="mp-filter-group">
+          <label htmlFor="batch" className="mp-filter-label">
             Filter by Batch
           </label>
           <select
             id="batch"
             value={filterBatch}
             onChange={(e) => setFilterBatch(e.target.value)}
-            className="filter-input"
+            className="mp-filter-input"
           >
             <option value="">-- All Batches --</option>
             {batches.map((batch) => (
@@ -161,114 +188,120 @@ const ManagePractical = () => {
           </select>
         </div>
 
-        <button
-          className="btn btn-primary btn-add"
-          onClick={() => navigate("/faculty/practical-exams/add")}
-        >
-          <i className="bi bi-plus-circle"></i> Add New Exam
-        </button>
+        <div className="filters-actions">
+          <button
+            className="mp-secondary-btn"
+            onClick={() => setSearchTerm("")}
+          >
+            Clear Search
+          </button>
+          <button
+            className="mp-secondary-btn"
+            onClick={() => setFilterBatch("")}
+          >
+            Reset Batch
+          </button>
+        </div>
       </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && <div className="mp-alert mp-alert-danger">{error}</div>}
 
       {filteredExams.length === 0 ? (
         <div className="empty-state">
           <i className="bi bi-inbox"></i>
           <p>No practical exams found</p>
           <button
-            className="btn btn-primary"
+            className="mp-primary-cta"
             onClick={() => navigate("/faculty/practical-exams/add")}
           >
             Create Your First Exam
           </button>
         </div>
       ) : (
-        <div className="table-responsive">
-          <table className="exams-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Batch</th>
-                <th>Divisions</th>
-                <th>Marks</th>
-                <th>Duration</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredExams.map((exam) => (
-                <tr key={exam._id}>
-                  <td className="title-cell">{exam.title}</td>
-                  <td>{exam.batch}</td>
-                  <td>
-                    <span className="divisions-badge">
-                      {exam.divisions.length} division(s)
-                    </span>
-                  </td>
-                  <td>{exam.totalMarks}</td>
-                  <td>{exam.duration} min</td>
-                  <td>
-                    {new Date(exam.createdAt).toLocaleDateString("en-IN")}
-                  </td>
-                  <td className="actions-cell">
+        <div className="exam-grid">
+          {filteredExams.map((exam) => (
+            <article key={exam._id} className="exam-card">
+              <header className="exam-card-head">
+                <h3>{exam.title}</h3>
+                <span
+                  className={`mp-status-pill ${exam.isEnabled ? "enabled" : "disabled"}`}
+                >
+                  {exam.isEnabled ? "Visible" : "Hidden"}
+                </span>
+              </header>
+
+              <div className="exam-meta-grid">
+                <div>
+                  <span className="mp-meta-label">Batch</span>
+                  <p>{exam.batch || "General"}</p>
+                </div>
+                <div>
+                  <span className="mp-meta-label">Divisions</span>
+                  <p>{(exam.divisions || []).join(", ") || "-"}</p>
+                </div>
+                <div>
+                  <span className="mp-meta-label">Marks</span>
+                  <p>{exam.totalMarks}</p>
+                </div>
+                <div>
+                  <span className="mp-meta-label">Duration</span>
+                  <p>{exam.duration} min</p>
+                </div>
+                <div>
+                  <span className="mp-meta-label">Created</span>
+                  <p>{new Date(exam.createdAt).toLocaleDateString("en-IN")}</p>
+                </div>
+              </div>
+
+              <div className="mp-exam-actions">
+                <button
+                  className="mp-action-btn mp-action-view"
+                  onClick={() => handleViewQuestions(exam._id)}
+                >
+                  <i className="bi bi-list-check"></i>
+                  View Questions
+                </button>
+                <button
+                  className="mp-action-btn mp-action-responses"
+                  onClick={() => handleViewResponses(exam._id)}
+                >
+                  <i className="bi bi-file-earmark-text"></i>
+                  View Responses
+                </button>
+                <button
+                  className="mp-action-btn mp-action-edit"
+                  onClick={() => handleEdit(exam._id)}
+                >
+                  <i className="bi bi-pencil-square"></i>
+                  Edit Exam
+                </button>
+                {deleteConfirm === exam._id ? (
+                  <div className="delete-confirm-wrap">
                     <button
-                      className="btn-icon btn-view"
-                      title="View Questions"
-                      onClick={() => handleViewQuestions(exam._id)}
-                    >
-                      <i className="bi bi-eye"></i>
-                    </button>
-                    <button
-                      className="btn-icon btn-responses"
-                      title="View Responses"
-                      onClick={() => handleViewResponses(exam._id)}
-                    >
-                      <i className="bi bi-file-earmark-text"></i>
-                    </button>
-                    <button
-                      className="btn-icon btn-edit"
-                      title="Edit"
-                      onClick={() => handleEdit(exam._id)}
-                    >
-                      <i className="bi bi-pencil"></i>
-                    </button>
-                    <button
-                      className="btn-icon btn-delete"
-                      title="Delete"
+                      className="mp-action-btn mp-action-delete-confirm"
                       onClick={() => handleDelete(exam._id)}
                     >
-                      <i className="bi bi-trash"></i>
+                      Confirm Delete
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Confirm Delete</h2>
-            <p>Are you sure you want to delete this practical exam?</p>
-            <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setDeleteConfirm(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-danger"
-                onClick={() => handleDelete(deleteConfirm)}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
+                    <button
+                      className="mp-action-btn mp-action-cancel"
+                      onClick={() => setDeleteConfirm(null)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="mp-action-btn mp-action-delete"
+                    onClick={() => handleDelete(exam._id)}
+                  >
+                    <i className="bi bi-trash"></i>
+                    Delete Exam
+                  </button>
+                )}
+              </div>
+            </article>
+          ))}
         </div>
       )}
     </div>

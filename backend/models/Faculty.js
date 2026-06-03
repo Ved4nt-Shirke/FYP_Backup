@@ -19,6 +19,13 @@ const FacultySchema = new mongoose.Schema({
     ],
   },
 
+  // WhatsApp number for attendance bot (with country code, e.g. 919876543210)
+  whatsappPhone: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+
   // Professional Information
   employeeId: {
     type: String,

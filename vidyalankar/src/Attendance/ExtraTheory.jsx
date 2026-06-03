@@ -36,7 +36,7 @@ const ExtraAttendance = () => {
             date,
             ciannId: ciannData.ciannId,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -62,7 +62,6 @@ const ExtraAttendance = () => {
             <h3>No CIAAN selected. Please select a CIAAN card first.</h3>
           </div>
         </div>
-
       </div>
     );
   }
@@ -73,7 +72,7 @@ const ExtraAttendance = () => {
       <div className="attendance-main-content">
         <div className="theory-attendance-container">
           <div className="header-row">
-            <h3>Extra Theory Attendance</h3>
+            <h3>Mark Extra Theory Attendance</h3>
           </div>
 
           {ciannData && (
@@ -121,7 +120,6 @@ const ExtraAttendance = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };

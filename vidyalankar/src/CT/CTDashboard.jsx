@@ -13,7 +13,7 @@ export default function CTDashboard() {
   const [marksMap, setMarksMap] = useState({});
   const [existingMap, setExistingMap] = useState({});
   const [ctNumber, setCtNumber] = useState(1);
-  const [totalMarks, setTotalMarks] = useState(20);
+  const [totalMarks, setTotalMarks] = useState(30);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -211,67 +211,78 @@ export default function CTDashboard() {
   };
 
   return (
-    <>
-      <div className="ct-dashboard-page">
-        <div className="ct-dashboard-topbar">
-          <button className="btn btn-secondary" onClick={() => navigate(-1)}>
-            <i className="bi bi-arrow-left"></i> Back
-          </button>
-          <h4 className="ct-dashboard-title">{cardTitle}</h4>
-        </div>
+    <div className="ct-dashboard-page">
+      <section className="ct-dashboard-topbar">
+        <button className="btn ct-btn-back" onClick={() => navigate(-1)}>
+          <i className="bi bi-arrow-left"></i> Back
+        </button>
+        <h4 className="ct-dashboard-title">{cardTitle}</h4>
+        <span className="ct-dashboard-badge">
+          CIANN {ciannData?.ciannId || ciannId}
+        </span>
+      </section>
 
-        <div className="ct-dashboard-panel ct-dashboard-controls">
-          <div className="ct-controls-row">
-            <div className="ct-field">
-              <label className="form-label">CT Number</label>
-              <select
-                className="form-select"
-                value={ctNumber}
-                onChange={(e) => setCtNumber(Number(e.target.value))}
-              >
-                <option value={1}>CT1</option>
-                <option value={2}>CT2</option>
-              </select>
-            </div>
-
-            <div className="ct-field">
-              <label className="form-label">Total Marks</label>
-              <input
-                type="number"
-                min="1"
-                max="100"
-                className="form-control"
-                value={totalMarks}
-                onChange={(e) => setTotalMarks(Number(e.target.value) || 20)}
-              />
-            </div>
-
-            <button
-              className="btn btn-primary ct-save-btn"
-              onClick={handleSave}
-              disabled={saving || loading}
+      <section className="ct-dashboard-panel ct-dashboard-controls">
+        <div className="ct-controls-row">
+          <div className="ct-field">
+            <label className="form-label">CT Number</label>
+            <select
+              className="form-select"
+              value={ctNumber}
+              onChange={(e) => setCtNumber(Number(e.target.value))}
             >
-              {saving ? "Saving..." : `Save CT${ctNumber} Marks`}
-            </button>
+              <option value={1}>CT1</option>
+              <option value={2}>CT2</option>
+            </select>
           </div>
+
+          <div className="ct-field">
+            <label className="form-label">Total Marks</label>
+            <input
+              type="number"
+              min="1"
+              max="100"
+              className="form-control"
+              value={totalMarks}
+              onChange={(e) => setTotalMarks(Number(e.target.value) || 30)}
+            />
+          </div>
+
+          <button
+            className="btn ct-save-btn"
+            onClick={handleSave}
+            disabled={saving || loading}
+          >
+            {saving ? "Saving..." : `Save CT${ctNumber} Marks`}
+          </button>
         </div>
+      </section>
 
-        {error && <div className="alert alert-danger">{error}</div>}
+      {error && <div className="alert alert-danger">{error}</div>}
 
-        <div className="ct-dashboard-panel">
-          <div className="ct-table-wrap">
-            {loading ? (
-              <p>Loading students and marks...</p>
-            ) : students.length === 0 ? (
-              <p className="text-muted mb-0">No students found for this CIANN context.</p>
-            ) : (
+      <section className="ct-dashboard-panel">
+        <div className="ct-table-wrap">
+          {loading ? (
+            <p>Loading students and marks...</p>
+          ) : students.length === 0 ? (
+            <p className="text-muted mb-0">
+              No students found for this CIANN context.
+            </p>
+          ) : (
+            <>
+              <div className="ct-table-caption">
+                <span>Total Students: {students.length}</span>
+                <span>{`Marks range: 0-${totalMarks}`}</span>
+              </div>
               <div className="table-responsive">
                 <table className="table table-bordered table-hover align-middle ct-table">
                   <thead className="table-light">
                     <tr>
                       <th style={{ minWidth: 120 }}>Roll No.</th>
                       <th>Name</th>
-                      <th style={{ minWidth: 180 }}>{`Marks (out of ${totalMarks})`}</th>
+                      <th
+                        style={{ minWidth: 180 }}
+                      >{`Marks (out of ${totalMarks})`}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -296,10 +307,10 @@ export default function CTDashboard() {
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
-      </div>
-    </>
+      </section>
+    </div>
   );
 }

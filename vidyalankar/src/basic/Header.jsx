@@ -8,6 +8,7 @@ import {
   getInstitutionInitials,
 } from "../utils/institutionBranding";
 import { ciannUtils } from "../utils/ciannUtils";
+import { config } from "../config/api";
 import "./Header.css";
 
 const Header = ({
@@ -24,10 +25,16 @@ const Header = ({
   // Initialize local state for user dropdown if props aren't provided
   const [localShowUserDropdown, setLocalShowUserDropdown] = useState(false);
   const localUserDropdownRef = useRef(null);
-  
+
   // Use props if provided, otherwise use local state/ref
-  const showUserDropdown = propShowUserDropdown !== undefined ? propShowUserDropdown : localShowUserDropdown;
-  const setShowUserDropdown = propSetShowUserDropdown !== undefined ? propSetShowUserDropdown : setLocalShowUserDropdown;
+  const showUserDropdown =
+    propShowUserDropdown !== undefined
+      ? propShowUserDropdown
+      : localShowUserDropdown;
+  const setShowUserDropdown =
+    propSetShowUserDropdown !== undefined
+      ? propSetShowUserDropdown
+      : setLocalShowUserDropdown;
   const userDropdownRef = propUserDropdownRef || localUserDropdownRef;
 
   // Search state
@@ -36,6 +43,7 @@ const Header = ({
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [pendingCiannRequests, setPendingCiannRequests] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const searchRef = useRef(null);
   const searchTimeoutRef = useRef(null);
 
@@ -177,19 +185,22 @@ const Header = ({
 
   // Get and format username
   let username = currentUser || localStorage.getItem("username") || "User";
-  
+
   // Format username properly (capitalize words and remove dots)
   if (username.includes(".")) {
-    username = username.split(".")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    username = username
+      .split(".")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
   } else if (username !== "User") {
     username = username.charAt(0).toUpperCase() + username.slice(1);
   }
-  
+
   const college = (localStorage.getItem("college") || "VP").toUpperCase();
   const institutionCode = (
-    localStorage.getItem("institutionCode") || college || "VP"
+    localStorage.getItem("institutionCode") ||
+    college ||
+    "VP"
   ).toUpperCase();
   const institutionName =
     localStorage.getItem("institutionName") || institutionCode;
@@ -213,7 +224,9 @@ const Header = ({
 
       try {
         const response = await ciannUtils.getIncomingShareRequests();
-        setPendingCiannRequests(Array.isArray(response?.incoming) ? response.incoming.length : 0);
+        setPendingCiannRequests(
+          Array.isArray(response?.incoming) ? response.incoming.length : 0,
+        );
       } catch (error) {
         setPendingCiannRequests(0);
       }
@@ -222,11 +235,57 @@ const Header = ({
     fetchPendingRequests();
   }, [isFaculty]);
 
+  useEffect(() => {
+    if (!isFaculty) {
+      setUnreadMessages(0);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setUnreadMessages(0);
+      return;
+    }
+
+    let mounted = true;
+
+    const fetchUnreadMessages = async () => {
+      try {
+        const response = await fetch(config.chat.unreadCount, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (!mounted) return;
+        setUnreadMessages(Number(payload?.unreadCount || 0));
+      } catch {
+        if (!mounted) return;
+        setUnreadMessages(0);
+      }
+    };
+
+    fetchUnreadMessages();
+    const interval = window.setInterval(fetchUnreadMessages, 7000);
+
+    return () => {
+      mounted = false;
+      window.clearInterval(interval);
+    };
+  }, [isFaculty]);
+
   // Test dropdown state
   const [showTestDropdown, setShowTestDropdown] = useState(false);
 
   return (
-    <div className={`header ${onSecondaryMenuToggle ? "has-secondary-toggle" : ""}`}>
+    <div
+      className={`header ${onSecondaryMenuToggle ? "has-secondary-toggle" : ""}`}
+    >
       <div className="header-left">
         {/* This button's onClick calls the function passed from App.jsx */}
         <button className="menu-toggle" onClick={onMenuToggle}>
@@ -250,7 +309,9 @@ const Header = ({
               className="institution-logo-image"
             />
           ) : (
-            <span className="institution-logo-fallback">{institutionFallback}</span>
+            <span className="institution-logo-fallback">
+              {institutionFallback}
+            </span>
           )}
           <span className="institution-name-text">{institutionName}</span>
           {isFaculty && <span className="role-chip">Faculty</span>}
@@ -302,7 +363,7 @@ const Header = ({
                             </li>
                           ))}
                         </div>
-                      )
+                      ),
                     )}
                   </ul>
                 ) : searchQuery.trim().length >= 2 ? (
@@ -319,12 +380,29 @@ const Header = ({
         {isFaculty && (
           <button
             className="ciann-request-bell"
+            title="Messages"
+            onClick={() => navigate("/messages")}
+            aria-label="Messages"
+          >
+            <i className="bi bi-chat-dots"></i>
+            {unreadMessages > 0 && (
+              <span className="header-notification-badge">
+                {unreadMessages}
+              </span>
+            )}
+          </button>
+        )}
+        {isFaculty && (
+          <button
+            className="ciann-request-bell"
             title={`Pending CIANN requests: ${pendingCiannRequests}`}
             onClick={() => navigate("/edit-ciann")}
           >
             <i className="bi bi-bell"></i>
             {pendingCiannRequests > 0 && (
-              <span className="header-notification-badge">{pendingCiannRequests}</span>
+              <span className="header-notification-badge">
+                {pendingCiannRequests}
+              </span>
             )}
           </button>
         )}

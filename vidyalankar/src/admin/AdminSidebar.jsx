@@ -78,7 +78,7 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
   const sidebarItems = [
     {
       path: "/admin-dashboard",
-      icon: "bi-house-door",
+      icon: "bi-house-fill",
       label: "Admin Dashboard",
       available: true,
     },
@@ -90,25 +90,25 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
     },
     {
       path: "/admin-faculty",
-      icon: "bi-people",
+      icon: "bi-people-fill",
       label: "Manage Faculty",
       available: true,
     },
     {
       path: "/admin-office-staff",
-      icon: "bi-person-badge",
+      icon: "bi-person-vcard-fill",
       label: "Manage Office Staff",
       available: true,
     },
     {
       path: "/admin/subjects",
-      icon: "bi-plus-circle",
+      icon: "bi-plus-circle-fill",
       label: "Add Subjects",
       available: true,
     },
     {
       path: "/admin/subjects-view",
-      icon: "bi-list-ul",
+      icon: "bi-list-check",
       label: "View Subjects",
       available: true,
     },

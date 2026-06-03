@@ -24,7 +24,7 @@ const ViewAttend2 = () => {
     const fetchAttendanceData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/attendance/${ciannId}`
+          `http://localhost:5000/api/attendance/${ciannId}`,
         );
         setAttendanceData(response.data);
       } catch (err) {
@@ -45,40 +45,47 @@ const ViewAttend2 = () => {
 
   // --- Render Logic ---
   if (loading) {
-    return <p className="text-center p-4">Loading attendance details...</p>;
+    return <div className="vat2-state">Loading attendance details...</div>;
   }
 
   if (error) {
-    return <p className="text-center text-danger p-4">{error}</p>;
+    return <div className="vat2-state">{error}</div>;
   }
 
-  if (!attendanceData || !attendanceData.students || attendanceData.students.length === 0) {
-    return <p className="text-center p-4">No attendance data found for this CIAAN.</p>;
+  if (
+    !attendanceData ||
+    !attendanceData.students ||
+    attendanceData.students.length === 0
+  ) {
+    return (
+      <div className="vat2-state">No attendance data found for this CIANN.</div>
+    );
   }
-  
+
   const { students, dates } = attendanceData;
 
   // Helper to format date as DD-MM
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     return `${day}-${month}`;
   };
 
   return (
-    <div className="course-diary-wrapper">
-      {/* --- GREEN HEADER --- */}
-      <header className="view-header">
-        <h1>Theory Attendance</h1>
+    <div className="vat2-page">
+      <header className="vat2-hero">
+        <h1>View Theory Attendance</h1>
+        <p>
+          {students.length} students and {dates.length} lecture dates
+        </p>
       </header>
-      <section className="attendance-section">
-
-        <div className="attendance-table-wrapper">
-          <table className="attendance-table">
+      <section className="vat2-panel">
+        <div className="vat2-table-wrapper">
+          <table className="vat2-table">
             <thead>
               <tr>
-                <th className="first-col">ROLL NO.</th>
+                <th>ROLL NO.</th>
                 {dates.map((date) => (
                   <th key={date}>{formatDate(date)}</th>
                 ))}
@@ -87,10 +94,18 @@ const ViewAttend2 = () => {
             <tbody>
               {students.map((student) => (
                 <tr key={student.rollNo}>
-                  <td className="first-col">{student.rollNo}</td>
+                  <td>{student.rollNo}</td>
                   {dates.map((date) => (
                     <td key={`${student.rollNo}-${date}`}>
-                      {student.attendance[date] === "Present" ? "P" : "A"}
+                      <span
+                        className={
+                          student.attendance[date] === "Present"
+                            ? "vat2-status vat2-status--present"
+                            : "vat2-status vat2-status--absent"
+                        }
+                      >
+                        {student.attendance[date] === "Present" ? "P" : "A"}
+                      </span>
                     </td>
                   ))}
                 </tr>
@@ -98,10 +113,14 @@ const ViewAttend2 = () => {
             </tbody>
           </table>
         </div>
-        <div className="mt-4">
-            <button className="btn btn-secondary" onClick={handlePrint}>
-                Print
-            </button>
+        <div className="vat2-actions">
+          <button
+            type="button"
+            className="vat2-print-btn"
+            onClick={handlePrint}
+          >
+            Print
+          </button>
         </div>
       </section>
     </div>

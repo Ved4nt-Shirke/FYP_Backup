@@ -3,7 +3,7 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f8f9fa;
+  background: var(--dash-bg, #f8f9fa);
   overflow: hidden;
 }
 
@@ -24,7 +24,7 @@
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
-  background: #fff;
+  background: var(--card-bg, #fff);
   border-radius: var(--border-radius);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   padding: 30px;
@@ -108,8 +108,8 @@
 
 .info-value {
   width: 65%;
-  background-color: #fff;
-  border: 1px solid var(--medium-gray, #ddd);
+  background-color: var(--card-bg, #fff);
+  border: 1px solid var(--card-border, #ddd);
 }
 
 .forward-button-wrapper {
@@ -132,7 +132,8 @@
 /* ## MOBILE RESPONSIVENESS FIX ##     */
 /* =================================== */
 @media (max-width: 768px) {
-  .timetable-page-content, .timetable-main-content {
+  .timetable-page-content,
+  .timetable-main-content {
     padding: 16px;
     margin-left: 0;
   }
@@ -152,18 +153,31 @@
     font-size: 1.2rem; /* Resized for mobile */
   }
 
-  
-
   /* Responsive Info Block */
   .course-diary-info-block {
-    display: block; width: 100%; margin: 20px auto;
+    display: block;
+    width: 100%;
+    margin: 20px auto;
   }
   .info-row {
-    display: flex; flex-direction: column; margin-bottom: 10px;
-    border: 1px solid var(--medium-gray, #ddd); border-radius: 4px; overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+    border: 1px solid var(--medium-gray, #ddd);
+    border-radius: 4px;
+    overflow: hidden;
   }
-  .info-label, .info-value { display: block; width: 100%; box-sizing: border-box; border: none; }
-  .info-value { background-color: var(--light-gray, #f8f9fa); border-top: 1px solid var(--medium-gray, #ddd); }
+  .info-label,
+  .info-value {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+  }
+  .info-value {
+    background-color: var(--light-gray, #f8f9fa);
+    border-top: 1px solid var(--medium-gray, #ddd);
+  }
 
   .forward-button-wrapper {
     justify-content: center;

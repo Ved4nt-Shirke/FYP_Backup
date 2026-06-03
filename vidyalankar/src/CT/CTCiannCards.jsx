@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../basic/Header";
-import "../components/EditCiann.css";
 import { config } from "../config/api";
+import "./CTCiannCards.css";
 
 export default function CTCiannCards() {
   const navigate = useNavigate();
@@ -39,51 +38,54 @@ export default function CTCiannCards() {
   };
 
   return (
-    <>
-      <Header showSearch={false} />
-      <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-        rel="stylesheet"
-      />
-      <div className="edit-ciann-page">
-        <div className="edit-ciann-header">
-          <h2 className="text-center py-2 bg-success text-white">
-            CT - Select CIANN
-          </h2>
-        </div>
+    <div className="ct-ciann-page">
+      <section className="ct-ciann-hero">
+        <h2>
+          <i className="bi bi-journal-check me-2"></i>
+          CT - Select CIANN
+        </h2>
+        <p>Choose a CIANN to open the CT marks dashboard.</p>
+      </section>
 
-        <div className="ciann-card-container">
-          {loading ? (
-            <p>Loading CIANNs...</p>
-          ) : error ? (
-            <p className="text-danger">{error}</p>
-          ) : ciannDataList.length > 0 ? (
-            ciannDataList.map((ciannData) => (
-              <div
+      <section className="ct-ciann-grid-wrap">
+        {loading ? (
+          <p className="ct-ciann-state">Loading CIANNs...</p>
+        ) : error ? (
+          <p className="ct-ciann-state ct-ciann-error">{error}</p>
+        ) : ciannDataList.length > 0 ? (
+          <div className="ct-ciann-grid">
+            {ciannDataList.map((ciannData) => (
+              <article
                 key={ciannData._id || ciannData.ciannId}
-                className="ciann-dashboard-card"
+                className="ct-ciann-card"
                 onClick={() => handleCardClick(ciannData)}
-                style={{ cursor: "pointer" }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleCardClick(ciannData);
+                  }
+                }}
+                tabIndex={0}
+                role="button"
               >
-                <i className="bi bi-pencil-square ciann-icon"></i>
-                <div className="ciann-id">CIAAN ID: {ciannData.ciannId}</div>
-                <p className="card-text">
-                  <strong>{ciannData.subject?.name || "-"}</strong>
-                  <br />
-                  <span className="subject-code">
-                    ({ciannData.subject?.code || "-"})
-                  </span>
+                <div className="ct-ciann-card-id">
+                  CIANN ID: {ciannData.ciannId}
+                </div>
+                <h3>{ciannData.subject?.name || "-"}</h3>
+                <p className="ct-ciann-subject-code">
+                  {ciannData.subject?.code || "-"}
                 </p>
-                <p className="card-text">
-                  Division: <strong>{ciannData.division || "-"}</strong>
+                <p className="ct-ciann-meta">
+                  Division: {ciannData.division || "-"}
                 </p>
-              </div>
-            ))
-          ) : (
-            <p className="text-center">No CIAANs available.</p>
-          )}
-        </div>
-      </div>
-    </>
+                <span className="ct-ciann-open">Open Dashboard</span>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="ct-ciann-state">No CIANNs available.</p>
+        )}
+      </section>
+    </div>
   );
 }

@@ -68,7 +68,7 @@ const EnableDisablePractical = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       const data = await response.json();
@@ -78,11 +78,11 @@ const EnableDisablePractical = () => {
           prev.map((exam) =>
             exam._id === examId
               ? { ...exam, isEnabled: !exam.isEnabled }
-              : exam
-          )
+              : exam,
+          ),
         );
         setSuccess(
-          `Exam ${!currentStatus ? "enabled" : "disabled"} successfully!`
+          `Exam ${!currentStatus ? "enabled" : "disabled"} successfully!`,
         );
         setTimeout(() => setSuccess(""), 3000);
       } else {
@@ -107,23 +107,44 @@ const EnableDisablePractical = () => {
 
   return (
     <div className="enable-disable-container">
-      <div className="page-header">
-        <h1 className="page-title">Manage Practical Exam Visibility</h1>
-        <p className="page-subtitle">
-          Enable or disable practical exams for students
-        </p>
+      <div className="edp-hero">
+        <div>
+          <h1 className="edp-title">Manage Practical Exam Visibility</h1>
+          <p className="edp-subtitle">
+            Control which practical exams are visible to students using clear
+            status controls.
+          </p>
+        </div>
+        <div className="edp-summary">
+          <div>
+            <span>Total</span>
+            <strong>{practicalExams.length}</strong>
+          </div>
+          <div>
+            <span>Visible</span>
+            <strong>
+              {practicalExams.filter((exam) => exam.isEnabled).length}
+            </strong>
+          </div>
+          <div>
+            <span>Hidden</span>
+            <strong>
+              {practicalExams.filter((exam) => !exam.isEnabled).length}
+            </strong>
+          </div>
+        </div>
       </div>
 
-      <div className="filters-section">
-        <div className="filter-group">
-          <label htmlFor="batch" className="filter-label">
+      <div className="edp-filter-panel">
+        <div className="edp-filter-group">
+          <label htmlFor="batch" className="edp-filter-label">
             Filter by Batch
           </label>
           <select
             id="batch"
             value={filterBatch}
             onChange={(e) => setFilterBatch(e.target.value)}
-            className="filter-input"
+            className="edp-filter-input"
           >
             <option value="">-- All Batches --</option>
             {batches.map((batch) => (
@@ -135,93 +156,76 @@ const EnableDisablePractical = () => {
         </div>
       </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
-      {success && <div className="alert alert-success">{success}</div>}
+      {error && <div className="edp-alert edp-alert-danger">{error}</div>}
+      {success && <div className="edp-alert edp-alert-success">{success}</div>}
 
       {practicalExams.length === 0 ? (
-        <div className="empty-state">
+        <div className="edp-empty-state">
           <i className="bi bi-inbox"></i>
           <p>No practical exams found</p>
-          <p className="empty-message">
+          <p className="edp-empty-message">
             Create practical exams to manage their visibility
           </p>
         </div>
       ) : (
-        <div className="status-table-wrapper">
-          <div className="table-responsive">
-            <table className="status-table">
-              <thead>
-                <tr>
-                  <th>Exam Title</th>
-                  <th>Batch</th>
-                  <th>Divisions</th>
-                  <th>Current Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {practicalExams.map((exam) => (
-                  <tr key={exam._id}>
-                    <td className="title-cell">{exam.title}</td>
-                    <td>{exam.batch}</td>
-                    <td>
-                      <span className="divisions-list">
-                        {exam.divisions.join(", ")}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`status-badge ${
-                          exam.isEnabled ? "enabled" : "disabled"
-                        }`}
-                      >
-                        <i
-                          className={`bi ${
-                            exam.isEnabled ? "bi-check-circle" : "bi-x-circle"
-                          }`}
-                        ></i>
-                        {exam.isEnabled ? "Visible to Students" : "Hidden"}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        className={`btn-toggle ${
-                          exam.isEnabled ? "btn-disable" : "btn-enable"
-                        }`}
-                        onClick={() =>
-                          handleToggleStatus(exam._id, exam.isEnabled)
-                        }
-                      >
-                        {exam.isEnabled ? "Disable" : "Enable"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="edp-grid">
+          {practicalExams.map((exam) => (
+            <article key={exam._id} className="edp-card">
+              <header className="edp-card-head">
+                <h3>{exam.title}</h3>
+                <span
+                  className={`edp-status-pill ${exam.isEnabled ? "enabled" : "disabled"}`}
+                >
+                  <i
+                    className={`bi ${exam.isEnabled ? "bi-check-circle" : "bi-x-circle"}`}
+                  ></i>
+                  {exam.isEnabled ? "Visible to Students" : "Hidden"}
+                </span>
+              </header>
+
+              <div className="edp-meta-grid">
+                <div>
+                  <span className="edp-meta-label">Batch</span>
+                  <p>{exam.batch || "General"}</p>
+                </div>
+                <div>
+                  <span className="edp-meta-label">Divisions</span>
+                  <p>{(exam.divisions || []).join(", ") || "-"}</p>
+                </div>
+              </div>
+
+              <button
+                className={`edp-toggle-btn ${exam.isEnabled ? "disable" : "enable"}`}
+                onClick={() => handleToggleStatus(exam._id, exam.isEnabled)}
+              >
+                {exam.isEnabled
+                  ? "Disable for Students"
+                  : "Enable for Students"}
+              </button>
+            </article>
+          ))}
         </div>
       )}
 
-      <div className="status-info-box">
+      <div className="edp-info-box">
         <h3>Status Information</h3>
-        <div className="info-grid">
-          <div className="info-item">
-            <div className="info-icon enabled">
+        <div className="edp-info-grid">
+          <div className="edp-info-item">
+            <div className="edp-info-icon enabled">
               <i className="bi bi-check-circle"></i>
             </div>
             <div>
               <h4>Visible to Students</h4>
-              <p>Students can access and view the practical exam</p>
+              <p>Students can access and submit this practical exam.</p>
             </div>
           </div>
-          <div className="info-item">
-            <div className="info-icon disabled">
+          <div className="edp-info-item">
+            <div className="edp-info-icon disabled">
               <i className="bi bi-x-circle"></i>
             </div>
             <div>
               <h4>Hidden from Students</h4>
-              <p>Students cannot see or access this exam</p>
+              <p>Students cannot view or attempt this practical exam.</p>
             </div>
           </div>
         </div>

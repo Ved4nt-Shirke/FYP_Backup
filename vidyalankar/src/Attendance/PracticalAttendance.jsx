@@ -85,7 +85,7 @@ const PracticalEdit = () => {
     return (
       <div className="practical-page">
         <div className="practical-card">
-          <h2 className="practical-title">Practical Attendance</h2>
+          <h2 className="practical-title">Mark Practical Attendance</h2>
           <p className="practical-subtitle">
             No CIAAN selected. Please choose a CIAAN card first.
           </p>
@@ -105,7 +105,7 @@ const PracticalEdit = () => {
           <header className="practical-header">
             <div className="practical-header-main">
               <p className="practical-eyebrow">Lab Attendance</p>
-              <h2 className="practical-title">Practical Attendance</h2>
+              <h2 className="practical-title">Mark Practical Attendance</h2>
               <p className="practical-subtitle">
                 {ciannData.subject?.name} ({ciannData.subject?.code})
               </p>
@@ -210,7 +210,7 @@ const PracticalEdit = () => {
           </section>
 
           {allRows.length > 0 && (
-            <div className="practical-pagination">
+            <div className="practical-pagination practical-pagination--nav">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}

@@ -1,13 +1,32 @@
 import { useNavigate } from "react-router-dom";
-import "./Dashboard.css";
+import "./AttendancePanel.css";
 
 const cardsData = [
-  { label: "VIEW THEORY ATTENDANCE", icon: "bi-calendar-check", path: "/view-attend1" },
-  { label: "VIEW PRACTICAL ATTENDANCE", icon: "bi-calendar-check-fill", path: "/view-practical1" },
-  { label: "VIEW EXTRA THEORY ATTENDANCE", icon: "bi-calendar-plus", path: "/view-extra-theory-attend" },
-  { label: "VIEW EXTRA PRACTICAL ATTENDANCE", icon: "bi-calendar-plus-fill", path: "/view-extra-practical1" },
-  { label: "VIEW TUTORIAL ATTENDANCE", icon: "bi-calendar-plus-fill", path: "/view-tutorial-attendance" }
-  
+  {
+    label: "View Theory Attendance",
+    icon: "bi-calendar-check",
+    path: "/view-attend1",
+  },
+  {
+    label: "View Practical Attendance",
+    icon: "bi-calendar-check-fill",
+    path: "/view-practical1",
+  },
+  {
+    label: "View Extra Theory Attendance",
+    icon: "bi-calendar-plus",
+    path: "/view-extra-theory-attend",
+  },
+  {
+    label: "View Extra Practical Attendance",
+    icon: "bi-calendar-plus-fill",
+    path: "/view-extra-practical1",
+  },
+  {
+    label: "View Tutorial Attendance",
+    icon: "bi-calendar-plus-fill",
+    path: "/view-tutorial-attendance",
+  },
 ];
 
 const ViewAttendance = () => {
@@ -22,25 +41,35 @@ const ViewAttendance = () => {
   };
 
   return (
-    <div className="scrollable-wrapper">
-      <div className="card-container">
+    <div className="attendance-panel-page">
+      <section className="attendance-panel-hero">
+        <h2>View Attendance</h2>
+        <p>Select an attendance type to continue.</p>
+      </section>
+      <section className="attendance-panel-grid">
         {cardsData.map((card) => (
-          <div
+          <button
             key={card.label}
-            className="card-item"
+            type="button"
+            className="attendance-panel-card"
             onClick={() => handleCardClick(card)}
-            role="button"
-            tabIndex={0}
             onKeyDown={(e) =>
               (e.key === "Enter" || e.key === " ") && handleCardClick(card)
             }
           >
-            <i className={`card-icon ${card.icon}`}></i>
-            <p className="card-label">{card.label}</p>
-          </div>  
+            <div className="attendance-panel-card-top">
+              <span className="attendance-panel-icon">
+                <i className={`bi ${card.icon}`}></i>
+              </span>
+              <h3 className="attendance-panel-title">{card.label}</h3>
+            </div>
+            <div className="attendance-panel-footer">
+              Continue <i className="bi bi-arrow-right"></i>
+            </div>
+          </button>
         ))}
-      </div>
+      </section>
     </div>
   );
-}
+};
 export default ViewAttendance;

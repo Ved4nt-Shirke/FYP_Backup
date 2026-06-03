@@ -7,6 +7,9 @@ const TutorialAttendance = require('../models/TutorialAttendance');
 const ExtraAttendance = require('../models/ExtraAttendance');
 const ExtraPract = require('../models/ExtraPract');
 const Student = require('../models/Student');
+const Ciann = require('../models/Ciann');
+
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Helper function to calculate percentage
 const calculatePercentage = (attended, total) => {
@@ -23,13 +26,45 @@ router.get('/:ciannId', async (req, res) => {
 
     console.log(`Fetching summary for CIANN ID: ${ciannId}`);
 
-    // Get total students for this CIANN from attendance records
+    const ciann = await Ciann.findOne({ ciannId }).select('division');
+    const ciannDivision = String(ciann?.division || '').trim();
+
+    const divisionStudents = ciannDivision
+      ? await Student.find({
+          division: { $regex: new RegExp(`^${escapeRegex(ciannDivision)}$`, 'i') },
+        }).select('rollNo studentName')
+      : [];
+
+    const allowedRollNos = new Set(
+      divisionStudents
+        .map((student) => String(student.rollNo || '').trim())
+        .filter(Boolean),
+    );
+    const allowedStudentNames = new Set(
+      divisionStudents
+        .map((student) => String(student.studentName || '').trim().toLowerCase())
+        .filter(Boolean),
+    );
+
+    const isAllowedStudent = (entry = {}) => {
+      if (!ciannDivision) return true;
+
+      const roll = String(entry.rollNo || entry.rollId || '').trim();
+      const name = String(entry.studentName || entry.name || '').trim().toLowerCase();
+
+      if (roll && allowedRollNos.has(roll)) return true;
+      if (name && allowedStudentNames.has(name)) return true;
+      return false;
+    };
+
+    // Get total students for this CIANN from division context
     const allAttendanceRecords = await TheoryAttendance.find({ ciannId });
-    let totalStudentsInClass = 0;
+    let totalStudentsInClass = divisionStudents.length;
     
-    if (allAttendanceRecords.length > 0) {
+    if (totalStudentsInClass === 0 && allAttendanceRecords.length > 0) {
       // Get the number of students from the first attendance record
-      totalStudentsInClass = allAttendanceRecords[0].students ? allAttendanceRecords[0].students.length : 0;
+      const firstStudents = allAttendanceRecords[0].students || [];
+      totalStudentsInClass = firstStudents.filter(isAllowedStudent).length;
     }
     
     const studentsPerBatch = Math.ceil(totalStudentsInClass / 3); // Assuming 3 batches
@@ -48,12 +83,16 @@ router.get('/:ciannId', async (req, res) => {
     const totalTheoryEngaged = lecturesEngaged + extraLecturesEngaged;
 
     const attendanceTheoryLectures = theoryAttendances.reduce((sum, t) => {
-      const presentCount = t.students ? t.students.filter(s => s.status === 'Present').length : 0;
+      const presentCount = t.students
+        ? t.students.filter((s) => isAllowedStudent(s) && s.status === 'Present').length
+        : 0;
       return sum + presentCount;
     }, 0);
 
     const attendanceExtraLectures = extraAttendances.reduce((sum, e) => {
-      const presentCount = e.students ? e.students.filter(s => s.attendance === 'Present').length : 0;
+      const presentCount = e.students
+        ? e.students.filter((s) => isAllowedStudent(s) && s.attendance === 'Present').length
+        : 0;
       return sum + presentCount;
     }, 0);
 
@@ -99,9 +138,10 @@ router.get('/:ciannId', async (req, res) => {
       
       batchPracticals.forEach(p => {
         if (p.students && p.students.length > 0) {
-          const presentCount = p.students.filter(s => s.status === 'Present').length;
+          const allowedStudents = p.students.filter(isAllowedStudent);
+          const presentCount = allowedStudents.filter(s => s.status === 'Present').length;
           attendance += presentCount;
-          totalPossibleAttendance += p.students.length; // Use actual number of students in this session
+          totalPossibleAttendance += allowedStudents.length; // Use filtered students for this session
         }
       });
       
@@ -117,9 +157,10 @@ router.get('/:ciannId', async (req, res) => {
       batchPracticals.forEach(p => {
         if (p.students && p.students.length > 0) {
           // ExtraPract uses 'attendance' field instead of 'status'
-          const presentCount = p.students.filter(s => s.attendance === 'Present').length;
+          const allowedStudents = p.students.filter(isAllowedStudent);
+          const presentCount = allowedStudents.filter(s => s.attendance === 'Present').length;
           attendance += presentCount;
-          totalPossibleAttendance += p.students.length; // Use actual number of students in this session
+          totalPossibleAttendance += allowedStudents.length; // Use filtered students for this session
         }
       });
       
@@ -147,11 +188,15 @@ router.get('/:ciannId', async (req, res) => {
       overall: {
         engaged: practicals.length + extraPracticals.length,
         attendance: practicals.reduce((sum, p) => {
-          const presentCount = p.students ? p.students.filter(s => s.status === 'Present').length : 0;
+          const presentCount = p.students
+            ? p.students.filter((s) => isAllowedStudent(s) && s.status === 'Present').length
+            : 0;
           return sum + presentCount;
         }, 0) + extraPracticals.reduce((sum, p) => {
           // ExtraPract uses 'attendance' field instead of 'status'
-          const presentCount = p.students ? p.students.filter(s => s.attendance === 'Present').length : 0;
+          const presentCount = p.students
+            ? p.students.filter((s) => isAllowedStudent(s) && s.attendance === 'Present').length
+            : 0;
           return sum + presentCount;
         }, 0),
         percentage: 0
@@ -164,13 +209,13 @@ router.get('/:ciannId', async (req, res) => {
     // Calculate total possible attendance from all practical sessions
     practicals.forEach(p => {
       if (p.students && p.students.length > 0) {
-        totalPossiblePracticalAttendance += p.students.length;
+        totalPossiblePracticalAttendance += p.students.filter(isAllowedStudent).length;
       }
     });
     
     extraPracticals.forEach(p => {
       if (p.students && p.students.length > 0) {
-        totalPossiblePracticalAttendance += p.students.length;
+        totalPossiblePracticalAttendance += p.students.filter(isAllowedStudent).length;
       }
     });
     
@@ -193,7 +238,16 @@ router.get('/:ciannId', async (req, res) => {
 
     const tutorialsEngaged = tutorials.length;
     const tutorialAttendance = tutorials.reduce((sum, t) => {
-      const presentCount = t.students ? t.students.filter(s => s.status === 'Present').length : 0;
+      const presentCount = t.students
+        ? t.students.filter((s) => {
+            const allowed = isAllowedStudent({
+              rollId: s.rollId,
+              name: s.name,
+            });
+            const status = String(s.status || s.attendance || '').toLowerCase();
+            return allowed && status === 'present';
+          }).length
+        : 0;
       return sum + presentCount;
     }, 0);
     const tutorialPercentage = calculatePercentage(tutorialAttendance, tutorialsEngaged * totalStudentsInClass);

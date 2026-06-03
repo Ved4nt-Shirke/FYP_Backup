@@ -6,11 +6,24 @@ const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
 
+// WhatsApp Bot (whatsapp-web.js) — optional, gracefully skipped if disabled
+let startWhatsAppBot = null;
+if (process.env.WHATSAPP_BOT_ENABLED !== "false") {
+  try {
+    ({ startWhatsAppBot } = require("./whatsapp/bot"));
+  } catch (e) {
+    console.warn("⚠️  WhatsApp bot module failed to load:", e.message);
+  }
+}
+
 const app = express();
 
 const isDummyInstitutionRecord = (institution) => {
   const matcher = /dummy|test|demo|sample/i;
-  return matcher.test(String(institution?.name || "")) || matcher.test(String(institution?.code || ""));
+  return (
+    matcher.test(String(institution?.name || "")) ||
+    matcher.test(String(institution?.code || ""))
+  );
 };
 
 // --- Middleware ---
@@ -31,6 +44,10 @@ mongoose
     console.log("MongoDB Connected Successfully");
     // Initialize superadmin user
     initializeSuperAdmin();
+    // Start WhatsApp Attendance Bot
+    if (startWhatsAppBot) {
+      startWhatsAppBot();
+    }
   })
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
@@ -87,7 +104,9 @@ app.get("/api/institutions", async (req, res) => {
   try {
     const Institution = require("./models/Institution");
     const institutions = await Institution.find({}, "name code isActive");
-    const filteredInstitutions = institutions.filter((institution) => !isDummyInstitutionRecord(institution));
+    const filteredInstitutions = institutions.filter(
+      (institution) => !isDummyInstitutionRecord(institution),
+    );
     res.json({
       success: true,
       institutions: filteredInstitutions,
@@ -155,6 +174,9 @@ app.use("/api/student-timetables", require("./routes/studentTimetables"));
 
 // Authentication Routes
 app.use("/api/auth", require("./routes/auth"));
+
+// Chat Routes
+app.use("/api/chat", require("./routes/chat"));
 
 // Subject Details Routes
 app.use("/api/subject-details", require("./routes/subjectDetails"));

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { config } from "../config/api";
 import "./ManagePracticalQuestions.css";
 
 const ManagePracticalQuestions = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [exam, setExam] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,13 @@ const ManagePracticalQuestions = () => {
     fetchExamAndQuestions();
   }, [examId]);
 
+  useEffect(() => {
+    if (location.state?.openAddQuestion) {
+      resetForm();
+      setShowForm(true);
+    }
+  }, [location.state]);
+
   const fetchExamAndQuestions = async () => {
     try {
       setLoading(true);
@@ -33,7 +41,7 @@ const ManagePracticalQuestions = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       const data = await response.json();
 
@@ -55,7 +63,8 @@ const ManagePracticalQuestions = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === "marks" || name === "questionNumber" ? parseInt(value) : value,
+      [name]:
+        name === "marks" || name === "questionNumber" ? parseInt(value) : value,
     });
   };
 
@@ -101,7 +110,7 @@ const ManagePracticalQuestions = () => {
 
       if (editingId !== null) {
         updatedQuestions = questions.map((q, i) =>
-          i === editingId ? formData : q
+          i === editingId ? formData : q,
         );
       } else {
         updatedQuestions = [
@@ -122,14 +131,16 @@ const ManagePracticalQuestions = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ questions: updatedQuestions }),
-        }
+        },
       );
 
       const data = await response.json();
 
       if (data.success) {
         setQuestions(updatedQuestions);
-        setSuccess(editingId !== null ? "Question updated!" : "Question added!");
+        setSuccess(
+          editingId !== null ? "Question updated!" : "Question added!",
+        );
         setShowForm(false);
         resetForm();
       } else {
@@ -161,7 +172,7 @@ const ManagePracticalQuestions = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ questions: updatedQuestions }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -194,7 +205,10 @@ const ManagePracticalQuestions = () => {
             <h2>Manage Questions</h2>
             {exam && <p className="mpq-exam-title">Exam: {exam.title}</p>}
           </div>
-          <button className="mpq-btn mpq-btn-back" onClick={() => navigate("/faculty/practical-exams/manage")}>
+          <button
+            className="mpq-btn mpq-btn-back"
+            onClick={() => navigate("/faculty/practical-exams/manage")}
+          >
             Back
           </button>
         </div>
@@ -216,7 +230,9 @@ const ManagePracticalQuestions = () => {
 
           {showForm && (
             <div className="mpq-form">
-              <h4>{editingId !== null ? "Edit Question" : "Add New Question"}</h4>
+              <h4>
+                {editingId !== null ? "Edit Question" : "Add New Question"}
+              </h4>
 
               <div className="mpq-form-group">
                 <label>Question Text *</label>
@@ -284,12 +300,16 @@ const ManagePracticalQuestions = () => {
                   <div className="mpq-question-content">
                     <div className="mpq-question-header">
                       <h4>Question {index + 1}</h4>
-                      <span className={`mpq-difficulty mpq-difficulty-${question.difficulty?.toLowerCase()}`}>
+                      <span
+                        className={`mpq-difficulty mpq-difficulty-${question.difficulty?.toLowerCase()}`}
+                      >
                         {question.difficulty || "Medium"}
                       </span>
                     </div>
                     <p className="mpq-question-text">{question.questionText}</p>
-                    <p className="mpq-question-marks">Marks: {question.marks}</p>
+                    <p className="mpq-question-marks">
+                      Marks: {question.marks}
+                    </p>
                   </div>
 
                   <div className="mpq-question-actions">
@@ -311,14 +331,17 @@ const ManagePracticalQuestions = () => {
                 </div>
               ))
             ) : (
-              <p className="mpq-empty-state">No questions added yet. Click "Add Question" to get started.</p>
+              <p className="mpq-empty-state">
+                No questions added yet. Click "Add Question" to get started.
+              </p>
             )}
           </div>
 
           {questions.length > 0 && (
             <div className="mpq-summary">
               <p>
-                Total Questions: <strong>{questions.length}</strong> | Total Marks:{" "}
+                Total Questions: <strong>{questions.length}</strong> | Total
+                Marks:{" "}
                 <strong>
                   {questions.reduce((sum, q) => sum + (q.marks || 0), 0)}
                 </strong>

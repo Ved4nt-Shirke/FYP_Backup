@@ -58,7 +58,7 @@ const AddPractical = () => {
             `${config.apiBaseUrl}/practical-exams/divisions?batchId=${primaryCiannId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
-            }
+            },
           );
 
           if (divisionsResponse.ok) {
@@ -140,10 +140,16 @@ const AddPractical = () => {
       const data = await response.json();
 
       if (data.success) {
+        const createdExamId = data?.practicalExam?._id;
+        if (createdExamId) {
+          navigate(`/faculty/practical-exams/questions/${createdExamId}`, {
+            state: { openAddQuestion: true },
+          });
+          return;
+        }
+
         setSuccess("Practical exam created successfully!");
-        setTimeout(() => {
-          navigate("/faculty/practical-exams");
-        }, 1500);
+        navigate("/faculty/practical-exams/manage");
       } else {
         setError(data.message || "Failed to create practical exam");
       }
@@ -200,7 +206,8 @@ const AddPractical = () => {
             </select>
             {divisions.length === 0 && !loading && (
               <small className="text-muted">
-                No divisions found. Please ensure office staff has configured CIANNs.
+                No divisions found. Please ensure office staff has configured
+                CIANNs.
               </small>
             )}
           </div>
@@ -220,9 +227,7 @@ const AddPractical = () => {
               placeholder="e.g., Practical Exam - Semester 5"
               maxLength={100}
             />
-            <small className="char-count">
-              {formData.title.length}/100
-            </small>
+            <small className="char-count">{formData.title.length}/100</small>
           </div>
 
           {/* Description */}
@@ -262,7 +267,9 @@ const AddPractical = () => {
           <button
             type="submit"
             className="btn btn-primary"
-            disabled={submitting || divisions.length === 0 || !formData.division}
+            disabled={
+              submitting || divisions.length === 0 || !formData.division
+            }
           >
             {submitting ? "Creating..." : "Create Practical Exam"}
           </button>

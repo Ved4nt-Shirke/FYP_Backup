@@ -299,12 +299,15 @@
 }
 
 .btn.submit {
-  background-color: #28a745; /* Example green */
-  color: white;
+  background-color: var(--primary-color, #28a745); /* Example green */
+  color: var(--text-on-primary, white);
 }
 
 .btn.submit:hover {
-  background-color: #218838; /* Darker green on hover */
+  background-color: var(
+    --primary-accent-dark,
+    #218838
+  ); /* Darker green on hover */
 }
 
 .plan-container .header-row {
@@ -357,12 +360,15 @@
 }
 
 .btn.submit {
-  background-color: #28a745; /* Example green */
-  color: white;
+  background-color: var(--primary-color, #28a745); /* Example green */
+  color: var(--text-on-primary, white);
 }
 
 .btn.submit:hover {
-  background-color: #218838; /* Darker green on hover */
+  background-color: var(
+    --primary-accent-dark,
+    #218838
+  ); /* Darker green on hover */
 }
 
 .weekwise-container {
@@ -443,7 +449,9 @@
     color: #333;
   }
   /* Week select cell: visually place at top with a label */
-  .plan-table td.week-cell::before { content: 'Week No'; }
+  .plan-table td.week-cell::before {
+    content: "Week No";
+  }
 }
 
 .week-select {

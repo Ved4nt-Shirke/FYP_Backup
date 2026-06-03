@@ -7,13 +7,14 @@ const PracticalExamDashboard = () => {
 
   const cards = [
     {
-      id: "add-practical",
-      title: "Add Practical",
-      description: "Create a new practical exam and assign divisions.",
-      buttonText: "Add Practical",
-      icon: "bi-plus-circle-fill",
-      color: "#3498db",
-      onClick: () => navigate("/faculty/practical-exams/add"),
+      id: "workspace",
+      title: "Open Practical Workspace",
+      description:
+        "Follow the guided flow: choose department, choose course, then perform actions.",
+      buttonText: "Open Workspace",
+      icon: "bi-diagram-3-fill",
+      tone: "primary",
+      onClick: () => navigate("/faculty/practical-exams"),
     },
     {
       id: "manage-list",
@@ -21,16 +22,16 @@ const PracticalExamDashboard = () => {
       description: "View and manage practical exams and questions.",
       buttonText: "Manage Exams",
       icon: "bi-list-check",
-      color: "#2ecc71",
+      tone: "info",
       onClick: () => navigate("/faculty/practical-exams/manage"),
     },
     {
       id: "enable-disable",
-      title: "Enable/Disable Practical Exam",
+      title: "Visibility Controls",
       description: "Control which exams are visible to students.",
       buttonText: "Manage Status",
       icon: "bi-eye-slash-fill",
-      color: "#e74c3c",
+      tone: "warning",
       onClick: () => navigate("/faculty/practical-exams/status"),
     },
   ];
@@ -40,26 +41,28 @@ const PracticalExamDashboard = () => {
       <div className="dashboard-header">
         <h1 className="dashboard-title">Practical Exam Management</h1>
         <p className="dashboard-subtitle">
-          Manage practical exams, questions, and visibility settings
+          Keep exam setup simple with a guided workspace and quick controls
         </p>
+      </div>
+
+      <div className="dashboard-flow-bar">
+        <span>1. Select Department</span>
+        <span>2. Select Course</span>
+        <span>3. Add, Manage, or Publish</span>
       </div>
 
       <div className="cards-container">
         {cards.map((card) => (
-          <div key={card.id} className="dashboard-card">
-            <div className="card-header" style={{ borderTopColor: card.color }}>
-              <i className={`bi ${card.icon}`} style={{ color: card.color }}></i>
+          <div key={card.id} className={`dashboard-card tone-${card.tone}`}>
+            <div className="card-header">
+              <i className={`bi ${card.icon}`}></i>
             </div>
             <div className="card-body">
               <h2 className="card-title">{card.title}</h2>
               <p className="card-description">{card.description}</p>
             </div>
             <div className="card-footer">
-              <button
-                className="btn btn-primary"
-                style={{ backgroundColor: card.color }}
-                onClick={card.onClick}
-              >
+              <button className="dashboard-cta" onClick={card.onClick}>
                 {card.buttonText}
               </button>
             </div>

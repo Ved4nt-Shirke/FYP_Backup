@@ -37,7 +37,6 @@ const TutorialAttendance = () => {
             <h3>No CIAAN selected. Please select a CIAAN card first.</h3>
           </div>
         </div>
-
       </div>
     );
   }
@@ -48,7 +47,7 @@ const TutorialAttendance = () => {
       <div className="attendance-main-content">
         <div className="theory-attendance-container">
           <div className="header-row">
-            <h3>Tutorial Attendance</h3>
+            <h3>Mark Tutorial Attendance</h3>
           </div>
 
           {ciannData && (
@@ -96,7 +95,6 @@ const TutorialAttendance = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };

@@ -16,13 +16,19 @@ const OfficeSidebar = ({
 }) => {
   const navigate = useNavigate();
   const institutionCode = (
-    localStorage.getItem("institutionCode") || localStorage.getItem("college") || "VP"
+    localStorage.getItem("institutionCode") ||
+    localStorage.getItem("college") ||
+    "VP"
   ).toUpperCase();
-  const institutionName = localStorage.getItem("institutionName") || institutionCode;
+  const institutionName =
+    localStorage.getItem("institutionName") || institutionCode;
   const institutionLogoUrl = buildInstitutionLogoUrl(
     localStorage.getItem("institutionLogoUrl") || "",
   );
-  const institutionFallback = getInstitutionInitials(institutionName, institutionCode);
+  const institutionFallback = getInstitutionInitials(
+    institutionName,
+    institutionCode,
+  );
 
   const menuItems = [
     {
@@ -63,7 +69,10 @@ const OfficeSidebar = ({
     <>
       {/* Mobile Overlay */}
       {isVisible && window.innerWidth <= 768 && (
-        <div className="office-sidebar-overlay" onClick={() => setIsVisible(false)} />
+        <div
+          className="office-sidebar-overlay"
+          onClick={() => setIsVisible(false)}
+        />
       )}
 
       {/* Sidebar */}
@@ -71,13 +80,16 @@ const OfficeSidebar = ({
         <div className="sidebar-header">
           <div className="sidebar-logo">
             {institutionLogoUrl ? (
-              <img src={institutionLogoUrl} alt={institutionName} className="sidebar-logo-image" />
+              <img
+                src={institutionLogoUrl}
+                alt={institutionName}
+                className="sidebar-logo-image"
+              />
             ) : (
               <div className="sidebar-logo-fallback">{institutionFallback}</div>
             )}
             <div className="sidebar-logo-text">
-              <p className="sidebar-title">{institutionName}</p>
-              <p className="sidebar-subtitle">Office Portal</p>
+              <p className="sidebar-title">Office Portal</p>
             </div>
           </div>
           <button
@@ -128,10 +140,12 @@ const OfficeSidebar = ({
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-footer-info">
-            <p className="info-label">Version</p>
-            <p className="info-value">1.0.0</p>
-          </div>
+          <button className="sidebar-footer-btn logout-btn" onClick={onLogout}>
+            <span role="img" aria-label="logout">
+              🚪
+            </span>
+            Logout
+          </button>
         </div>
       </aside>
     </>

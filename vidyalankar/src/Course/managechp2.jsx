@@ -1,8 +1,8 @@
 // managechp2.jsx
 
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import './managechp2.css';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import "./CourseTableShared.css";
 
 const ManageChapters2 = () => {
   const [chapters, setChapters] = useState([]);
@@ -13,27 +13,27 @@ const ManageChapters2 = () => {
 
   // --- NEW: State for the modal and form inputs ---
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newChapterNo, setNewChapterNo] = useState('');
-  const [newChapterName, setNewChapterName] = useState('');
-  
+  const [newChapterNo, setNewChapterNo] = useState("");
+  const [newChapterName, setNewChapterName] = useState("");
+
   // --- EXISTING useEffect to fetch initial chapters ---
   useEffect(() => {
     if (program && className && course) {
       const fetchChapters = async () => {
         try {
-          const response = await fetch('/api/course-chapters/get-chapters', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          const response = await fetch("/api/course-chapters/get-chapters", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ program, className, course }),
           });
           const data = await response.json();
           if (data.success) {
             setChapters(data.chp);
           } else {
-            console.error('Failed to fetch chapters:', data.message);
+            console.error("Failed to fetch chapters:", data.message);
           }
         } catch (error) {
-          console.error('Error fetching chapters:', error);
+          console.error("Error fetching chapters:", error);
         }
       };
       fetchChapters();
@@ -44,14 +44,14 @@ const ManageChapters2 = () => {
   const handleAddChapter = async (event) => {
     event.preventDefault();
     if (!newChapterNo || !newChapterName) {
-      alert('Please fill in both chapter number and name.');
+      alert("Please fill in both chapter number and name.");
       return;
     }
-    
+
     try {
-      const response = await fetch('/api/course-chapters/add-chapter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/course-chapters/add-chapter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           program,
           className,
@@ -67,19 +67,19 @@ const ManageChapters2 = () => {
         setChapters(data.chp); // Update UI with the new list of chapters from the server
         setIsModalOpen(false); // Close the modal
         // Reset form fields
-        setNewChapterNo('');
-        setNewChapterName('');
+        setNewChapterNo("");
+        setNewChapterName("");
       } else {
         alert(`Failed to add chapter: ${data.message}`);
       }
     } catch (error) {
-      console.error('Error adding chapter:', error);
-      alert('An error occurred. Please try again.');
+      console.error("Error adding chapter:", error);
+      alert("An error occurred. Please try again.");
     }
   };
 
-    const handleEditClick = (chapterToEdit) => {
-    navigate('/update-chapter', {
+  const handleEditClick = (chapterToEdit) => {
+    navigate("/update-chapter", {
       state: {
         program,
         className,
@@ -91,14 +91,18 @@ const ManageChapters2 = () => {
 
   // --- NEW: Function to handle chapter deletion ---
   const handleDeleteClick = async (chapterToDelete) => {
-    if (!window.confirm(`Are you sure you want to delete Chapter ${chapterToDelete.chapterNo}: ${chapterToDelete.chapterName}?`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete Chapter ${chapterToDelete.chapterNo}: ${chapterToDelete.chapterName}?`,
+      )
+    ) {
       return;
     }
 
     try {
-      const response = await fetch('/api/course-chapters/delete-chapter', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/course-chapters/delete-chapter", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           program,
           className,
@@ -111,20 +115,20 @@ const ManageChapters2 = () => {
 
       if (data.success) {
         setChapters(data.chp); // Update UI with the new list of chapters from the server
-        alert('Chapter deleted successfully!');
+        alert("Chapter deleted successfully!");
       } else {
         alert(`Failed to delete chapter: ${data.message}`);
       }
     } catch (error) {
-      console.error('Error deleting chapter:', error);
-      alert('An error occurred while deleting the chapter.');
+      console.error("Error deleting chapter:", error);
+      alert("An error occurred while deleting the chapter.");
     }
   };
 
   return (
     <div className="add-chapters-container">
       <h2 className="page-title">Add/Edit Chapters for: {course}</h2>
-      
+
       {/* Table remains the same */}
       <div className="table-wrapper">
         <table className="chapters-table">
@@ -142,15 +146,15 @@ const ManageChapters2 = () => {
                   <td>{chapter.chapterNo}</td>
                   <td>{chapter.chapterName}</td>
                   <td className="setting-cell">
-                    <button 
-                      className="edit-btn" 
+                    <button
+                      className="edit-btn"
                       title="Edit Chapter"
                       onClick={() => handleEditClick(chapter)}
                     >
                       ✏️
                     </button>
-                    <button 
-                      className="delete-btn" 
+                    <button
+                      className="delete-btn"
                       title="Delete Chapter"
                       onClick={() => handleDeleteClick(chapter)}
                     >
@@ -170,7 +174,9 @@ const ManageChapters2 = () => {
 
       <div className="table-actions">
         {/* --- UPDATED: Button now opens the modal --- */}
-        <button className="add-btn" onClick={() => setIsModalOpen(true)}>Add Chapter</button>
+        <button className="add-btn" onClick={() => setIsModalOpen(true)}>
+          Add Chapter
+        </button>
       </div>
 
       {/* --- NEW: Add Chapter Modal --- */}
@@ -202,8 +208,16 @@ const ManageChapters2 = () => {
                 />
               </div>
               <div className="modal-actions">
-                <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className="submit-btn">Save Chapter</button>
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="submit-btn">
+                  Save Chapter
+                </button>
               </div>
             </form>
           </div>

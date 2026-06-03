@@ -4,19 +4,24 @@ import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
 } from "../utils/institutionBranding";
-import "./OfficeHeader.css";
 
 const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff" }) => {
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const institutionCode = (
-    localStorage.getItem("institutionCode") || localStorage.getItem("college") || "VP"
+    localStorage.getItem("institutionCode") ||
+    localStorage.getItem("college") ||
+    "VP"
   ).toUpperCase();
-  const institutionName = localStorage.getItem("institutionName") || institutionCode;
+  const institutionName =
+    localStorage.getItem("institutionName") || institutionCode;
   const institutionLogoUrl = buildInstitutionLogoUrl(
     localStorage.getItem("institutionLogoUrl") || "",
   );
-  const institutionFallback = getInstitutionInitials(institutionName, institutionCode);
+  const institutionFallback = getInstitutionInitials(
+    institutionName,
+    institutionCode,
+  );
 
   const handleLogout = () => {
     localStorage.clear();
@@ -27,40 +32,52 @@ const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff" }) => {
     <header className="office-header-container">
       <div className="office-header-content">
         <div className="office-header-left">
-          <button className="menu-toggle" onClick={onMenuToggle} aria-label="Toggle menu">
+          <button
+            className="menu-toggle"
+            onClick={onMenuToggle}
+            aria-label="Toggle menu"
+          >
             <i className="bi bi-list"></i>
           </button>
           <div className="office-logo" title={institutionName}>
-            {institutionLogoUrl ? (
-              <img src={institutionLogoUrl} alt={institutionName} className="office-brand-logo" />
-            ) : (
-              <span className="office-brand-fallback">{institutionFallback}</span>
-            )}
             <span className="logo-text">{institutionName}</span>
           </div>
         </div>
 
         <div className="office-header-right">
           <div className="user-menu-wrapper">
-            <button className="user-button" onClick={() => setShowUserMenu((prev) => !prev)}>
-              <span className="user-avatar">{staffName.charAt(0).toUpperCase()}</span>
+            <button
+              className="user-button"
+              onClick={() => setShowUserMenu((prev) => !prev)}
+            >
+              <span className="user-avatar">
+                {staffName.charAt(0).toUpperCase()}
+              </span>
               <span className="user-name">{staffName}</span>
               <i className="bi bi-chevron-down dropdown-icon"></i>
             </button>
 
             {showUserMenu && (
               <>
-                <div className="dropdown-backdrop" onClick={() => setShowUserMenu(false)} />
+                <div
+                  className="dropdown-backdrop"
+                  onClick={() => setShowUserMenu(false)}
+                />
                 <div className="user-menu-dropdown">
                   <div className="user-menu-header">
-                    <div className="user-avatar-large">{staffName.charAt(0).toUpperCase()}</div>
+                    <div className="user-avatar-large">
+                      {staffName.charAt(0).toUpperCase()}
+                    </div>
                     <div>
                       <p className="user-menu-name">{staffName}</p>
                       <p className="user-menu-role">Office Staff</p>
                     </div>
                   </div>
                   <div className="user-menu-divider"></div>
-                  <button className="user-menu-item logout" onClick={handleLogout}>
+                  <button
+                    className="user-menu-item logout"
+                    onClick={handleLogout}
+                  >
                     <span>🚪</span>
                     Logout
                   </button>
