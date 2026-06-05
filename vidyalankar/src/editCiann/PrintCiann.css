@@ -1,5 +1,21 @@
+html.ciann-print-view-root,
+body.ciann-print-view-body {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+}
+
+body.ciann-print-view-body #root {
+  min-height: 100vh;
+  overflow: visible;
+}
+
 .ciann-print-page {
   min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   background: #f4f6fb;
   padding: 20px;
 }
@@ -10,13 +26,16 @@
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+  position: sticky;
+  top: 8px;
+  z-index: 20;
 }
 
 .ciann-print-sheet {
   background: #ffffff;
   color: #111827;
   max-width: 1120px;
-  margin: 0 auto;
+  margin: 0 auto 24px;
   padding: 20px;
   border: 1px solid #d1d5db;
 }
@@ -243,6 +262,38 @@
   font-weight: 700;
 }
 
+.attendance-record-table th,
+.attendance-record-table td {
+  font-size: 11px;
+}
+
+.attendance-record-table .student-name-cell {
+  text-align: left;
+  padding-left: 8px;
+}
+
+.separate-attendance-section {
+  margin-top: 18px;
+  padding-top: 8px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+.separate-attendance-section h4 {
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.attendance-record-table tbody tr td {
+  padding: 6px 8px;
+}
+
+.ciann-print-toolbar .btn.active,
+.ciann-print-toolbar .btn:focus {
+  background: #0ea5a3;
+  color: #fff;
+  border-color: #0ea5a3;
+}
+
 .ciann-print-loading {
   text-align: center;
   margin: 12px 0 0;
@@ -256,6 +307,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  gap: 12px;
 }
 
 @media (max-width: 768px) {
@@ -287,8 +339,10 @@
   }
 
   .ciann-print-page {
+    height: auto;
     padding: 0;
     background: #fff;
+    overflow: visible;
   }
 
   .ciann-print-sheet {

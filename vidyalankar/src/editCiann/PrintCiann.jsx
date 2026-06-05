@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
 } from "../utils/institutionBranding";
 import { config } from "../config/api";
+import { TokenManager } from "../utils/authUtils";
 import "./PrintCiann.css";
 
 const days = [
@@ -132,8 +134,10 @@ const getDepartment = (ciannData) => {
 };
 
 const PrintCiann = () => {
+  const [searchParams] = useSearchParams();
   const [ciannData, setCiannData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [institutionBranding] = useState(getInstitutionBranding);
 
   const [teachingPlans, setTeachingPlans] = useState([]);
@@ -148,40 +152,114 @@ const PrintCiann = () => {
   const [webResources, setWebResources] = useState([]);
   const [moocCourses, setMoocCourses] = useState([]);
   const [syllabusImages, setSyllabusImages] = useState([]);
+  const [studentAttendanceRecords, setStudentAttendanceRecords] = useState([]);
+  const [separateAttendance, setSeparateAttendance] = useState(true);
 
   useEffect(() => {
-    const storedCiannData = localStorage.getItem("ciannData");
-    if (!storedCiannData) {
-      setLoading(false);
+    // Special page should scroll independently even when app body is globally locked.
+    document.documentElement.classList.add("ciann-print-view-root");
+    document.body.classList.add("ciann-print-view-body");
+
+    return () => {
+      document.documentElement.classList.remove("ciann-print-view-root");
+      document.body.classList.remove("ciann-print-view-body");
+    };
+  }, []);
+
+  useEffect(() => {
+    const hydrateAndFetch = async () => {
+      setLoading(true);
+      setLoadError("");
+
+      const requestedCiannId = searchParams.get("ciannId");
+      const storedCiannData = localStorage.getItem("ciannData");
+
+      let parsedData = null;
+      if (storedCiannData) {
+        try {
+          parsedData = JSON.parse(storedCiannData);
+        } catch {
+          parsedData = null;
+        }
+      }
+
+      // Use cached CIANN when it matches requested id (or no id specified).
+      const cachedMatchesRequest =
+        parsedData?.ciannId &&
+        (!requestedCiannId ||
+          String(parsedData.ciannId) === String(requestedCiannId));
+
+      if (cachedMatchesRequest) {
+        setCiannData(parsedData);
+        loadSyllabusImages(parsedData.ciannId);
+        fetchPrintData(parsedData);
+        return;
+      }
+
+      if (!requestedCiannId) {
+        setLoading(false);
+        setLoadError(
+          "No CIANN selected. Please choose one from Print CIANN cards.",
+        );
+        return;
+      }
+
+      // Fallback: fetch CIANN by ID so direct links still work.
+      try {
+        const response = await fetch(
+          `${config.cianns}/${encodeURIComponent(requestedCiannId)}`,
+          {
+            headers: {
+              ...TokenManager.getAuthHeader(),
+            },
+            credentials: "include",
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to load CIANN ${requestedCiannId}`);
+        }
+
+        const fetched = await response.json();
+        if (!fetched?.ciannId) {
+          throw new Error("CIANN data is incomplete");
+        }
+
+        localStorage.setItem("ciannData", JSON.stringify(fetched));
+        setCiannData(fetched);
+        loadSyllabusImages(fetched.ciannId);
+        fetchPrintData(fetched);
+      } catch (error) {
+        console.error("Failed to load CIANN for print:", error);
+        setLoading(false);
+        setLoadError(
+          "Unable to load selected CIANN. Please re-open from Print CIANN cards.",
+        );
+      }
+    };
+
+    hydrateAndFetch();
+  }, [searchParams]);
+
+  const loadSyllabusImages = (id) => {
+    const syllabusKey = `syllabusImages:${id}`;
+    const storedSyllabus = localStorage.getItem(syllabusKey);
+    if (!storedSyllabus) {
+      setSyllabusImages([]);
       return;
     }
 
     try {
-      const parsedData = JSON.parse(storedCiannData);
-      if (!parsedData?.ciannId) {
-        setLoading(false);
-        return;
+      const parsed = JSON.parse(storedSyllabus);
+      if (Array.isArray(parsed)) {
+        setSyllabusImages(parsed.filter(Boolean));
+      } else {
+        setSyllabusImages([]);
       }
-
-      setCiannData(parsedData);
-      const syllabusKey = `syllabusImages:${parsedData.ciannId}`;
-      const storedSyllabus = localStorage.getItem(syllabusKey);
-      if (storedSyllabus) {
-        try {
-          const parsed = JSON.parse(storedSyllabus);
-          if (Array.isArray(parsed)) {
-            setSyllabusImages(parsed.filter(Boolean));
-          }
-        } catch {
-          setSyllabusImages([]);
-        }
-      }
-      fetchPrintData(parsedData);
-    } catch (error) {
-      console.error("Failed to parse ciannData for printing:", error);
-      setLoading(false);
+    } catch {
+      setSyllabusImages([]);
     }
-  }, []);
+  };
 
   const fetchPrintData = async (data) => {
     const token = localStorage.getItem("token");
@@ -195,6 +273,10 @@ const PrintCiann = () => {
 
     try {
       const responses = await Promise.allSettled([
+        fetch(`${config.apiBaseUrl}/summary/${ciannId}`, {
+          headers: requestHeaders,
+          credentials: "include",
+        }),
         fetch(`${config.teachingPlan}/${ciannId}`, {
           headers: requestHeaders,
           credentials: "include",
@@ -256,6 +338,7 @@ const PrintCiann = () => {
       };
 
       const [
+        summaryPayload,
         teaching,
         lab,
         timetableSlots,
@@ -268,17 +351,18 @@ const PrintCiann = () => {
         web,
         moocs,
       ] = await Promise.all([
-        toJson(responses[0], []),
+        toJson(responses[0], { studentRecords: [] }),
         toJson(responses[1], []),
         toJson(responses[2], []),
-        toJson(responses[3], { chp: [] }),
-        toJson(responses[4], { experiments: [] }),
-        toJson(responses[5], []),
+        toJson(responses[3], []),
+        toJson(responses[4], { chp: [] }),
+        toJson(responses[5], { experiments: [] }),
         toJson(responses[6], []),
         toJson(responses[7], []),
         toJson(responses[8], []),
         toJson(responses[9], []),
         toJson(responses[10], []),
+        toJson(responses[11], []),
       ]);
 
       const slotMap = {};
@@ -301,8 +385,14 @@ const PrintCiann = () => {
       setBookResources(Array.isArray(books) ? books : []);
       setWebResources(Array.isArray(web) ? web : []);
       setMoocCourses(Array.isArray(moocs) ? moocs : []);
+      setStudentAttendanceRecords(
+        Array.isArray(summaryPayload?.studentRecords)
+          ? summaryPayload.studentRecords
+          : [],
+      );
     } catch (error) {
       console.error("Error fetching print CIANN data:", error);
+      setStudentAttendanceRecords([]);
     } finally {
       setLoading(false);
     }
@@ -365,11 +455,7 @@ const PrintCiann = () => {
     const found = labPlans.find((item) => Number(item.weekNo) === weekNo);
     const plans = Array.isArray(found?.plans) ? found.plans : [];
     if (plans.length > 0) return plans;
-    return [
-      { batch: "B1" },
-      { batch: "B2" },
-      { batch: "B3" },
-    ];
+    return [{ batch: "B1" }, { batch: "B2" }, { batch: "B3" }];
   };
 
   const renderTimeTableCell = (time, day, tIdx) => {
@@ -409,7 +495,13 @@ const PrintCiann = () => {
     return (
       <div className="ciann-print-empty">
         <h3>No CIANN selected</h3>
-        <p>Select a CIANN from Print CIANN cards first.</p>
+        <p>{loadError || "Select a CIANN from Print CIANN cards first."}</p>
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => window.history.back()}
+        >
+          Go back
+        </button>
       </div>
     );
   }
@@ -417,6 +509,20 @@ const PrintCiann = () => {
   return (
     <div className="ciann-print-page">
       <div className="ciann-print-toolbar no-print">
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => ciannData && fetchPrintData(ciannData)}
+          disabled={loading}
+        >
+          {loading ? "Refreshing..." : "Refresh Attendance"}
+        </button>
+        <button
+          className={`btn btn-outline-info ${separateAttendance ? "active" : ""}`}
+          onClick={() => setSeparateAttendance((s) => !s)}
+          title="Toggle separate theory/practical attendance tables"
+        >
+          {separateAttendance ? "Showing Separate Attendance" : "Show Separate Theory/Practical"}
+        </button>
         <button
           className="btn btn-outline-secondary"
           onClick={() => window.history.back()}
@@ -467,7 +573,9 @@ const PrintCiann = () => {
             <div className="diary-info-table">
               <div className="diary-row">
                 <span className="label">Name of Subject Teacher</span>
-                <span className="value">{localStorage.getItem("username") || "-"}</span>
+                <span className="value">
+                  {localStorage.getItem("username") || "-"}
+                </span>
               </div>
               <div className="diary-row">
                 <span className="label">Class & Div.</span>
@@ -666,7 +774,9 @@ const PrintCiann = () => {
                     const weekPlans = getLabPlansForWeek(weekNo);
                     return weekPlans.map((plan, rowIndex) => (
                       <tr key={`lp-${weekNo}-${rowIndex}`}>
-                        {rowIndex === 0 && <td rowSpan={weekPlans.length}>{weekNo}</td>}
+                        {rowIndex === 0 && (
+                          <td rowSpan={weekPlans.length}>{weekNo}</td>
+                        )}
                         <td>{plan?.exptNo || ""}</td>
                         <td>{plan?.exptName || ""}</td>
                         <td>{plan?.batch || ""}</td>
@@ -681,9 +791,137 @@ const PrintCiann = () => {
           ))}
         </section>
 
+        <section className="print-block">
+          <h2 className="section-title">7. Student Attendance Record</h2>
+          <p className="small-note">
+            Subject-wise attendance of students linked with this CIANN.
+            Data auto-refreshes from saved attendance entries.
+          </p>
+          <table className="print-grid attendance-record-table">
+            <thead>
+              <tr>
+                <th style={{ width: "70px" }}>Roll No</th>
+                <th style={{ width: "230px" }}>Student Name</th>
+                <th>Theory (P/T)</th>
+                <th>Practical (P/T)</th>
+                <th>Tutorial (P/T)</th>
+                <th>Overall (P/T)</th>
+                <th style={{ width: "90px" }}>Overall %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {studentAttendanceRecords.length > 0 ? (
+                studentAttendanceRecords.map((student, index) => (
+                  <tr key={`attendance-${student.rollNo}-${index}`}>
+                    <td>{student.rollNo || "-"}</td>
+                    <td className="student-name-cell">
+                      {student.studentName || "-"}
+                    </td>
+                    <td>
+                      {student.theory?.present || 0}/{student.theory?.total || 0}
+                    </td>
+                    <td>
+                      {student.practical?.present || 0}/
+                      {student.practical?.total || 0}
+                    </td>
+                    <td>
+                      {student.tutorial?.present || 0}/
+                      {student.tutorial?.total || 0}
+                    </td>
+                    <td>
+                      {student.overall?.present || 0}/{student.overall?.total || 0}
+                    </td>
+                    <td>{student.overall?.percentage || 0}%</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7}>No attendance records available yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+
         {loading && (
-          <p className="ciann-print-loading">Loading complete CIANN content...</p>
+          <p className="ciann-print-loading">
+            Loading complete CIANN content...
+          </p>
         )}
+
+          {/* Separate Attendance Section (theory/practical) - toggled by toolbar */}
+          {separateAttendance && (
+            <section className="print-block separate-attendance-section">
+              <h2 className="section-title">8. Separate Attendance Report</h2>
+              <p className="small-note">Two separate tables showing Theory and Practical attendance per student.</p>
+
+              <div className="two-col-grid" style={{ marginBottom: 18 }}>
+                <div>
+                  <h4>Theory Attendance</h4>
+                  <table className="print-grid attendance-record-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: "80px" }}>Roll</th>
+                        <th>Student</th>
+                        <th>Present</th>
+                        <th>Total</th>
+                        <th>%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {studentAttendanceRecords.length > 0 ? (
+                        studentAttendanceRecords.map((s, i) => (
+                          <tr key={`theory-${s.rollNo || i}`}>
+                            <td>{s.rollNo || "-"}</td>
+                            <td className="student-name-cell">{s.studentName || "-"}</td>
+                            <td>{s.theory?.present || 0}</td>
+                            <td>{s.theory?.total || 0}</td>
+                            <td>{s.theory?.percentage || 0}%</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5}>No records</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div>
+                  <h4>Practical Attendance</h4>
+                  <table className="print-grid attendance-record-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: "80px" }}>Roll</th>
+                        <th>Student</th>
+                        <th>Present</th>
+                        <th>Total</th>
+                        <th>%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {studentAttendanceRecords.length > 0 ? (
+                        studentAttendanceRecords.map((s, i) => (
+                          <tr key={`practical-${s.rollNo || i}`}>
+                            <td>{s.rollNo || "-"}</td>
+                            <td className="student-name-cell">{s.studentName || "-"}</td>
+                            <td>{s.practical?.present || 0}</td>
+                            <td>{s.practical?.total || 0}</td>
+                            <td>{s.practical?.percentage || 0}%</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5}>No records</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          )}
       </div>
     </div>
   );

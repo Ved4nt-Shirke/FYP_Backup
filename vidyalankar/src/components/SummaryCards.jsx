@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../basic/Header";
 import { config } from "../config/api";
 import { TokenManager } from "../utils/authUtils.js";
@@ -7,6 +8,7 @@ import "../components/EditCiann.css";
 const SummaryCards = () => {
   const [ciannDataList, setCiannDataList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCianns = async () => {
@@ -46,7 +48,20 @@ const SummaryCards = () => {
 
   const handleCardClick = (ciannData) => {
     localStorage.setItem("ciannData", JSON.stringify(ciannData));
-    window.open("/edit-ciann-print", "_blank");
+    const targetPath = `/edit-ciann-print?ciannId=${encodeURIComponent(ciannData?.ciannId || "")}`;
+    const printWindow = window.open(
+      targetPath,
+      "_blank",
+      "noopener,noreferrer",
+    );
+
+    // Fallback when browser blocks popups so click always works.
+    if (!printWindow) {
+      navigate(targetPath);
+      return;
+    }
+
+    printWindow.focus();
   };
 
   return (
@@ -63,7 +78,9 @@ const SummaryCards = () => {
 
       <div className="edit-ciann-page">
         <div className="edit-ciann-header">
-          <h2 className="text-center py-2 bg-success text-white">Print CIANN</h2>
+          <h2 className="text-center py-2 bg-success text-white">
+            Print CIANN
+          </h2>
         </div>
         <div className="ciann-card-container">
           {loading ? (
