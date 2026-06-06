@@ -77,7 +77,7 @@ const UpdateExperiment = () => {
   // ... (styles object remains the same) ...
   const styles = {
     container: {
-      marginLeft: "230px", // Adjust to avoid your sidebar
+      margin: "0 auto",
       padding: "30px",
       fontFamily: "Arial, sans-serif",
       maxWidth: "800px",

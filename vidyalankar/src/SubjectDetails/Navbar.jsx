@@ -16,6 +16,8 @@ const Navbar = () => {
       <NavLink to="/subject-details/recommendations">Recommendations</NavLink>
       <NavLink to="/subject-details/rubric">Rubric</NavLink>
       <NavLink to="/subject-details/resources">Resource</NavLink>
+      <NavLink to="/subject-details/chapters">Chapters</NavLink>
+      <NavLink to="/subject-details/experiments">Experiments</NavLink>
     </nav>
   );
 };

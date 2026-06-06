@@ -544,6 +544,10 @@ const AppContent = () => {
               <Route path="recommendations" element={<Recommendations />} />
               <Route path="resources" element={<Resources />} />
               <Route path="rubric" element={<Rubric />} />
+              <Route path="chapters" element={<ManageChapters2 />} />
+              <Route path="update-chapter" element={<UpdateChapter />} />
+              <Route path="experiments" element={<Course2 />} />
+              <Route path="edit-experiment" element={<Course4 />} />
               <Route index element={<Navigate to="lecture-schedule" />} />
             </Route>
             {/* Attendance Routes */}
@@ -785,14 +789,7 @@ const AppContent = () => {
               path="/pt-microproject/microproject/step-3"
               element={<Microproject />}
             />
-            {/* Course Management */}
-            <Route path="/chapters" element={<ManageChapters1 />} />
-            <Route path="/add-chapters" element={<ManageChapters2 />} />
-            <Route path="/update-chapter" element={<UpdateChapter />} />
-            <Route path="/experiment" element={<Course1 />} />
-            <Route path="/course2" element={<Course2 />} />
-            <Route path="/course3" element={<Course3 />} />
-            <Route path="/course4" element={<Course4 />} />
+
             {/* MSBTE Formats Routes */}
             <Route
               path="/msbte/fa-pr-k3/cianns"

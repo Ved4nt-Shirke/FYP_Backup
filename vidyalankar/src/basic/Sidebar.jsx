@@ -43,7 +43,6 @@ const Sidebar = ({
   const dropdownRefs = {
     ciann: useRef(null),
     attendance: useRef(null),
-    course: useRef(null),
     assessment: useRef(null),
     ct: useRef(null),
     ptMicroProject: useRef(null),
@@ -179,14 +178,6 @@ const Sidebar = ({
     }
   };
 
-  const handleCourseSelect = (option) => {
-    setOpenDropdown(null);
-    if (option === "Chapters") {
-      navigateAndClose("/chapters");
-    } else if (option === "Experiment") {
-      navigateAndClose("/experiment");
-    }
-  };
 
   const handleAssessmentSelect = (option) => {
     setOpenDropdown(null);
@@ -515,51 +506,6 @@ const Sidebar = ({
                       }}
                     >
                       <i className="bi bi-people-fill"></i> Practical Batches
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <li className="sidebar-item">
-              <div className="dropdown" ref={dropdownRefs.course}>
-                <button
-                  className={`btn dropdown-toggle dropdown-header w-100 text-start ${
-                    openDropdown === "course" ? "open" : ""
-                  }`}
-                  type="button"
-                  onClick={() => handleDropdownToggle("course")}
-                >
-                  <i className="bi bi-book"></i>
-                  <span>Course</span>
-                  <i className="bi bi-chevron-down dropdown-chevron"></i>
-                </button>
-                <ul
-                  className={`dropdown-menu sidebar-submenu ${
-                    openDropdown === "course" ? "show" : ""
-                  }`}
-                >
-                  <li>
-                    <a
-                      className="dropdown-item d-flex align-items-center gap-2"
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleCourseSelect("Chapters");
-                      }}
-                    >
-                      <i className="bi bi-list-ol"></i> Chapters
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="dropdown-item d-flex align-items-center gap-2"
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleCourseSelect("Experiment");
-                      }}
-                    >
-                      <i className="bi bi-flask"></i> Experiment
                     </a>
                   </li>
                 </ul>

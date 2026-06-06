@@ -135,7 +135,7 @@ const SubjectDetails = () => {
         </div>
         <div className="page-content">
           <main className="subject-details-main-content">
-            <Outlet context={{ unifiedData, updateUnifiedData, ciannId: ciannData.ciannId }} />
+            <Outlet context={{ unifiedData, updateUnifiedData, ciannId: ciannData.ciannId, ciannData }} />
           </main>
         </div>
       </div>
