@@ -1,21 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 
 export default function COsWithPOs() {
+  const { unifiedData, updateUnifiedData } = useOutletContext();
   const initialMatrix = () => Array.from({ length: 6 }, () => Array(12).fill("-"));
 
+  const rawMapping = unifiedData?.cosWithPOs;
+  const mappingData = Array.isArray(rawMapping) && rawMapping.length === 6
+    ? rawMapping
+    : initialMatrix();
+
   const [showForm, setShowForm] = useState(false);
-  const [mappingData, setMappingData] = useState(initialMatrix);
   const [formData, setFormData] = useState(initialMatrix);
 
+  // Lock scroll when modal is open
+  useEffect(() => {
+    if (showForm) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => (document.body.style.overflow = "auto");
+  }, [showForm]);
+
   const handleChange = (coIndex, poIndex, value) => {
-    const updated = [...formData];
-    updated[coIndex][poIndex] = value;
+    const updated = formData.map((row, rIdx) =>
+      row.map((val, cIdx) => (rIdx === coIndex && cIdx === poIndex ? value : val))
+    );
     setFormData(updated);
   };
 
   const handleSubmit = () => {
-    setMappingData([...formData]);
+    updateUnifiedData("cosWithPOs", formData);
     setShowForm(false);
+  };
+
+  const hasMappings = mappingData.some(row => row.some(val => val !== "-"));
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to reset all mappings?")) {
+      updateUnifiedData("cosWithPOs", initialMatrix());
+    }
   };
 
   return (
@@ -399,30 +424,40 @@ export default function COsWithPOs() {
       <div className="cos-pos-container">
         <div className="header-row">
           <h2 className="title">3.5 Mapping of COs with POs</h2>
-          <button className="button" onClick={() => {
-            setFormData(mappingData.map(row => [...row]));
-            setShowForm(true);
-          }}>Add Mapping</button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="button" onClick={() => {
+              setFormData(mappingData.map(row => [...row]));
+              setShowForm(true);
+            }}>
+              {hasMappings ? 'Edit Mapping' : 'Add Mapping'}
+            </button>
+            {hasMappings && (
+              <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={handleDelete}>
+                Delete
+              </button>
+            )}
+          </div>
         </div>
 
         <p className="note">(Mark: 3 - Strong, 2 - Moderate, 1 - Weak, Dash '-' - Not Mapped)</p>
 
         <div className="table-wrapper">
           <table>
-            {/* Define column widths for the main table */}
-            <col style={{ width: '8%' }} /> {/* COs column */}
-            <col style={{ width: '7.6%' }} /> {/* PO1 */}
-            <col style={{ width: '7.6%' }} /> {/* PO2 */}
-            <col style={{ width: '7.6%' }} /> {/* PO3 */}
-            <col style={{ width: '7.6%' }} /> {/* PO4 */}
-            <col style={{ width: '7.6%' }} /> {/* PO5 */}
-            <col style={{ width: '7.6%' }} /> {/* PO6 */}
-            <col style={{ width: '7.6%' }} /> {/* PO7 */}
-            <col style={{ width: '7.6%' }} /> {/* PO8 */}
-            <col style={{ width: '7.6%' }} /> {/* PO9 */}
-            <col style={{ width: '7.6%' }} /> {/* PO10 */}
-            <col style={{ width: '7.6%' }} /> {/* PO11 */}
-            <col style={{ width: '7.6%' }} /> {/* PO12 */}
+            <colgroup>
+              <col style={{ width: '8%' }} /> {/* COs column */}
+              <col style={{ width: '7.6%' }} /> {/* PO1 */}
+              <col style={{ width: '7.6%' }} /> {/* PO2 */}
+              <col style={{ width: '7.6%' }} /> {/* PO3 */}
+              <col style={{ width: '7.6%' }} /> {/* PO4 */}
+              <col style={{ width: '7.6%' }} /> {/* PO5 */}
+              <col style={{ width: '7.6%' }} /> {/* PO6 */}
+              <col style={{ width: '7.6%' }} /> {/* PO7 */}
+              <col style={{ width: '7.6%' }} /> {/* PO8 */}
+              <col style={{ width: '7.6%' }} /> {/* PO9 */}
+              <col style={{ width: '7.6%' }} /> {/* PO10 */}
+              <col style={{ width: '7.6%' }} /> {/* PO11 */}
+              <col style={{ width: '7.6%' }} /> {/* PO12 */}
+            </colgroup>
             <thead>
               <tr>
                 <th>COs</th>
@@ -456,20 +491,21 @@ export default function COsWithPOs() {
 
                 <div className="table-wrapper"> {/* This table-wrapper now only handles horizontal scroll */}
                   <table>
-                    {/* Define column widths for the modal table */}
-                    <col style={{ width: '8%' }} /> {/* COs column */}
-                    <col style={{ width: '7.6%' }} /> {/* PO1 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO2 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO3 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO4 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO5 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO6 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO7 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO8 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO9 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO10 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO11 */}
-                    <col style={{ width: '7.6%' }} /> {/* PO12 */}
+                    <colgroup>
+                      <col style={{ width: '8%' }} /> {/* COs column */}
+                      <col style={{ width: '7.6%' }} /> {/* PO1 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO2 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO3 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO4 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO5 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO6 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO7 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO8 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO9 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO10 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO11 */}
+                      <col style={{ width: '7.6%' }} /> {/* PO12 */}
+                    </colgroup>
                     <thead>
                       <tr>
                         <th>COs</th>

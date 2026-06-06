@@ -1,24 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 
 export default function COsWithPSOs() {
+  const { unifiedData, updateUnifiedData } = useOutletContext();
+
+  const rawMapping = unifiedData?.cosWithPSOs;
+  const mappingData = Array.isArray(rawMapping) && rawMapping.length === 6
+    ? rawMapping
+    : Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" }));
+
   const [showPSOForm, setShowPSOForm] = useState(false);
-  const [mappingData, setMappingData] = useState(
-    Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" })) // Corrected initialization
-  );
   const [formData, setFormData] = useState(
-    Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" })) // Separate state for form
+    Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" }))
   );
 
+  // Lock scroll when modal is open
+  useEffect(() => {
+    if (showPSOForm) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => (document.body.style.overflow = "auto");
+  }, [showPSOForm]);
+
   const handlePSOChange = (index, field, value) => {
-    const updated = [...formData];
-    updated[index] = { ...updated[index], [field]: value };
+    const updated = formData.map((row, idx) =>
+      idx === index ? { ...row, [field]: value } : row
+    );
     setFormData(updated);
   };
 
   const handlePSOSubmit = () => {
-    setMappingData(formData.map(row => ({ ...row }))); // Deep copy to update display
+    updateUnifiedData("cosWithPSOs", formData);
     setShowPSOForm(false);
   };
+
+  const hasMappings = mappingData.some(row => row.pso1 !== "-" || row.pso2 !== "-");
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to reset all mappings?")) {
+      updateUnifiedData("cosWithPSOs", Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" })));
+    }
+  };
+
 
   return (
     <div className="cos-psos-container">
@@ -335,12 +360,19 @@ export default function COsWithPSOs() {
 
       <div className="header-row">
         <h2 className="title">3.6 Mapping of COs with PSOs</h2>
-        <button className="button" onClick={() => {
-          setFormData(mappingData.map(row => ({ ...row }))); // Copy current data to form data
-          setShowPSOForm(true);
-        }}>
-          Add COs with PSOs Mapping
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="button" onClick={() => {
+            setFormData(mappingData.map(row => ({ ...row }))); // Copy current data to form data
+            setShowPSOForm(true);
+          }}>
+            {hasMappings ? 'Edit Mapping' : 'Add COs with PSOs Mapping'}
+          </button>
+          {hasMappings && (
+            <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={handleDelete}>
+              Delete
+            </button>
+          )}
+        </div>
       </div>
 
       <p className="instruction">

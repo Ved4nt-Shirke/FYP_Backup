@@ -4,12 +4,16 @@ import Navbar from "./Navbar";
 import SecondarySidebar from "../editCiann/SecondarySidebar";
 import "../editCiann/EditCiannModern.css";
 import "./SubjectDetails.css";
+import { unifiedSubjectDetailsApi } from "./api/subjectDetailsApi";
 
 const SubjectDetails = () => {
   const location = useLocation();
   const [ciannData, setCiannData] = useState(location.state?.ciannData || null);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false); // Start with false for mobile
+  
+  const [unifiedData, setUnifiedData] = useState(null);
+  const [loadingUnified, setLoadingUnified] = useState(true);
 
   useEffect(() => {
     console.log("Current path:", location.pathname);
@@ -56,8 +60,45 @@ const SubjectDetails = () => {
     }
   }, [location.pathname, ciannData]);
 
-  // Show loading state if no CIAAN data
-  if (!ciannData || !ciannData.ciannId) {
+  // Fetch unified subject details when ciannId is set
+  useEffect(() => {
+    if (ciannData && ciannData.ciannId) {
+      setLoadingUnified(true);
+      unifiedSubjectDetailsApi.get(ciannData.ciannId)
+        .then(data => {
+          setUnifiedData(data);
+          setLoadingUnified(false);
+        })
+        .catch(err => {
+          console.error("Error loading unified subject details:", err);
+          setLoadingUnified(false);
+        });
+    }
+  }, [ciannData?.ciannId]);
+
+  const updateUnifiedData = async (field, value) => {
+    if (!ciannData || !ciannData.ciannId) return;
+    try {
+      // Optimistic update
+      setUnifiedData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          [field]: value
+        };
+      });
+      // Save to backend
+      await unifiedSubjectDetailsApi.save(ciannData.ciannId, { [field]: value });
+    } catch (err) {
+      console.error("Failed to save unified subject details:", err);
+      // Reload on failure to ensure UI consistency
+      const freshData = await unifiedSubjectDetailsApi.get(ciannData.ciannId);
+      setUnifiedData(freshData);
+    }
+  };
+
+  // Show loading state if no CIAAN data or loading unified details
+  if (!ciannData || !ciannData.ciannId || loadingUnified) {
     return (
       <div
         style={{
@@ -70,8 +111,8 @@ const SubjectDetails = () => {
           height: "100vh",
         }}
       >
-        <h3>Loading CIAAN Data...</h3>
-        <p>Please wait while we load the CIAAN information.</p>
+        <h3>Loading CIAAN Data & Subject Details...</h3>
+        <p>Please wait while we load the course information.</p>
       </div>
     );
   }
@@ -81,13 +122,7 @@ const SubjectDetails = () => {
       {/* --- Left Column: Secondary Sidebar --- */}
       <div className="details-sidebar-column">
         <SecondarySidebar
-          ciannData={
-            ciannData ||
-            (() => {
-              const stored = sessionStorage.getItem("currentCiannData");
-              return stored ? JSON.parse(stored) : null;
-            })()
-          }
+          ciannData={ciannData}
           isSecondarySidebarVisible={isSecondarySidebarVisible}
           setIsSecondarySidebarVisible={setIsSecondarySidebarVisible}
         />
@@ -100,7 +135,7 @@ const SubjectDetails = () => {
         </div>
         <div className="page-content">
           <main className="subject-details-main-content">
-            <Outlet />
+            <Outlet context={{ unifiedData, updateUnifiedData, ciannId: ciannData.ciannId }} />
           </main>
         </div>
       </div>

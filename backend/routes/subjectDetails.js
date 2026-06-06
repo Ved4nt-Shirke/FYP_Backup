@@ -8,6 +8,29 @@ const MoocCourse = require("../models/MoocCourse");
 const SubjectObjective = require("../models/SubjectObjective");
 const WebResource = require("../models/WebResource");
 const KnowledgeMap = require("../models/KnowledgeMap");
+const CiannSubjectDetails = require("../models/CiannSubjectDetails");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+// Configure multer for knowledge maps
+const uploadsDir = path.join(__dirname, "../uploads/knowledge-maps");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage });
+
 
 // ==================== BOOK RESOURCES ====================
 
@@ -286,6 +309,53 @@ router.put("/knowledge-map/:id", async (req, res) => {
   } catch (error) {
     console.error("Error updating knowledge map:", error);
     res.status(400).json({ error: error.message });
+  }
+});
+
+// ==================== UNIFIED SUBJECT DETAILS ENDPOINTS ====================
+
+// Get unified subject details for a CIANN
+router.get("/unified/:ciannId", async (req, res) => {
+  try {
+    const { ciannId } = req.params;
+    let details = await CiannSubjectDetails.findOne({ ciannId: parseInt(ciannId) });
+    if (!details) {
+      details = new CiannSubjectDetails({ ciannId: parseInt(ciannId) });
+    }
+    res.json(details);
+  } catch (error) {
+    console.error("Error fetching unified subject details:", error);
+    res.status(500).json({ error: "Failed to fetch subject details" });
+  }
+});
+
+// Save/Update unified subject details for a CIANN
+router.post("/unified/:ciannId", async (req, res) => {
+  try {
+    const { ciannId } = req.params;
+    const updatedDetails = await CiannSubjectDetails.findOneAndUpdate(
+      { ciannId: parseInt(ciannId) },
+      { $set: req.body },
+      { new: true, upsert: true }
+    );
+    res.json(updatedDetails);
+  } catch (error) {
+    console.error("Error updating unified subject details:", error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Upload knowledge map image
+router.post("/knowledge-map/upload", upload.single("mapImage"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    const filePath = `/uploads/knowledge-maps/${req.file.filename}`;
+    res.json({ filePath });
+  } catch (error) {
+    console.error("Error uploading knowledge map image:", error);
+    res.status(500).json({ error: "Failed to upload image" });
   }
 });
 

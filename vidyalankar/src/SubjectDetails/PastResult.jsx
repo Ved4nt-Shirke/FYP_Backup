@@ -1,38 +1,71 @@
-import { useState, useRef, useEffect } from "react"; // Fixed: Changed '=>' to 'from'
+import React, { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 
-export default function App() { // Renamed to App for default export in Canvas
+export default function PastResult() {
+  const { unifiedData, updateUnifiedData } = useOutletContext();
   const [showResultForm, setShowResultForm] = useState(false);
-  const resultInputsRef = useRef([]);
-  const [results, setResults] = useState(null);
 
+  const defaultResults = {
+    faculty: ["", "", "", ""],
+    subjectPass: ["", "", "", ""],
+    subjectTopper: ["", "", "", ""],
+    overallPass: ["", "", "", ""]
+  };
+
+  const results = unifiedData?.pastResults || defaultResults;
+
+  const [formData, setFormData] = useState(defaultResults);
+
+  // Sync formData with results when form opens
   useEffect(() => {
-    if (showResultForm && resultInputsRef.current.length > 0) {
-      // Filter out null/undefined elements before focusing
-      const firstInput = resultInputsRef.current.find(input => input);
-      firstInput?.focus();
+    if (showResultForm) {
+      setFormData({
+        faculty: [...(results.faculty || ["", "", "", ""])],
+        subjectPass: [...(results.subjectPass || ["", "", "", ""])],
+        subjectTopper: [...(results.subjectTopper || ["", "", "", ""])],
+        overallPass: [...(results.overallPass || ["", "", "", ""])]
+      });
     }
+  }, [showResultForm, results]);
+
+  // Lock scroll when modal is open
+  useEffect(() => {
+    if (showResultForm) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => (document.body.style.overflow = "auto");
   }, [showResultForm]);
 
-  const handleSubmit = () => {
-    // Ensure all refs are properly assigned and values are collected
-    const inputValues = resultInputsRef.current.map(input => input?.value || "");
-
-    // Check if enough inputs are present before slicing
-    if (inputValues.length < 16) {
-      console.error("Not enough input values to process results.");
-      // Optionally, show an alert to the user
-      // alert("Please fill in all 16 fields before submitting.");
-      return;
-    }
-
-    setResults({
-      faculty: inputValues.slice(0, 4),
-      subjectPass: inputValues.slice(4, 8),
-      subjectTopper: inputValues.slice(8, 12),
-      overallPass: inputValues.slice(12, 16),
+  const handleInputChange = (field, index, value) => {
+    setFormData(prev => {
+      const arr = [...prev[field]];
+      arr[index] = value;
+      return {
+        ...prev,
+        [field]: arr
+      };
     });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    updateUnifiedData("pastResults", formData);
     setShowResultForm(false);
   };
+
+  const hasResults = results.faculty?.some(v => v) ||
+                     results.subjectPass?.some(v => v) ||
+                     results.subjectTopper?.some(v => v) ||
+                     results.overallPass?.some(v => v);
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete all past results?")) {
+      updateUnifiedData("pastResults", defaultResults);
+    }
+  };
+
 
   return (
     <>
@@ -412,16 +445,23 @@ export default function App() { // Renamed to App for default export in Canvas
         {/* Header Row */}
         <div className="header-row">
           <h2 className="title">3.8 Past Result - End Semester Examination (MSBTE)</h2>
-          <button
-            className="button"
-            onClick={() => setShowResultForm(true)}
-          >
-            Add Past Result
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              className="button"
+              onClick={() => setShowResultForm(true)}
+            >
+              {hasResults ? 'Edit Past Result' : 'Add Past Result'}
+            </button>
+            {hasResults && (
+              <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={handleDelete}>
+                Delete
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Main table display */}
-        <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}> {/* Added a scrollable container */}
+        <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
           <table>
             <thead>
               <tr>
@@ -433,40 +473,30 @@ export default function App() { // Renamed to App for default export in Canvas
               </tr>
             </thead>
             <tbody>
-              {results ? (
-                <>
-                  <tr>
-                    <td>Name of Faculty</td>
-                    {results.faculty.map((val, i) => (
-                      <td key={i}>{val}</td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td>Subject Passing %</td>
-                    {results.subjectPass.map((val, i) => (
-                      <td key={i}>{val}</td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td>Subject Topper</td>
-                    {results.subjectTopper.map((val, i) => (
-                      <td key={i}>{val}</td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td>Overall Passing %</td>
-                    {results.overallPass.map((val, i) => (
-                      <td key={i}>{val}</td>
-                    ))}
-                  </tr>
-                </>
-              ) : (
-                <tr>
-                  <td colSpan="5" style={{ textAlign: "center" }}>
-                    No Data Entered
-                  </td>
-                </tr>
-              )}
+              <tr>
+                <td>Name of Faculty</td>
+                {results.faculty.map((val, i) => (
+                  <td key={i}>{val || "-"}</td>
+                ))}
+              </tr>
+              <tr>
+                <td>Subject Passing %</td>
+                {results.subjectPass.map((val, i) => (
+                  <td key={i}>{val || "-"}</td>
+                ))}
+              </tr>
+              <tr>
+                <td>Subject Topper</td>
+                {results.subjectTopper.map((val, i) => (
+                  <td key={i}>{val || "-"}</td>
+                ))}
+              </tr>
+              <tr>
+                <td>Overall Passing %</td>
+                {results.overallPass.map((val, i) => (
+                  <td key={i}>{val || "-"}</td>
+                ))}
+              </tr>
             </tbody>
           </table>
         </div>
@@ -479,7 +509,7 @@ export default function App() { // Renamed to App for default export in Canvas
                 <button onClick={() => setShowResultForm(false)}>&times;</button>
               </div>
               <div className="modal-body">
-                <div className="resultForm">
+                <form onSubmit={handleSubmit} className="resultForm">
                   <div className="cyRow">
                     <div className="leftLabel">Name of Faculty</div>
                     {["CY-3", "CY-2", "CY-1", "CY (Target)"].map((label, idx) => (
@@ -488,34 +518,57 @@ export default function App() { // Renamed to App for default export in Canvas
                         <input
                           className="shortInput"
                           type="text"
-                          ref={(el) => (resultInputsRef.current[idx] = el)}
+                          value={formData.faculty[idx]}
+                          onChange={(e) => handleInputChange("faculty", idx, e.target.value)}
                         />
                       </div>
                     ))}
                   </div>
 
-                  {["Subject Passing Percentage", "Subject Topper", "Overall Passing Percentage"].map((rowLabel, rowIdx) => (
-                    <div className="cyRow" key={rowIdx}>
-                      <div className="leftLabel">{rowLabel}</div>
-                      {[0, 1, 2, 3].map((colIdx) => {
-                        const inputIndex = 4 + rowIdx * 4 + colIdx; // Correct index calculation
-                        return (
-                          <input
-                            key={colIdx}
-                            className="shortInput"
-                            type="text"
-                            ref={(el) => (resultInputsRef.current[inputIndex] = el)}
-                          />
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
+                  <div className="cyRow">
+                    <div className="leftLabel">Subject Passing Percentage</div>
+                    {[0, 1, 2, 3].map((idx) => (
+                      <input
+                        key={idx}
+                        className="shortInput"
+                        type="text"
+                        value={formData.subjectPass[idx]}
+                        onChange={(e) => handleInputChange("subjectPass", idx, e.target.value)}
+                      />
+                    ))}
+                  </div>
 
-                <div className="btnGroup">
-                  <button className="btn-save" onClick={handleSubmit}>Submit</button>
-                  <button className="btn-cancel" onClick={() => setShowResultForm(false)}>Cancel</button>
-                </div>
+                  <div className="cyRow">
+                    <div className="leftLabel">Subject Topper</div>
+                    {[0, 1, 2, 3].map((idx) => (
+                      <input
+                        key={idx}
+                        className="shortInput"
+                        type="text"
+                        value={formData.subjectTopper[idx]}
+                        onChange={(e) => handleInputChange("subjectTopper", idx, e.target.value)}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="cyRow">
+                    <div className="leftLabel">Overall Passing Percentage</div>
+                    {[0, 1, 2, 3].map((idx) => (
+                      <input
+                        key={idx}
+                        className="shortInput"
+                        type="text"
+                        value={formData.overallPass[idx]}
+                        onChange={(e) => handleInputChange("overallPass", idx, e.target.value)}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="btnGroup">
+                    <button type="submit" className="btn-save">Submit</button>
+                    <button type="button" className="btn-cancel" onClick={() => setShowResultForm(false)}>Cancel</button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>

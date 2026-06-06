@@ -173,3 +173,34 @@ export const handleApiError = (error, defaultMessage = 'An error occurred') => {
   console.error('API Error:', error);
   return error.message || defaultMessage;
 };
+
+// ==================== UNIFIED SUBJECT DETAILS API ====================
+
+export const unifiedSubjectDetailsApi = {
+  // Get all unified details for a CIANN
+  get: (ciannId) => apiCall(`${API_BASE_URL}/unified/${ciannId}`),
+  
+  // Save unified details for a CIANN
+  save: (ciannId, data) => apiCall(`${API_BASE_URL}/unified/${ciannId}`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  
+  // Upload knowledge map image
+  uploadKnowledgeMapImage: async (file) => {
+    const formData = new FormData();
+    formData.append('mapImage', file);
+    
+    const response = await fetch(`${API_BASE_URL}/knowledge-map/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+    
+    return response.json();
+  }
+};

@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 
 export default function Objectives() {
+  const { unifiedData, updateUnifiedData } = useOutletContext();
+  const submittedData = unifiedData?.objectives || { cognitive: "", affective: "", behavioral: "" };
+
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     cognitive: "",
@@ -8,11 +12,16 @@ export default function Objectives() {
     behavioral: ""
   });
 
-  const [submittedData, setSubmittedData] = useState({
-    cognitive: "",
-    affective: "",
-    behavioral: ""
-  });
+  // Prefill form when showForm changes
+  useEffect(() => {
+    if (showForm) {
+      setFormData({
+        cognitive: submittedData.cognitive || "",
+        affective: submittedData.affective || "",
+        behavioral: submittedData.behavioral || ""
+      });
+    }
+  }, [showForm, submittedData]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,8 +29,7 @@ export default function Objectives() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmittedData(formData);
-    setFormData({ cognitive: "", affective: "", behavioral: "" });
+    updateUnifiedData("objectives", formData);
     setShowForm(false);
   };
 
@@ -342,9 +350,20 @@ export default function Objectives() {
       <div className="objectives-container mb-5">
         <div className="header-row">
           <h2 className="title">3.4 Objectives of the Course</h2>
-          <button className="button" onClick={() => setShowForm(true)}>
-            Add Course Objectives
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="button" onClick={() => setShowForm(true)}>
+              {submittedData.cognitive ? 'Edit Objectives' : 'Add Course Objectives'}
+            </button>
+            {submittedData.cognitive && (
+              <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => {
+                if (window.confirm("Delete Course Objectives?")) {
+                  updateUnifiedData("objectives", { cognitive: "", affective: "", behavioral: "" });
+                }
+              }}>
+                Delete
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Added a scrollable container for the table */}

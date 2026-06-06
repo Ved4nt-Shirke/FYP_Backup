@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
-export default function RecommendedWebsiteResource() {
+export default function RecommendedWebsiteResource({ unifiedData, updateUnifiedData }) {
+  const rawData = unifiedData?.recommendedWebsiteResource || [];
+  const recommendedSites = rawData.map(item => ({
+    name: item.description || '',
+    url: item.link || '',
+    module: item.module || ''
+  }));
+
   const [form, setForm] = useState({ name: '', url: '', module: '' });
-  const [recommendedSites, setRecommendedSites] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null);
 
   // Effect to prevent body scroll when modal is open
   useEffect(() => {
@@ -21,10 +28,51 @@ export default function RecommendedWebsiteResource() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setRecommendedSites([...recommendedSites, form]);
+    let updatedSites;
+    if (editingIndex !== null) {
+      updatedSites = recommendedSites.map((item, idx) =>
+        idx === editingIndex ? { ...form } : item
+      );
+    } else {
+      updatedSites = [...recommendedSites, { ...form }];
+    }
+
+    const schemaData = updatedSites.map(item => ({
+      link: item.url,
+      description: item.name,
+      module: item.module
+    }));
+
+    updateUnifiedData("recommendedWebsiteResource", schemaData);
     setForm({ name: '', url: '', module: '' });
+    setEditingIndex(null);
     setShowModal(false);
   };
+
+  const handleDelete = (index) => {
+    if (window.confirm("Are you sure you want to delete this website?")) {
+      const updatedSites = recommendedSites.filter((_, idx) => idx !== index);
+      const schemaData = updatedSites.map(item => ({
+        link: item.url,
+        description: item.name,
+        module: item.module
+      }));
+      updateUnifiedData("recommendedWebsiteResource", schemaData);
+    }
+  };
+
+  const handleAddClick = () => {
+    setForm({ name: '', url: '', module: '' });
+    setEditingIndex(null);
+    setShowModal(true);
+  };
+
+  const handleEditClick = (index) => {
+    setForm({ ...recommendedSites[index] });
+    setEditingIndex(index);
+    setShowModal(true);
+  };
+
 
   return (
     <>
@@ -200,21 +248,23 @@ export default function RecommendedWebsiteResource() {
             <h2 className="title">Recommended Websites</h2>
             <p className="subtitle">3.13.4 List of YouTube, NPTEL, MOOC, or other relevant sites</p>
           </div>
-          <button className="button" onClick={() => setShowModal(true)}>Add Website</button>
+          <button className="button" onClick={handleAddClick}>Add Website</button>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
           <table>
             <colgroup>
-              <col style={{ width: '30%' }} />
-              <col style={{ width: '50%' }} />
-              <col style={{ width: '20%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '45%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
             </colgroup>
             <thead>
               <tr>
                 <th>Website Name</th>
                 <th>URL</th>
                 <th>Module No.</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -224,11 +274,15 @@ export default function RecommendedWebsiteResource() {
                     <td>{site.name}</td>
                     <td><a href={site.url} target="_blank" rel="noopener noreferrer">{site.url}</a></td>
                     <td>{site.module}</td>
+                    <td>
+                      <button className="button" style={{ padding: '6px 12px', fontSize: '12px', marginRight: '6px' }} onClick={() => handleEditClick(index)}>Edit</button>
+                      <button className="button-delete" style={{ padding: '6px 12px', fontSize: '12px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={() => handleDelete(index)}>Delete</button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3">No recommended websites have been added yet.</td>
+                  <td colSpan="4">No recommended websites have been added yet.</td>
                 </tr>
               )}
             </tbody>
@@ -240,7 +294,7 @@ export default function RecommendedWebsiteResource() {
             <div className="modal-box" onClick={(e) => e.stopPropagation()}>
               <form onSubmit={handleSubmit}>
                 <div className="modal-header">
-                  <span>Add Recommended Website</span>
+                  <span>{editingIndex !== null ? 'Edit Recommended Website' : 'Add Recommended Website'}</span>
                   <button type="button" className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
                 </div>
                 <div className="modal-body">
@@ -276,7 +330,7 @@ export default function RecommendedWebsiteResource() {
                 </div>
                 <div className="btn-row">
                   <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="btn-save">Add Website</button>
+                  <button type="submit" className="btn-save">{editingIndex !== null ? 'Save Changes' : 'Add Website'}</button>
                 </div>
               </form>
             </div>

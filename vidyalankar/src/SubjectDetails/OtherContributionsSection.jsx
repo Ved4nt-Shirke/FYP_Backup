@@ -1,10 +1,18 @@
 import { useState, useEffect } from "react";
 
-export default function OtherContributionsSection() {
+export default function OtherContributionsSection({ unifiedData, updateUnifiedData }) {
+  const submittedContrib = unifiedData?.otherContributionsSection || '';
+  const hasContrib = !!submittedContrib;
+
   const [showContribForm, setShowContribForm] = useState(false);
   const [contribText, setContribText] = useState('');
-  const [submittedContrib, setSubmittedContrib] = useState('');
-  const [contribBtn, setContribBtn] = useState('Add/Edit');
+
+  // Sync form when modal opens
+  useEffect(() => {
+    if (showContribForm) {
+      setContribText(submittedContrib);
+    }
+  }, [showContribForm, submittedContrib]);
 
   // Effect to prevent body scroll when modal is open
   useEffect(() => {
@@ -17,9 +25,16 @@ export default function OtherContributionsSection() {
   }, [showContribForm]);
 
   const handleSubmit = () => {
-    setSubmittedContrib(contribText);
+    updateUnifiedData("otherContributionsSection", contribText);
     setShowContribForm(false);
   };
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete other contributions?")) {
+      updateUnifiedData("otherContributionsSection", "");
+    }
+  };
+
 
   return (
     <>
@@ -151,13 +166,22 @@ export default function OtherContributionsSection() {
         }
       `}</style>
       
-      <div >
+      <div>
         <div className="header-row">
           <div className="title-container">
             <h2 className="title">Other Contributions</h2>
             <p className="subtitle">3.13.8 Any other recommendations or contributions</p>
           </div>
-          <button className="button" onClick={() => setShowContribForm(true)}>{contribBtn}</button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="button" onClick={() => setShowContribForm(true)}>
+              {hasContrib ? 'Edit' : 'Add/Edit'}
+            </button>
+            {hasContrib && (
+              <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={handleDelete}>
+                Delete
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="contribution-display">
@@ -170,7 +194,7 @@ export default function OtherContributionsSection() {
           <div className="modal-overlay">
             <div className="modal-box" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <span>Edit Recommendations / Contributions</span>
+                <span>{hasContrib ? 'Edit Recommendations / Contributions' : 'Add Recommendations / Contributions'}</span>
                 <button type="button" className="close-btn" onClick={() => setShowContribForm(false)}>&times;</button>
               </div>
               <div className="modal-body">

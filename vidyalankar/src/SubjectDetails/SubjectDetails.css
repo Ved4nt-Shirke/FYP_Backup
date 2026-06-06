@@ -1,10 +1,13 @@
 .subject-details-container {
-  --sd-surface: #ffffff;
-  --sd-border: #dbe5f2;
-  --sd-bg-1: #f7faff;
-  --sd-bg-2: #eef3fb;
-  --sd-text: #10223d;
-  --sd-muted: #4e607b;
+  --sd-primary: var(--primary-color, #28a745);
+  --sd-primary-hover: var(--primary-accent-dark, #218838);
+  --sd-primary-light: var(--primary-light, #eaf6ec);
+  --sd-surface: var(--card-bg, #ffffff);
+  --sd-border: var(--card-border, #dbe5f2);
+  --sd-bg-1: var(--dash-bg, #f7faff);
+  --sd-bg-2: var(--primary-light, #eef3fb);
+  --sd-text: var(--text-primary, #10223d);
+  --sd-muted: var(--text-secondary, #4e607b);
 
   display: flex;
   width: 100%;
@@ -157,4 +160,222 @@
   .page-content {
     padding: 10px;
   }
+}
+
+/* --- Global Theme & Visual Polish Overrides for Subject Details Subcomponents --- */
+
+/* 1. Header & Title Styling */
+.subject-details-container .header-row {
+  background-color: var(--sd-surface) !important;
+  border: 1px solid var(--sd-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04) !important;
+  padding: 16px 20px !important;
+  margin-bottom: 24px !important;
+}
+
+.subject-details-container .title,
+.subject-details-container .title-container .title,
+.subject-details-container .header-row .title {
+  color: var(--sd-primary) !important;
+  font-family: inherit !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+}
+
+.subject-details-container .subtitle,
+.subject-details-container .title-container .subtitle {
+  color: var(--sd-muted) !important;
+  font-family: inherit !important;
+}
+
+/* 2. Primary Buttons Styling */
+.subject-details-container button,
+.subject-details-container .button,
+.subject-details-container .button1,
+.subject-details-container .button2,
+.subject-details-container .popup-submit,
+.subject-details-container .btn-save,
+.subject-details-container button.button {
+  background-color: var(--sd-primary) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--sd-primary) !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  padding: 9px 18px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+  cursor: pointer !important;
+}
+
+.subject-details-container button:hover,
+.subject-details-container .button:hover,
+.subject-details-container .button1:hover,
+.subject-details-container .button2:hover,
+.subject-details-container .popup-submit:hover,
+.subject-details-container .btn-save:hover,
+.subject-details-container button.button:hover {
+  background-color: var(--sd-primary-hover) !important;
+  border-color: var(--sd-primary-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+}
+
+.subject-details-container button:active,
+.subject-details-container .button:active,
+.subject-details-container .button1:active,
+.subject-details-container .button2:active,
+.subject-details-container .btn-save:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 3. Cancel Buttons Styling */
+.subject-details-container .popup-cancel,
+.subject-details-container .btn-cancel {
+  background-color: var(--sd-muted) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--sd-muted) !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  padding: 9px 18px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+}
+
+.subject-details-container .popup-cancel:hover,
+.subject-details-container .btn-cancel:hover {
+  background-color: var(--sd-text) !important;
+  border-color: var(--sd-text) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* 4. Form Controls & Inputs Focusing */
+.subject-details-container input,
+.subject-details-container select,
+.subject-details-container textarea,
+.subject-details-container .form-control,
+.subject-details-container .form-select {
+  border: 1px solid var(--sd-border) !important;
+  background-color: var(--sd-surface) !important;
+  color: var(--sd-text) !important;
+  border-radius: 8px !important;
+  padding: 10px 12px !important;
+  font-family: inherit !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.subject-details-container input:focus,
+.subject-details-container select:focus,
+.subject-details-container textarea:focus,
+.subject-details-container .form-control:focus,
+.subject-details-container .form-select:focus {
+  outline: none !important;
+  border-color: var(--sd-primary) !important;
+  box-shadow: 0 0 0 3px var(--sd-primary-light) !important;
+}
+
+/* 5. Table Styling & Visual Polish */
+.subject-details-container table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  background-color: var(--sd-surface) !important;
+  border: 1px solid var(--sd-border) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
+}
+
+.subject-details-container table th {
+  background-color: var(--sd-primary-light) !important;
+  color: var(--sd-primary) !important;
+  font-weight: 600 !important;
+  border: 1px solid var(--sd-border) !important;
+  padding: 12px 10px !important;
+}
+
+.subject-details-container table td {
+  border: 1px solid var(--sd-border) !important;
+  padding: 12px 10px !important;
+  color: var(--sd-text) !important;
+}
+
+.subject-details-container table tbody tr:nth-child(even) {
+  background-color: var(--sd-bg-1) !important;
+}
+
+.subject-details-container table tbody tr:hover {
+  background-color: var(--sd-bg-2) !important;
+}
+
+/* 6. Modal & Overlay Layouts */
+.subject-details-container .modal-overlay,
+.subject-details-container .modal-backdrop,
+.subject-details-container .popup-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(16, 34, 61, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 1000 !important;
+}
+
+.subject-details-container .modal-box,
+.subject-details-container .popup {
+  background: var(--sd-surface) !important;
+  border: 1px solid var(--sd-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 50px rgba(16, 34, 61, 0.25) !important;
+  overflow: hidden !important;
+  animation: sdModalFadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+@keyframes sdModalFadeIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.subject-details-container .modal-header,
+.subject-details-container .popup-header {
+  background: var(--sd-surface) !important;
+  color: var(--sd-text) !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid var(--sd-border) !important;
+  padding: 16px 24px !important;
+}
+
+.subject-details-container .modal-body-content,
+.subject-details-container .modal-body {
+  padding: 24px !important;
+}
+
+.subject-details-container .btn-row,
+.subject-details-container .popup-button {
+  background: var(--sd-bg-1) !important;
+  border-top: 1px solid var(--sd-border) !important;
+  padding: 16px 24px !important;
+  margin-top: 20px !important;
+}
+
+.subject-details-container .close-btn,
+.subject-details-container .modal-header button {
+  background: transparent !important;
+  border: none !important;
+  color: var(--sd-muted) !important;
+  font-size: 24px !important;
+  cursor: pointer !important;
+  transition: color 0.2s, transform 0.2s !important;
+}
+
+.subject-details-container .close-btn:hover,
+.subject-details-container .modal-header button:hover {
+  color: var(--sd-primary) !important;
+  transform: rotate(90deg) !important;
 }

@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 
 function Recommendation() {
+  const { unifiedData, updateUnifiedData } = useOutletContext();
+
+  const recommendations = unifiedData?.recommendations || {
+    facultyRecommendation: { cy1: '', cy2: '', cy3: '' },
+    clusterRecommendation: { cmMeeting: '', imMeeting: '', cmDate: '', imDate: '' },
+    subjectTeacherRecommendations: []
+  };
+
+  const facultyRecommendation = recommendations.facultyRecommendation || { cy1: '', cy2: '', cy3: '' };
+  const clusterRecommendation = recommendations.clusterRecommendation || { cmMeeting: '', imMeeting: '', cmDate: '', imDate: '' };
+  const subjectTeacherRecommendations = recommendations.subjectTeacherRecommendations || [];
+
   const [showFacultyForm, setShowFacultyForm] = useState(false);
   const [facultyData, setFacultyData] = useState({ cy1: '', cy2: '', cy3: '' });
-  const [savedRecommendation, setSavedRecommendation] = useState({ cy1: '', cy2: '', cy3: '' });
 
   const [showClusterModel, setShowClusterModel] = useState(false);
   const [clusterData, setClusterData] = useState({
     cmMeeting: '', imMeeting: '', cmDate: '', imDate: ''
   });
-  const [savedClusterData, setSavedClusterData] = useState({
-    cmMeeting: '', imMeeting: '', cmDate: '', imDate: ''
-  });
 
   const [showSubjectTeacher, setShowSubjectTeacher] = useState(false);
-  const [recommendationEntries, setRecommendationEntries] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null);
 
   const [currentRecommendation, setCurrentRecommendation] = useState({
     unitNo: '', practicalExpt: '', nptel: false, guestLecture: false,
@@ -41,33 +50,123 @@ function Recommendation() {
   };
 
   const handleSubjectTeacherSubmit = () => {
-    setRecommendationEntries(prev => [...prev, { ...currentRecommendation }]);
+    let updated;
+    if (editingIndex !== null) {
+      updated = subjectTeacherRecommendations.map((entry, idx) =>
+        idx === editingIndex ? { ...currentRecommendation } : entry
+      );
+    } else {
+      updated = [...subjectTeacherRecommendations, { ...currentRecommendation }];
+    }
+
+    updateUnifiedData("recommendations", {
+      ...recommendations,
+      subjectTeacherRecommendations: updated
+    });
+
     setCurrentRecommendation({
       unitNo: '', practicalExpt: '', nptel: false, guestLecture: false,
       ivWorkshop: false, miniProject: false, valueAdded: false, other: '', details: ''
     });
+    setEditingIndex(null);
     setShowSubjectTeacher(false);
   };
 
+  const handleSubjectTeacherDelete = (index) => {
+    if (window.confirm("Are you sure you want to delete this recommendation?")) {
+      const updated = subjectTeacherRecommendations.filter((_, idx) => idx !== index);
+      updateUnifiedData("recommendations", {
+        ...recommendations,
+        subjectTeacherRecommendations: updated
+      });
+    }
+  };
+
+  const handleSubjectTeacherEditClick = (index) => {
+    setCurrentRecommendation({ ...subjectTeacherRecommendations[index] });
+    setEditingIndex(index);
+    setShowSubjectTeacher(true);
+  };
+
+  const handleAddSubjectTeacherClick = () => {
+    setCurrentRecommendation({
+      unitNo: '', practicalExpt: '', nptel: false, guestLecture: false,
+      ivWorkshop: false, miniProject: false, valueAdded: false, other: '', details: ''
+    });
+    setEditingIndex(null);
+    setShowSubjectTeacher(true);
+  };
+
   // Faculty Handlers
+  useEffect(() => {
+    if (showFacultyForm) {
+      setFacultyData({
+        cy1: facultyRecommendation.cy1 || '',
+        cy2: facultyRecommendation.cy2 || '',
+        cy3: facultyRecommendation.cy3 || ''
+      });
+    }
+  }, [showFacultyForm, facultyRecommendation]);
+
   const handleFacultyInput = (e) => {
     const { name, value } = e.target;
     setFacultyData(prev => ({ ...prev, [name]: value }));
   };
+
   const handleFacultySubmit = () => {
-    setSavedRecommendation(facultyData);
+    updateUnifiedData("recommendations", {
+      ...recommendations,
+      facultyRecommendation: facultyData
+    });
     setShowFacultyForm(false);
   };
 
+  const handleFacultyDelete = () => {
+    if (window.confirm("Are you sure you want to clear Faculty Recommendations?")) {
+      updateUnifiedData("recommendations", {
+        ...recommendations,
+        facultyRecommendation: { cy1: '', cy2: '', cy3: '' }
+      });
+    }
+  };
+
   // Cluster Handlers
+  useEffect(() => {
+    if (showClusterModel) {
+      setClusterData({
+        cmMeeting: clusterRecommendation.cmMeeting || '',
+        imMeeting: clusterRecommendation.imMeeting || '',
+        cmDate: clusterRecommendation.cmDate || '',
+        imDate: clusterRecommendation.imDate || ''
+      });
+    }
+  }, [showClusterModel, clusterRecommendation]);
+
   const handleClusterInput = (e) => {
     const { name, value } = e.target;
     setClusterData(prev => ({ ...prev, [name]: value }));
   };
+
   const handleSubmitCluster = () => {
-    setSavedClusterData(clusterData);
+    updateUnifiedData("recommendations", {
+      ...recommendations,
+      clusterRecommendation: clusterData
+    });
     setShowClusterModel(false);
   };
+
+  const handleClusterDelete = () => {
+    if (window.confirm("Are you sure you want to clear Cluster Recommendations?")) {
+      updateUnifiedData("recommendations", {
+        ...recommendations,
+        clusterRecommendation: { cmMeeting: '', imMeeting: '', cmDate: '', imDate: '' }
+      });
+    }
+  };
+
+  const hasFaculty = facultyRecommendation.cy1 || facultyRecommendation.cy2 || facultyRecommendation.cy3;
+  const hasCluster = clusterRecommendation.cmMeeting || clusterRecommendation.imMeeting || clusterRecommendation.cmDate || clusterRecommendation.imDate;
+
 
   return (
     <>
@@ -421,69 +520,93 @@ function Recommendation() {
         {/* Faculty Recommendation Section */}
         <div className="header-row">
           <h2 className="title">3.9 Recommendations of Faculty who have taught this Subject Earlier</h2>
-          <button className="button" onClick={() => setShowFacultyForm(true)}>Add Faculty Recommendation</button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="button" onClick={() => setShowFacultyForm(true)}>
+              {hasFaculty ? 'Edit Recommendation' : 'Add Faculty Recommendation'}
+            </button>
+            {hasFaculty && (
+              <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={handleFacultyDelete}>
+                Delete
+              </button>
+            )}
+          </div>
         </div>
         <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
           <table>
-            <thead>
+            <colgroup>
               <col style={{ width: '20%' }} />
               <col style={{ width: '80%' }} />
+            </colgroup>
+            <thead>
               <tr><th>Year</th><th>Recommendation</th></tr>
             </thead>
             <tbody>
-              <tr><td>CY-1</td><td>{savedRecommendation.cy1 || '-'}</td></tr>
-              <tr><td>CY-2</td><td>{savedRecommendation.cy2 || '-'}</td></tr>
-              <tr><td>CY-3</td><td>{savedRecommendation.cy3 || '-'}</td></tr>
+              <tr><td>CY-1</td><td>{facultyRecommendation.cy1 || '-'}</td></tr>
+              <tr><td>CY-2</td><td>{facultyRecommendation.cy2 || '-'}</td></tr>
+              <tr><td>CY-3</td><td>{facultyRecommendation.cy3 || '-'}</td></tr>
             </tbody>
           </table>
         </div>
 
         {/* Cluster Mentor Section */}
-        <div className="header-row"> {/* Re-using header-row for consistent spacing/styling */}
+        <div className="header-row">
           <h2 className="title">3.10 Recommendations of Cluster Mentor / Industry Mentor</h2>
-          <button className="button" onClick={() => setShowClusterModel(true)}>Add Cluster / Industry Mentor Recommendation</button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="button" onClick={() => setShowClusterModel(true)}>
+              {hasCluster ? 'Edit Recommendation' : 'Add Cluster / Industry Mentor Recommendation'}
+            </button>
+            {hasCluster && (
+              <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={handleClusterDelete}>
+                Delete
+              </button>
+            )}
+          </div>
         </div>
         <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
           <table>
-            <thead>
+            <colgroup>
               <col style={{ width: '30%' }} />
               <col style={{ width: '35%' }} />
               <col style={{ width: '35%' }} />
+            </colgroup>
+            <thead>
               <tr><th></th><th>Cluster Mentor</th><th>Industry Mentor</th></tr>
             </thead>
             <tbody>
-              <tr><td>Meeting with</td><td>{savedClusterData.cmMeeting || '-'}</td><td>{savedClusterData.imMeeting || '-'}</td></tr>
-              <tr><td>Meeting held on</td><td>{savedClusterData.cmDate || '-'}</td><td>{savedClusterData.imDate || '-'}</td></tr>
+              <tr><td>Meeting with</td><td>{clusterRecommendation.cmMeeting || '-'}</td><td>{clusterRecommendation.imMeeting || '-'}</td></tr>
+              <tr><td>Meeting held on</td><td>{clusterRecommendation.cmDate || '-'}</td><td>{clusterRecommendation.imDate || '-'}</td></tr>
             </tbody>
           </table>
         </div>
 
         {/* Subject Teacher Section */}
-        <div className="header-row"> {/* Re-using header-row for consistent spacing/styling */}
+        <div className="header-row">
           <h2 className="title">3.11 Final List of Recommendations</h2>
-          <button className="button" onClick={() => setShowSubjectTeacher(true)}>Add Subject Teacher Recommendation</button>
+          <button className="button" onClick={handleAddSubjectTeacherClick}>Add Subject Teacher Recommendation</button>
         </div>
         <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
           <table>
+            <colgroup>
+              <col style={{ width: '10%' }} />
+              <col style={{ width: '10%' }} />
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '8%' }} />
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '16%' }} />
+            </colgroup>
             <thead>
-              {/* Define column widths for the main table */}
-              <col style={{ width: '10%' }} /> {/* Unit No */}
-              <col style={{ width: '10%' }} /> {/* Practical */}
-              <col style={{ width: '8%' }} />  {/* NPTEL */}
-              <col style={{ width: '8%' }} />  {/* Guest */}
-              <col style={{ width: '8%' }} />  {/* IV */}
-              <col style={{ width: '8%' }} />  {/* Mini Project */}
-              <col style={{ width: '8%' }} />  {/* Value Added */}
-              <col style={{ width: '15%' }} /> {/* Other */}
-              <col style={{ width: '15%' }} /> {/* Details */}
               <tr>
                 <th>Unit No</th><th>Practical</th><th>NPTEL</th><th>Guest</th>
-                <th>IV</th><th>Mini Project</th><th>Value Added</th><th>Other</th><th>Details</th>
+                <th>IV</th><th>Mini Project</th><th>Value Added</th><th>Other</th><th>Details</th><th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {recommendationEntries.length > 0 ? (
-                recommendationEntries.map((entry, i) => (
+              {subjectTeacherRecommendations.length > 0 ? (
+                subjectTeacherRecommendations.map((entry, i) => (
                   <tr key={i}>
                     <td>{entry.unitNo || '-'}</td>
                     <td>{entry.practicalExpt || '-'}</td>
@@ -494,11 +617,15 @@ function Recommendation() {
                     <td><input type="checkbox" checked={entry.valueAdded} disabled className="form-check-input" /></td>
                     <td>{entry.other || '-'}</td>
                     <td>{entry.details || '-'}</td>
+                    <td>
+                      <button className="button" style={{ padding: '6px 12px', fontSize: '12px', marginRight: '6px' }} onClick={() => handleSubjectTeacherEditClick(i)}>Edit</button>
+                      <button className="button-delete" style={{ padding: '6px 12px', fontSize: '12px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={() => handleSubjectTeacherDelete(i)}>Delete</button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="9">No Recommendations added yet.</td>
+                  <td colSpan="10">No Recommendations added yet.</td>
                 </tr>
               )}
             </tbody>
@@ -508,17 +635,19 @@ function Recommendation() {
 
       {/* Modals */}
       {showFacultyForm && (
-        <div className="modal-backdrop"> {/* Renamed class */}
+        <div className="modal-backdrop">
           <div className="modal-box">
-            <div className="modal-header"> {/* Added header structure */}
-              <span>Add Faculty Recommendation</span>
+            <div className="modal-header">
+              <span>{hasFaculty ? 'Edit Faculty Recommendation' : 'Add Faculty Recommendation'}</span>
               <button className="close-btn" onClick={() => setShowFacultyForm(false)}>&times;</button>
             </div>
-            <div className="modal-body-content"> {/* Added for consistent padding */}
+            <div className="modal-body-content">
               <table>
-                <thead>
+                <colgroup>
                   <col style={{ width: '20%' }} />
                   <col style={{ width: '80%' }} />
+                </colgroup>
+                <thead>
                   <tr><th>Year</th><th>Recommendation</th></tr>
                 </thead>
                 <tbody>
@@ -527,9 +656,9 @@ function Recommendation() {
                   <tr><td>CY-3</td><td><input type="text" name='cy3' value={facultyData.cy3} onChange={handleFacultyInput} className="form-control" /></td></tr>
                 </tbody>
               </table>
-              <div className="btn-row"> {/* Renamed class */}
-                <button type="button" className="btn-save" onClick={handleFacultySubmit}>Save</button> {/* Renamed class and added type */}
-                <button type="button" className="btn-cancel" onClick={() => setShowFacultyForm(false)}>Cancel</button> {/* Renamed class and added type */}
+              <div className="btn-row">
+                <button type="button" className="btn-save" onClick={handleFacultySubmit}>Save</button>
+                <button type="button" className="btn-cancel" onClick={() => setShowFacultyForm(false)}>Cancel</button>
               </div>
             </div>
           </div>
@@ -537,18 +666,20 @@ function Recommendation() {
       )}
 
       {showClusterModel && (
-        <div className="modal-backdrop"> {/* Renamed class */}
+        <div className="modal-backdrop">
           <div className="modal-box">
-            <div className="modal-header"> {/* Added header structure */}
-              <span>Add Cluster / Industry Mentor Recommendation</span>
+            <div className="modal-header">
+              <span>{hasCluster ? 'Edit Cluster / Industry Mentor Recommendation' : 'Add Cluster / Industry Mentor Recommendation'}</span>
               <button className="close-btn" onClick={() => setShowClusterModel(false)}>&times;</button>
             </div>
-            <div className="modal-body-content"> {/* Added for consistent padding */}
+            <div className="modal-body-content">
               <table>
-                <thead>
+                <colgroup>
                   <col style={{ width: '30%' }} />
                   <col style={{ width: '35%' }} />
                   <col style={{ width: '35%' }} />
+                </colgroup>
+                <thead>
                   <tr><th></th><th>Cluster Mentor</th><th>Industry Mentor</th></tr>
                 </thead>
                 <tbody>
@@ -564,9 +695,9 @@ function Recommendation() {
                   </tr>
                 </tbody>
               </table>
-              <div className="btn-row"> {/* Renamed class */}
-                <button type="button" className="btn-save" onClick={handleSubmitCluster}>Save</button> {/* Renamed class and added type */}
-                <button type="button" className="btn-cancel" onClick={() => setShowClusterModel(false)}>Cancel</button> {/* Renamed class and added type */}
+              <div className="btn-row">
+                <button type="button" className="btn-save" onClick={handleSubmitCluster}>Save</button>
+                <button type="button" className="btn-cancel" onClick={() => setShowClusterModel(false)}>Cancel</button>
               </div>
             </div>
           </div>
@@ -574,25 +705,27 @@ function Recommendation() {
       )}
 
       {showSubjectTeacher && (
-        <div className="modal-backdrop"> {/* Renamed class */}
+        <div className="modal-backdrop">
           <div className="modal-box">
-            <div className="modal-header"> {/* Added header structure */}
-              <span>Add Subject Teacher Recommendation</span>
+            <div className="modal-header">
+              <span>{editingIndex !== null ? 'Edit Subject Teacher Recommendation' : 'Add Subject Teacher Recommendation'}</span>
               <button className="close-btn" onClick={() => setShowSubjectTeacher(false)}>&times;</button>
             </div>
-            <div className="modal-body-content"> {/* Added for consistent padding */}
-              <div className="table-wrapper" style={{ maxHeight: 'calc(70vh - 100px)' }}> {/* Added wrapper for scroll */}
-                <table> {/* Removed recommendation-table class, using generic table styles */}
+            <div className="modal-body-content">
+              <div className="table-wrapper" style={{ maxHeight: 'calc(70vh - 100px)' }}>
+                <table>
+                  <colgroup>
+                    <col style={{ width: '10%' }} />
+                    <col style={{ width: '10%' }} />
+                    <col style={{ width: '8%' }} />
+                    <col style={{ width: '8%' }} />
+                    <col style={{ width: '8%' }} />
+                    <col style={{ width: '8%' }} />
+                    <col style={{ width: '8%' }} />
+                    <col style={{ width: '15%' }} />
+                    <col style={{ width: '15%' }} />
+                  </colgroup>
                   <thead>
-                    <col style={{ width: '10%' }} />
-                    <col style={{ width: '10%' }} />
-                    <col style={{ width: '8%' }} />
-                    <col style={{ width: '8%' }} />
-                    <col style={{ width: '8%' }} />
-                    <col style={{ width: '8%' }} />
-                    <col style={{ width: '8%' }} />
-                    <col style={{ width: '15%' }} />
-                    <col style={{ width: '15%' }} />
                     <tr>
                       <th>Unit No</th><th>Practical</th><th>NPTEL</th><th>Guest</th>
                       <th>IV/Workshop</th><th>Mini Project</th><th>Value Added</th><th>Other</th><th>Details</th>
@@ -613,9 +746,9 @@ function Recommendation() {
                   </tbody>
                 </table>
               </div>
-              <div className="btn-row"> {/* Renamed class */}
-                <button type="button" className="btn-save" onClick={handleSubjectTeacherSubmit}>Save</button> {/* Renamed class and added type */}
-                <button type="button" className="btn-cancel" onClick={() => setShowSubjectTeacher(false)}>Cancel</button> {/* Renamed class and added type */}
+              <div className="btn-row">
+                <button type="button" className="btn-save" onClick={handleSubjectTeacherSubmit}>Save</button>
+                <button type="button" className="btn-cancel" onClick={() => setShowSubjectTeacher(false)}>Cancel</button>
               </div>
             </div>
           </div>
