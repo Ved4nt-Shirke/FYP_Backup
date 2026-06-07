@@ -1,0 +1,404 @@
+/* ViewAssessment.css */
+
+/* Page wrapper for centering - fixed for sidebar layout */
+.view-assessment-page-wrapper {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 120px);
+  position: relative;
+  z-index: 1;
+}
+
+/* Main container - fixed for sidebar layout */
+.view-assessment-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+/* Content area */
+.assessment-content {
+  position: relative;
+  z-index: 1;
+  padding: 0;
+}
+
+/* Header card styling */
+.assessment-header-card {
+  border-radius: 0;
+  border: none;
+  margin-bottom: 0;
+  box-shadow: none;
+}
+
+/* Table wrapper */
+.assessment-table-wrapper {
+  position: relative;
+  z-index: 1;
+  background: white;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+}
+
+/* Table responsive container */
+.assessment-table-responsive {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 250px);
+}
+
+/* Compact table styling */
+.assessment-table {
+  position: relative;
+  margin-bottom: 0;
+  background: white;
+  font-size: 0.85rem;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.assessment-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background-color: #28a745 !important;
+  color: white;
+  padding: 8px 6px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  border: 1px solid #dee2e6;
+}
+
+.assessment-table tbody td {
+  padding: 6px 4px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #dee2e6;
+  font-size: 0.8rem;
+}
+
+.assessment-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Roll number column styling */
+.roll-no-header,
+.roll-no-cell {
+  background-color: #28a745 !important;
+  color: white !important;
+  font-weight: bold;
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* Student name column styling */
+.student-name-header,
+.student-name-cell {
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
+  text-align: left !important;
+  padding-left: 12px !important;
+}
+
+.student-name-header {
+  background-color: #28a745 !important;
+  color: white !important;
+}
+
+.student-name-cell {
+  font-weight: 500;
+}
+
+/* Experiment columns */
+.assessment-table th:not(.roll-no-header):not(.student-name-header):not(.total-header) {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* Total column */
+.total-header,
+.total-cell {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+  background-color: #28a745 !important;
+  color: white !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .view-assessment-page-wrapper {
+    margin-left: 0; /* Remove sidebar margin on mobile */
+    padding: 10px;
+  }
+  
+  .view-assessment-container {
+    max-width: 100%;
+  }
+  
+  .assessment-table-responsive {
+    max-height: calc(100vh - 200px);
+  }
+  
+  .assessment-table {
+    font-size: 0.75rem;
+  }
+  
+  .assessment-table thead th {
+    padding: 6px 4px;
+    font-size: 0.7rem;
+  }
+  
+  .assessment-table tbody td {
+    padding: 4px 2px;
+    font-size: 0.7rem;
+  }
+}
+
+/* Print Styles */
+@media print, (min-width: 0) and (max-width: 99999px) {
+  body.printing .print-section,
+  body.printing .no-print {
+    display: none !important;
+  }
+}
+
+@media print {
+  /* Show print-only content and hide screen content */
+  .print-only-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: white !important;
+    color: black !important;
+    padding: 15px !important;
+  }
+  
+  .view-assessment-container {
+    display: none !important;
+  }
+  
+  /* Hide elements that shouldn't be printed */
+  .print-section,
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Hide specific header/footer components but not all headers */
+  .basic-header,
+  .basic-footer,
+  .sidebar,
+  .main-content-wrapper > header,
+  .main-content-wrapper > footer {
+    display: none !important;
+  }
+  
+  /* Reset body and html for print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  body, html {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    font-size: 12pt !important;
+  }
+  
+  /* Ensure main content is visible */
+  .app-container,
+  .main-content-wrapper,
+  .scrollable-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    width: 100% !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Main container adjustments */
+  .view-assessment-container {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 15px !important;
+    background: white !important;
+    width: 100% !important;
+    max-width: none !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Header styling for print */
+  .assessment-header {
+    text-align: center;
+    margin-bottom: 20px;
+    page-break-inside: avoid;
+    background: white !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .course-diary-title h1 {
+    color: #000 !important;
+    font-size: 18pt !important;
+    margin: 0 0 10px 0 !important;
+    font-weight: bold !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+
+  
+  .table-title {
+    color: #000 !important;
+    font-size: 14pt !important;
+    margin: 10px 0 !important;
+    text-align: center;
+  }
+  
+  /* CIAAN info styling */
+  .ciaan-info {
+    background: #f8f9fa !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+    padding: 10px !important;
+    margin-bottom: 15px !important;
+    page-break-inside: avoid;
+    font-size: 10pt !important;
+  }
+  
+  /* Table container */
+  .assessment-table-container {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .assessment-table-responsive {
+    overflow: visible !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Table styling */
+  .assessment-table {
+    width: 100% !important;
+    font-size: 10pt !important;
+    border-collapse: collapse !important;
+    border: 2px solid #000 !important;
+    background: white !important;
+    margin: 0 !important;
+    display: table !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .assessment-table thead th {
+    background: #e9ecef !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+    padding: 8px 4px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    font-size: 9pt !important;
+  }
+  
+  .assessment-table tbody td {
+    border: 1px solid #000 !important;
+    padding: 6px 4px !important;
+    background: white !important;
+    color: #000 !important;
+    text-align: center !important;
+    font-size: 9pt !important;
+  }
+  
+  /* Specific column styling for print */
+  .roll-no-header,
+  .student-name-header {
+    background: #d4edda !important;
+    color: #000 !important;
+  }
+  
+  .student-name-cell {
+    text-align: left !important;
+    padding-left: 8px !important;
+  }
+  
+  .total-header, .total-cell {
+    background: #d4edda !important;
+    color: #000 !important;
+    font-weight: bold !important;
+  }
+  
+  /* Remove hover effects for print */
+  .assessment-table tbody tr:hover {
+    background-color: white !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Page break controls */
+  .assessment-table {
+    page-break-inside: auto;
+  }
+  
+  .assessment-table thead {
+    display: table-header-group;
+  }
+  
+  .assessment-table tbody tr {
+    page-break-inside: avoid;
+  }
+}
+
+/* For larger screens, ensure proper spacing */
+@media (min-width: 769px) {
+  .view-assessment-page-wrapper {
+    margin-left: 220px; /* Sidebar width */
+  }
+}
+
+/* Print styles */
+@media print {
+  .view-assessment-page-wrapper {
+    background: white;
+    padding: 0;
+  }
+  
+  .view-assessment-container {
+    box-shadow: none;
+    border-radius: 0;
+    max-width: 100%;
+  }
+  
+  .assessment-table-responsive {
+    max-height: none;
+    overflow: visible;
+  }
+}

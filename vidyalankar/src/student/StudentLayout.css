@@ -1,0 +1,391 @@
+.student-dashboard {
+  --student-primary: var(--primary-accent, #2563eb);
+  --student-primary-dark: var(--primary-accent-dark, #1d4ed8);
+  --student-primary-light: var(--primary-accent-light, #eff6ff);
+  --student-bg: var(--dash-bg, #f8fafc);
+  --student-surface: var(--card-bg, #ffffff);
+  --student-border: var(--border-color, #dbe5f1);
+  --student-text: var(--text-main, #0f172a);
+  --student-muted: var(--text-muted, #64748b);
+  --student-on-primary: var(--text-on-primary, #ffffff);
+
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--student-primary-light) 38%, #ffffff 62%) 0%,
+    #f8fafc 100%
+  );
+}
+
+.student-sidebar {
+  width: 270px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1200;
+  overflow-y: auto;
+  background: linear-gradient(
+    180deg,
+    var(--student-primary-dark) 0%,
+    color-mix(in srgb, var(--student-primary-dark) 80%, #000000 20%) 100%
+  );
+  border-right: 1px solid color-mix(in srgb, var(--student-primary) 32%, #ffffff 68%);
+  box-shadow: 0 20px 36px color-mix(in srgb, var(--student-primary-dark) 42%, #000000 58%);
+}
+
+.sidebar-header {
+  padding: 22px 16px;
+  border-bottom: 1px solid color-mix(in srgb, #ffffff 18%, transparent);
+}
+
+.student-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.student-brand > div {
+  min-width: 0;
+}
+
+.sidebar-title {
+  margin: 0;
+  color: var(--student-on-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-brand-subtitle {
+  margin: 2px 0 0;
+  color: color-mix(in srgb, #ffffff 78%, transparent);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.student-brand-logo,
+.student-brand-fallback,
+.student-header-logo,
+.student-header-fallback {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid color-mix(in srgb, #ffffff 45%, transparent);
+}
+
+.student-brand-fallback,
+.student-header-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.student-brand-fallback {
+  background: color-mix(in srgb, #ffffff 16%, transparent);
+  color: var(--student-on-primary);
+}
+
+.sidebar-menu {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.sidebar-item {
+  border: none;
+}
+
+.menu-item,
+.dropdown-toggle {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: color-mix(in srgb, #ffffff 86%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.menu-item i,
+.dropdown-toggle i {
+  margin-right: 0;
+  width: 20px;
+  text-align: center;
+  font-size: 0.98rem;
+}
+
+.dropdown-toggle {
+  justify-content: space-between;
+}
+
+.dropdown-toggle span {
+  flex: 1;
+}
+
+.menu-item:hover,
+.dropdown-toggle:hover,
+.dropdown-item:hover {
+  background: color-mix(in srgb, var(--student-primary) 26%, transparent);
+  color: var(--student-on-primary);
+  border-color: color-mix(in srgb, #ffffff 26%, transparent);
+}
+
+.menu-item.active,
+.dropdown-toggle.active,
+.dropdown-item.active {
+  background: linear-gradient(
+    135deg,
+    var(--student-primary) 0%,
+    color-mix(in srgb, var(--student-primary-dark) 85%, #0f172a 15%) 100%
+  );
+  color: var(--student-on-primary);
+  border-color: color-mix(in srgb, #ffffff 42%, transparent);
+  box-shadow: 0 10px 18px color-mix(in srgb, var(--student-primary) 34%, transparent);
+}
+
+.dropdown-menu {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 6px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #000000 18%, transparent);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: color-mix(in srgb, #ffffff 82%, transparent);
+  border: 1px solid transparent;
+  font-size: 0.86rem;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item i {
+  width: 18px;
+  text-align: center;
+}
+
+.student-main-content {
+  flex: 1;
+  margin-left: 270px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.student-header {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  min-height: 62px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(
+    135deg,
+    var(--student-surface) 0%,
+    color-mix(in srgb, var(--student-primary-light) 34%, #ffffff 66%) 100%
+  );
+  border-bottom: 1px solid var(--student-border);
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.08);
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.student-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.student-header-brand h1 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--student-text);
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-header-fallback {
+  background: color-mix(in srgb, var(--student-primary-light) 75%, #ffffff 25%);
+  color: var(--student-primary-dark);
+  border-color: color-mix(in srgb, var(--student-primary) 40%, #ffffff 60%);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--student-text);
+}
+
+.college-info {
+  font-size: 0.72rem;
+  color: var(--student-muted);
+}
+
+.mobile-menu-toggle {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--student-border);
+  background: var(--student-surface);
+  color: var(--student-text);
+  cursor: pointer;
+  font-size: 1.1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-menu-toggle:hover {
+  background: color-mix(in srgb, var(--student-primary-light) 60%, #ffffff 40%);
+}
+
+.logout-btn {
+  min-height: 36px;
+  border: 1px solid color-mix(in srgb, var(--danger-color, #ef4444) 40%, #ffffff 60%);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger-color, #ef4444) 14%, #ffffff 86%);
+  color: var(--danger-color, #b91c1c);
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: color-mix(in srgb, var(--danger-color, #ef4444) 22%, #ffffff 78%);
+}
+
+.student-page-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.mobile-sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .student-sidebar {
+    width: 250px;
+  }
+
+  .student-main-content {
+    margin-left: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-sidebar {
+    transform: translateX(-104%);
+    transition: transform 0.25s ease;
+    width: min(84vw, 300px);
+  }
+
+  .student-sidebar.mobile-visible {
+    transform: translateX(0);
+  }
+
+  .mobile-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: color-mix(in srgb, #0f172a 52%, transparent);
+    z-index: 1190;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    display: block;
+  }
+
+  .mobile-sidebar-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .student-main-content {
+    margin-left: 0;
+  }
+
+  .mobile-menu-toggle {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .student-header {
+    padding: 10px 12px;
+  }
+
+  .student-header-brand h1 {
+    font-size: 0.9rem;
+  }
+
+  .student-page-content {
+    padding: 14px;
+  }
+
+  .logout-btn {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .logout-btn span {
+    display: none;
+  }
+}

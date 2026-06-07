@@ -1,0 +1,538 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap");
+
+:root {
+  --header-height: 60px;
+  --sidebar-width: 240px; /* Updated to match AdminSidebar width */
+  --page-bg: #f8f9fa;
+  --surface-color: #ffffff;
+  --border-color: #dee2e6;
+  --transition-speed: 0.3s;
+  /* Default theme colors (VP - Green) */
+  --app-header-bg: #2e7d32;
+  --primary-accent: #10b981;
+  --primary-accent-dark: #059669;
+}
+
+/* Global palette-aware button/text helpers (keeps superadmin colors intact) */
+button.btn-primary,
+.btn-primary {
+  color: var(--text-on-primary, #ffffff) !important;
+  background: var(--primary-accent, #10b981) !important;
+}
+
+button.btn-primary:hover,
+.btn-primary:hover {
+  background: var(--primary-accent-dark, #059669) !important;
+  color: var(--text-on-primary, #ffffff) !important;
+}
+
+.btn-outline,
+button.btn-outline {
+  color: var(--primary-accent, #10b981) !important;
+  border-color: var(--primary-accent, #10b981) !important;
+}
+
+.btn-danger,
+button.btn-danger {
+  color: var(--text-on-primary, #ffffff) !important;
+}
+
+.btn-warning,
+button.btn-warning,
+.badge-warning {
+  color: var(--text-on-primary, #ffffff) !important;
+}
+
+body {
+  margin: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  background-color: var(--page-bg);
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Attendance Design System: shared font + unified card/hero polish */
+.ats-page,
+.sah-page,
+.attendance-main-content,
+.theory-page,
+.practical-page,
+.ea1-page,
+.ea2-page,
+.eia-page,
+.edit-practical-attendance-container,
+.edit-practical-attendance-page-container,
+.edit-attendance-container {
+  font-family: "Nunito Sans", "Segoe UI", sans-serif !important;
+}
+
+.ats-hero,
+.sah-header,
+.ea1-hero,
+.ea2-hero,
+.eia-hero,
+.theory-attendance-container,
+.theory-card,
+.practical-card,
+.record-details-card,
+.edit-practical-attendance-card,
+.eia-form,
+.eia-context-card,
+.ea2-record-card,
+.ea1-card,
+.ats-card,
+.sah-card,
+.form-box {
+  border-radius: 16px !important;
+  border-color: #d7e5f8 !important;
+  box-shadow: 0 10px 24px rgba(18, 43, 82, 0.08) !important;
+}
+
+.ats-hero h2,
+.sah-header h1,
+.ea1-hero-title,
+.ea2-hero-title,
+.eia-hero-title,
+.theory-title,
+.practical-title,
+.page-title,
+.record-title,
+.edit-practical-attendance-heading {
+  letter-spacing: -0.2px;
+  font-weight: 800 !important;
+}
+
+/* Allow overflow for mobile to show sidebars */
+@media (max-width: 768px) {
+  body {
+    overflow: visible !important;
+  }
+
+  /* Ensure secondary sidebar is always visible when active */
+  .secondary-sidebar.visible {
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 9999 !important;
+    pointer-events: auto !important;
+  }
+}
+
+.app-container {
+  display: flex;
+  min-height: 100vh; /* Allow content to grow beyond viewport */
+}
+
+.main-content-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  /* Allow horizontal overflow so wide grids (like CIANN cards) are visible */
+  overflow-y: hidden;
+  overflow-x: visible;
+  transition: margin-left var(--transition-speed) ease;
+  margin-left: calc(var(--sidebar-width) + 1rem); /* Add 1rem gap */
+  margin-top: 60px; /* Add margin to account for fixed navbar */
+}
+
+.superadmin-page .main-content-wrapper {
+  margin-top: 0; /* No top margin for superadmin as navbar is outside wrapper */
+  padding-top: 112px; /* Add padding to account for fixed navbar + tabs */
+  overflow-x: hidden;
+  height: 100vh;
+}
+
+/* Scrolls only the content between Header and Footer */
+.content-area {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  padding-left: 2rem;
+  box-sizing: border-box;
+}
+
+/* Scrollable content wrapper for main app content */
+.scrollable-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  height: calc(100vh - var(--header-height));
+  box-sizing: border-box;
+  padding-top: 0; /* Remove default padding */
+}
+
+/* Adjust for superadmin navbar */
+.superadmin-page .scrollable-content {
+  height: calc(
+    100vh - 112px
+  ); /* Fit remaining viewport below superadmin header */
+  overflow-x: hidden;
+  padding-bottom: 20px;
+}
+
+/* Admin page specific styles with improved spacing */
+.admin-page .main-content-wrapper {
+  margin-top: 60px; /* Account for fixed admin header */
+  padding-top: 0;
+  /* Add gap between sidebar and main content */
+  margin-left: calc(var(--sidebar-width, 280px) + 1rem);
+  transition: margin-left var(--transition-speed) ease;
+}
+
+.admin-page.sidebar-collapsed .main-content-wrapper {
+  margin-left: 0; /* Remove margin when sidebar is collapsed */
+}
+
+.admin-page .scrollable-content {
+  padding-top: 0;
+  padding-bottom: 220px;
+  overflow-y: auto;
+  height: calc(100vh - 60px);
+  padding-left: 2rem;
+}
+
+.admin-page.admin-dashboard-page .scrollable-content {
+  overflow-y: visible;
+  height: auto;
+}
+
+/* Office page specific styles */
+.office-page .main-content-wrapper {
+  /* margin-top: 70px; Account for fixed office header height */
+  padding-top: 0;
+  margin-top: 0px;
+}
+
+.office-page .scrollable-content {
+  padding-top: 0;
+}
+
+/* Faculty panel background: reduce pure-white glare with a soft neutral tone */
+.faculty-page {
+  background-color: #eef2f7 !important;
+}
+
+.faculty-page .main-content-wrapper,
+.faculty-page .scrollable-content {
+  background-color: #eef2f7 !important;
+  background-image: linear-gradient(
+    180deg,
+    #f3f6fa 0%,
+    #e9eef5 100%
+  ) !important;
+}
+
+.admin-content {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.admin-content .loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.admin-content .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #059669;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .superadmin-page .scrollable-content {
+    height: calc(
+      100vh - 104px
+    ) !important; /* Fit remaining viewport below mobile superadmin header */
+    padding-bottom: 20px !important;
+  }
+}
+
+/* Sidebar collapse logic */
+@media (min-width: 769px) {
+  .app-container.sidebar-collapsed .main-content-wrapper {
+    margin-left: 0; /* Remove margin when sidebar is collapsed */
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content-wrapper {
+    margin-left: 0 !important;
+    width: 100% !important;
+    margin-top: 0 !important; /* Remove margin since header is fixed */
+    padding-top: var(
+      --header-height
+    ) !important; /* Match actual mobile header height */
+  }
+
+  .scrollable-content {
+    height: 100vh !important; /* Full height since navbar is now outside wrapper */
+    padding-top: 0 !important;
+    overflow-x: auto !important;
+  }
+
+  .content-area {
+    padding: 1rem !important;
+  }
+
+  .superadmin-page .main-content-wrapper {
+    margin-top: 0 !important; /* No top margin for superadmin as navbar is outside wrapper */
+    padding-top: 104px !important; /* Add padding to account for fixed navbar + tabs */
+  }
+
+  .admin-page .main-content-wrapper {
+    margin-top: 0 !important;
+    padding-top: 60px !important; /* Account for fixed admin header */
+  }
+
+  .admin-page .scrollable-content {
+    height: calc(100vh - 60px) !important;
+    padding-bottom: 140px !important;
+  }
+
+  .admin-page.admin-dashboard-page .scrollable-content {
+    height: auto !important;
+    overflow-y: visible !important;
+  }
+
+  /* Fix for editCiann components that use their own layout */
+  .timetable-layout,
+  .student-layout,
+  .teaching-layout {
+    overflow-y: auto !important;
+    padding-top: 50px !important; /* Account for mobile header */
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .timetable-main-content,
+  .student-main-content,
+  .teaching-main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  .app-container {
+    overflow: visible !important;
+  }
+}
+
+/* Utility - Only apply to non-timetable components */
+.plan-container:not(.timetable-layout .plan-container) {
+  padding: 40px;
+  background-color: #fefefe;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* General table styles - exclude timetable */
+table:not(.timetable) {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Fix container-fluid spacing when used with sidebar */
+.main-content-wrapper .container-fluid {
+  padding-left: 15px !important;
+  padding-right: 15px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Ensure proper spacing for assessment pages */
+.scrollable-content > * {
+  margin-left: 0 !important;
+}
+
+@media print {
+  html,
+  body {
+    overflow: visible !important;
+    height: auto !important;
+    background: #fff !important;
+  }
+
+  .app-container,
+  .main-content-wrapper,
+  .scrollable-content,
+  .content-area {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .main-content-wrapper {
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
+/* Fix specific attendance pages spacing - use specific classes */
+.attendance-main-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 15px !important;
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+}
+
+/* Global theme override rules to ensure our CSS variables always take precedence over Bootstrap */
+/* Override Bootstrap button colors */
+.btn.submit,
+.btn-success,
+.pagination .page-item.active .page-link {
+  background-color: var(--app-header-bg) !important;
+  border-color: var(--app-header-bg) !important;
+  color: white !important;
+}
+
+.btn.submit:hover,
+.btn-success:hover,
+.pagination .page-item.active .page-link:hover {
+  background-color: var(--primary-accent-dark) !important;
+  border-color: var(--primary-accent-dark) !important;
+  color: white !important;
+}
+
+/* Override any hardcoded green colors in attendance components */
+.attendance-status-present,
+.attendance-marker.present,
+.status-present {
+  background-color: var(--app-header-bg) !important;
+  border-color: var(--app-header-bg) !important;
+}
+
+/* Force theme colors for common UI elements */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: inherit;
+}
+
+.text-success {
+  color: var(--app-header-bg) !important;
+}
+
+.bg-success {
+  background-color: var(--app-header-bg) !important;
+}
+
+.border-success {
+  border-color: var(--app-header-bg) !important;
+}
+
+/* Course folder specific overrides */
+.page-title,
+.course-form-container h1,
+.modal-header,
+.submit-btn,
+.add-btn {
+  background-color: var(--app-header-bg) !important;
+  color: white !important;
+  border-color: var(--app-header-bg) !important;
+}
+
+.submit-btn:hover,
+.add-btn:hover,
+.course-form-container button[type="submit"]:hover {
+  background-color: var(--primary-accent-dark) !important;
+  border-color: var(--primary-accent-dark) !important;
+}
+
+/* CT folder specific overrides */
+.ct-ciann-cards-container .ct-header,
+.ct-dashboard-header,
+.ct-marks-form .form-header,
+.ct-card-header,
+.ct-number-card .ct-card-header {
+  background: var(--app-header-bg) !important;
+}
+
+.ct-ciann-card:hover,
+.ct-number-card:hover {
+  border-color: var(--primary-accent) !important;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2) !important;
+}
+
+.subject-name,
+.ct-stat-value,
+.detail-value,
+.student-marks {
+  color: var(--primary-accent-dark) !important;
+}
+
+.stat-card,
+.new-ct-btn,
+.save-btn,
+.retry-btn,
+.refresh-btn,
+.add-first-ct-btn,
+.select-btn {
+  background: var(--primary-accent) !important;
+}
+
+.stat-card:hover,
+.new-ct-btn:hover,
+.save-btn:hover:not(:disabled),
+.retry-btn:hover,
+.refresh-btn:hover,
+.add-first-ct-btn:hover,
+.select-btn:hover {
+  background: var(--primary-accent-dark) !important;
+}
+
+/* Student Layout Styles */
+.student-app-container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-container.student-layout .sidebar {
+  display: none;
+}
+
+.app-container.student-layout .main-content-wrapper {
+  margin-left: 0;
+}
+
+.app-container.student-layout .header .menu-toggle {
+  display: none;
+}

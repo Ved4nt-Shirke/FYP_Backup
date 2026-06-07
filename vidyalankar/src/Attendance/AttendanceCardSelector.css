@@ -1,0 +1,298 @@
+/* ================================================
+   Unified Attendance Card Selector Styling
+   Applied across all attendance modules with color palette
+   ================================================ */
+
+.attendance-selector-page {
+  font-family: "Nunito Sans", "Segoe UI", sans-serif;
+  background: linear-gradient(
+    180deg,
+    var(--primary-light, #f4f8ff) 0%,
+    var(--dash-bg, #eef4ff) 100%
+  );
+  min-height: 100vh;
+  padding: 24px 16px;
+}
+
+.attendance-selector-hero {
+  text-align: center;
+  margin-bottom: 48px;
+  padding: 32px 24px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color, #2563eb) 0%,
+    var(--primary-accent-dark, #1d4ed8) 100%
+  );
+  border-radius: 20px;
+  color: white;
+  box-shadow: 0 10px 30px rgba(21, 44, 89, 0.15);
+}
+
+.attendance-selector-hero-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.attendance-selector-hero-subtitle {
+  font-size: 1rem;
+  opacity: 0.95;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.attendance-selector-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.attendance-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.attendance-selector-card {
+  background: white;
+  border-radius: 16px;
+  padding: 28px 24px;
+  border: 1px solid var(--card-border, #e5e7eb);
+  box-shadow: 0 4px 12px rgba(18, 43, 82, 0.08);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.attendance-selector-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(18, 43, 82, 0.16);
+  border-color: var(--primary-color, #2563eb);
+}
+
+.attendance-selector-card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-light, #f3f7ff) 0%,
+    var(--dash-bg, #eef4ff) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: var(--primary-color, #2563eb);
+}
+
+.attendance-selector-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attendance-selector-card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-color-primary, #1f3f70);
+  margin: 0;
+}
+
+.attendance-selector-card-code {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary, #6b7280);
+  margin: 0;
+  font-weight: 500;
+}
+
+.attendance-selector-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid var(--card-border, #e5e7eb);
+  border-bottom: 1px solid var(--card-border, #e5e7eb);
+}
+
+.attendance-selector-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.attendance-selector-detail-label {
+  font-size: 0.8rem;
+  color: var(--text-color-secondary, #6b7280);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.attendance-selector-detail-value {
+  font-size: 0.9rem;
+  color: var(--text-color-primary, #1f3f70);
+  font-weight: 700;
+}
+
+.attendance-selector-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(
+    180deg,
+    var(--primary-color, #2563eb) 0%,
+    var(--primary-accent-dark, #1d4ed8) 100%
+  );
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.attendance-selector-card-cta:hover {
+  background: linear-gradient(
+    180deg,
+    var(--primary-accent-dark, #1d4ed8) 0%,
+    #0f3a7d 100%
+  );
+  color: white;
+  transform: translateX(4px);
+  box-shadow: 0 6px 16px rgba(21, 44, 89, 0.2);
+}
+
+.attendance-selector-card-cta i {
+  font-size: 0.85rem;
+}
+
+.attendance-selector-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+}
+
+.attendance-selector-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--card-border, #e5e7eb);
+  border-top-color: var(--primary-color, #2563eb);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.attendance-selector-loading-text {
+  color: var(--text-color-secondary, #6b7280);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.attendance-selector-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-color-secondary, #6b7280);
+}
+
+.attendance-selector-empty p {
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .attendance-selector-page {
+    padding: 16px 12px;
+  }
+
+  .attendance-selector-hero {
+    padding: 24px 16px;
+    margin-bottom: 32px;
+  }
+
+  .attendance-selector-hero-title {
+    font-size: 1.5rem;
+  }
+
+  .attendance-selector-hero-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .attendance-selector-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .attendance-selector-card {
+    padding: 20px 16px;
+  }
+
+  .attendance-selector-card-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .attendance-selector-card-title {
+    font-size: 1rem;
+  }
+
+  .attendance-selector-detail-row {
+    justify-content: space-between;
+  }
+}
+
+/* Loading and Empty States */
+.attendance-selector-page .text-center {
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--text-color-secondary, #6b7280);
+}
+
+.attendance-selector-page .text-center p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Override defaults for specific attendance types */
+.attendance-theory-selector .attendance-selector-card-icon {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: var(--primary-color, #2563eb);
+}
+
+.attendance-practical-selector .attendance-selector-card-icon {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  color: #4caf50;
+}
+
+.attendance-tutorial-selector .attendance-selector-card-icon {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  color: #ff9800;
+}
+
+.attendance-extra-selector .attendance-selector-card-icon {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+  color: #9c27b0;
+}

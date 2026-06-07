@@ -1,0 +1,126 @@
+/* --- SHARED CIAAN LAYOUT SCAFFOLDING --- */
+.timetable-layout,
+.teaching-layout,
+.lab-layout,
+.student-layout {
+  --main-sidebar-width: var(--sidebar-width, 280px);
+  --ciann-secondary-width: 220px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f8f9fa;
+  position: relative;
+  overflow: visible;
+}
+
+.timetable-main-row,
+.teaching-main-row,
+.lab-layout .teaching-main-row,
+.student-main-row {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+/* --- SECONDARY SIDEBAR (DOCK TO PRIMARY) --- */
+.timetable-secondary-sidebar-wrapper,
+.syllabus-secondary-sidebar-wrapper,
+.student-secondary-sidebar-wrapper {
+  position: fixed;
+  top: 60px;
+  left: var(--main-sidebar-width);
+  width: var(--ciann-secondary-width);
+  min-width: var(--ciann-secondary-width);
+  max-width: var(--ciann-secondary-width);
+  height: calc(
+    100vh - 60px
+  ); /* Fill height to prevent content bleeding under */
+  overflow-y: auto;
+  background: #fff; /* Ensure it covers background */
+  border-right: 1px solid #ddd;
+  z-index: 1001;
+  box-sizing: border-box;
+}
+
+/* --- MAIN CONTENT (FLUSH TO SIDEBAR) --- */
+.timetable-main-content,
+.teaching-main-content.syllabus-main-content,
+.labplanning-main-content,
+.student-main-content {
+  flex: 1;
+  /* Pulls content right up against the secondary sidebar */
+  margin-left: calc(var(--main-sidebar-width) + var(--ciann-secondary-width));
+  margin-top: 60px;
+  /* Removed padding-left entirely to eliminate the gap */
+  padding: 20px 20px 20px 10px;
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-start; /* Ensure card starts at the left */
+}
+
+/* --- THE WHITE CARD (PLAN-CONTAINER) --- */
+/* This is likely where the gap is living. We force it to 0 margin-left. */
+.timetable-layout .plan-container,
+.teaching-layout .plan-container,
+.student-layout .plan-container {
+  margin-left: 0 !important;
+  margin-right: 20px !important;
+  margin-top: 0 !important;
+  width: 100% !important; /* Force it to take the reclaimed space */
+  max-width: 1300px !important; /* Increased to allow it to grow */
+  min-width: 720px;
+  padding: 20px !important;
+  background: #ffffff !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+  box-sizing: border-box;
+}
+
+/* --- TABLE TIGHTENING --- */
+.timetable-layout .timetable {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* --- RESPONSIVE ADJUSTMENTS --- */
+@media (max-width: 768px) {
+  .timetable-secondary-sidebar-wrapper,
+  .syllabus-secondary-sidebar-wrapper,
+  .student-secondary-sidebar-wrapper {
+    position: fixed;
+    left: -100%; /* Hidden on mobile unless .visible class added */
+    width: 100%;
+    max-width: none;
+  }
+
+  .timetable-main-content,
+  .teaching-main-content.syllabus-main-content,
+  .labplanning-main-content,
+  .student-main-content {
+    margin-left: 0;
+    margin-top: 50px; /* Mobile header height */
+    padding: 10px;
+  }
+
+  .timetable-layout .plan-container {
+    margin: 0 !important;
+    width: 100% !important;
+    min-width: unset;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .timetable-layout,
+  .teaching-layout,
+  .lab-layout,
+  .student-layout {
+    --ciann-secondary-width: 180px;
+  }
+
+  .timetable-main-content {
+    margin-left: calc(var(--main-sidebar-width) + var(--ciann-secondary-width));
+    padding: 15px 15px 15px 5px;
+  }
+}

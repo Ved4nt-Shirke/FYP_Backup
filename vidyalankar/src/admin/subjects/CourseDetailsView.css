@@ -1,0 +1,221 @@
+/* CourseDetailsView.css */
+@import "../AdminTheme.css";
+
+.view-format-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  gap: 12px;
+}
+
+.format-view-page {
+  padding: var(--admin-space-xl, 24px);
+}
+
+.format-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.msbte-sheet-card {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 30px;
+  margin-top: 20px;
+  color: #000000;
+  font-family: Arial, sans-serif;
+}
+
+.sheet-heading {
+  margin-bottom: 20px;
+  border-bottom: 2px solid #000000;
+  padding-bottom: 8px;
+}
+
+.sheet-heading h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: 0.5px;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 30px;
+}
+
+.msbte-academic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  border: 2px solid #000000;
+}
+
+.msbte-academic-table th,
+.msbte-academic-table td {
+  border: 1px solid #000000;
+  padding: 6px 4px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.msbte-academic-table th {
+  background-color: #f3f4f6;
+  font-weight: bold;
+}
+
+/* Specific column sizes and alignments */
+.msbte-academic-table th.vertical-header {
+  min-width: 60px;
+}
+
+.msbte-academic-table th.title-header {
+  min-width: 180px;
+}
+
+.msbte-academic-table th.category-header {
+  min-width: 70px;
+}
+
+.msbte-academic-table th.duration-header {
+  min-width: 60px;
+}
+
+.msbte-academic-table td.title-left {
+  text-align: left;
+  padding-left: 8px;
+  font-weight: 500;
+}
+
+.msbte-academic-table td.code-bold,
+.msbte-academic-table td.credits-bold,
+.msbte-academic-table td.total-bold,
+.msbte-academic-table td.grand-total-bold {
+  font-weight: bold;
+}
+
+.msbte-academic-table td.grand-total-bold {
+  background-color: #f9fafb;
+}
+
+/* Course Outcomes Section styling */
+.co-view-section {
+  margin-top: 30px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+}
+
+.co-view-section h4 {
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #000000;
+}
+
+.co-grid-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.co-view-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.co-view-item:last-child {
+  border-bottom: none;
+}
+
+.co-label {
+  background-color: #3b82f6;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 10px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  min-width: 36px;
+  text-align: center;
+}
+
+.co-desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #1f2937;
+  text-align: left;
+}
+
+.no-cos-warning {
+  color: #6b7280;
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* Printing styles */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Hide everything not relevant for printing */
+  .no-print,
+  header,
+  footer,
+  .sidebar,
+  .admin-sidebar,
+  .admin-header,
+  nav,
+  button,
+  .page-header {
+    display: none !important;
+  }
+
+  /* Expand content area to full width */
+  .app-container {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .main-content-wrapper,
+  .scrollable-content,
+  .admin-content,
+  .format-view-page {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+  }
+
+  .msbte-sheet-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    width: 100% !important;
+  }
+
+  .msbte-academic-table {
+    page-break-inside: avoid;
+    width: 100% !important;
+    font-size: 10px !important;
+  }
+
+  .co-view-section {
+    page-break-before: auto;
+  }
+}

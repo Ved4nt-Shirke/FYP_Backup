@@ -1,0 +1,109 @@
+.ptm-shell {
+  --ptm-bg: #eef3fb;
+  --ptm-surface: #ffffff;
+  --ptm-border: #d7e3f3;
+  --ptm-text: #143458;
+  --ptm-muted: #5b7392;
+  --ptm-primary: #2a6fd6;
+  --ptm-primary-dark: #1e57b2;
+  --ptm-accent: #13b8b0;
+  --ptm-warn: #f4b400;
+  background: linear-gradient(180deg, #f2f6fc 0%, var(--ptm-bg) 100%);
+  min-height: calc(100vh - 90px);
+}
+
+.ptm-hero-card,
+.ptm-panel {
+  border: 1px solid var(--ptm-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 26px rgba(14, 35, 70, 0.08) !important;
+  overflow: hidden;
+  background: var(--ptm-surface);
+}
+
+.ptm-hero-header {
+  border-bottom: 1px solid rgba(17, 54, 102, 0.08) !important;
+  background: linear-gradient(
+    135deg,
+    #f4f8ff 0%,
+    #eaf2ff 55%,
+    #e9fcfb 100%
+  ) !important;
+  color: var(--ptm-text);
+  padding: 16px 22px !important;
+}
+
+.ptm-hero-body {
+  background: #ffffff;
+  color: var(--ptm-muted);
+}
+
+.ptm-step-title {
+  color: var(--ptm-text);
+  font-weight: 800;
+}
+
+.ptm-panel-header {
+  background: #f7faff !important;
+  border-bottom: 1px solid var(--ptm-border) !important;
+  color: var(--ptm-text);
+}
+
+.ptm-back-btn {
+  border: 1px solid #cfdcef !important;
+  background: #f5f8fd !important;
+  color: #2b4466 !important;
+}
+
+.ptm-edit-btn {
+  border: 1px solid #e4ae10 !important;
+  background: linear-gradient(135deg, #ffc83f 0%, #f4b400 100%) !important;
+  color: #2f2800 !important;
+  font-weight: 700;
+}
+
+.ptm-max-number {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--ptm-primary);
+  line-height: 1;
+}
+
+.ptm-chip,
+.ptm-chip-secondary {
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 700;
+}
+
+.ptm-chip {
+  background: #e7f3ff !important;
+  color: #1b5dbd !important;
+}
+
+.ptm-chip-secondary {
+  background: #e9f8f8 !important;
+  color: #126f6a !important;
+}
+
+.ptm-info-alert {
+  background: #ecf6ff !important;
+  border: 1px solid #cfe3fb !important;
+  color: #1e4f8f !important;
+}
+
+.ptm-warn-alert {
+  background: #fff9e8 !important;
+  border: 1px solid #f5df9a !important;
+  color: #664b00 !important;
+}
+
+@media (max-width: 768px) {
+  .ptm-shell {
+    padding: 12px !important;
+  }
+
+  .ptm-max-number {
+    font-size: 2.2rem;
+  }
+}

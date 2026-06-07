@@ -1,0 +1,335 @@
+.timetable-layout {
+  position: relative;
+  min-height: 100%;
+  background: linear-gradient(180deg, #f7faff 0%, #eef3fb 100%);
+}
+
+.timetable-main-row {
+  display: flex;
+  align-items: flex-start;
+  overflow: visible;
+}
+
+.timetable-secondary-sidebar-wrapper {
+  position: static;
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  height: 0;
+  overflow: visible;
+  border: none;
+  background: transparent;
+}
+
+.timetable-main-content {
+  flex: 1;
+  min-width: 0;
+  margin-left: 310px;
+  padding: 18px 24px 28px;
+  min-height: calc(100dvh - var(--header-height, 60px));
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.timetable-main-content .plan-container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid #d9e3f2;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.timetable-header {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 10px 12px;
+  margin: 0 0 12px;
+  border: 1px solid #dbe6f5;
+  border-radius: 12px;
+  background: rgba(247, 250, 255, 0.95);
+  backdrop-filter: blur(2px);
+}
+
+.timetable-header-main h2 {
+  margin: 0;
+  font-size: 1.65rem;
+  color: #112747;
+}
+
+.timetable-header-main p {
+  margin: 4px 0 0;
+  color: #4f6078;
+  font-size: 0.92rem;
+}
+
+.button-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 8px;
+  min-width: 320px;
+}
+
+.button-group button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--primary-color, #2a63cc);
+  background: linear-gradient(
+    180deg,
+    var(--primary-color, #3274e0) 0%,
+    var(--primary-accent-dark, #1f5fc8) 100%
+  );
+  color: var(--text-on-primary, #ffffff);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.button-group button:hover {
+  filter: brightness(0.95);
+}
+
+.table-scroll-shell {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #dbe5f2;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.timetable {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.timetable th,
+.timetable td {
+  border-right: 1px solid #dfe6f0;
+  border-bottom: 1px solid #dfe6f0;
+  padding: 13px 8px;
+  text-align: center;
+  font-size: 0.95rem;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timetable th:last-child,
+.timetable td:last-child {
+  border-right: none;
+}
+
+.timetable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: #eef4fd;
+  color: #233451;
+  font-weight: 700;
+}
+
+.timetable td:first-child,
+.timetable th:first-child {
+  width: 180px;
+  background: #f7fbff;
+  font-weight: 700;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e1e8f3;
+}
+
+.pagination button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #2a63cc;
+  background: #1f63d3;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 24, 44, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.popup {
+  width: min(95vw, 560px);
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #d5e1f1;
+  box-shadow: 0 18px 42px rgba(10, 31, 66, 0.26);
+  padding: 24px;
+  position: relative;
+}
+
+.popup h3 {
+  margin: 0 0 14px;
+  color: #112645;
+}
+
+.popup form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.popup label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #253a5a;
+  font-weight: 600;
+}
+
+.popup select,
+.popup input[type="text"],
+.popup input[type="number"] {
+  padding: 9px 10px;
+  border: 1px solid #ccd9eb;
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+
+.popup button[type="submit"] {
+  border: 1px solid #2a63cc;
+  border-radius: 10px;
+  background: #1f63d3;
+  color: #ffffff;
+  padding: 10px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  font-size: 1.7rem;
+  cursor: pointer;
+  color: #637794;
+}
+
+.popup.delete-popup {
+  width: min(96vw, 980px);
+}
+
+.popup.delete-popup table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.popup.delete-popup th,
+.popup.delete-popup td {
+  border: 1px solid #d7e1ee;
+  padding: 8px;
+  text-align: center;
+  font-size: 0.82rem;
+}
+
+.popup.delete-popup th {
+  background: #f3f7fd;
+}
+
+.delete-button {
+  border: none;
+  border-radius: 8px;
+  padding: 5px 8px;
+  background: #dc3545;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+  .timetable-main-content {
+    margin-left: 300px;
+    padding: 14px;
+  }
+
+  .button-group {
+    min-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .timetable-main-content {
+    margin-left: 0;
+    min-height: auto;
+    padding: 10px;
+  }
+
+  .timetable-main-content .plan-container {
+    padding: 10px;
+  }
+
+  .timetable-header {
+    position: static;
+    padding: 10px;
+  }
+
+  .timetable-header-main h2 {
+    font-size: 1.25rem;
+  }
+
+  .button-group {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .button-group button {
+    font-size: 0.82rem;
+    min-height: 38px;
+    padding: 8px;
+  }
+
+  .timetable {
+    min-width: 760px;
+  }
+
+  .timetable th,
+  .timetable td {
+    font-size: 0.82rem;
+    padding: 8px 6px;
+  }
+
+  .pagination {
+    flex-direction: column;
+  }
+
+  .pagination button {
+    width: 100%;
+  }
+}

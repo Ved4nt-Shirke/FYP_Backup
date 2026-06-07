@@ -1,0 +1,301 @@
+/* src/components/Assisment/EditProgAssess.css */
+
+body {
+  height: 100%;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  background: #F6F8FA;
+  margin: 0;
+}
+
+.progressive-assessment-container {
+  width: 95%;
+  max-width: 1200px;
+  margin: 40px auto 40px auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 400px;
+  height: fit-content;
+  margin-left: 250px;
+}
+
+.progressive-assessment-container h2 {
+  font-size: 1.8rem;
+  color: #555;
+  font-weight: 600;
+  margin: 0 0 30px 0;
+  letter-spacing: -0.02em;
+  width: 100%;
+}
+
+.student-info {
+  font-size: 15px;
+  color: #495057;
+  margin-bottom: 24px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #28a745;
+  padding: 12px 16px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+/* Table Container */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+   border-radius: 8px; /* match your container */
+  height: auto;
+}
+
+/* Table */
+.marks-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid #dee2e6;
+  border-spacing: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.marks-table th,
+.marks-table td {
+  border: 1px solid #dee2e6;
+  padding: 12px 20px;
+  font-size: 14px;
+  vertical-align: middle;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.marks-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #dee2e6;
+  padding: 14px 20px;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.marks-table .exp-id {
+  width: 100px;
+  text-align: center;
+  font-weight: 500;
+  padding: 12px 12px;
+}
+
+.marks-table .exp-name {
+  width: auto;
+  color: #555;
+  line-height: 1.4;
+  text-align: left;
+  padding: 12px 24px;
+}
+
+.marks-table .edit-column {
+  width: 150px;
+  text-align: center;
+  padding: 12px 20px;
+}
+
+/* Edit Button */
+.edit-button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex
+;
+    align-items: center;
+    justify-content: center;
+    width: 10px;
+    margin: 0 auto;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+    height: 40px;
+}
+
+.edit-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.edit-button i {
+  font-size: 18px;
+  color: #ff6b35;
+}
+
+/* Edit Controls */
+.edit-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Input Field */
+.marks-input {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: center;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.marks-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+/* Save Button */
+.save-button {
+  background-color: #28a745;
+  color: white;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.save-button:hover {
+  background-color: #218838;
+}
+
+/* Cancel Button */
+.cancel-button {
+  background-color: #6c757d;
+  color: white;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.cancel-button:hover {
+  background-color: #545b62;
+}
+
+/* Table Row Styling */
+.marks-table tbody tr {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.marks-table tbody tr:nth-child(even) {
+  background-color: #fafbfc;
+}
+
+.marks-table tbody tr:hover {
+  background-color: #e3f2fd;
+  transform: scale(1.001);
+}
+
+.marks-table tbody tr td {
+  border-top: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.empty-table-message {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  padding: 20px;
+}
+
+@media (max-width: 1024px) {
+  .progressive-assessment-container {
+    padding: 30px 20px;
+    width: 98%;
+    margin: 0px auto 20px auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .progressive-assessment-container {
+    width: 100%;
+    margin: 0px auto 10px auto;
+    padding: 20px 15px;
+    border-radius: 8px;
+    box-shadow: none;
+  }
+
+  .progressive-assessment-container h2 {
+    font-size: 1.5rem;
+  }
+
+  .marks-table .exp-name {
+    font-size: 13px;
+  }
+
+  .edit-controls {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .marks-input {
+    width: 60px;
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+
+  .edit-button,
+  .save-button,
+  .cancel-button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .progressive-assessment-container {
+    padding: 15px 10px;
+    margin: 0px auto 10px auto;
+  }
+
+  .progressive-assessment-container h2 {
+
+    
+    font-size: 1.3rem;
+  }
+
+  .student-info {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .marks-table th,
+  .marks-table td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  .marks-table .exp-id {
+    width: 50px;
+  }
+
+  .marks-table .edit-column {
+    width: 80px;
+  }
+}

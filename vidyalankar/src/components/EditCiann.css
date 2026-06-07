@@ -1,0 +1,377 @@
+/* EditCiann.css */
+
+.edit-ciann-page {
+  width: 100%; /* Use full available width; no sidebar here */
+  padding: 2rem; /* Even padding on all sides */
+  box-sizing: border-box;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  max-width: none; /* Remove any max-width constraints */
+  overflow-x: auto; /* Allow horizontal scrolling if ever needed */
+}
+
+.edit-ciann-header {
+  width: 100%;
+  margin: 0 0 2rem 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.edit-ciann-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  background-color: var(--app-header-bg, #28a745); /* Use theme variable */
+  color: white;
+  padding: 10px 0;
+  border-radius: 8px;
+}
+
+.edit-ciann-page .ciann-card-container {
+  width: 100%;
+  margin: 0;
+  padding: 0 0.25rem; /* Slightly smaller padding to fit 4 cards */
+  box-sizing: border-box;
+  display: grid !important;
+  grid-template-columns: repeat(
+    4,
+    minmax(220px, 1fr)
+  ) !important; /* Ensure 4 cards can fit on common laptop widths */
+  gap: 1rem !important; /* Slightly smaller gap for more room */
+  justify-items: stretch; /* Cards fill the grid cell width */
+  align-items: stretch;
+  min-width: 0; /* Allow grid items to shrink */
+  grid-auto-rows: minmax(260px, auto); /* Ensure consistent row height */
+}
+
+.ciann-dashboard-card {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1.5rem 1.2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 280px; /* Reduced for better fit */
+  min-width: 240px; /* Reduced minimum width */
+  min-height: 260px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.ciann-share-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: var(--primary-accent, #28a745);
+  color: #fff;
+  z-index: 2;
+}
+
+.ciann-share-btn:hover {
+  opacity: 0.92;
+}
+
+.ciann-access-pill {
+  margin-top: 8px;
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+  background: #eef2ff;
+  border-radius: 999px;
+  padding: 5px 10px;
+}
+
+.ciann-dashboard-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-color: var(--primary-accent, #28a745); /* Use theme variable */
+}
+
+.card-hover-text {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary-accent, #28a745); /* Use theme variable */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.ciann-dashboard-card {
+  position: relative;
+}
+
+.ciann-dashboard-card:hover .card-hover-text {
+  opacity: 1;
+}
+
+.ciann-icon {
+  font-size: 2.8rem;
+  color: var(--primary-accent, #28a745); /* Use theme variable */
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.ciann-dashboard-card:hover .ciann-icon {
+  color: var(--app-header-bg, #2e7d32); /* Use theme variable */
+  transform: scale(1.1);
+}
+
+.ciann-id {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #007bff;
+  background-color: #e3f2fd;
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(0, 123, 255, 0.2);
+  letter-spacing: 0.5px;
+}
+
+.card-text {
+  font-size: 0.95rem;
+  color: #495057;
+  line-height: 1.5;
+  font-weight: 500;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.card-text strong {
+  font-weight: 700;
+  color: #212529;
+}
+
+.subject-code {
+  color: #6c757d;
+  font-weight: 400;
+  font-size: 0.9rem;
+}
+
+.division-label {
+  color: #6c757d;
+  font-weight: 400;
+}
+
+/* Styles for .ciann-actions and its button have been removed. */
+
+/* --- Responsive Adjustments --- */
+/* Extra large screens - Force 4 columns */
+@media (min-width: 1800px) {
+  .edit-ciann-page .ciann-card-container {
+    grid-template-columns: repeat(
+      4,
+      minmax(280px, 1fr)
+    ) !important; /* Force 4 columns on extra large screens */
+    gap: 2rem !important;
+    max-width: 1400px; /* Limit container width to prevent cards from being too wide */
+    margin: 0 auto; /* Center the container */
+  }
+
+  .ciann-dashboard-card {
+    max-width: 320px;
+    min-width: 280px;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1799px) {
+  .edit-ciann-page .ciann-card-container {
+    grid-template-columns: repeat(
+      4,
+      minmax(250px, 1fr)
+    ) !important; /* Force 4 columns on large screens */
+    gap: 1.5rem !important;
+  }
+
+  .ciann-dashboard-card {
+    max-width: 300px;
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 1600px) and (min-width: 1401px) {
+  .edit-ciann-page .ciann-card-container {
+    grid-template-columns: repeat(
+      4,
+      minmax(240px, 1fr)
+    ) !important; /* Keep 4 columns */
+    gap: 1.2rem !important;
+  }
+
+  .ciann-dashboard-card {
+    max-width: 280px;
+    min-width: 240px;
+  }
+}
+
+@media (max-width: 1400px) and (min-width: 1025px) {
+  .edit-ciann-page .ciann-card-container {
+    grid-template-columns: repeat(
+      4,
+      minmax(220px, 1fr)
+    ) !important; /* Keep 4 columns for medium-large screens */
+    gap: 1.3rem !important;
+  }
+
+  .ciann-dashboard-card {
+    max-width: 280px;
+    min-width: 220px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .edit-ciann-page {
+    width: calc(100% - 220px);
+    padding: 2rem 1.5rem 2rem 2rem;
+  }
+
+  .edit-ciann-page .ciann-card-container {
+    grid-template-columns: repeat(
+      2,
+      1fr
+    ) !important; /* 2 columns for tablets */
+    gap: 1.2rem !important;
+  }
+
+  .ciann-dashboard-card {
+    max-width: 350px;
+    min-height: 240px;
+    padding: 1.2rem 1rem;
+  }
+
+  .ciann-icon {
+    font-size: 2.6rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .edit-ciann-page {
+    width: 100%;
+    margin-left: 0; /* No sidebar on mobile */
+    padding: 1rem;
+  }
+
+  .edit-ciann-page .ciann-card-container {
+    grid-template-columns: 1fr !important; /* Single column for mobile */
+    gap: 1rem !important;
+  }
+
+  .ciann-dashboard-card {
+    max-width: 100%;
+    min-height: 220px;
+    padding: 1.2rem 1rem;
+  }
+
+  .ciann-icon {
+    font-size: 2.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .edit-ciann-page {
+    padding: 0.8rem;
+  }
+
+  .edit-ciann-page .ciann-card-container {
+    gap: 0.8rem !important;
+  }
+
+  .ciann-dashboard-card {
+    min-height: 200px;
+    padding: 1rem 0.8rem;
+  }
+
+  .ciann-icon {
+    font-size: 2.2rem;
+  }
+
+  .card-text {
+    font-size: 0.9rem;
+  }
+}
+/* Loading styles */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-accent, #28a745); /* Use theme variable */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container p {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Link styles */
+.ciann-dashboard-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+/* Card content wrapper */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  flex: 1;
+}
+
+/* No data message */
+.text-center {
+  grid-column: 1 / -1; /* Span all columns */
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6c757d;
+  font-size: 1.1rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 2px dashed #dee2e6;
+}

@@ -1,0 +1,646 @@
+/* DepartmentForm — improved & extended (paste over existing file) */
+
+/* ---------- Variables (extendable) ---------- */
+.department-form {
+  --df-primary: var(--primary-accent, #059669);
+  --df-primary-dark: var(--primary-accent-dark, #047857);
+  --df-primary-light: var(--primary-accent-light, #d1fae5);
+  --df-secondary: var(--secondary-accent, #374151);
+  --df-success: var(--success-color, #10b981);
+  --df-warning: var(--warning-color, #f59e0b);
+  --df-danger: var(--danger-color, #dc2626);
+  --df-text-primary: var(--text-main, #111827);
+  --df-text-secondary: var(--text-muted, #6b7280);
+  --df-text-muted: color-mix(in srgb, var(--text-muted, #6b7280) 70%, #cbd5e1);
+  --df-border: var(--border-color, #e5e7eb);
+  --df-border-light: color-mix(
+    in srgb,
+    var(--border-color, #e5e7eb) 60%,
+    #f3f4f6
+  );
+  --df-bg: var(--bg-color, #f8fafc);
+  --df-card: var(--card-bg, #ffffff);
+  --df-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --df-shadow-md: 0 4px 10px rgba(0, 0, 0, 0.08);
+  --df-shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.1);
+  --transition-speed: 180ms;
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --focus-ring: 3px solid
+    color-mix(in srgb, var(--df-primary, #059669) 20%, transparent);
+  --max-form-width: 980px;
+
+  /* map legacy tokens used below */
+  --card-bg: var(--df-card);
+  --primary-accent: var(--df-primary);
+  --primary-accent-dark: var(--df-primary-dark);
+  --primary-accent-light: var(--df-primary-light);
+  --secondary-accent: var(--df-secondary);
+  --success-color: var(--df-success);
+  --warning-color: var(--df-warning);
+  --danger-color: var(--df-danger);
+  --text-color-primary: var(--df-text-primary);
+  --text-color-secondary: var(--df-text-secondary);
+  --text-color-muted: var(--df-text-muted);
+  --border-color: var(--df-border);
+  --border-color-light: var(--df-border-light);
+  --bg-color: var(--df-bg);
+  --shadow-sm: var(--df-shadow-sm);
+  --shadow-md: var(--df-shadow-md);
+  --shadow-lg: var(--df-shadow-lg);
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-speed: 0ms;
+  }
+  .form-card,
+  .card-animate {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ---------- Utility / Accessibility ---------- */
+/* Screen-reader only helper */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Form Container ---------- */
+.department-form {
+  max-width: var(--max-form-width);
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* card style wrapper */
+.form-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  color: var(--text-color-primary);
+}
+
+/* header */
+.form-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-accent-light) 0%,
+    var(--bg-color) 100%
+  );
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+/* icon */
+.form-icon {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: var(--border-radius-md);
+  display: grid;
+  place-items: center;
+  color: var(--text-on-primary, #fff);
+  background: linear-gradient(
+    180deg,
+    var(--primary-accent),
+    var(--primary-accent-dark)
+  );
+  font-size: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* title + description */
+.form-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-color-primary);
+}
+.form-description {
+  margin: 0;
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+}
+
+/* ---------- Progress Indicator (ARIA friendly) ---------- */
+.form-progress {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+/* each step */
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-color-muted);
+  transition:
+    color var(--transition-speed) ease,
+    transform var(--transition-speed) ease;
+  transform-origin: center;
+}
+
+/* use attribute for ARIA / JS friendliness */
+.progress-step[aria-current="step"],
+.progress-step.active {
+  color: var(--text-color-primary);
+  transform: translateY(-3px) scale(1.02);
+}
+
+/* number circle */
+.step-number {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-weight: 700;
+  background: var(--border-color-light);
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+  transition:
+    background var(--transition-speed) ease,
+    color var(--transition-speed) ease;
+}
+
+.progress-step[aria-current="step"] .step-number,
+.progress-step.active .step-number {
+  background: linear-gradient(
+    180deg,
+    var(--primary-accent),
+    var(--primary-accent-dark)
+  );
+  color: var(--text-on-primary, #fff);
+}
+
+/* label */
+.step-label {
+  font-size: 0.75rem;
+  text-align: center;
+  color: inherit;
+}
+
+/* connector / line (horizontal by default) */
+.progress-line {
+  width: 64px;
+  height: 2px;
+  background: var(--border-color-light);
+  border-radius: 2px;
+}
+
+/* support vertical mode (mobile) */
+.form-progress.vertical {
+  flex-direction: column;
+}
+.form-progress.vertical .progress-line {
+  width: 2px;
+  height: 40px;
+}
+
+/* ---------- Form Grid (responsive) ---------- */
+.form-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 22px;
+}
+
+/* fallback for single column (small screens) */
+@media (max-width: 880px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}
+
+/* form field block */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+/* label + required */
+.form-field label {
+  font-weight: 600;
+  color: var(--text-color-primary);
+  font-size: 0.9rem;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* required marker */
+.required {
+  color: var(--danger-color);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* input wrapper to support icons and hints */
+.input-wrapper {
+  position: relative;
+  display: block;
+}
+
+/* inputs */
+.form-field input[type="text"],
+.form-field input[type="email"],
+.form-field input[type="number"],
+.form-field input[type="search"],
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  background: var(--card-bg, #ffffff);
+  font-size: 0.95rem;
+  color: var(--text-color-primary);
+  transition:
+    box-shadow var(--transition-speed) ease,
+    border-color var(--transition-speed) ease,
+    transform var(--transition-speed) ease;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+/* textarea */
+.form-field textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* focus-within to style hint/icon consistently */
+.form-field:focus-within {
+  outline: none;
+}
+.form-field:focus-within .field-hint {
+  color: var(--primary-accent);
+}
+
+/* input focus */
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+  box-shadow: var(--focus-ring);
+  border-color: var(--primary-accent);
+  outline: none;
+}
+
+/* validation states (class-driven preferred) */
+.form-field .is-valid {
+  border-color: var(--success-color) !important;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.06);
+}
+.form-field .is-invalid {
+  border-color: var(--danger-color) !important;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.06);
+}
+
+/* placeholders for inline icons (right) */
+.input-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 1rem;
+  color: var(--text-color-muted);
+}
+.input-icon.valid {
+  color: var(--success-color);
+}
+.input-icon.invalid {
+  color: var(--danger-color);
+}
+
+/* error text */
+.field-error {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--danger-color);
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* hint text */
+.field-hint {
+  color: var(--text-color-muted);
+  font-size: 0.82rem;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* info icon prefix for hint */
+.field-hint::before {
+  content: "ℹ️";
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* focus-based hint emphasis (improved selector = uses focus-within) */
+.form-field:focus-within .field-hint {
+  color: var(--primary-accent);
+}
+
+/* uppercase code input */
+.form-field input[name="code"] {
+  text-transform: uppercase;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.8px;
+}
+
+/* enforce capitalization for name fields */
+.form-field input[type="text"].capitalize {
+  text-transform: capitalize;
+}
+
+/* ---------- Dropzone / File Upload ---------- */
+.file-dropzone {
+  border: 1.5px dashed var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card-bg, #ffffff) 70%, transparent),
+    color-mix(in srgb, var(--bg-color, #f8fafc) 60%, transparent)
+  );
+  transition:
+    border-color var(--transition-speed) ease,
+    box-shadow var(--transition-speed) ease,
+    background var(--transition-speed) ease;
+}
+.file-dropzone .dz-info {
+  color: var(--text-color-secondary);
+  font-size: 0.92rem;
+}
+.file-dropzone.dragover {
+  border-color: var(--primary-accent);
+  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.06);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary-accent-light, #d1fae5) 45%, transparent),
+    color-mix(in srgb, var(--card-bg, #ffffff) 80%, transparent)
+  );
+}
+
+/* small preview list */
+.file-preview {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.file-preview .thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--border-color-light);
+  display: grid;
+  place-items: center;
+}
+.file-preview .meta {
+  font-size: 0.85rem;
+  color: var(--text-color-secondary);
+}
+
+/* ---------- Tags / Chips (for skills / metadata) ---------- */
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.chip {
+  background: color-mix(
+    in srgb,
+    var(--bg-color, #f8fafc) 70%,
+    var(--card-bg, #ffffff)
+  );
+  color: var(--text-color-secondary);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+.chip .remove {
+  cursor: pointer;
+  opacity: 0.75;
+  font-weight: 700;
+}
+.chip .remove:hover {
+  opacity: 1;
+}
+
+/* ---------- Preview Card (live preview) ---------- */
+.form-preview {
+  padding: 18px;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--border-radius-md);
+  margin-bottom: 20px;
+}
+.preview-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--card-bg);
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+}
+.preview-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--border-radius-sm);
+  background: linear-gradient(
+    180deg,
+    var(--primary-accent),
+    var(--primary-accent-dark)
+  );
+  color: var(--text-on-primary, #fff);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+.preview-content {
+  flex: 1;
+}
+.preview-name {
+  font-weight: 700;
+  color: var(--text-color-primary);
+  margin: 0 0 6px 0;
+}
+.preview-code {
+  font-size: 0.72rem;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--primary-accent);
+  color: var(--text-on-primary, #fff);
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+
+/* meta row */
+.preview-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--text-color-secondary);
+  font-size: 0.82rem;
+}
+
+/* ---------- Actions / Buttons ---------- */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px;
+  border-top: 1px solid var(--border-color-light);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+}
+
+/* primary / secondary buttons */
+.btn-primary {
+  background: linear-gradient(
+    180deg,
+    var(--primary-accent),
+    var(--primary-accent-dark)
+  );
+  color: var(--text-on-primary, #fff);
+  padding: 10px 16px;
+  border-radius: var(--border-radius-md);
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--transition-speed) ease,
+    box-shadow var(--transition-speed) ease;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.btn-secondary {
+  background: var(--card-bg, #ffffff);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-color-secondary);
+  padding: 10px 16px;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* disabled */
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---------- Loading spinner (inline small) ---------- */
+.loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-color-light);
+  border-top: 2px solid var(--primary-accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  display: inline-block;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width: 640px) {
+  .form-card {
+    border-radius: var(--border-radius-md);
+  }
+  .form-header {
+    padding: 16px;
+    gap: 12px;
+  }
+  .form-grid {
+    gap: 14px;
+    padding: 14px;
+  }
+  .form-actions {
+    padding: 14px;
+    flex-direction: column-reverse;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .form-actions .btn-primary,
+  .form-actions .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+  .form-progress {
+    padding: 12px;
+    gap: 12px;
+  }
+  .form-progress.vertical {
+    gap: 8px;
+  }
+}
+
+/* small visual helpers */
+.helper {
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+}
+.is-hidden {
+  display: none !important;
+}
+
+/* End of DepartmentForm improvements */

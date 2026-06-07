@@ -1,0 +1,48 @@
+/* OfficeTheme.css - Professional Office Staff Theme */
+:root {
+  /* Primary Colors (from Superadmin Palette) */
+  --office-primary: var(--primary-accent, #2563eb);
+  --office-primary-dark: var(--primary-accent-dark, #1d4ed8);
+  --office-primary-light: var(--primary-accent-light, #ecfdf5);
+  
+  /* Background & Surface */
+  --office-bg: #f8fafc;
+  --office-surface: var(--card-bg, #ffffff);
+  --office-border: var(--border-color, #dbe5f1);
+  
+  /* Text Colors */
+  --office-text: var(--text-main, #0f172a);
+  --office-text-secondary: var(--text-muted, #64748b);
+  --office-muted: #94a3b8;
+  
+  /* Status Colors */
+  --office-success: #10b981;
+  --office-success-light: #ecfdf5;
+  --office-warning: #f59e0b;
+  --office-warning-light: #fffbeb;
+  --office-danger: #ef4444;
+  --office-danger-light: #fee2e2;
+  --office-info: #3b82f6;
+  --office-info-light: #dbeafe;
+  
+  /* Transition */
+  --office-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light theme adjustments if needed */
+body.light-mode,
+[data-theme="light"] {
+  --office-bg: #f9fafb;
+  --office-surface: #ffffff;
+}
+
+/* Dark theme support */
+body.dark-mode,
+[data-theme="dark"] {
+  --office-bg: #1a1f2e;
+  --office-surface: #232d3f;
+  --office-border: #374151;
+  --office-text: #f3f4f6;
+  --office-text-secondary: #d1d5db;
+  --office-muted: #9ca3af;
+}

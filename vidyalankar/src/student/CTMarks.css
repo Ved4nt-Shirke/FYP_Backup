@@ -1,0 +1,345 @@
+.ct-marks-container {
+  --ct-primary: var(--primary-accent, #2563eb);
+  --ct-primary-dark: var(--primary-accent-dark, #1d4ed8);
+  --ct-primary-light: var(--primary-accent-light, #eff6ff);
+  --ct-bg: var(--dash-bg, #f8fafc);
+  --ct-surface: var(--card-bg, #ffffff);
+  --ct-border: var(--border-color, #dbe5f1);
+  --ct-text: var(--text-main, #0f172a);
+  --ct-muted: var(--text-muted, #64748b);
+
+  padding: 0;
+  max-width: 100%;
+  margin: 0 auto;
+  display: grid;
+  gap: 14px;
+}
+
+.ct-marks-container .ct-header {
+  background: linear-gradient(135deg, var(--ct-primary) 0%, var(--ct-primary-dark) 100%);
+  color: white;
+  padding: 24px;
+  border-radius: 16px;
+  margin-bottom: 0;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--ct-primary-dark) 34%, transparent);
+}
+
+.ct-marks-container .ct-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.ct-marks-container .ct-header p {
+  margin: 6px 0 0;
+  font-size: 0.94rem;
+  opacity: 0.94;
+}
+
+.ct-marks-container .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.ct-marks-container .stat-card {
+  background: var(--ct-surface);
+  border: 1px solid var(--ct-border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.ct-marks-container .stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.ct-marks-container .stat-icon-ct1 {
+  background: color-mix(in srgb, var(--ct-primary) 18%, #ffffff 82%);
+}
+
+.ct-marks-container .stat-icon-ct2 {
+  background: color-mix(in srgb, var(--warning-color, #f59e0b) 22%, #ffffff 78%);
+}
+
+.ct-marks-container .stat-icon-overall {
+  background: color-mix(in srgb, var(--success-color, #10b981) 20%, #ffffff 80%);
+}
+
+.ct-marks-container .stat-icon-subjects {
+  background: color-mix(in srgb, var(--ct-primary-light) 70%, #ffffff 30%);
+}
+
+.ct-marks-container .stat-info h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ct-text);
+}
+
+.ct-marks-container .stat-info p {
+  margin: 2px 0 0;
+  color: var(--ct-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.ct-marks-container .filter-section {
+  background: var(--ct-surface);
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--ct-border);
+}
+
+.ct-marks-container .filter-section label {
+  font-weight: 700;
+  color: var(--ct-text);
+  font-size: 0.82rem;
+}
+
+.ct-marks-container .subject-select {
+  flex: 1;
+  max-width: 340px;
+  padding: 10px 12px;
+  border: 1px solid var(--ct-border);
+  border-radius: 9px;
+  font-size: 0.86rem;
+  outline: none;
+  cursor: pointer;
+  background: var(--ct-surface);
+  color: var(--ct-text);
+}
+
+.ct-marks-container .subject-select:focus {
+  border-color: var(--ct-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ct-primary) 16%, transparent);
+}
+
+.ct-marks-container .marks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 12px;
+}
+
+.ct-marks-container .mark-card {
+  background: var(--ct-surface);
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid var(--ct-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.ct-marks-container .mark-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.ct-marks-container .mark-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--ct-border);
+}
+
+.ct-marks-container .mark-header h3 {
+  margin: 0;
+  font-size: 0.96rem;
+  color: var(--ct-text);
+  font-weight: 800;
+}
+
+.ct-marks-container .subject-code {
+  background: color-mix(in srgb, var(--ct-primary-light) 72%, #ffffff 28%);
+  color: var(--ct-primary-dark);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.ct-marks-container .marks-display {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ct-marks-container .ct-mark {
+  text-align: center;
+  padding: 10px;
+  border-radius: 9px;
+  background: #f8fafc;
+  border: 1px solid var(--ct-border);
+}
+
+.ct-marks-container .ct-label {
+  font-size: 0.72rem;
+  color: var(--ct-muted);
+  margin-bottom: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ct-marks-container .mark-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ct-marks-container .marks {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--ct-text);
+  line-height: 1;
+}
+
+.ct-marks-container .out-of {
+  font-size: 0.74rem;
+  color: var(--ct-muted);
+}
+
+.ct-marks-container .grade {
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: white;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.ct-marks-container .grade-a-plus,
+.ct-marks-container .grade-a {
+  background: #16a34a;
+}
+
+.ct-marks-container .grade-b-plus,
+.ct-marks-container .grade-b {
+  background: #f59e0b;
+}
+
+.ct-marks-container .grade-c,
+.ct-marks-container .grade-f {
+  background: #ef4444;
+}
+
+.ct-marks-container .not-published {
+  color: var(--ct-muted);
+  font-size: 0.72rem;
+  font-style: italic;
+}
+
+.ct-marks-container .average-section {
+  background: color-mix(in srgb, var(--ct-primary-light) 58%, #ffffff 42%);
+  padding: 10px;
+  border-radius: 9px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ct-text);
+  border: 1px solid var(--ct-border);
+}
+
+.ct-marks-container .average-section strong {
+  color: var(--ct-primary-dark);
+  font-size: 0.98rem;
+}
+
+.ct-marks-container .performance-tips {
+  background: var(--ct-surface);
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid var(--ct-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.ct-marks-container .performance-tips h2 {
+  color: var(--ct-text);
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.ct-marks-container .tips-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.ct-marks-container .tip-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--ct-border);
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.ct-marks-container .tip-item p {
+  margin: 0;
+  color: var(--ct-text);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.ct-marks-container .loading,
+.ct-marks-container .empty-state,
+.ct-marks-container .error-message {
+  text-align: center;
+  padding: 28px 16px;
+  background: var(--ct-surface);
+  border-radius: 12px;
+  border: 1px solid var(--ct-border);
+}
+
+.ct-marks-container .error-message {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.ct-marks-container .empty-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .ct-marks-container .ct-header {
+    padding: 16px;
+  }
+
+  .ct-marks-container .ct-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .ct-marks-container .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ct-marks-container .filter-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ct-marks-container .subject-select {
+    max-width: none;
+  }
+
+  .ct-marks-container .marks-grid {
+    grid-template-columns: 1fr;
+  }
+}

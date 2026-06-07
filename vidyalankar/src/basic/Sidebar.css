@@ -1,0 +1,301 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600&display=swap");
+
+.sidebar.main-sidebar {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: var(--sidebar-width, 280px);
+  height: calc(100dvh - 60px);
+  max-height: calc(100dvh - 60px);
+  z-index: 1100;
+  background: linear-gradient(
+    180deg,
+    var(--primary-light, #f4f8ff) 0%,
+    var(--dash-bg, #eef4ff) 48%,
+    var(--card-bg, #e9f0ff) 100%
+  );
+  border-right: 1px solid var(--card-border, rgba(120, 148, 198, 0.22));
+  box-shadow: 8px 0 26px rgba(21, 44, 89, 0.08);
+  padding: 18px 16px 96px;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  transition:
+    transform 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+  font-family: "Inter", "Poppins", "Segoe UI", sans-serif;
+}
+
+.sidebar.main-sidebar::-webkit-scrollbar {
+  width: 7px;
+}
+
+.sidebar.main-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-light, rgba(226, 236, 252, 0.45)) transparent;
+}
+
+.sidebar.main-sidebar::-webkit-scrollbar-thumb {
+  background: var(--primary-light, rgba(226, 236, 252, 0.45));
+  border-radius: 999px;
+}
+
+.sidebar.main-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar.main-sidebar.collapsed {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar.main-sidebar.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 22, 44, 0.35);
+  backdrop-filter: blur(1px);
+  z-index: 1090;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+.sidebar-close-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--card-border, rgba(120, 148, 198, 0.35));
+  border-radius: 10px;
+  background: var(--card-bg, rgba(255, 255, 255, 0.86));
+  color: var(--text-color-primary, #1f3f70);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-close-btn:hover {
+  background: var(--card-bg, #ffffff);
+  box-shadow: 0 6px 14px rgba(31, 63, 112, 0.16);
+}
+
+.sidebar-menu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-section-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-on-primary, #ffffff);
+  opacity: 0.78;
+  margin: 10px 0 0;
+  padding: 2px 8px;
+}
+
+.sidebar-section-label:first-child {
+  margin-top: 2px;
+}
+
+.sidebar-item {
+  width: 100%;
+  color: var(--text-on-primary, #ffffff);
+  border-radius: 14px;
+  transition: all 0.25s ease;
+}
+
+.sidebar-item > i,
+.sidebar-item > span {
+  pointer-events: none;
+}
+
+.sidebar-link-item {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.sidebar-item:hover,
+.dropdown-header:hover {
+  background: transparent;
+  color: var(--text-on-primary, #ffffff);
+}
+
+.sidebar-item.active {
+  background: transparent;
+  color: var(--text-on-primary, #ffffff);
+  box-shadow: inset 3px 0 0 var(--primary-color, rgba(255, 255, 255, 0.88));
+}
+
+.sidebar-item > i,
+.dropdown-header > i:first-child,
+.dropdown-item > i {
+  font-size: 1rem;
+  width: 18px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1;
+}
+
+.dropdown {
+  width: 100%;
+}
+
+.dropdown-header {
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  width: 100%;
+  min-height: 44px;
+  border-radius: 14px;
+  padding: 10px 12px !important;
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: none;
+  box-shadow: none !important;
+  transition: all 0.25s ease;
+}
+
+.dropdown-header::after {
+  display: none !important;
+}
+
+.dropdown-header.open {
+  background: transparent !important;
+  color: var(--text-on-primary, #ffffff) !important;
+}
+
+.dropdown-header span {
+  flex: 1;
+  text-align: left;
+}
+
+.dropdown-chevron {
+  margin-left: auto;
+  font-size: 0.72rem !important;
+  color: var(--text-on-primary, #ffffff);
+  opacity: 0.9;
+  transition: transform 0.3s ease-in-out;
+}
+
+.dropdown-header.open .dropdown-chevron {
+  transform: rotate(180deg);
+}
+
+.sidebar-notification-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--danger-color, #ef4444);
+  color: var(--text-on-primary, #ffffff);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-submenu {
+  position: static !important;
+  transform: none !important;
+  float: none !important;
+  margin: 6px 0 2px !important;
+  width: 100%;
+  border: 0 !important;
+  border-radius: 12px;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: block !important;
+  padding: 0 0 0 14px !important;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+}
+
+.sidebar-submenu.show {
+  max-height: 520px;
+  opacity: 1;
+}
+
+.sidebar-submenu .dropdown-item {
+  color: var(--text-on-primary, #ffffff) !important;
+  opacity: 0.95;
+  font-size: 0.86rem;
+  font-weight: 500;
+  border-radius: 10px;
+  margin: 4px 0;
+  padding: 8px 10px !important;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.sidebar-submenu .dropdown-item:hover {
+  background: transparent !important;
+  color: var(--text-on-primary, #ffffff) !important;
+  transform: translateX(2px);
+}
+
+.sidebar-submenu .dropdown-divider {
+  margin: 7px 0;
+  border-top-color: var(--card-border, rgba(223, 233, 248, 0.32));
+}
+
+.smart-attendance-link {
+  font-weight: 700;
+  color: var(--text-on-primary, #ffffff) !important;
+}
+
+.smart-attendance-link:hover {
+  color: var(--text-on-primary, #ffffff) !important;
+}
+
+.sidebar-submenu .msbte-subitem {
+  padding-left: 16px !important;
+  font-size: 0.83rem;
+}
+
+@media (max-width: 1024px) {
+  .sidebar.main-sidebar {
+    width: min(300px, 86vw);
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar.main-sidebar {
+    top: 0;
+    height: 100dvh;
+    max-height: 100dvh;
+    padding-top: 14px;
+    border-right: 1px solid var(--card-border, rgba(120, 148, 198, 0.26));
+  }
+}

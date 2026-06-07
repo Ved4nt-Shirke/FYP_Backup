@@ -1,0 +1,220 @@
+/* Shared modern table styles for Course > Chapters and Course > Experiment lists */
+.add-chapters-container,
+.practical-table-container {
+  max-width: 1120px;
+  margin: 26px auto;
+  padding: 22px;
+  border-radius: 16px;
+  border: 1px solid #dbe5f1;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(12, 35, 72, 0.08);
+}
+
+.add-chapters-container .page-title,
+.practical-table-heading {
+  margin: 0 0 16px;
+  font-size: clamp(1.2rem, 1.8vw, 1.65rem);
+  font-weight: 800;
+  color: #12335f !important;
+  border: none !important;
+}
+
+.add-chapters-container .page-title::after,
+.practical-table-heading::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 4px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: #2a6fd6;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #dbe5f1;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.chapters-table,
+.practical-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.chapters-table th,
+.chapters-table td,
+.practical-table th,
+.practical-table td {
+  border-right: 1px solid #dbe6f3;
+  border-bottom: 1px solid #dbe6f3;
+  padding: 12px 14px;
+  font-size: 0.94rem;
+  color: #173759;
+  background: #ffffff;
+}
+
+.chapters-table th:last-child,
+.chapters-table td:last-child,
+.practical-table th:last-child,
+.practical-table td:last-child {
+  border-right: none;
+}
+
+.chapters-table thead th,
+.practical-table thead th,
+.practical-table-header th {
+  background: #f2f6fc !important;
+  color: #213d62 !important;
+  font-weight: 700;
+  border-bottom: 1px solid #d4e2f3;
+}
+
+.setting-header,
+.setting-cell {
+  text-align: center;
+}
+
+.table-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.add-btn,
+.practical-table-button,
+.modal-actions .submit-btn,
+.update-button {
+  border-radius: 10px !important;
+  border: 1px solid #2a64bf !important;
+  background: #2a6fd6 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  padding: 9px 14px !important;
+  box-shadow: 0 6px 14px rgba(42, 111, 214, 0.24);
+}
+
+.edit-btn,
+.delete-btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 6px 8px;
+  margin: 0 2px;
+}
+
+.edit-btn {
+  background: #eff5ff;
+  border-color: #d9e6fb;
+}
+
+.delete-btn {
+  background: #fff3f4;
+  border-color: #ffd7dd;
+}
+
+.modal-overlay {
+  background-color: rgba(11, 24, 44, 0.52);
+}
+
+.modal-content {
+  background: #ffffff;
+  width: min(500px, 92vw);
+  border-radius: 14px;
+  border: 1px solid #d5e2f2;
+  box-shadow: 0 16px 36px rgba(13, 35, 72, 0.2);
+}
+
+.modal-title,
+.modal-header h3,
+.header {
+  color: #12335f !important;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e1eaf5;
+  background: #f6f9ff;
+}
+
+.modal-close-btn {
+  border: none;
+  background: transparent;
+  color: #486185;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 16px;
+}
+
+.modal-footer {
+  margin-top: 10px;
+}
+
+.modal-content input,
+.input-field {
+  border: 1px solid #d4e1f1;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.modal-content input:focus,
+.input-field:focus {
+  outline: none;
+  border-color: #2e74df;
+  box-shadow: 0 0 0 3px rgba(46, 116, 223, 0.16);
+}
+
+.modal-actions .cancel-btn {
+  border-radius: 10px;
+  border: 1px solid #cfd9e7;
+  background: #f3f6fb;
+  color: #2f4667;
+  padding: 9px 14px;
+}
+
+.container {
+  max-width: 620px;
+  margin: 26px auto;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid #d7e4f4;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 12px 28px rgba(12, 35, 72, 0.1);
+}
+
+.divider {
+  height: 1px;
+  border: 0;
+  background-color: #dce7f4;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .add-chapters-container,
+  .practical-table-container,
+  .container {
+    margin: 12px auto;
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .table-actions {
+    justify-content: stretch;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,481 @@
+.main-content {
+  padding: 20px;
+  margin-left: 0;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.card-header {
+  border-radius: 8px 8px 0 0;
+  padding: 15px 20px;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.alert {
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.text-muted {
+  color: #6c757d;
+}
+
+/* MSBTE Controls */
+.msbte-controls {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* MSBTE Preview */
+.msbte-preview {
+  border: 1px solid #cfd4da;
+  border-radius: 6px;
+  background-color: #ffffff;
+  padding: 12px;
+}
+
+.msbte-header {
+  border-bottom: 1px solid #cfd4da;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  text-align: center;
+  position: relative;
+}
+
+.msbte-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.msbte-subtitle {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.msbte-format {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.msbte-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+}
+
+.msbte-table th,
+.msbte-table td {
+  font-size: 0.85rem;
+}
+
+/* Table Styling */
+.table {
+  background-color: white;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table th {
+  padding: 15px;
+  font-weight: 600;
+  color: #333;
+  text-align: left;
+  border: 1px solid #dee2e6;
+}
+
+.table td {
+  padding: 12px 15px;
+  border: 1px solid #dee2e6;
+  color: #333;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Form Control Styling */
+.form-control {
+  border: 1px solid #ced4da;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  outline: none;
+}
+
+.form-control-sm {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  height: 36px;
+}
+
+.form-select {
+  border: 1px solid #ced4da;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: white;
+}
+
+.form-select:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  outline: none;
+}
+
+.form-label {
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* Button Styling */
+.btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+  }
+
+  .card {
+    margin-bottom: 15px;
+  }
+
+  .table {
+    font-size: 0.9rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 8px;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+}
+
+.k4-print-sheet {
+  border: 1px solid #333;
+  background: #fff;
+  padding: 10px;
+}
+
+.k4-print-container {
+  padding: 16px;
+  background: #f5f6f8;
+}
+
+.k4-print-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.k4-print-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border: 1px solid #333;
+  border-bottom: none;
+  padding: 6px 10px;
+}
+
+.k4-print-title-wrap {
+  flex: 1;
+  text-align: center;
+}
+
+.k4-print-board {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.k4-print-subtitle {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.k4-print-format {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+
+.k4-print-meta-row {
+  border: 1px solid #333;
+  border-top: none;
+  padding: 6px 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.k4-print-blank {
+  display: inline-block;
+  border-bottom: 1px solid #333;
+  min-width: 24px;
+}
+
+.k4-print-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin-bottom: 0;
+  border: 1px solid #444;
+  font-size: 11px;
+}
+
+.k4-print-table th,
+.k4-print-table td {
+  border: 1px solid #444 !important;
+  font-size: 11px;
+  padding: 4px 6px;
+  text-align: center;
+  vertical-align: middle;
+  background: #fff;
+}
+
+.k4-structure-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.k4-col-roll {
+  width: 16%;
+}
+
+.k4-col-enroll {
+  width: 19%;
+}
+
+.k4-col-name {
+  width: 28%;
+}
+
+.k4-col-seat {
+  width: 12%;
+}
+
+.k4-col-marks {
+  width: 25%;
+}
+
+.k4-sheet-title-cell {
+  padding: 4px 8px !important;
+}
+
+.k4-sheet-title-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.k4-meta-left,
+.k4-meta-right,
+.k4-meta-center {
+  font-size: 11px !important;
+  font-weight: 600;
+  text-align: left !important;
+  padding: 4px 8px !important;
+}
+
+.k4-meta-right {
+  text-align: right !important;
+}
+
+.k4-meta-center {
+  text-align: center !important;
+}
+
+.k4-print-signatures {
+  border: 1px solid #333;
+  border-top: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 110px;
+}
+
+.k4-sign-column {
+  padding: 8px;
+  font-size: 12px;
+}
+
+.k4-sign-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.k4-print-table thead th {
+  background: #f1f3f5 !important;
+  font-weight: 700;
+}
+
+.k4-print-table td.text-start {
+  text-align: left !important;
+  padding-left: 6px !important;
+}
+
+@media print {
+  @page {
+    size: auto;
+    margin: 10mm;
+  }
+
+  .k4-print-toolbar,
+  .main-content > .btn,
+  .main-content > h3,
+  .main-content > .mt-4,
+  .sidebar,
+  .header,
+  .navbar,
+  .no-print {
+    display: none !important;
+  }
+
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .k4-print-container,
+  .k4-print-sheet {
+    background: #fff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .k4-print-sheet {
+    border: 1px solid #000;
+    box-shadow: none;
+  }
+
+  /* Force SA-PR-K4 print table to stay a real table (prevents card-like rows) */
+  .k4-print-table {
+    display: table !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    border: 1px solid #444 !important;
+  }
+
+  .k4-print-table thead {
+    display: table-header-group !important;
+  }
+
+  .k4-print-table tbody {
+    display: table-row-group !important;
+  }
+
+  .k4-print-table tr {
+    display: table-row !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background: #fff !important;
+  }
+
+  .k4-print-table th,
+  .k4-print-table td {
+    display: table-cell !important;
+    float: none !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    border: 1px solid #444 !important;
+    border-top: 1px solid #444 !important;
+    border-bottom: 1px solid #444 !important;
+    border-left: 1px solid #444 !important;
+    border-right: 1px solid #444 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  /* Explicit horizontal grid lines for every student row */
+  .k4-print-table tbody tr td {
+    border-top: 1px solid #444 !important;
+    border-bottom: 1px solid #444 !important;
+  }
+
+  .k4-print-table tbody tr + tr td {
+    border-top: 1px solid #444 !important;
+  }
+
+  .k4-print-table thead th {
+    background: #f1f3f5 !important;
+    font-weight: 700 !important;
+  }
+
+  .k4-print-table tbody td {
+    background: #fff !important;
+  }
+
+  .k4-print-table td.text-start {
+    text-align: left !important;
+    padding-left: 6px !important;
+  }
+
+  .k4-print-table td::before,
+  .k4-print-table th::before {
+    content: none !important;
+    display: none !important;
+  }
+}

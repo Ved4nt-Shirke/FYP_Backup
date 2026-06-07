@@ -1,0 +1,227 @@
+.student-dashboard-content {
+  padding: 0;
+  display: grid;
+  gap: 18px;
+}
+
+.welcome-section,
+.hero-section,
+.quick-access {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #dbe5f1);
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(2, 6, 23, 0.05);
+}
+
+.welcome-section {
+  padding: 18px;
+}
+
+.welcome-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-section h1 {
+  margin: 0;
+  color: var(--text-main, #0f172a);
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+
+.welcome-section p {
+  margin: 6px 0 0;
+  color: var(--text-muted, #64748b);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.datetime-display {
+  text-align: right;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary-accent-light, #eff6ff) 75%, #ffffff 25%);
+  border: 1px solid color-mix(in srgb, var(--primary-accent, #2563eb) 24%, #ffffff 76%);
+}
+
+.time {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main, #0f172a);
+}
+
+.date {
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748b);
+  margin-top: 2px;
+}
+
+.hero-section {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-accent, #2563eb) 0%,
+    var(--primary-accent-dark, #1d4ed8) 100%
+  );
+  color: var(--text-on-primary, #ffffff);
+  border-color: transparent;
+}
+
+.hero-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #ffffff 20%, transparent);
+  border: 1px solid color-mix(in srgb, #ffffff 45%, transparent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hero-content h2 {
+  margin: 12px 0 8px;
+  font-size: 1.55rem;
+  font-weight: 800;
+}
+
+.hero-content p {
+  margin: 0;
+  opacity: 0.94;
+}
+
+.hero-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cta-button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, #ffffff 55%, transparent);
+  background: #ffffff;
+  color: var(--primary-accent-dark, #1d4ed8);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cta-button.secondary {
+  background: color-mix(in srgb, #ffffff 20%, transparent);
+  color: #ffffff;
+}
+
+.hero-image {
+  font-size: 4rem;
+  opacity: 0.9;
+  min-width: 100px;
+  text-align: center;
+}
+
+.quick-access {
+  padding: 18px;
+}
+
+.quick-access h2 {
+  margin: 0 0 14px;
+  color: var(--text-main, #0f172a);
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: left;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color, #dbe5f1);
+  display: grid;
+  gap: 7px;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--primary-accent, #2563eb) 35%, #ffffff 65%);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+}
+
+.card i {
+  font-size: 1.3rem;
+  color: var(--primary-accent-dark, #1d4ed8);
+}
+
+.card span {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main, #0f172a);
+}
+
+.card small {
+  font-size: 0.74rem;
+  color: var(--text-muted, #64748b);
+  line-height: 1.35;
+}
+
+@media (max-width: 768px) {
+  .welcome-section,
+  .quick-access {
+    padding: 14px;
+  }
+
+  .welcome-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .datetime-display {
+    width: 100%;
+    text-align: left;
+  }
+
+  .hero-section {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-content h2 {
+    font-size: 1.2rem;
+  }
+
+  .hero-image {
+    font-size: 2.8rem;
+    min-width: auto;
+  }
+
+  .cards-container {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .cards-container {
+    grid-template-columns: 1fr;
+  }
+}

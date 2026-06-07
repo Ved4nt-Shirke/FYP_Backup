@@ -1,0 +1,332 @@
+.ciann-print-page {
+  min-height: 100vh;
+  background: #f4f6fb;
+  padding: 20px;
+}
+
+.ciann-print-toolbar {
+  max-width: 1000px;
+  margin: 0 auto 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ciann-print-sheet {
+  background: #ffffff;
+  color: #111827;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #d1d5db;
+}
+
+.print-block {
+  margin-bottom: 24px;
+  break-inside: avoid;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #000;
+}
+
+.front-page-block {
+  page-break-after: always;
+}
+
+.course-diary-card {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.course-diary-header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.course-diary-logo-cell {
+  width: 84px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.course-diary-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.course-diary-logo-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background-color: #e5e7eb;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.course-diary-title {
+  flex: 1;
+  background: var(--app-header-bg);
+  color: #fff;
+  text-align: center;
+  font-size: 38px;
+  font-weight: 700;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.course-diary-body-center {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.course-diary-body-center p {
+  margin: 4px 0;
+  font-size: 20px;
+}
+
+.institution-name {
+  font-size: 34px;
+  color: #444;
+  margin: 0 0 8px;
+  text-transform: lowercase;
+}
+
+.ciann-name {
+  color: var(--app-header-bg);
+  font-size: 42px;
+  margin: 0 0 8px;
+}
+
+.diary-info-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  display: table;
+}
+
+.diary-row {
+  display: table-row;
+}
+
+.diary-row .label,
+.diary-row .value {
+  display: table-cell;
+  padding: 12px 15px;
+  font-size: 16px;
+  border: 1px solid #d1d5db;
+}
+
+.diary-row .label {
+  width: 35%;
+  background: var(--app-header-bg);
+  color: #fff;
+  font-weight: 700;
+}
+
+.diary-row .value {
+  width: 65%;
+  background: #fff;
+}
+
+.print-grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  border: 2px solid #000;
+}
+
+.print-grid th,
+.print-grid td {
+  border: 1px solid #000;
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 12px;
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+.print-grid thead th {
+  border: 2px solid #000;
+  font-weight: 700;
+  background: #f3f4f6;
+}
+
+.timetable-print-table .time-col {
+  font-weight: 700;
+  width: 180px;
+  background: #f9fafb;
+}
+
+.tt-cell {
+  min-height: 34px;
+}
+
+.syllabus-image-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.syllabus-image-block {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.syllabus-page-label {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.syllabus-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.two-col-grid h4,
+.subject-section h4 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.small-note {
+  margin: 0 0 10px;
+  color: #374151;
+  font-size: 13px;
+}
+
+.subject-section {
+  margin-bottom: 14px;
+}
+
+.plan-page {
+  margin-bottom: 18px;
+  page-break-inside: avoid;
+}
+
+.plan-page-title {
+  display: inline-block;
+  border: 1px solid #d1d5db;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.tp-table th,
+.tp-table td {
+  font-size: 11px;
+}
+
+.entry-no-cell {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ciann-print-loading {
+  text-align: center;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #374151;
+}
+
+.ciann-print-empty {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .two-col-grid,
+  .syllabus-image-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .course-diary-title {
+    font-size: 24px;
+  }
+
+  .course-diary-body-center p {
+    font-size: 16px;
+  }
+}
+
+@media print {
+  @page {
+    margin: 10mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .ciann-print-page {
+    padding: 0;
+    background: #fff;
+  }
+
+  .ciann-print-sheet {
+    max-width: none;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-grid,
+  .course-diary-card,
+  .plan-page,
+  .print-block {
+    page-break-inside: avoid;
+  }
+
+  .front-page-block {
+    page-break-after: always;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .course-diary-title {
+    font-size: 24px;
+  }
+
+  .course-diary-body-center p {
+    font-size: 14px;
+  }
+
+  .ciann-name {
+    font-size: 28px;
+  }
+
+  .institution-name {
+    font-size: 22px;
+  }
+}
