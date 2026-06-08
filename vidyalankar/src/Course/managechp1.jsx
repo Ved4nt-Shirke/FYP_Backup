@@ -175,7 +175,23 @@ const ManageChapters1 = () => {
 
   return (
     <div className="manage-chapters-container">
-      <h2 className="page-title">Select Course To Add Chapters</h2>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+        <button
+          className="btn btn-secondary"
+          onClick={() => navigate(-1)}
+          style={{
+            background: "#64748b",
+            border: "1px solid #475569",
+            color: "#fff",
+            marginRight: "15px",
+            padding: "8px 16px",
+            borderRadius: "6px"
+          }}
+        >
+          <i className="bi bi-arrow-left"></i> Back
+        </button>
+        <h2 className="page-title" style={{ margin: 0 }}>Select Course To Add Chapters</h2>
+      </div>
 
       {error && <div className="error-message">{error}</div>}
 

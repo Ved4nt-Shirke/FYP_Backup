@@ -1,18 +1,57 @@
 import { useState, useEffect } from "react";
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function VacSection() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const blankVac = [
     { name: '', conductedBy: '', duration: '', certificate: '' },
     { name: '', conductedBy: '', duration: '', certificate: '' }
   ];
 
-  // Helper to create a deep copy of the rows array
   const deepCloneRows = (rows) => rows.map(r => ({ ...r }));
 
   const [showVacForm, setShowVacForm] = useState(false);
   const [currentVacForm, setCurrentVacForm] = useState(deepCloneRows(blankVac));
   const [submittedVacData, setSubmittedVacData] = useState(deepCloneRows(blankVac));
   const [vacBtn, setVacBtn] = useState('Add/Edit List');
+
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.vacSection && data.vacSection.length > 0) {
+        const mappedData = data.vacSection.map(item => ({
+          name: item.name || '',
+          conductedBy: item.conductedBy || '',
+          duration: item.duration || '',
+          certificate: item.certificate || ''
+        }));
+        while (mappedData.length < 2) mappedData.push({ name: '', conductedBy: '', duration: '', certificate: '' });
+        
+        setSubmittedVacData(mappedData.slice(0, 2));
+        setCurrentVacForm(mappedData.slice(0, 2));
+        setVacBtn('Edit List');
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch VAC data'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Effect to prevent body scroll when modal is open
   useEffect(() => {
@@ -35,10 +74,24 @@ export default function VacSection() {
     setCurrentVacForm(updatedForm);
   };
   
-  const handleSubmit = () => {
-    setSubmittedVacData(deepCloneRows(currentVacForm));
-    setVacBtn('Edit List');
-    setShowVacForm(false);
+  const handleSubmit = async () => {
+    if (!ciannId) return;
+    try {
+      const backendData = currentVacForm.map(item => ({
+        name: item.name,
+        conductedBy: item.conductedBy,
+        duration: item.duration,
+        certificate: item.certificate
+      }));
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "vacSection": backendData
+      });
+      setSubmittedVacData(deepCloneRows(currentVacForm));
+      setVacBtn('Edit List');
+      setShowVacForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update VAC courses'));
+    }
   };
 
   return (

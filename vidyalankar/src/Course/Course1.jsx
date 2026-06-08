@@ -165,7 +165,23 @@ const CourseForm = () => {
 
   return (
     <div className="course-form-container">
-      <h1>Select Course To Add Experiments</h1>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+        <button
+          className="btn btn-secondary"
+          onClick={() => navigate(-1)}
+          style={{
+            background: "#64748b",
+            border: "1px solid #475569",
+            color: "#fff",
+            marginRight: "15px",
+            padding: "8px 16px",
+            borderRadius: "6px"
+          }}
+        >
+          <i className="bi bi-arrow-left"></i> Back
+        </button>
+        <h1 style={{ margin: 0 }}>Select Course To Add Experiments</h1>
+      </div>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">

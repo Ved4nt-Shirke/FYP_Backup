@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 function Recommendation() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [showFacultyForm, setShowFacultyForm] = useState(false);
   const [facultyData, setFacultyData] = useState({ cy1: '', cy2: '', cy3: '' });
   const [savedRecommendation, setSavedRecommendation] = useState({ cy1: '', cy2: '', cy3: '' });
@@ -21,6 +26,41 @@ function Recommendation() {
     ivWorkshop: false, miniProject: false, valueAdded: false, other: '', details: ''
   });
 
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.recommendations) {
+        if (data.recommendations.faculty) {
+          setSavedRecommendation(data.recommendations.faculty);
+          setFacultyData(data.recommendations.faculty);
+        }
+        if (data.recommendations.clusterIndustryMentor) {
+          setSavedClusterData(data.recommendations.clusterIndustryMentor);
+          setClusterData(data.recommendations.clusterIndustryMentor);
+        }
+        if (data.recommendations.subjectTeacher) {
+          setRecommendationEntries(data.recommendations.subjectTeacher);
+        }
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch recommendations'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Lock scroll when any modal is open
   useEffect(() => {
     if (showFacultyForm || showClusterModel || showSubjectTeacher) {
@@ -40,13 +80,22 @@ function Recommendation() {
     }));
   };
 
-  const handleSubjectTeacherSubmit = () => {
-    setRecommendationEntries(prev => [...prev, { ...currentRecommendation }]);
-    setCurrentRecommendation({
-      unitNo: '', practicalExpt: '', nptel: false, guestLecture: false,
-      ivWorkshop: false, miniProject: false, valueAdded: false, other: '', details: ''
-    });
-    setShowSubjectTeacher(false);
+  const handleSubjectTeacherSubmit = async () => {
+    const newEntries = [...recommendationEntries, { ...currentRecommendation }];
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "recommendations.subjectTeacher": newEntries
+      });
+      setRecommendationEntries(newEntries);
+      setCurrentRecommendation({
+        unitNo: '', practicalExpt: '', nptel: false, guestLecture: false,
+        ivWorkshop: false, miniProject: false, valueAdded: false, other: '', details: ''
+      });
+      setShowSubjectTeacher(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update subject teacher recommendations'));
+    }
   };
 
   // Faculty Handlers
@@ -54,9 +103,17 @@ function Recommendation() {
     const { name, value } = e.target;
     setFacultyData(prev => ({ ...prev, [name]: value }));
   };
-  const handleFacultySubmit = () => {
-    setSavedRecommendation(facultyData);
-    setShowFacultyForm(false);
+  const handleFacultySubmit = async () => {
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "recommendations.faculty": facultyData
+      });
+      setSavedRecommendation(facultyData);
+      setShowFacultyForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update faculty recommendations'));
+    }
   };
 
   // Cluster Handlers
@@ -64,9 +121,17 @@ function Recommendation() {
     const { name, value } = e.target;
     setClusterData(prev => ({ ...prev, [name]: value }));
   };
-  const handleSubmitCluster = () => {
-    setSavedClusterData(clusterData);
-    setShowClusterModel(false);
+  const handleSubmitCluster = async () => {
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "recommendations.clusterIndustryMentor": clusterData
+      });
+      setSavedClusterData(clusterData);
+      setShowClusterModel(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update cluster mentor recommendations'));
+    }
   };
 
   return (

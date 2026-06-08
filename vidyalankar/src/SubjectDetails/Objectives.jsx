@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function Objectives() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     cognitive: "",
@@ -14,15 +19,48 @@ export default function Objectives() {
     behavioral: ""
   });
 
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.objectives) {
+        setSubmittedData(data.objectives);
+        setFormData(data.objectives);
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch objectives'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmittedData(formData);
-    setFormData({ cognitive: "", affective: "", behavioral: "" });
-    setShowForm(false);
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "objectives": formData
+      });
+      setSubmittedData(formData);
+      setShowForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update objectives'));
+    }
   };
 
   // ✅ Lock background scroll when modal is open

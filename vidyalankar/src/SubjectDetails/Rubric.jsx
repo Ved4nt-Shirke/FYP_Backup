@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function Rubric() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [showRubric, setShowRubric] = useState(false);
   const [submittedRubricData, setSubmittedRubricData] = useState(null);
   const [rubricFormData, setRubricFormData] = useState({
@@ -13,23 +18,48 @@ export default function Rubric() {
     total: ''
   });
 
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.rubric) {
+        setSubmittedRubricData(data.rubric);
+        setRubricFormData(data.rubric);
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch rubric'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRubricChange = (e) => {
     const { name, value } = e.target;
     setRubricFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRubricSubmit = () => {
-    setSubmittedRubricData(rubricFormData);
-    setRubricFormData({
-      attendance: '',
-      assignments: '',
-      performance: '',
-      journal: '',
-      tests: '',
-      other: '',
-      total: ''
-    });
-    setShowRubric(false);
+  const handleRubricSubmit = async () => {
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "rubric": rubricFormData
+      });
+      setSubmittedRubricData(rubricFormData);
+      setShowRubric(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update rubric'));
+    }
   };
 
   const handleCancelRubric = () => setShowRubric(false);

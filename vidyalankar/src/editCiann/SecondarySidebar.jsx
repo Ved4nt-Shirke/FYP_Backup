@@ -14,9 +14,22 @@ const SecondarySidebar = ({
   const [showCiannSelector, setShowCiannSelector] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [openSubMenus, setOpenSubMenus] = useState({});
+
+  const toggleSubMenu = (label) => {
+    setOpenSubMenus((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
   const menuItems = [
     { label: "Front Page", path: "/course-diary", icon: "bi-journal-text" },
+    {
+      label: "Course",
+      icon: "bi-book",
+      subItems: [
+        { label: "Manage Chapters", path: "/chapters" },
+        { label: "Manage Practical", path: "/experiment" },
+      ],
+    },
     {
       label: "Time Table & Load",
       path: "/timetable",
@@ -113,6 +126,8 @@ const SecondarySidebar = ({
       "Subject Details": "/subject-details",
       "TLO Details": "/tlo",
       "LLO Details": "/llo",
+      "Manage Chapters": "/chapters",
+      "Manage Practical": "/experiment",
     };
     const route = routes[label];
     if (!route) {
@@ -188,20 +203,77 @@ const SecondarySidebar = ({
           </div>
           <ul className="secondary-nav-list">
             {menuItems.map((item, index) => (
-              <li
-                key={item.label}
-                className={`secondary-nav-item ${
-                  location.pathname === item.path ||
-                  location.pathname.startsWith(`${item.path}/`)
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() => handleClick(item.label)}
-              >
-                <span className="secondary-nav-index">{index + 1}</span>
-                <i className={`bi ${item.icon} secondary-nav-icon`}></i>
-                <span className="secondary-nav-label">{item.label}</span>
-              </li>
+              <React.Fragment key={item.label}>
+                <li
+                  className={`secondary-nav-item ${
+                    !item.subItems &&
+                    (location.pathname === item.path ||
+                      location.pathname.startsWith(`${item.path}/`))
+                      ? "active"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    if (item.subItems) {
+                      toggleSubMenu(item.label);
+                    } else {
+                      handleClick(item.label);
+                    }
+                  }}
+                  style={item.subItems ? { cursor: "pointer" } : {}}
+                >
+                  <span className="secondary-nav-index">{index + 1}</span>
+                  <i className={`bi ${item.icon} secondary-nav-icon`}></i>
+                  <span className="secondary-nav-label">{item.label}</span>
+                  {item.subItems && (
+                    <i
+                      className={`bi ${
+                        openSubMenus[item.label] ? "bi-chevron-down" : "bi-chevron-right"
+                      } ms-auto`}
+                      style={{ fontSize: "0.8rem", color: "#64748b" }}
+                    ></i>
+                  )}
+                </li>
+                {item.subItems && openSubMenus[item.label] && (
+                  <ul
+                    className="secondary-nav-sublist"
+                    style={{ listStyle: "none", paddingLeft: "45px", margin: "5px 0 10px 0" }}
+                  >
+                    {item.subItems.map((subItem) => (
+                      <li
+                        key={subItem.label}
+                        className={`secondary-nav-subitem ${
+                          location.pathname === subItem.path ||
+                          location.pathname.startsWith(`${subItem.path}/`)
+                            ? "active"
+                            : ""
+                        }`}
+                        onClick={() => handleClick(subItem.label)}
+                        style={{
+                          padding: "8px 0",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          color:
+                            location.pathname === subItem.path ||
+                            location.pathname.startsWith(`${subItem.path}/`)
+                              ? "#4f46e5"
+                              : "#475569",
+                          fontWeight:
+                            location.pathname === subItem.path ||
+                            location.pathname.startsWith(`${subItem.path}/`)
+                              ? "600"
+                              : "500",
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        <i className="bi bi-dot"></i>
+                        <span>{subItem.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </React.Fragment>
             ))}
           </ul>
         </div>

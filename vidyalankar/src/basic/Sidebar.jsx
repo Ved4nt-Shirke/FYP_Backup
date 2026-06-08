@@ -211,6 +211,10 @@ const Sidebar = ({
       navigateAndClose("/msbte/sa-pr-k4/cianns?mode=print");
     } else if (option === "Attendance Report") {
       navigateAndClose("/msbte/attendance");
+    } else if (option === "Industrial Visit K8") {
+      navigateAndClose("/msbte/industrial-visit/k8");
+    } else if (option === "Expert Lecture K9") {
+      navigateAndClose("/msbte/expert-lecture/k9");
     }
   };
 
@@ -549,51 +553,6 @@ const Sidebar = ({
             </div>
           </li>
           <li className="sidebar-item">
-            <div className="dropdown" ref={dropdownRefs.course}>
-              <button
-                className={`btn dropdown-toggle dropdown-header w-100 text-start ${
-                  openDropdown === "course" ? "open" : ""
-                }`}
-                type="button"
-                onClick={() => handleDropdownToggle("course")}
-              >
-                <i className="bi bi-book"></i>
-                <span>Course</span>
-                <i className="bi bi-chevron-down dropdown-chevron"></i>
-              </button>
-              <ul
-                className={`dropdown-menu sidebar-submenu ${
-                  openDropdown === "course" ? "show" : ""
-                }`}
-              >
-                <li>
-                  <a
-                    className="dropdown-item d-flex align-items-center gap-2"
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleCourseSelect("Chapters");
-                    }}
-                  >
-                    <i className="bi bi-list-ol"></i> Chapters
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="dropdown-item d-flex align-items-center gap-2"
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleCourseSelect("Experiment");
-                    }}
-                  >
-                    <i className="bi bi-flask"></i> Experiment
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </li>
-          <li className="sidebar-item">
             <div className="dropdown" ref={dropdownRefs.assessment}>
               <button
                 className={`btn dropdown-toggle dropdown-header w-100 text-start ${
@@ -869,6 +828,30 @@ const Sidebar = ({
                     }}
                   >
                     <i className="bi bi-file-earmark"></i> FA-TH-K5
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="dropdown-item d-flex align-items-center gap-2"
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleMSBTESelect("Industrial Visit K8");
+                    }}
+                  >
+                    <i className="bi bi-building"></i> Industrial Visit K8
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="dropdown-item d-flex align-items-center gap-2"
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleMSBTESelect("Expert Lecture K9");
+                    }}
+                  >
+                    <i className="bi bi-person-video3"></i> Expert Lecture K9
                   </a>
                 </li>
               </ul>

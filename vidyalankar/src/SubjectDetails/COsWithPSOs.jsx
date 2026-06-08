@@ -1,13 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function COsWithPSOs() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [showPSOForm, setShowPSOForm] = useState(false);
   const [mappingData, setMappingData] = useState(
-    Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" })) // Corrected initialization
+    Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" }))
   );
   const [formData, setFormData] = useState(
-    Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" })) // Separate state for form
+    Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" }))
   );
+
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.cosWithPSOs && data.cosWithPSOs.length > 0) {
+        setMappingData(data.cosWithPSOs);
+        setFormData(data.cosWithPSOs);
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch CO-PSO mapping'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePSOChange = (index, field, value) => {
     const updated = [...formData];
@@ -15,9 +46,17 @@ export default function COsWithPSOs() {
     setFormData(updated);
   };
 
-  const handlePSOSubmit = () => {
-    setMappingData(formData.map(row => ({ ...row }))); // Deep copy to update display
-    setShowPSOForm(false);
+  const handlePSOSubmit = async () => {
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "cosWithPSOs": formData
+      });
+      setMappingData(formData.map(row => ({ ...row })));
+      setShowPSOForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update mapping'));
+    }
   };
 
   return (

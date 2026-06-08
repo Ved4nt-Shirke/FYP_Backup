@@ -1,17 +1,75 @@
 import React, { useState, useEffect } from "react";
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function OfficeHours() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [day, setDay] = useState("");
   const [time, setTime] = useState("");
   const [venue, setVenue] = useState("");
   const [informed, setInformed] = useState(false);
+  
   const [showForm, setShowForm] = useState(false);
   const [formDay, setFormDay] = useState("");
   const [formTime, setFormTime] = useState("");
   const [formVenue, setFormVenue] = useState("");
   const [formInformed, setFormInformed] = useState(false);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.officeHours) {
+        setDay(data.officeHours.day || "");
+        setTime(data.officeHours.time || "");
+        setVenue(data.officeHours.venue || "");
+        setInformed(data.officeHours.informed || false);
+        
+        setFormDay(data.officeHours.day || "");
+        setFormTime(data.officeHours.time || "");
+        setFormVenue(data.officeHours.venue || "");
+        setFormInformed(data.officeHours.informed || false);
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch details'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "officeHours": {
+          day: formDay,
+          time: formTime,
+          venue: formVenue,
+          informed: formInformed
+        }
+      });
+      setDay(formDay);
+      setTime(formTime);
+      setVenue(formVenue);
+      setInformed(formInformed);
+      setShowForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update office hours'));
+    }
+  };
     setDay(formDay);
     setTime(formTime);
     setVenue(formVenue);
@@ -431,7 +489,19 @@ export default function OfficeHours() {
                     <input
                       type="checkbox"
                       checked={informed}
-                      onChange={() => setInformed(!informed)}
+                      onChange={async () => {
+                        const newInformed = !informed;
+                        setInformed(newInformed);
+                        if (ciannId) {
+                          try {
+                            await ciannSubjectDetailsApi.updateDetails(ciannId, {
+                              "officeHours.informed": newInformed
+                            });
+                          } catch (err) {
+                            console.error('Failed to update informed status', err);
+                          }
+                        }
+                      }}
                       style={{ /* Inline style for checkbox for quick visual check */
                         width: '20px',
                         height: '20px',

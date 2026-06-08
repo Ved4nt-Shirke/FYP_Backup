@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function RecommendedWebsiteResource() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [form, setForm] = useState({ name: '', url: '', module: '' });
   const [recommendedSites, setRecommendedSites] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -15,15 +20,49 @@ export default function RecommendedWebsiteResource() {
     return () => (document.body.style.overflow = 'auto');
   }, [showModal]);
 
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.recommendedWebsiteResource) {
+        setRecommendedSites(data.recommendedWebsiteResource);
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch Recommended Websites'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setRecommendedSites([...recommendedSites, form]);
-    setForm({ name: '', url: '', module: '' });
-    setShowModal(false);
+    if (!ciannId) return;
+    try {
+      const newSites = [...recommendedSites, form];
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "recommendedWebsiteResource": newSites
+      });
+      setRecommendedSites(newSites);
+      setForm({ name: '', url: '', module: '' });
+      setShowModal(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to save Recommended Website'));
+    }
   };
 
   return (

@@ -138,6 +138,19 @@ export const knowledgeMapApi = {
   }),
 };
 
+// ==================== CIANN SUBJECT DETAILS API ====================
+
+export const ciannSubjectDetailsApi = {
+  // Get all details for a CIANN
+  getDetails: (ciannId) => apiCall(`${API_BASE_URL}/ciann/${ciannId}`),
+  
+  // Update details (can update entire document or specific fields)
+  updateDetails: (ciannId, updateData) => apiCall(`${API_BASE_URL}/ciann/${ciannId}`, {
+    method: 'POST',
+    body: JSON.stringify(updateData),
+  }),
+};
+
 // ==================== UTILITY FUNCTIONS ====================
 
 // Get CIANN ID from session storage or local storage

@@ -1,12 +1,56 @@
 import React, { useState, useEffect } from 'react';
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function KnowledgeMap() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [showForm, setShowForm] = useState(false);
   const [tableData, setTableData] = useState(null);
 
-  const handleFormSubmit = (data) => {
-    if (data) {
-      setTableData(data);
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.knowledgeMap && (data.knowledgeMap.preSem || data.knowledgeMap.preCourse)) {
+        setTableData(data.knowledgeMap);
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch knowledge map'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFormSubmit = async (data) => {
+    if (data && ciannId) {
+      try {
+        await ciannSubjectDetailsApi.updateDetails(ciannId, {
+          "knowledgeMap": {
+            preSem: data.preSem,
+            preCourse: data.preCourse,
+            futureSem: data.futureSem,
+            futureCourse: data.futureCourse,
+            application: data.application,
+            // omitting file for JSON payload
+          }
+        });
+        setTableData(data);
+      } catch (err) {
+        alert(handleApiError(err, 'Failed to update knowledge map'));
+      }
     }
     setShowForm(false);
   };

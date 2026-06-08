@@ -1,6 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 function LectureSchedule() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [showIndustryForm, setShowIndustryForm] = useState(false);
   const [industryMentor, setIndustryMentor] = useState({
     name: '', designation: '', company: '', contact: '', email: ''
@@ -13,23 +18,69 @@ function LectureSchedule() {
   });
   const [submittedClusterMentor, setSubmittedClusterMentor] = useState(null);
 
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.lectureSchedule) {
+        if (data.lectureSchedule.industryMentor) {
+          setSubmittedIndustryMentor(data.lectureSchedule.industryMentor);
+          setIndustryMentor(data.lectureSchedule.industryMentor);
+        }
+        if (data.lectureSchedule.clusterMentor) {
+          setSubmittedClusterMentor(data.lectureSchedule.clusterMentor);
+          setClusterMentor(data.lectureSchedule.clusterMentor);
+        }
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch details'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e, setter) => {
     const { name, value } = e.target;
     setter(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleIndustrySubmit = (e) => {
+  const handleIndustrySubmit = async (e) => {
     e.preventDefault();
-    setSubmittedIndustryMentor(industryMentor);
-    setIndustryMentor({ name: '', designation: '', company: '', contact: '', email: '' });
-    setShowIndustryForm(false);
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "lectureSchedule.industryMentor": industryMentor
+      });
+      setSubmittedIndustryMentor(industryMentor);
+      setShowIndustryForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update industry mentor'));
+    }
   };
 
-  const handleClusterSubmit = (e) => {
+  const handleClusterSubmit = async (e) => {
     e.preventDefault();
-    setSubmittedClusterMentor(clusterMentor);
-    setClusterMentor({ name: '', designation: '', department: '', contact: '', email: '' });
-    setShowClusterForm(false);
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "lectureSchedule.clusterMentor": clusterMentor
+      });
+      setSubmittedClusterMentor(clusterMentor);
+      setShowClusterForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update cluster mentor'));
+    }
   };
 
   return (

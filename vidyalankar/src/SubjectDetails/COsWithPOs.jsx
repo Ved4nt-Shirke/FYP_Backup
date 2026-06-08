@@ -1,21 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function COsWithPOs() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const initialMatrix = () => Array.from({ length: 6 }, () => Array(12).fill("-"));
 
   const [showForm, setShowForm] = useState(false);
   const [mappingData, setMappingData] = useState(initialMatrix);
   const [formData, setFormData] = useState(initialMatrix);
 
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.cosWithPOs && data.cosWithPOs.length > 0) {
+        setMappingData(data.cosWithPOs);
+        setFormData(data.cosWithPOs);
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch CO-PO mapping'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (coIndex, poIndex, value) => {
-    const updated = [...formData];
+    const updated = formData.map(row => [...row]);
     updated[coIndex][poIndex] = value;
     setFormData(updated);
   };
 
-  const handleSubmit = () => {
-    setMappingData([...formData]);
-    setShowForm(false);
+  const handleSubmit = async () => {
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "cosWithPOs": formData
+      });
+      setMappingData([...formData]);
+      setShowForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update mapping'));
+    }
   };
 
   return (

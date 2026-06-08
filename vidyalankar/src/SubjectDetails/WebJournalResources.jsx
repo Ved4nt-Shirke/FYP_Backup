@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function WebJournalResources() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [webForm, setWebForm] = useState({
     journal: '',
     magazine: '',
@@ -20,15 +25,49 @@ export default function WebJournalResources() {
     return () => (document.body.style.overflow = 'auto');
   }, [showModal]);
 
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.webJournalResources) {
+        setWebData(data.webJournalResources);
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch Web Journal Resources'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e) => {
     setWebForm({ ...webForm, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setWebData(prev => [...prev, webForm]);
-    setWebForm({ journal: '', magazine: '', module: '' });
-    setShowModal(false);
+    if (!ciannId) return;
+    try {
+      const newData = [...webData, webForm];
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "webJournalResources": newData
+      });
+      setWebData(newData);
+      setWebForm({ journal: '', magazine: '', module: '' });
+      setShowModal(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update Web Journal Resources'));
+    }
   };
 
   return (

@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function StudySection() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const blankStudy = { gq: false, notes: false, digital: false, ppt: false, eq: false, other: '' };
 
   const [showStudyForm, setShowStudyForm] = useState(false);
@@ -25,10 +30,46 @@ export default function StudySection() {
     }));
   };
 
-  const handleSubmit = () => {
-    setSubmittedStudy({ ...studyForm });
-    setStudyBtn('Edit');
-    setShowStudyForm(false);
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.studySection) {
+        const mapped = { ...blankStudy, ...data.studySection };
+        setSubmittedStudy(mapped);
+        setStudyForm(mapped);
+        setStudyBtn('Edit');
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch Study Material data'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "studySection": studyForm
+      });
+      setSubmittedStudy({ ...studyForm });
+      setStudyBtn('Edit');
+      setShowStudyForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update Study Material'));
+    }
   };
 
   const formatLabel = (field) => {

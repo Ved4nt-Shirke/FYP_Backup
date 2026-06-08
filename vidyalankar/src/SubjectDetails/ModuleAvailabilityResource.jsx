@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function ModuleAvailabilityResource() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [moduleForm, setModuleForm] = useState({
     module: '',
     textbook: false,
@@ -25,7 +30,31 @@ export default function ModuleAvailabilityResource() {
     return () => (document.body.style.overflow = 'auto');
   }, [showModal]);
 
-  // A single handler for all form inputs
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.moduleAvailabilityResource) {
+        setModuleData(data.moduleAvailabilityResource);
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch Module Availability Resource'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setModuleForm(prev => ({
@@ -34,16 +63,24 @@ export default function ModuleAvailabilityResource() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setModuleData([...moduleData, moduleForm]);
-    // Reset form to initial state and close modal
-    setModuleForm({
-      module: '', textbook: false, referenceBook: false, otherBook: false,
-      magazine: false, journalRegular: false, journalE: false,
-      available: '', details: ''
-    });
-    setShowModal(false);
+    if (!ciannId) return;
+    try {
+      const newData = [...moduleData, moduleForm];
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "moduleAvailabilityResource": newData
+      });
+      setModuleData(newData);
+      setModuleForm({
+        module: '', textbook: false, referenceBook: false, otherBook: false,
+        magazine: false, journalRegular: false, journalE: false,
+        available: '', details: ''
+      });
+      setShowModal(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update Module Availability Resource'));
+    }
   };
 
   return (

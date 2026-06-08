@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function OtherContributionsSection() {
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [showContribForm, setShowContribForm] = useState(false);
   const [contribText, setContribText] = useState('');
   const [submittedContrib, setSubmittedContrib] = useState('');
@@ -16,9 +21,46 @@ export default function OtherContributionsSection() {
     return () => (document.body.style.overflow = 'auto');
   }, [showContribForm]);
 
-  const handleSubmit = () => {
-    setSubmittedContrib(contribText);
-    setShowContribForm(false);
+  useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.otherContributionsSection) {
+        const text = data.otherContributionsSection || '';
+        setSubmittedContrib(text);
+        setContribText(text);
+        setContribBtn('Edit');
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch Other Contributions data'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!ciannId) return;
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "otherContributionsSection": contribText
+      });
+      setSubmittedContrib(contribText);
+      setContribBtn('Edit');
+      setShowContribForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update Other Contributions'));
+    }
   };
 
   return (

@@ -1,37 +1,87 @@
-import { useState, useRef, useEffect } from "react"; // Fixed: Changed '=>' to 'from'
+import { useState, useRef, useEffect } from "react";
+import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
 
 export default function App() { // Renamed to App for default export in Canvas
+  const [ciannId, setCiannId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [showResultForm, setShowResultForm] = useState(false);
   const resultInputsRef = useRef([]);
   const [results, setResults] = useState(null);
 
   useEffect(() => {
+    const id = getCurrentCiannId();
+    if (id) {
+      setCiannId(id);
+      fetchDetails(id);
+    } else {
+      setError('No CIANN selected');
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = async (id) => {
+    try {
+      setLoading(true);
+      const data = await ciannSubjectDetailsApi.getDetails(id);
+      if (data?.pastResults && (data.pastResults.faculty || data.pastResults.subjectPass)) {
+        setResults(data.pastResults);
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to fetch past results'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (showResultForm && resultInputsRef.current.length > 0) {
-      // Filter out null/undefined elements before focusing
+      // Pre-fill inputs if results exist
+      if (results) {
+        const flatResults = [
+          ...(results.faculty || ["", "", "", ""]),
+          ...(results.subjectPass || ["", "", "", ""]),
+          ...(results.subjectTopper || ["", "", "", ""]),
+          ...(results.overallPass || ["", "", "", ""])
+        ];
+        
+        resultInputsRef.current.forEach((input, idx) => {
+          if (input) input.value = flatResults[idx] || "";
+        });
+      }
+      
       const firstInput = resultInputsRef.current.find(input => input);
       firstInput?.focus();
     }
-  }, [showResultForm]);
+  }, [showResultForm, results]);
 
-  const handleSubmit = () => {
-    // Ensure all refs are properly assigned and values are collected
+  const handleSubmit = async () => {
     const inputValues = resultInputsRef.current.map(input => input?.value || "");
 
-    // Check if enough inputs are present before slicing
     if (inputValues.length < 16) {
       console.error("Not enough input values to process results.");
-      // Optionally, show an alert to the user
-      // alert("Please fill in all 16 fields before submitting.");
       return;
     }
 
-    setResults({
+    const newResults = {
       faculty: inputValues.slice(0, 4),
       subjectPass: inputValues.slice(4, 8),
       subjectTopper: inputValues.slice(8, 12),
       overallPass: inputValues.slice(12, 16),
-    });
-    setShowResultForm(false);
+    };
+
+    if (!ciannId) return;
+    
+    try {
+      await ciannSubjectDetailsApi.updateDetails(ciannId, {
+        "pastResults": newResults
+      });
+      setResults(newResults);
+      setShowResultForm(false);
+    } catch (err) {
+      alert(handleApiError(err, 'Failed to update past results'));
+    }
   };
 
   return (
