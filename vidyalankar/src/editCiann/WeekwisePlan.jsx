@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../utils/axiosConfig";
-import { config } from "../config/api";
+import { config, getApiUrl } from "../config/api";
 
 const modalStyles = {
   overlay: {
@@ -18,8 +18,8 @@ const modalStyles = {
   content: {
     background: "white",
     borderRadius: "16px",
-    width: "90%",
-    maxWidth: "700px",
+    width: "95%",
+    maxWidth: "950px",
     maxHeight: "90vh", // Keep modal within viewport on mobile
     animation: "fadeIn 0.3s ease-in-out",
     display: "flex",
@@ -48,13 +48,57 @@ const WeekwisePlan = ({
 }) => {
   const [week, setWeek] = useState(initialWeek ? `Week ${initialWeek}` : "");
   const [plans, setPlans] = useState([
-    { batch: "B1", exptNo: "", exptName: "", date: "" },
-    { batch: "B2", exptNo: "", exptName: "", date: "" },
-    { batch: "B3", exptNo: "", exptName: "", date: "" },
+    { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+    { batch: "B2", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+    { batch: "B3", co: "", llo: "", exptNo: "", exptName: "", date: "" },
   ]);
   const [message, setMessage] = useState("");
   const [experiments, setExperiments] = useState([]);
   const [loadingExperiments, setLoadingExperiments] = useState(false);
+  const [coData, setCoData] = useState([]);
+
+  // Fetch TloLlo details for CO and LLO dropdowns
+  useEffect(() => {
+    if (!ciannData) return;
+    const fetchTloLlo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const subjectId = ciannData.subject?._id || ciannData.subjectId;
+        const res = await fetch(
+          getApiUrl(`/subject-details/tlo-llo/${ciannData.ciannId}/${subjectId}`),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.success && data.data && Array.isArray(data.data.coData)) {
+          setCoData(data.data.coData);
+        } else {
+          // Fallback
+          const courseDetailsRes = await fetch(
+            getApiUrl(`/pt-microproject/new/course-details/${subjectId}`),
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          const courseDetailsData = await courseDetailsRes.json();
+          if (courseDetailsData.success && courseDetailsData.courseDetails) {
+            const loadedCOs = courseDetailsData.courseDetails.courseOutcomes || [];
+            setCoData(loadedCOs.map(c => ({ coNumber: c.coNumber, coDescription: c.description, tlos: [], llos: [] })));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching TloLlo mappings in Lab Plan:", err);
+      }
+    };
+    fetchTloLlo();
+  }, [ciannData]);
 
   // Fetch experiments based on ciann data
   useEffect(() => {
@@ -101,6 +145,8 @@ const WeekwisePlan = ({
       if (filtered.length > 0) {
         const updatedPlans = plans.map((plan, i) => ({
           batch: plan.batch,
+          co: filtered[i]?.co || "",
+          llo: filtered[i]?.llo || "",
           exptNo: filtered[i]?.exptNo || "",
           exptName: filtered[i]?.exptName || "",
           date: filtered[i]?.date || "",
@@ -108,9 +154,9 @@ const WeekwisePlan = ({
         setPlans(updatedPlans);
       } else {
         setPlans([
-          { batch: "B1", exptNo: "", exptName: "", date: "" },
-          { batch: "B2", exptNo: "", exptName: "", date: "" },
-          { batch: "B3", exptNo: "", exptName: "", date: "" },
+          { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+          { batch: "B2", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+          { batch: "B3", co: "", llo: "", exptNo: "", exptName: "", date: "" },
         ]);
       }
     }
@@ -225,12 +271,14 @@ const WeekwisePlan = ({
           z-index: 10; /* Ensure header is above scrolling content */
         }
         
-        /* Column widths: widen Batch to avoid wrap; rebalance others */
-        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 23%; } /* Week No */
-        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 12%; } /* Batch No */
-        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 18%; } /* Experiment No */
-        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 26%; } /* Experiment Name */
-        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 21%; } /* Planned Date */
+        /* Column widths */
+        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 14%; } /* Week No */
+        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 8%; } /* Batch No */
+        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 12%; } /* CO */
+        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 22%; } /* LLO */
+        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 14%; } /* Experiment No */
+        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 18%; } /* Experiment Name */
+        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 12%; } /* Planned Date */
 
         .plan-table input,
         .plan-table select,
@@ -393,6 +441,8 @@ const WeekwisePlan = ({
                 <tr>
                   <th>Week No</th>
                   <th>Batch No</th>
+                  <th>CO</th>
+                  <th>LLO</th>
                   <th>Experiment No</th>
                   <th>Experiment Name</th>
                   <th>Planned Date</th>
@@ -418,6 +468,45 @@ const WeekwisePlan = ({
                       </td>
                     )}
                     <td>{plan.batch}</td>
+                    <td>
+                      <select
+                        value={plan.co || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const updated = [...plans];
+                          updated[i].co = val;
+                          updated[i].llo = ""; // reset llo when co changes
+                          setPlans(updated);
+                        }}
+                        disabled={!week}
+                      >
+                        <option value="">Select CO</option>
+                        {coData.map((co) => (
+                          <option key={co.coNumber} value={co.coNumber}>
+                            {co.coNumber}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        value={plan.llo || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const updated = [...plans];
+                          updated[i].llo = val;
+                          setPlans(updated);
+                        }}
+                        disabled={!week || !plan.co}
+                      >
+                        <option value="">Select LLO</option>
+                        {(coData.find((c) => c.coNumber === plan.co)?.llos || []).map((lloText, lloIdx) => (
+                          <option key={lloIdx} value={lloText}>
+                            {lloText}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
                     <td>
                       <select
                         value={plan.exptNo}

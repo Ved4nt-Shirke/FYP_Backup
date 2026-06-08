@@ -1,26 +1,17 @@
 import { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
 
 function LectureSchedule() {
-  const { unifiedData, updateUnifiedData } = useOutletContext();
-
   const [showIndustryForm, setShowIndustryForm] = useState(false);
   const [industryMentor, setIndustryMentor] = useState({
     name: '', designation: '', company: '', contact: '', email: ''
   });
-
-  const submittedIndustryMentor = unifiedData?.lectureSchedule?.industryMentor?.name
-    ? unifiedData.lectureSchedule.industryMentor
-    : null;
+  const [submittedIndustryMentor, setSubmittedIndustryMentor] = useState(null);
 
   const [showClusterForm, setShowClusterForm] = useState(false);
   const [clusterMentor, setClusterMentor] = useState({
     name: '', designation: '', department: '', contact: '', email: ''
   });
-
-  const submittedClusterMentor = unifiedData?.lectureSchedule?.clusterMentor?.name
-    ? unifiedData.lectureSchedule.clusterMentor
-    : null;
+  const [submittedClusterMentor, setSubmittedClusterMentor] = useState(null);
 
   const handleChange = (e, setter) => {
     const { name, value } = e.target;
@@ -29,20 +20,14 @@ function LectureSchedule() {
 
   const handleIndustrySubmit = (e) => {
     e.preventDefault();
-    updateUnifiedData("lectureSchedule", {
-      ...unifiedData?.lectureSchedule,
-      industryMentor
-    });
+    setSubmittedIndustryMentor(industryMentor);
     setIndustryMentor({ name: '', designation: '', company: '', contact: '', email: '' });
     setShowIndustryForm(false);
   };
 
   const handleClusterSubmit = (e) => {
     e.preventDefault();
-    updateUnifiedData("lectureSchedule", {
-      ...unifiedData?.lectureSchedule,
-      clusterMentor
-    });
+    setSubmittedClusterMentor(clusterMentor);
     setClusterMentor({ name: '', designation: '', department: '', contact: '', email: '' });
     setShowClusterForm(false);
   };
@@ -387,20 +372,6 @@ function LectureSchedule() {
                       <p><strong>Department:</strong> {submittedClusterMentor.department}</p>
                       <p><strong>Contact:</strong> {submittedClusterMentor.contact}</p>
                       <p><strong>Email:</strong> {submittedClusterMentor.email}</p>
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                        <button className="button2" style={{ padding: '6px 14px', fontSize: '13px' }} onClick={() => {
-                          setClusterMentor(submittedClusterMentor);
-                          setShowClusterForm(true);
-                        }}>Edit</button>
-                        <button className="button-delete" style={{ padding: '6px 14px', fontSize: '13px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => {
-                          if (window.confirm("Delete Cluster Mentor details?")) {
-                            updateUnifiedData("lectureSchedule", {
-                              ...unifiedData?.lectureSchedule,
-                              clusterMentor: { name: "", designation: "", department: "", contact: "", email: "" }
-                            });
-                          }
-                        }}>Delete</button>
-                      </div>
                     </>
                   ) : <p>No details submitted.</p>}
                 </td>
@@ -416,20 +387,6 @@ function LectureSchedule() {
                       <p><strong>Company:</strong> {submittedIndustryMentor.company}</p>
                       <p><strong>Contact:</strong> {submittedIndustryMentor.contact}</p>
                       <p><strong>Email:</strong> {submittedIndustryMentor.email}</p>
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                        <button className="button2" style={{ padding: '6px 14px', fontSize: '13px' }} onClick={() => {
-                          setIndustryMentor(submittedIndustryMentor);
-                          setShowIndustryForm(true);
-                        }}>Edit</button>
-                        <button className="button-delete" style={{ padding: '6px 14px', fontSize: '13px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => {
-                          if (window.confirm("Delete Industry Mentor details?")) {
-                            updateUnifiedData("lectureSchedule", {
-                              ...unifiedData?.lectureSchedule,
-                              industryMentor: { name: "", designation: "", company: "", contact: "", email: "" }
-                            });
-                          }
-                        }}>Delete</button>
-                      </div>
                     </>
                   ) : <p>No details submitted.</p>}
                 </td>

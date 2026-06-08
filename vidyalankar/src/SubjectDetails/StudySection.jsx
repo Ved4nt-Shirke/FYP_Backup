@@ -1,29 +1,13 @@
 import { useState, useEffect } from "react";
 
-export default function StudySection({ unifiedData, updateUnifiedData }) {
+export default function StudySection() {
   const blankStudy = { gq: false, notes: false, digital: false, ppt: false, eq: false, other: '' };
 
-  const submittedStudy = unifiedData?.studySection || blankStudy;
-  const hasStudy = submittedStudy.gq || submittedStudy.notes || submittedStudy.digital || submittedStudy.ppt || submittedStudy.eq || submittedStudy.other;
-
   const [showStudyForm, setShowStudyForm] = useState(false);
-  const [studyForm, setFormState] = useState({ ...blankStudy });
+  const [studyForm, setStudyForm] = useState({ ...blankStudy });
+  const [submittedStudy, setSubmittedStudy] = useState({ ...blankStudy });
+  const [studyBtn, setStudyBtn] = useState('Add/Edit');
 
-  // Sync form when modal opens
-  useEffect(() => {
-    if (showStudyForm) {
-      setFormState({
-        gq: !!submittedStudy.gq,
-        notes: !!submittedStudy.notes,
-        digital: !!submittedStudy.digital,
-        ppt: !!submittedStudy.ppt,
-        eq: !!submittedStudy.eq,
-        other: submittedStudy.other || ''
-      });
-    }
-  }, [showStudyForm, submittedStudy]);
-
-  // Effect to prevent body scroll when modal is open
   useEffect(() => {
     if (showStudyForm) {
       document.body.style.overflow = 'hidden';
@@ -35,23 +19,17 @@ export default function StudySection({ unifiedData, updateUnifiedData }) {
   
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormState(prev => ({
+    setStudyForm(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
   };
 
   const handleSubmit = () => {
-    updateUnifiedData("studySection", studyForm);
+    setSubmittedStudy({ ...studyForm });
+    setStudyBtn('Edit');
     setShowStudyForm(false);
   };
-
-  const handleDelete = () => {
-    if (window.confirm("Are you sure you want to delete all study materials?")) {
-      updateUnifiedData("studySection", blankStudy);
-    }
-  };
-
 
   const formatLabel = (field) => {
     switch(field) {
@@ -220,20 +198,12 @@ export default function StudySection({ unifiedData, updateUnifiedData }) {
             <h2 className="title">Study Material Distributed</h2>
             <p className="subtitle">3.13.7 Record of Materials Provided to Students</p>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="button" onClick={() => setShowStudyForm(true)}>
-              {hasStudy ? 'Edit' : 'Add/Edit'}
-            </button>
-            {hasStudy && (
-              <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={handleDelete}>
-                Delete
-              </button>
-            )}
-          </div>
+          <button className="button" onClick={() => setShowStudyForm(true)}>{studyBtn}</button>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
           <table>
+            {/* ✅ UPDATED COLGROUP FOR CUSTOM COLUMN WIDTHS */}
             <colgroup>
               <col style={{ width: '10%' }} />
               <col style={{ width: '15%' }} />
@@ -254,12 +224,12 @@ export default function StudySection({ unifiedData, updateUnifiedData }) {
             </thead>
             <tbody>
               <tr>
-                <td>{submittedStudy.gq ? '✔' : '-'}</td>
-                <td>{submittedStudy.notes ? '✔' : '-'}</td>
-                <td>{submittedStudy.digital ? '✔' : '-'}</td>
-                <td>{submittedStudy.ppt ? '✔' : '-'}</td>
-                <td>{submittedStudy.eq ? '✔' : '-'}</td>
-                <td>{submittedStudy.other || '-'}</td>
+                <td>{submittedStudy.gq ? '✔' : ''}</td>
+                <td>{submittedStudy.notes ? '✔' : ''}</td>
+                <td>{submittedStudy.digital ? '✔' : ''}</td>
+                <td>{submittedStudy.ppt ? '✔' : ''}</td>
+                <td>{submittedStudy.eq ? '✔' : ''}</td>
+                <td>{submittedStudy.other}</td>
               </tr>
             </tbody>
           </table>
@@ -269,7 +239,7 @@ export default function StudySection({ unifiedData, updateUnifiedData }) {
           <div className="modal-overlay">
             <div className="modal-box" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <span>{hasStudy ? 'Edit Study Materials' : 'Select Study Materials'}</span>
+                <span>Select Study Materials</span>
                 <button type="button" className="close-btn" onClick={() => setShowStudyForm(false)}>&times;</button>
               </div>
               <div className="modal-body">

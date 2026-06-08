@@ -27,6 +27,9 @@ export const config = {
   // Student endpoints
   students: `${API_BASE_URL}/students`,
 
+  // Mock exam endpoints
+  mockExams: `${API_BASE_URL}/mock-exams`,
+
   // Attendance endpoints
   attendance: {
     theory: `${API_BASE_URL}/theory-attendance`,
@@ -144,6 +147,11 @@ export const config = {
     bulkImport: `${API_BASE_URL}/subjects/bulk-import`,
     deleteAll: `${API_BASE_URL}/subjects/delete-all`,
   },
+  courseDetails: {
+    save: `${API_BASE_URL}/course-details`,
+    bySubject: (subjectId) => `${API_BASE_URL}/course-details/subject/${subjectId}`,
+    listAll: `${API_BASE_URL}/course-details/list`,
+  },
 
   // Office Staff Panel Endpoints
   office: {
@@ -174,6 +182,14 @@ export const config = {
       `${API_BASE_URL}/catalog/courses/${departmentId}`,
     divisions: (courseId) => `${API_BASE_URL}/catalog/divisions/${courseId}`,
     subjects: `${API_BASE_URL}/catalog/subjects`,
+  },
+
+  mockExamsStudent: {
+    list: `${API_BASE_URL}/mock-exams/student/exams`,
+    results: `${API_BASE_URL}/mock-exams/student/results`,
+    details: (id) => `${API_BASE_URL}/mock-exams/student/exams/${id}`,
+    start: (id) => `${API_BASE_URL}/mock-exams/student/exams/${id}/start`,
+    submit: (id) => `${API_BASE_URL}/mock-exams/student/exams/${id}/submit`,
   },
 };
 

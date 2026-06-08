@@ -2,6 +2,8 @@
 const mongoose = require('mongoose');
 
 const labPlanEntrySchema = new mongoose.Schema({
+  co: { type: String, default: "" },
+  llo: { type: String, default: "" },
   batch: { type: String, required: true },
   exptNo: { type: String, required: true },
   exptName: { type: String, required: true },

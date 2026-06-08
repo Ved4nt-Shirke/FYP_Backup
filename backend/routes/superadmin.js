@@ -34,7 +34,6 @@ const CourseOutcome = require("../models/CourseOutcome");
 const SubjectObjective = require("../models/SubjectObjective");
 const BookResource = require("../models/BookResource");
 const WebResource = require("../models/WebResource");
-const CiannSubjectDetails = require("../models/CiannSubjectDetails");
 const AuditLog = require("../models/AuditLog");
 const { authenticate, authorizeSuperAdmin } = require("../middleware/auth");
 const enhancedSecurity = require("../middleware/enhancedSecurity");
@@ -671,7 +670,6 @@ router.delete(
         deleteByCiannIds(SubjectObjective),
         deleteByCiannIds(BookResource),
         deleteByCiannIds(WebResource),
-        deleteByCiannIds(CiannSubjectDetails),
       ]);
 
       await Promise.all([

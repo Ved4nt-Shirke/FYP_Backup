@@ -4,6 +4,7 @@ const Course = require("../models/Course");
 const Department = require("../models/Department");
 const Subject = require("../models/Subject");
 const User = require("../models/user");
+const CourseDetails = require("../models/CourseDetails");
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -204,9 +205,24 @@ const listSubjects = async (req, res) => {
       .populate("courseId", "courseCode semester scheme")
       .sort({ name: 1 });
 
+    // Find all course details for these subjects in a single query
+    const subjectIds = subjects.map((s) => s._id);
+    const existingDetails = await CourseDetails.find(
+      { subjectId: { $in: subjectIds } },
+      "subjectId"
+    );
+    const detailsSet = new Set(existingDetails.map((d) => d.subjectId.toString()));
+
+    // Attach hasCourseDetails flag to each subject object
+    const subjectsWithDetails = subjects.map((subject) => {
+      const subjObj = subject.toObject();
+      subjObj.hasCourseDetails = detailsSet.has(subject._id.toString());
+      return subjObj;
+    });
+
     res.json({
       success: true,
-      subjects,
+      subjects: subjectsWithDetails,
     });
   } catch (error) {
     res.status(500).json({

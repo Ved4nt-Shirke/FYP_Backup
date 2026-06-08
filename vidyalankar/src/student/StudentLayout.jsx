@@ -138,11 +138,11 @@ const StudentLayout = () => {
           {/* Practical Exams */}
           <li className="sidebar-item">
             <div
-              className={`menu-item ${isActivePath("/practical-exams") ? "active" : ""}`}
-              onClick={() => handleNavigation("/practical-exams")}
+              className={`menu-item ${isActivePath("/mock-exams") ? "active" : ""}`}
+              onClick={() => handleNavigation("/mock-exams")}
             >
-              <i className="bi bi-file-earmark-check"></i>
-              <span>Practical Exams</span>
+              <i className="bi bi-clipboard2-pulse"></i>
+              <span>Mock Exams</span>
             </div>
           </li>
 

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function ModuleAvailabilityResource({ unifiedData, updateUnifiedData }) {
-  const moduleData = unifiedData?.moduleAvailabilityResource || [];
-
+export default function ModuleAvailabilityResource() {
   const [moduleForm, setModuleForm] = useState({
     module: '',
     textbook: false,
@@ -14,9 +12,8 @@ export default function ModuleAvailabilityResource({ unifiedData, updateUnifiedD
     available: '',
     details: ''
   });
-
+  const [moduleData, setModuleData] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
 
   // Effect to prevent body scroll when modal is open
   useEffect(() => {
@@ -39,48 +36,15 @@ export default function ModuleAvailabilityResource({ unifiedData, updateUnifiedD
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    let updated;
-    if (editingIndex !== null) {
-      updated = moduleData.map((item, idx) =>
-        idx === editingIndex ? { ...moduleForm } : item
-      );
-    } else {
-      updated = [...moduleData, { ...moduleForm }];
-    }
-    updateUnifiedData("moduleAvailabilityResource", updated);
+    setModuleData([...moduleData, moduleForm]);
     // Reset form to initial state and close modal
     setModuleForm({
       module: '', textbook: false, referenceBook: false, otherBook: false,
       magazine: false, journalRegular: false, journalE: false,
       available: '', details: ''
     });
-    setEditingIndex(null);
     setShowModal(false);
   };
-
-  const handleDelete = (index) => {
-    if (window.confirm("Are you sure you want to delete this module info?")) {
-      const updated = moduleData.filter((_, idx) => idx !== index);
-      updateUnifiedData("moduleAvailabilityResource", updated);
-    }
-  };
-
-  const handleAddClick = () => {
-    setModuleForm({
-      module: '', textbook: false, referenceBook: false, otherBook: false,
-      magazine: false, journalRegular: false, journalE: false,
-      available: '', details: ''
-    });
-    setEditingIndex(null);
-    setShowModal(true);
-  };
-
-  const handleEditClick = (index) => {
-    setModuleForm({ ...moduleData[index] });
-    setEditingIndex(index);
-    setShowModal(true);
-  };
-
 
   return (
     <>
@@ -264,7 +228,7 @@ export default function ModuleAvailabilityResource({ unifiedData, updateUnifiedD
             <h2 className="title">Module-wise Resource Availability</h2>
             <p className="subtitle">3.13.3 Details on Available Resources for Each Module</p>
           </div>
-          <button className="button" onClick={handleAddClick}>Add Module Info</button>
+          <button className="button" onClick={() => setShowModal(true)}>Add Module Info</button>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -274,7 +238,6 @@ export default function ModuleAvailabilityResource({ unifiedData, updateUnifiedD
                 <th rowSpan="3">Module No.</th>
                 <th colSpan="7">Category (Tick Mark Indicates Availability)</th>
                 <th rowSpan="3">Details of the Resource</th>
-                <th rowSpan="3">Actions</th>
               </tr>
               <tr>
                 <th colSpan="3">Book</th>
@@ -300,15 +263,11 @@ export default function ModuleAvailabilityResource({ unifiedData, updateUnifiedD
                     <td>{item.journalE && '✔'}</td>
                     <td>{item.available === 'yes' ? 'Yes' : 'No'}</td>
                     <td>{item.details}</td>
-                    <td>
-                      <button className="button" style={{ padding: '6px 12px', fontSize: '12px', marginRight: '6px' }} onClick={() => handleEditClick(i)}>Edit</button>
-                      <button className="button-delete" style={{ padding: '6px 12px', fontSize: '12px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={() => handleDelete(i)}>Delete</button>
-                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="10">No module information has been added yet.</td>
+                  <td colSpan="9">No module information has been added yet.</td>
                 </tr>
               )}
             </tbody>
@@ -320,11 +279,12 @@ export default function ModuleAvailabilityResource({ unifiedData, updateUnifiedD
             <div className="modal-box" onClick={(e) => e.stopPropagation()}>
               <form onSubmit={handleSubmit}>
                 <div className="modal-header">
-                  <span>{editingIndex !== null ? 'Edit Module Resource Information' : 'Add Module Resource Information'}</span>
+                  <span>Add Module Resource Information</span>
                   <button type="button" className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
                 </div>
 
                 <div className="modal-body">
+                  {/* ✅ REPLACED TABLE WITH CSS GRID FOR A CLEAN, RESPONSIVE FORM */}
                   <div className="form-grid-modal">
                     <div className="form-group">
                       <label htmlFor="module">Module No.</label>
@@ -360,7 +320,7 @@ export default function ModuleAvailabilityResource({ unifiedData, updateUnifiedD
 
                 <div className="btn-row">
                   <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="btn-save">{editingIndex !== null ? 'Save Changes' : 'Add Info'}</button>
+                  <button type="submit" className="btn-save">Add Info</button>
                 </div>
               </form>
             </div>

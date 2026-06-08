@@ -1,5 +1,4 @@
 import React from 'react';
-import { useOutletContext } from 'react-router-dom';
 import MoocCourses from './MoocCourses';
 import VacSection from './VacSection';
 import StudySection from './StudySection';
@@ -10,7 +9,6 @@ import RecommendedWebsiteResource from './RecommendedWebsiteResource';
 import WebJournalResources from './WebJournalResources';
 
 function Resources() {
-  const { unifiedData, updateUnifiedData } = useOutletContext();
   return (
     <>
       <style>{`
@@ -165,29 +163,19 @@ function Resources() {
       <div className="resources-container">
         <div className="header-row">
           <h2 className="title">Learning Resources</h2>
+          {/* A button can be added here for functionality like "Add New Resource" */}
+          {/* <button className="button">Add Resource</button> */}
         </div>
 
         {/* Each component is wrapped in a styled section for a card-like appearance */}
         <div className="resource-section"><BookResource /></div>
-        <div className="resource-section">
-          <WebJournalResources unifiedData={unifiedData} updateUnifiedData={updateUnifiedData} />
-        </div>
-        <div className="resource-section">
-          <ModuleAvailabilityResource unifiedData={unifiedData} updateUnifiedData={updateUnifiedData} />
-        </div>
-        <div className="resource-section">
-          <RecommendedWebsiteResource unifiedData={unifiedData} updateUnifiedData={updateUnifiedData} />
-        </div>
+        <div className="resource-section"><WebJournalResources /></div>
+        <div className="resource-section"><ModuleAvailabilityResource /></div>
+        <div className="resource-section"><RecommendedWebsiteResource /></div>
         <div className="resource-section"><MoocCourses /></div>
-        <div className="resource-section">
-          <VacSection unifiedData={unifiedData} updateUnifiedData={updateUnifiedData} />
-        </div>
-        <div className="resource-section">
-          <StudySection unifiedData={unifiedData} updateUnifiedData={updateUnifiedData} />
-        </div>
-        <div className="resource-section">
-          <OtherContributionsSection unifiedData={unifiedData} updateUnifiedData={updateUnifiedData} />
-        </div>
+        <div className="resource-section"><VacSection /></div>
+        <div className="resource-section"><StudySection /></div>
+        <div className="resource-section"><OtherContributionsSection /></div>
       </div>
     </>
   );

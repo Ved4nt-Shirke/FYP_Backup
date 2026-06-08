@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "../../utils/axiosConfig";
 import { showErrorAlert, showSuccessAlert } from "../../utils/alertUtils";
 import { config } from "../../config/api";
+import CourseDetailsModal from "./CourseDetailsModal";
 import "./SubjectsView.css";
 
 const SubjectsView = () => {
@@ -19,6 +20,15 @@ const SubjectsView = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
   const [deletingAll, setDeletingAll] = useState(false);
+
+  // Course Details Modal State
+  const [selectedSubjectForDetails, setSelectedSubjectForDetails] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
+  const handleOpenDetails = (subject) => {
+    setSelectedSubjectForDetails(subject);
+    setIsDetailsModalOpen(true);
+  };
 
   useEffect(() => {
     const role = localStorage.getItem("role");
@@ -320,12 +330,18 @@ const SubjectsView = () => {
                   <th>Department</th>
                   <th>Course Code</th>
                   <th>Semester</th>
+                  <th>Course Details</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {subjects.map((subject) => (
-                  <tr key={subject._id}>
+                  <tr
+                    key={subject._id}
+                    onClick={() => handleOpenDetails(subject)}
+                    style={{ cursor: "pointer" }}
+                    title="Click row to manage course details & CO mapping"
+                  >
                     <td>{subject.name}</td>
                     <td className="code-cell">{subject.code}</td>
                     <td>
@@ -336,21 +352,53 @@ const SubjectsView = () => {
                     </td>
                     <td>{subject.courseId?.courseCode || "-"}</td>
                     <td>{subject.courseId?.semester || "-"}</td>
-                    <td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div className="table-actions">
+                        {subject.hasCourseDetails ? (
+                          <>
+                            <button
+                              className="btn-ghost"
+                              onClick={() => handleOpenDetails(subject)}
+                            >
+                              Edit Details
+                            </button>
+                            <button
+                              className="btn-tertiary"
+                              onClick={() => navigate(`/admin/course-details-view/${subject._id}`)}
+                            >
+                              View Format
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="btn-primary"
+                            style={{ padding: "6px 12px" }}
+                            onClick={() => handleOpenDetails(subject)}
+                          >
+                            Add Details
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()}>
                       <div className="table-actions">
                         <button
                           className="btn-ghost"
-                          onClick={() =>
+                          onClick={(e) => {
+                            e.stopPropagation();
                             navigate("/admin/subjects", {
                               state: { editSubject: subject },
-                            })
-                          }
+                            });
+                          }}
                         >
                           Edit
                         </button>
                         <button
                           className="btn-danger-outline"
-                          onClick={() => handleDelete(subject._id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(subject._id);
+                          }}
                         >
                           Delete
                         </button>
@@ -420,6 +468,17 @@ const SubjectsView = () => {
             </div>
           </div>
         </div>
+      )}
+      {isDetailsModalOpen && (
+        <CourseDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={() => {
+            setIsDetailsModalOpen(false);
+            setSelectedSubjectForDetails(null);
+          }}
+          subject={selectedSubjectForDetails}
+          onSaveSuccess={fetchSubjects}
+        />
       )}
     </div>
   );

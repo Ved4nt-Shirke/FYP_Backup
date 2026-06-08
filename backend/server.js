@@ -148,6 +148,7 @@ app.use("/api/students", require("./routes/students"));
 // Planning Routes
 app.use("/api/teaching-plan", require("./routes/teachingPlan"));
 app.use("/api/lab-planning", require("./routes/labPlanning"));
+app.use("/api/tutorial-plan", require("./routes/tutorialPlan"));
 
 // Attendance Routes
 app.use("/api/theory-attendance", require("./routes/theoryAttendance"));
@@ -181,6 +182,9 @@ app.use("/api/chat", require("./routes/chat"));
 // Subject Details Routes
 app.use("/api/subject-details", require("./routes/subjectDetails"));
 
+// Course Details & CO Mapping Routes
+app.use("/api/course-details", require("./routes/courseDetails"));
+
 // Summary Routes
 app.use("/api/summary", require("./routes/summary"));
 
@@ -198,6 +202,9 @@ app.use("/api/pt-microproject", require("./routes/ptMicroProject"));
 
 // Practical Exams Routes
 app.use("/api/practical-exams", require("./routes/practicalExams"));
+
+// Mock Exams Routes
+app.use("/api/mock-exams", require("./routes/mockExams"));
 
 // CT Marks Routes
 app.use("/api/ct-marks", require("./routes/ctMarks"));

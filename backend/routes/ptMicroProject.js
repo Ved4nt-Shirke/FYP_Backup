@@ -3,6 +3,12 @@ const router = express.Router();
 const PTMicroProject = require('../models/PTMicroProject');
 const Student = require('../models/Student');
 const { authenticate } = require('../middleware/auth');
+const PTConfiguration = require('../models/PTConfiguration');
+const StudentPTMarks = require('../models/StudentPTMarks');
+const Ciann = require('../models/Ciann');
+const CourseDetails = require('../models/CourseDetails');
+const Division = require('../models/Division');
+const Subject = require('../models/Subject');
 
 // Middleware: authenticate all routes
 router.use(authenticate);
@@ -350,6 +356,237 @@ router.delete('/delete-marks/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error deleting marks'
+    });
+  }
+});
+
+// === NEW PT & MICROPROJECT MODULE ENDPOINTS ===
+
+// GET: Fetch PT Configuration for a specific CIANN and Subject
+router.get('/new/config/:ciannId/:subjectId', async (req, res) => {
+  try {
+    const { ciannId, subjectId } = req.params;
+    const facultyId = req.user._id;
+
+    const config = await PTConfiguration.findOne({
+      facultyId,
+      ciannId: Number(ciannId),
+      subjectId
+    });
+
+    res.json({
+      success: true,
+      config: config || null
+    });
+  } catch (error) {
+    console.error('Error fetching PT configuration:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching PT configuration: ' + error.message
+    });
+  }
+});
+
+// POST: Save/Update PT Configuration
+router.post('/new/config', async (req, res) => {
+  try {
+    const {
+      ciannId,
+      courseId,
+      semester,
+      divisionId,
+      subjectId,
+      academicYear,
+      slaMarks,
+      components
+    } = req.body;
+    const facultyId = req.user._id;
+
+    if (!ciannId || !courseId || !semester || !divisionId || !subjectId || !academicYear || slaMarks === undefined || !components) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required configuration fields'
+      });
+    }
+
+    // Validate component total
+    const total = components.reduce((sum, c) => sum + Number(c.maxMarks), 0);
+    if (total > Number(slaMarks)) {
+      return res.status(400).json({
+        success: false,
+        message: `Total component marks (${total}) cannot exceed SLA marks (${slaMarks})`
+      });
+    }
+
+    const updatedConfig = await PTConfiguration.findOneAndUpdate(
+      { facultyId, ciannId: Number(ciannId), subjectId },
+      {
+        courseId,
+        semester,
+        divisionId,
+        subjectId,
+        academicYear,
+        slaMarks: Number(slaMarks),
+        components
+      },
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'PT configuration saved successfully',
+      config: updatedConfig
+    });
+  } catch (error) {
+    console.error('Error saving PT configuration:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error saving PT configuration: ' + error.message
+    });
+  }
+});
+
+// GET: Fetch course details and SLA marks for a subject
+router.get('/new/course-details/:subjectId', async (req, res) => {
+  try {
+    const { subjectId } = req.params;
+    const details = await CourseDetails.findOne({ subjectId }).populate('subjectId');
+    res.json({
+      success: true,
+      courseDetails: details || null
+    });
+  } catch (error) {
+    console.error('Error fetching course details for PT:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching course details: ' + error.message
+    });
+  }
+});
+
+// GET: Fetch students dynamically for a specific CIANN card
+router.get('/new/students/:ciannId', async (req, res) => {
+  try {
+    const { ciannId } = req.params;
+    const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
+    if (!ciann) {
+      return res.status(404).json({
+        success: false,
+        message: 'CIANN not found'
+      });
+    }
+
+    // Resolve Division ID using CIANN's division name (e.g. "A") and courseId
+    const divisionDoc = await Division.findOne({
+      courseId: ciann.courseId,
+      name: ciann.division
+    });
+
+    const query = {
+      courseId: ciann.courseId
+    };
+
+    if (divisionDoc) {
+      query.$or = [
+        { divisionId: divisionDoc._id },
+        { division: ciann.division }
+      ];
+    } else {
+      query.division = ciann.division;
+    }
+
+    if (ciann.academicYear) {
+      query.academicYear = ciann.academicYear;
+    }
+
+    const students = await Student.find(query)
+      .select('_id studentName rollNo enrollmentNo batch departmentId courseId divisionId')
+      .sort({ rollNo: 1 });
+
+    res.json({
+      success: true,
+      data: students,
+      count: students.length
+    });
+  } catch (error) {
+    console.error('Error fetching CIANN students:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching CIANN students: ' + error.message
+    });
+  }
+});
+
+// GET: Fetch Student PT Marks for a CIANN and Subject
+router.get('/new/marks/:ciannId/:subjectId', async (req, res) => {
+  try {
+    const { ciannId, subjectId } = req.params;
+    const marks = await StudentPTMarks.find({
+      ciannId: Number(ciannId),
+      subjectId
+    }).populate('studentId', 'studentName rollNo');
+
+    res.json({
+      success: true,
+      data: marks
+    });
+  } catch (error) {
+    console.error('Error fetching student PT marks:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching student PT marks: ' + error.message
+    });
+  }
+});
+
+// POST: Save/Submit Student PT Marks
+router.post('/new/marks', async (req, res) => {
+  try {
+    const { ciannId, subjectId, status, studentsMarks } = req.body;
+    const facultyId = req.user._id;
+
+    if (!ciannId || !subjectId || !status || !studentsMarks || !Array.isArray(studentsMarks)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required marks fields'
+      });
+    }
+
+    const savedEntries = [];
+    const submittedAt = status === 'submitted' ? new Date() : null;
+
+    for (const entry of studentsMarks) {
+      const { studentId, marks, totalMarks } = entry;
+
+      if (!studentId || !marks || totalMarks === undefined) {
+        continue;
+      }
+
+      // Upsert student marks entry
+      const saved = await StudentPTMarks.findOneAndUpdate(
+        { studentId, subjectId, ciannId: Number(ciannId) },
+        {
+          facultyId,
+          marks,
+          totalMarks: Number(totalMarks),
+          status,
+          submittedAt: status === 'submitted' ? submittedAt : undefined
+        },
+        { new: true, upsert: true, runValidators: true }
+      );
+      savedEntries.push(saved);
+    }
+
+    res.json({
+      success: true,
+      message: `Marks saved successfully as ${status}`,
+      count: savedEntries.length
+    });
+  } catch (error) {
+    console.error('Error saving student PT marks:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error saving student PT marks: ' + error.message
     });
   }
 });

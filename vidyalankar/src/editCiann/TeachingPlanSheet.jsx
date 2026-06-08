@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SecondarySidebar from "./SecondarySidebar";
+import { config, getApiUrl } from "../config/api";
 import "./WeekwisePlan1.css";
 import "./TeachingPlanSheet.css";
 import "./EditCiannModern.css";
@@ -107,6 +108,8 @@ const TeachingPlan = () => {
   const [planningStarted, setPlanningStarted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(""); // For submission messages
+  const [modalWeek, setModalWeek] = useState("");
+  const [coData, setCoData] = useState([]);
 
   // Chapter dropdown options fetched from DB
   const [chapterOptions, setChapterOptions] = useState([
@@ -114,6 +117,49 @@ const TeachingPlan = () => {
   ]);
   const [chaptersLoading, setChaptersLoading] = useState(false);
   const [chaptersFetchError, setChaptersFetchError] = useState(null);
+
+  // Fetch TloLlo details for CO and TLO dropdowns
+  useEffect(() => {
+    if (!ciannData) return;
+    const fetchTloLlo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const subjectId = ciannData.subject?._id || ciannData.subjectId;
+        const res = await fetch(
+          getApiUrl(`/subject-details/tlo-llo/${ciannData.ciannId}/${subjectId}`),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.success && data.data && Array.isArray(data.data.coData)) {
+          setCoData(data.data.coData);
+        } else {
+          // Fallback to course outcomes from courseDetails endpoint
+          const courseDetailsRes = await fetch(
+            getApiUrl(`/pt-microproject/new/course-details/${subjectId}`),
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          const courseDetailsData = await courseDetailsRes.json();
+          if (courseDetailsData.success && courseDetailsData.courseDetails) {
+            const loadedCOs = courseDetailsData.courseDetails.courseOutcomes || [];
+            setCoData(loadedCOs.map(c => ({ coNumber: c.coNumber, coDescription: c.description, tlos: [], llos: [] })));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching TloLlo mappings in Teaching Plan:", err);
+      }
+    };
+    fetchTloLlo();
+  }, [ciannData]);
 
   // Fetch chapter list for the selected CIANN from backend
   useEffect(() => {
@@ -138,7 +184,7 @@ const TeachingPlan = () => {
         setChaptersFetchError(null);
 
         const res = await fetch(
-          "http://localhost:5000/api/course-chapters/get-chapters",
+          getApiUrl("/course-chapters/get-chapters"),
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -188,7 +234,7 @@ const TeachingPlan = () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:5000/api/teaching-plan/${ciannId}`,
+          getApiUrl(`/teaching-plan/${ciannId}`),
         );
         if (res.status === 404) {
           console.log(`No teaching plans found for ciannId: ${ciannId}`);
@@ -212,22 +258,52 @@ const TeachingPlan = () => {
     fetchPlans();
   }, [ciannId]);
 
-  // Removed useEffect for plans initialization - now done directly in button onClick handlers
+  const handleWeekChange = (selectedWeekVal) => {
+    setModalWeek(selectedWeekVal);
+    if (selectedWeekVal) {
+      const numericWeek = parseInt(selectedWeekVal.replace("Week ", ""));
+      const found = teachingPlans.find((p) => p.weekNo === numericWeek);
+      if (found && found.plans && found.plans.length > 0) {
+        setPlans(
+          found.plans.map((p) => ({
+            co: p.co || "",
+            tlo: p.tlo || "",
+            chapter: p.chapter || "",
+            subTopic: p.subTopic || "",
+            startDate: p.startDate || "",
+            endDate: p.endDate || "",
+            teachingMethod: p.teachingMethod || "",
+          }))
+        );
+      } else {
+        setPlans([
+          {
+            co: "",
+            tlo: "",
+            chapter: "",
+            subTopic: "",
+            startDate: "",
+            endDate: "",
+            teachingMethod: "",
+          },
+        ]);
+      }
+    } else {
+      setPlans([]);
+    }
+  };
 
   const handleChange = (index, field, value) => {
     console.log(
       `🔧 handleChange called: index=${index}, field=${field}, value="${value}", plans.length=${plans.length}`,
     );
-    console.log("📦 Current plans before update:", JSON.stringify(plans));
 
-    // Ensure plans array is initialized with proper objects
     let updated = [...plans];
-
-    // If plans is empty or index doesn't exist, initialize it
     if (updated.length === 0 || !updated[index]) {
-      console.log("⚠️ Plans array not initialized, creating empty array");
       updated = [
         {
+          co: "",
+          tlo: "",
           chapter: "",
           subTopic: "",
           startDate: "",
@@ -237,13 +313,7 @@ const TeachingPlan = () => {
       ];
     }
 
-    // Now safely update the field
     updated[index][field] = value;
-    console.log(
-      "✅ Updated plan after change:",
-      JSON.stringify(updated[index]),
-    );
-    console.log("💾 Setting new plans array:", JSON.stringify(updated));
     setPlans(updated);
   };
 
@@ -253,26 +323,12 @@ const TeachingPlan = () => {
       return;
     }
 
-    console.log("🚀 Submit clicked. Plans array:", plans);
-    console.log("📋 Chapter options:", chapterOptions);
+    if (!modalWeek) {
+      setMessage("⚠️ Please select a week (Entry No.).");
+      return;
+    }
 
-    // Log each plan individually to debug
-    plans.forEach((plan, index) => {
-      console.log(`Plan ${index}:`, {
-        chapter: plan.chapter,
-        chapterValid:
-          plan.chapter &&
-          plan.chapter.trim() !== "" &&
-          plan.chapter !== chapterOptions[0],
-        subTopic: plan.subTopic,
-        subTopicValid: plan.subTopic && plan.subTopic.trim() !== "",
-        startDate: plan.startDate,
-        startDateValid: plan.startDate && plan.startDate.trim() !== "",
-        teachingMethod: plan.teachingMethod,
-        teachingMethodValid:
-          plan.teachingMethod && plan.teachingMethod.trim() !== "",
-      });
-    });
+    const numericWeek = parseInt(modalWeek.replace("Week ", ""));
 
     const filteredPlans = plans.filter(
       (p) =>
@@ -287,41 +343,43 @@ const TeachingPlan = () => {
         p.teachingMethod.trim() !== "",
     );
 
-    console.log("✅ Filtered plans:", filteredPlans);
-
     if (filteredPlans.length === 0) {
       setMessage(
-        "⚠️ Please fill in all fields (Chapter, Sub-Topic, Start Date, Teaching Method).",
+        "⚠️ Please fill in all fields (Chapter, Sub-Topic, Start Date, Teaching Method) for at least one row.",
       );
       return;
     }
 
     setLoading(true);
     try {
-      // Auto-generate week number based on existing plans
-      const weekNo =
-        teachingPlans.length > 0
-          ? Math.max(...teachingPlans.map((p) => p.weekNo)) + 1
-          : 1;
-
+      const token = localStorage.getItem("token");
       const res = await fetch(
-        `http://localhost:5000/api/teaching-plan/${ciannId}/${weekNo}`,
+        getApiUrl(`/teaching-plan/${ciannId}/${numericWeek}`),
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
           body: JSON.stringify({ plans: filteredPlans }),
         },
       );
       if (!res.ok) throw new Error("Failed to save teaching plan");
 
       const updatedRes = await fetch(
-        `http://localhost:5000/api/teaching-plan/${ciannId}`,
+        getApiUrl(`/teaching-plan/${ciannId}`),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
       const updatedData = await updatedRes.json();
       setTeachingPlans(updatedData);
-      setPlanningStarted(true);
+      setPlanningStarted(updatedData.length > 0);
       setView("sheet");
       setPlans([]);
+      setModalWeek("");
       setMessage("✅ Data submitted successfully!");
       setTimeout(() => setMessage(""), 2000);
     } catch (err) {
@@ -332,72 +390,60 @@ const TeachingPlan = () => {
     }
   };
 
-  const getPlansForPage = (page) => {
-    const startWeek = (page - 1) * 4 + 1;
-    const endWeek = startWeek + 3;
-    return teachingPlans.filter(
-      (p) => p.weekNo >= startWeek && p.weekNo <= endWeek,
-    );
-  };
-
-  const getPlansForWeek = (week) => {
-    const found = teachingPlans.find((p) => p.weekNo === week);
-    const plans = found && found.plans ? found.plans : [];
-    const result = [...plans];
-    while (result.length < 5) result.push({});
-    return result.slice(0, 5);
-  };
-
   const renderWeekRow = (week) => {
-    const plans = getPlansForWeek(week);
-    const rows = [];
-    for (let i = 0; i < 5; i++) {
-      const plan = plans[i];
-      const chapterParts = plan?.chapter?.split("Unit - ")[1]?.split(".") || [];
-      const chapterNo = chapterParts[0]?.trim() || "";
-      const chapterName = plan?.chapter?.split(". ").slice(1).join(". ") || "";
+    const found = teachingPlans.find((p) => p.weekNo === week);
+    const plansForWeek = found && found.plans ? found.plans : [];
 
-      rows.push(
+    if (plansForWeek.length > 0) {
+      return plansForWeek.map((p, i) => (
         <tr
           key={`week-${week}-row-${i}`}
-          style={{ borderBottom: i === 4 ? "2px solid #e0e0e0" : "none" }}
+          style={{ borderBottom: i === plansForWeek.length - 1 ? "2px solid #e0e0e0" : "none" }}
           className="table-row"
         >
-          <td data-label="Chapter No." className="chapter-no">
-            {chapterNo ? `Unit - ${chapterNo}` : ""}
-          </td>
-          <td data-label="Name of Chapter" className="chapter-name">
-            {chapterName}
-          </td>
-          <td
-            data-label="Topics / Sub-topics to be covered"
-            className="sub-topic"
-          >
-            {plan?.subTopic || ""}
-          </td>
           {i === 0 && (
             <td
-              rowSpan={5}
-              style={{ textAlign: "center" }}
+              rowSpan={plansForWeek.length}
+              style={{ textAlign: "center", verticalAlign: "middle" }}
               data-label="Entry No."
               className="entry-no"
             >
               {week}
             </td>
           )}
-          <td data-label="Date of Commencing Topic" className="start-date">
-            {plan?.startDate || ""}
+          <td data-label="CO">{p.co || ""}</td>
+          <td data-label="Chapter">{p.chapter || ""}</td>
+          <td data-label="TLO">{p.tlo || ""}</td>
+          <td data-label="Sub-Topic">{p.subTopic || ""}</td>
+          <td data-label="Start Date">{p.startDate || ""}</td>
+          <td data-label="End Date">{p.endDate || ""}</td>
+          <td data-label="Teaching Method">{p.teachingMethod || ""}</td>
+        </tr>
+      ));
+    } else {
+      return (
+        <tr
+          key={`week-${week}-empty`}
+          style={{ borderBottom: "2px solid #e0e0e0" }}
+          className="table-row"
+        >
+          <td
+            style={{ textAlign: "center", verticalAlign: "middle" }}
+            data-label="Entry No."
+            className="entry-no"
+          >
+            {week}
           </td>
-          <td data-label="Date of Completion of Topic" className="end-date">
-            {plan?.endDate || ""}
-          </td>
-          <td data-label="Teaching Methods" className="teaching-method">
-            {plan?.teachingMethod || ""}
-          </td>
-        </tr>,
+          <td data-label="CO"></td>
+          <td data-label="Chapter"></td>
+          <td data-label="TLO"></td>
+          <td data-label="Sub-Topic"></td>
+          <td data-label="Start Date"></td>
+          <td data-label="End Date"></td>
+          <td data-label="Teaching Method"></td>
+        </tr>
       );
     }
-    return rows;
   };
 
   const renderModalForm = () => (
@@ -408,6 +454,7 @@ const TeachingPlan = () => {
           onClick={() => {
             setView("sheet");
             setPlans([]);
+            setModalWeek("");
             setMessage("");
           }}
           title="Close"
@@ -456,97 +503,202 @@ const TeachingPlan = () => {
         )}
 
         <div className="weekwise-form-container">
-          {" "}
-          {/* Renamed for clarity */}
-          <div className="form-grid">
-            <div className="form-labels">
-              {" "}
-              {/* This div acts as the table header */}
-              <label>Chapter</label>
-              <label>Sub-Topic</label>
-              <label>Start Date</label>
-              <label>Teaching Methods</label>
-            </div>
-            {plans.map((plan, index) => (
-              <div className="form-row" key={index}>
-                <select
-                  value={plan.chapter || chapterOptions[0] || ""}
-                  onChange={(e) => {
-                    const selectedValue = e.target.value;
-                    console.log(
-                      `📝 Chapter selected for row ${index + 1}:`,
-                      selectedValue,
-                    );
-                    console.log(
-                      "📦 Current plans state BEFORE update:",
-                      JSON.stringify(plans),
-                    );
-
-                    // Direct state update
-                    const newPlans = [...plans];
-                    newPlans[index] = {
-                      ...newPlans[index],
-                      chapter: selectedValue,
-                    };
-                    console.log(
-                      "💾 New plans state AFTER update:",
-                      JSON.stringify(newPlans),
-                    );
-                    setPlans(newPlans);
-                  }}
-                  className="form-input"
-                  disabled={chaptersLoading || chapterOptions.length <= 1}
-                  style={{
-                    cursor:
-                      chaptersLoading || chapterOptions.length <= 1
-                        ? "not-allowed"
-                        : "pointer",
-                    backgroundColor:
-                      chaptersLoading || chapterOptions.length <= 1
-                        ? "#f5f5f5"
-                        : "white",
-                  }}
-                >
-                  {chapterOptions.map((opt, optIndex) => (
-                    <option
-                      key={`${opt}-${optIndex}`}
-                      value={opt}
-                      disabled={optIndex === 0}
-                      selected={optIndex === 0 && !plan.chapter}
-                    >
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  placeholder="Sub-Topic"
-                  value={plan.subTopic || ""}
-                  onChange={(e) =>
-                    handleChange(index, "subTopic", e.target.value)
-                  }
-                  className="form-input"
-                />
-                <input
-                  type="date"
-                  value={plan.startDate || ""}
-                  onChange={(e) =>
-                    handleChange(index, "startDate", e.target.value)
-                  }
-                  className="form-input"
-                />
-                <input
-                  type="text"
-                  placeholder="Teaching Methods"
-                  value={plan.teachingMethod || ""}
-                  onChange={(e) =>
-                    handleChange(index, "teachingMethod", e.target.value)
-                  }
-                  className="form-input"
-                />
-              </div>
-            ))}
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: "15px 0" }}>
+            <label style={{ fontWeight: "600", fontSize: "15px", color: "#495057" }}>Select Entry (Week):</label>
+            <select
+              value={modalWeek}
+              onChange={(e) => handleWeekChange(e.target.value)}
+              className="form-input"
+              style={{ width: "160px", padding: "6px 10px", fontSize: "14px", border: "1px solid #dde3ea", borderRadius: "8px" }}
+            >
+              <option value="">Select Week</option>
+              {Array.from({ length: 16 }, (_, i) => (
+                <option key={i + 1} value={`Week ${i + 1}`}>
+                  Week {i + 1}
+                </option>
+              ))}
+            </select>
           </div>
+
+          <div className="plan-table-wrapper" style={{ overflowX: "auto" }}>
+            <table className="plan-table">
+              <thead>
+                <tr>
+                  <th style={{ width: "8%" }}>CO</th>
+                  <th style={{ width: "16%" }}>Chapter</th>
+                  <th style={{ width: "20%" }}>TLO</th>
+                  <th style={{ width: "16%" }}>Sub-Topic</th>
+                  <th style={{ width: "13%" }}>Start Date</th>
+                  <th style={{ width: "13%" }}>End Date</th>
+                  <th style={{ width: "14%" }}>Teaching Method</th>
+                  <th style={{ width: "5%" }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {plans.map((plan, index) => (
+                  <tr key={index}>
+                    <td>
+                      <select
+                        value={plan.co || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const updated = [...plans];
+                          updated[index].co = val;
+                          updated[index].tlo = ""; // reset tlo when co changes
+                          setPlans(updated);
+                        }}
+                        disabled={!modalWeek}
+                        className="form-input"
+                      >
+                        <option value="">Select CO</option>
+                        {coData.map((co) => (
+                          <option key={co.coNumber} value={co.coNumber}>
+                            {co.coNumber}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        value={plan.chapter || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const updated = [...plans];
+                          updated[index].chapter = val;
+                          setPlans(updated);
+                        }}
+                        disabled={!modalWeek || chaptersLoading || chapterOptions.length <= 1}
+                        className="form-input"
+                      >
+                        <option value="">Select Chapter</option>
+                        {chapterOptions.slice(1).map((opt, optIndex) => (
+                          <option key={`${opt}-${optIndex}`} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        value={plan.tlo || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const updated = [...plans];
+                          updated[index].tlo = val;
+                          setPlans(updated);
+                        }}
+                        disabled={!modalWeek || !plan.co}
+                        className="form-input"
+                      >
+                        <option value="">Select TLO</option>
+                        {(coData.find((c) => c.coNumber === plan.co)?.tlos || []).map((tloText, tloIdx) => (
+                          <option key={tloIdx} value={tloText}>
+                            {tloText}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        placeholder="Sub-Topic"
+                        value={plan.subTopic || ""}
+                        onChange={(e) => handleChange(index, "subTopic", e.target.value)}
+                        disabled={!modalWeek}
+                        className="form-input"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="date"
+                        value={plan.startDate || ""}
+                        onChange={(e) => handleChange(index, "startDate", e.target.value)}
+                        onFocus={(e) => e.target.showPicker()}
+                        disabled={!modalWeek}
+                        className="form-input"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="date"
+                        value={plan.endDate || ""}
+                        onChange={(e) => handleChange(index, "endDate", e.target.value)}
+                        onFocus={(e) => e.target.showPicker()}
+                        disabled={!modalWeek}
+                        className="form-input"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        placeholder="Teaching Method"
+                        value={plan.teachingMethod || ""}
+                        onChange={(e) => handleChange(index, "teachingMethod", e.target.value)}
+                        disabled={!modalWeek}
+                        className="form-input"
+                      />
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = plans.filter((_, i) => i !== index);
+                          setPlans(updated);
+                        }}
+                        disabled={!modalWeek || plans.length <= 1}
+                        className="delete-row-btn"
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: plans.length <= 1 ? "#ccc" : "#d32f2f",
+                          fontSize: "20px",
+                          cursor: plans.length <= 1 ? "not-allowed" : "pointer",
+                          padding: "4px 8px",
+                        }}
+                        title="Delete Row"
+                      >
+                        &times;
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {modalWeek && (
+            <button
+              type="button"
+              onClick={() => {
+                setPlans([
+                  ...plans,
+                  {
+                    co: "",
+                    tlo: "",
+                    chapter: "",
+                    subTopic: "",
+                    startDate: "",
+                    endDate: "",
+                    teachingMethod: "",
+                  },
+                ]);
+              }}
+              className="btn submit"
+              style={{
+                marginTop: "15px",
+                padding: "8px 16px",
+                fontSize: "14px",
+                backgroundColor: "#2e7d32",
+                color: "white",
+                borderRadius: "6px",
+                border: "none",
+                cursor: "pointer"
+              }}
+            >
+              + Add Row
+            </button>
+          )}
+
           {message && <div className="submission-message">{message}</div>}
         </div>
         <div className="button-group">
@@ -555,7 +707,8 @@ const TeachingPlan = () => {
             onClick={() => {
               setView("sheet");
               setPlans([]);
-              setMessage(""); // Clear message on cancel
+              setModalWeek("");
+              setMessage("");
             }}
             disabled={loading}
           >
@@ -564,7 +717,7 @@ const TeachingPlan = () => {
           <button
             className="btn submit"
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={loading || !modalWeek}
           >
             {view === "edit" ? "Update" : "Submit"}
           </button>
@@ -616,10 +769,7 @@ const TeachingPlan = () => {
           <div className="plan-container">
             <div className="header-row">
               <h3 className="plan-title">6. Teaching Plan (TP)</h3>
-              {/* Move the button/action area here */}
               <div className="plan-actions-top-right">
-                {" "}
-                {/* New div for styling */}
                 {!planningStarted ? (
                   <button
                     className="start-btn btn submit"
@@ -627,15 +777,10 @@ const TeachingPlan = () => {
                       console.log("📅 Start Planning clicked");
                       setPlanningStarted(true);
                       setView("add");
-                      setPlans([
-                        {
-                          chapter: "",
-                          subTopic: "",
-                          startDate: "",
-                          endDate: "",
-                          teachingMethod: "",
-                        },
-                      ]);
+                      const nextWeek = teachingPlans.length > 0
+                        ? Math.max(...teachingPlans.map((p) => p.weekNo)) + 1
+                        : 1;
+                      handleWeekChange(`Week ${nextWeek}`);
                     }}
                     disabled={loading}
                   >
@@ -648,15 +793,10 @@ const TeachingPlan = () => {
                       onClick={() => {
                         console.log("📢 Add New Plan clicked");
                         setView("add");
-                        setPlans([
-                          {
-                            chapter: "",
-                            subTopic: "",
-                            startDate: "",
-                            endDate: "",
-                            teachingMethod: "",
-                          },
-                        ]);
+                        const nextWeek = teachingPlans.length > 0
+                          ? Math.max(...teachingPlans.map((p) => p.weekNo)) + 1
+                          : 1;
+                        handleWeekChange(`Week ${nextWeek}`);
                       }}
                       disabled={loading}
                     >
@@ -667,15 +807,10 @@ const TeachingPlan = () => {
                       onClick={() => {
                         console.log("📋 Edit Plan clicked");
                         setView("edit");
-                        setPlans([
-                          {
-                            chapter: "",
-                            subTopic: "",
-                            startDate: "",
-                            endDate: "",
-                            teachingMethod: "",
-                          },
-                        ]);
+                        const latestWeek = teachingPlans.length > 0
+                          ? Math.max(...teachingPlans.map((p) => p.weekNo))
+                          : 1;
+                        handleWeekChange(`Week ${latestWeek}`);
                       }}
                       disabled={loading}
                     >
@@ -685,7 +820,6 @@ const TeachingPlan = () => {
                 )}
               </div>
             </div>
-            {/* The rest of your content remains here */}
             <p className="ciann-details">
               CIAAN ID: <strong>{ciannData.ciannId}</strong> | Division:{" "}
               <strong>{ciannData.division}</strong>
@@ -693,7 +827,7 @@ const TeachingPlan = () => {
             <div className="tabs">
               {[1, 2, 3, 4].map((page) => (
                 <button
-                  key={page}
+                   key={page}
                   className={`tab ${currentPage === page ? "active" : ""}`}
                   onClick={() => setCurrentPage(page)}
                   disabled={loading}
@@ -710,13 +844,14 @@ const TeachingPlan = () => {
                   <table className="teaching-table">
                     <thead>
                       <tr>
-                        <th>Chapter No.</th>
-                        <th>Name of Chapter</th>
-                        <th>Topics / Sub-topics</th>
                         <th>Entry No.</th>
+                        <th>CO</th>
+                        <th>Chapter</th>
+                        <th>TLO</th>
+                        <th>Sub-Topic</th>
                         <th>Start Date</th>
                         <th>End Date</th>
-                        <th>Teaching Methods</th>
+                        <th>Teaching Method</th>
                       </tr>
                     </thead>
                     <tbody>

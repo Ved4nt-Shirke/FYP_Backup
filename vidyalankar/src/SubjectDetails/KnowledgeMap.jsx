@@ -1,38 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { config } from '../config/api';
-import { unifiedSubjectDetailsApi } from './api/subjectDetailsApi';
 
 export default function KnowledgeMap() {
-  const { unifiedData, updateUnifiedData } = useOutletContext();
   const [showForm, setShowForm] = useState(false);
-  
-  const tableData = unifiedData?.knowledgeMap?.application
-    ? unifiedData.knowledgeMap
-    : null;
+  const [tableData, setTableData] = useState(null);
 
-  const handleFormSubmit = async (formData) => {
-    try {
-      let imagePath = tableData?.imagePath || "";
-      if (formData.file) {
-        // Upload new file first
-        const uploadResult = await unifiedSubjectDetailsApi.uploadKnowledgeMapImage(formData.file);
-        imagePath = uploadResult.filePath;
-      }
-      
-      updateUnifiedData("knowledgeMap", {
-        preSem: formData.preSem,
-        preCourse: formData.preCourse,
-        futureSem: formData.futureSem,
-        futureCourse: formData.futureCourse,
-        application: formData.application,
-        imagePath
-      });
-      setShowForm(false);
-    } catch (err) {
-      console.error("Failed to save knowledge map:", err);
-      alert("Error saving knowledge map. Please try again.");
+  const handleFormSubmit = (data) => {
+    if (data) {
+      setTableData(data);
     }
+    setShowForm(false);
   };
 
   // Prevent body scroll when modal is open
@@ -374,27 +350,9 @@ export default function KnowledgeMap() {
       <div className="knowledge-map-container mb-5"> {/* Updated class name */}
         <div className="header-row">
           <h2 className="title">3.3 Knowledge Map</h2>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="button" onClick={() => setShowForm(true)}>
-              {tableData ? 'Edit Knowledge Map' : 'Add Knowledge Map'}
-            </button>
-            {tableData && (
-              <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => {
-                if (window.confirm("Delete Knowledge Map details?")) {
-                  updateUnifiedData("knowledgeMap", {
-                    preSem: ["", "", ""],
-                    preCourse: ["", "", ""],
-                    futureSem: ["", "", ""],
-                    futureCourse: ["", "", ""],
-                    application: "",
-                    imagePath: ""
-                  });
-                }
-              }}>
-                Delete
-              </button>
-            )}
-          </div>
+          <button className="button" onClick={() => setShowForm(true)}>
+            {tableData ? 'Edit Knowledge Map' : 'Add Knowledge Map'}
+          </button>
         </div>
 
         {/* Added a scrollable container for the table */}
@@ -418,17 +376,17 @@ export default function KnowledgeMap() {
               {tableData ? (
                 [0, 1, 2].map((i) => (
                   <tr key={i}>
-                    <td>{tableData.preSem?.[i] || ""}</td>
-                    <td>{tableData.preCourse?.[i] || ""}</td>
-                    <td>{tableData.futureSem?.[i] || ""}</td>
-                    <td>{tableData.futureCourse?.[i] || ""}</td>
+                    <td>{tableData.preSem[i]}</td>
+                    <td>{tableData.preCourse[i]}</td>
+                    <td>{tableData.futureSem[i]}</td>
+                    <td>{tableData.futureCourse[i]}</td>
                     {i === 0 && (
                       <>
                         <td rowSpan="3">{tableData.application}</td>
                         <td rowSpan="3">
-                          {tableData.imagePath && (
+                          {tableData.file && (
                             <img
-                              src={config.apiBaseUrl.replace(/\/api$/, '') + tableData.imagePath}
+                              src={URL.createObjectURL(tableData.file)}
                               alt="Map"
                               style={{ maxWidth: '200px', borderRadius: '8px' }}
                             />
@@ -475,7 +433,7 @@ function KnowledgeMapForm({ onSubmit, initialData, onCancel }) {
   const [futureSem, setFutureSem] = useState(initialData?.futureSem || ['', '', '']);
   const [futureCourse, setFutureCourse] = useState(initialData?.futureCourse || ['', '', '']);
   const [application, setApplication] = useState(initialData?.application || '');
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState(initialData?.file || null);
 
   const handleSubmit = (e) => {
     e.preventDefault();

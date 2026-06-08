@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
 const teachingPlanEntrySchema = new mongoose.Schema({
+  co: { type: String, default: "" },
+  tlo: { type: String, default: "" },
   chapter: { type: String, required: true },
   subTopic: { type: String, required: true },
   startDate: { type: String, required: true },

@@ -1,6 +1,6 @@
 # Dependencies
 node_modules/
-whatsapp/auth/session-attendance-bot/
+
 # Environment variables
 .env
 .env.local
@@ -29,5 +29,3 @@ test-results/
 coverage/
 backend/.wwebjs_cache/
 backend/whatsapp/auth/
-backend/whatsapp/auth/
-whatsapp/auth/session-attendance-bot/

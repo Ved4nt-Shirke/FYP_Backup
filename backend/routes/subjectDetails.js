@@ -8,29 +8,6 @@ const MoocCourse = require("../models/MoocCourse");
 const SubjectObjective = require("../models/SubjectObjective");
 const WebResource = require("../models/WebResource");
 const KnowledgeMap = require("../models/KnowledgeMap");
-const CiannSubjectDetails = require("../models/CiannSubjectDetails");
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-
-// Configure multer for knowledge maps
-const uploadsDir = path.join(__dirname, "../uploads/knowledge-maps");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage });
-
 
 // ==================== BOOK RESOURCES ====================
 
@@ -312,50 +289,56 @@ router.put("/knowledge-map/:id", async (req, res) => {
   }
 });
 
-// ==================== UNIFIED SUBJECT DETAILS ENDPOINTS ====================
+// ==================== TLO & LLO DETAILS ====================
+const TloLlo = require("../models/TloLlo");
+const { authenticate } = require("../middleware/auth");
 
-// Get unified subject details for a CIANN
-router.get("/unified/:ciannId", async (req, res) => {
+// GET: Fetch TloLlo details
+router.get("/tlo-llo/:ciannId/:subjectId", authenticate, async (req, res) => {
   try {
-    const { ciannId } = req.params;
-    let details = await CiannSubjectDetails.findOne({ ciannId: parseInt(ciannId) });
-    if (!details) {
-      details = new CiannSubjectDetails({ ciannId: parseInt(ciannId) });
-    }
-    res.json(details);
+    const { ciannId, subjectId } = req.params;
+    const facultyId = req.user._id;
+
+    const record = await TloLlo.findOne({
+      facultyId,
+      ciannId: parseInt(ciannId),
+      subjectId
+    });
+
+    res.json({
+      success: true,
+      data: record || null
+    });
   } catch (error) {
-    console.error("Error fetching unified subject details:", error);
-    res.status(500).json({ error: "Failed to fetch subject details" });
+    console.error("Error fetching TloLlo:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch TloLlo data" });
   }
 });
 
-// Save/Update unified subject details for a CIANN
-router.post("/unified/:ciannId", async (req, res) => {
+// POST: Save/Update TloLlo details
+router.post("/tlo-llo", authenticate, async (req, res) => {
   try {
-    const { ciannId } = req.params;
-    const updatedDetails = await CiannSubjectDetails.findOneAndUpdate(
-      { ciannId: parseInt(ciannId) },
-      { $set: req.body },
-      { new: true, upsert: true }
+    const { ciannId, subjectId, coData } = req.body;
+    const facultyId = req.user._id;
+
+    if (!ciannId || !subjectId || !coData) {
+      return res.status(400).json({ success: false, error: "Missing required fields" });
+    }
+
+    const updatedRecord = await TloLlo.findOneAndUpdate(
+      { facultyId, ciannId: parseInt(ciannId), subjectId },
+      { coData },
+      { new: true, upsert: true, runValidators: true }
     );
-    res.json(updatedDetails);
-  } catch (error) {
-    console.error("Error updating unified subject details:", error);
-    res.status(400).json({ error: error.message });
-  }
-});
 
-// Upload knowledge map image
-router.post("/knowledge-map/upload", upload.single("mapImage"), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-    const filePath = `/uploads/knowledge-maps/${req.file.filename}`;
-    res.json({ filePath });
+    res.json({
+      success: true,
+      message: "TLO & LLO saved successfully",
+      data: updatedRecord
+    });
   } catch (error) {
-    console.error("Error uploading knowledge map image:", error);
-    res.status(500).json({ error: "Failed to upload image" });
+    console.error("Error saving TloLlo:", error);
+    res.status(400).json({ success: false, error: error.message });
   }
 });
 

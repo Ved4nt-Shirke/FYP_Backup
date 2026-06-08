@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import * as XLSX from "xlsx";
 import axios from "../../utils/axiosConfig";
 import { showErrorAlert, showSuccessAlert } from "../../utils/alertUtils";
 import { config } from "../../config/api";
+import CourseDetailsModal from "./CourseDetailsModal";
 import "./SubjectManagement.css";
 
 const normalizeValue = (value) =>
@@ -53,6 +54,11 @@ const SubjectManagement = () => {
   const [editingId, setEditingId] = useState(null);
   const hasPreview = useMemo(() => parsedRows.length > 0, [parsedRows]);
 
+  const location = useLocation();
+  const [newlyCreatedSubject, setNewlyCreatedSubject] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [editedSubjectHasDetails, setEditedSubjectHasDetails] = useState(false);
+
   useEffect(() => {
     const role = localStorage.getItem("role");
     if (role !== "admin") {
@@ -64,6 +70,26 @@ const SubjectManagement = () => {
     fetchDepartments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (location.state?.editSubject) {
+      handleEdit(location.state.editSubject);
+      // Check if it already has course details
+      const checkDetails = async () => {
+        try {
+          const res = await axios.get(config.courseDetails.bySubject(location.state.editSubject._id));
+          if (res.data.success && res.data.courseDetails) {
+            setEditedSubjectHasDetails(true);
+          } else {
+            setEditedSubjectHasDetails(false);
+          }
+        } catch {
+          setEditedSubjectHasDetails(false);
+        }
+      };
+      checkDetails();
+    }
+  }, [location.state]);
 
   const fetchDepartments = async () => {
     try {
@@ -183,6 +209,8 @@ const SubjectManagement = () => {
         );
         if (response.data.success) {
           showSuccessAlert("Subject updated successfully");
+          const updatedSubj = { ...payload, _id: editingId };
+          setNewlyCreatedSubject(updatedSubj);
           resetForm();
         } else {
           showErrorAlert(response.data.message || "Failed to update subject");
@@ -191,6 +219,8 @@ const SubjectManagement = () => {
         const response = await axios.post(config.subjects.create, payload);
         if (response.data.success) {
           showSuccessAlert("Subject added successfully");
+          setNewlyCreatedSubject(response.data.subject);
+          setEditedSubjectHasDetails(false);
           resetForm();
         } else {
           showErrorAlert(response.data.message || "Failed to add subject");
@@ -369,6 +399,37 @@ const SubjectManagement = () => {
             </button>
           )}
         </div>
+        {newlyCreatedSubject && (
+          <div
+            className="alert alert-success d-flex align-items-center justify-content-between p-3 mb-4 rounded border-success"
+            style={{ backgroundColor: "rgba(25, 135, 84, 0.1)", color: "#198754", gap: "12px", border: "1px solid rgba(25, 135, 84, 0.2)" }}
+          >
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-check-circle-fill fs-5" style={{ color: "#198754" }}></i>
+              <div>
+                <strong>Subject Saved:</strong> "{newlyCreatedSubject.name}" ({newlyCreatedSubject.code}) has been saved.
+              </div>
+            </div>
+            <div className="d-flex gap-2">
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ padding: "6px 12px", fontSize: "0.825rem", whiteSpace: "nowrap" }}
+                onClick={() => setIsDetailsModalOpen(true)}
+              >
+                {editedSubjectHasDetails ? "Edit Course Details" : "Add Course Details"}
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ padding: "6px 12px", fontSize: "0.825rem", whiteSpace: "nowrap" }}
+                onClick={() => setNewlyCreatedSubject(null)}
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="subject-form-grid">
           <div className="form-field">
             <label>Subject Name</label>
@@ -542,6 +603,19 @@ const SubjectManagement = () => {
           View Subjects List
         </button>
       </div>
+      {isDetailsModalOpen && newlyCreatedSubject && (
+        <CourseDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={() => {
+            setIsDetailsModalOpen(false);
+            setNewlyCreatedSubject(null);
+          }}
+          subject={newlyCreatedSubject}
+          onSaveSuccess={() => {
+            setEditedSubjectHasDetails(true);
+          }}
+        />
+      )}
     </div>
   );
 };

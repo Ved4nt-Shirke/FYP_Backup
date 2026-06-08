@@ -1,33 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
 
 export default function OfficeHours() {
-  const { unifiedData, updateUnifiedData } = useOutletContext();
-  const officeHours = unifiedData?.officeHours || { day: "", time: "", venue: "", informed: false };
-
+  const [day, setDay] = useState("");
+  const [time, setTime] = useState("");
+  const [venue, setVenue] = useState("");
+  const [informed, setInformed] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formDay, setFormDay] = useState("");
   const [formTime, setFormTime] = useState("");
   const [formVenue, setFormVenue] = useState("");
   const [formInformed, setFormInformed] = useState(false);
 
-  // Prefill form when showForm changes
-  useEffect(() => {
-    if (showForm) {
-      setFormDay(officeHours.day || "");
-      setFormTime(officeHours.time || "");
-      setFormVenue(officeHours.venue || "");
-      setFormInformed(officeHours.informed || false);
-    }
-  }, [showForm, officeHours]);
-
   const handleSubmit = () => {
-    updateUnifiedData("officeHours", {
-      day: formDay,
-      time: formTime,
-      venue: formVenue,
-      informed: formInformed
-    });
+    setDay(formDay);
+    setTime(formTime);
+    setVenue(formVenue);
+    setInformed(formInformed);
     setShowForm(false);
   };
 
@@ -431,25 +419,19 @@ export default function OfficeHours() {
                 <th>Time</th>
                 <th>Venue</th>
                 <th>Informed</th>
-                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {officeHours.day || officeHours.time || officeHours.venue ? (
+              {day || time || venue ? (
                 <tr>
-                  <td>{officeHours.day}</td>
-                  <td>{officeHours.time}</td>
-                  <td>{officeHours.venue}</td>
+                  <td>{day}</td>
+                  <td>{time}</td>
+                  <td>{venue}</td>
                   <td>
                     <input
                       type="checkbox"
-                      checked={officeHours.informed || false}
-                      onChange={() => {
-                        updateUnifiedData("officeHours", {
-                          ...officeHours,
-                          informed: !officeHours.informed
-                        });
-                      }}
+                      checked={informed}
+                      onChange={() => setInformed(!informed)}
                       style={{ /* Inline style for checkbox for quick visual check */
                         width: '20px',
                         height: '20px',
@@ -465,20 +447,10 @@ export default function OfficeHours() {
                       }}
                     />
                   </td>
-                  <td>
-                    <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-                      <button className="button2" style={{ padding: "6px 14px", fontSize: "13px" }} onClick={() => setShowForm(true)}>Edit</button>
-                      <button className="button-delete" style={{ padding: "6px 14px", fontSize: "13px", backgroundColor: "#d32f2f", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }} onClick={() => {
-                        if (window.confirm("Delete Office Hours details?")) {
-                          updateUnifiedData("officeHours", { day: "", time: "", venue: "", informed: false });
-                        }
-                      }}>Delete</button>
-                    </div>
-                  </td>
                 </tr>
               ) : (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: "center" }}>
+                  <td colSpan="4" style={{ textAlign: "center" }}>
                     No Data Entered
                   </td>
                 </tr>

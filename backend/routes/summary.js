@@ -17,127 +17,6 @@ const calculatePercentage = (attended, total) => {
   return Math.round((attended / total) * 100);
 };
 
-const normalizeAttendanceStatus = (value = '') =>
-  String(value || '').trim().toLowerCase();
-
-const resolveStudentIdentity = (entry = {}) => ({
-  rollNo: String(entry.rollNo || entry.rollId || '').trim(),
-  studentName: String(entry.studentName || entry.name || '').trim(),
-});
-
-const createStudentAttendanceAggregator = ({ divisionStudents, isAllowedStudent }) => {
-  const studentsMap = new Map();
-
-  const getStudentKey = ({ rollNo, studentName }) => {
-    if (rollNo) return `roll:${rollNo}`;
-    if (studentName) return `name:${studentName.toLowerCase()}`;
-    return '';
-  };
-
-  const ensureStudent = (entry = {}) => {
-    const identity = resolveStudentIdentity(entry);
-    const key = getStudentKey(identity);
-    if (!key) return null;
-
-    if (!studentsMap.has(key)) {
-      studentsMap.set(key, {
-        rollNo: identity.rollNo || '-',
-        studentName: identity.studentName || '-',
-        theory: { present: 0, total: 0, percentage: 0 },
-        practical: { present: 0, total: 0, percentage: 0 },
-        tutorial: { present: 0, total: 0, percentage: 0 },
-        overall: { present: 0, total: 0, percentage: 0 },
-      });
-    }
-
-    const student = studentsMap.get(key);
-    if (!student.studentName || student.studentName === '-') {
-      student.studentName = identity.studentName || student.studentName;
-    }
-    if ((!student.rollNo || student.rollNo === '-') && identity.rollNo) {
-      student.rollNo = identity.rollNo;
-    }
-
-    return student;
-  };
-
-  // Seed from division roster so all students appear, even with no attendance yet.
-  (Array.isArray(divisionStudents) ? divisionStudents : []).forEach((student) => {
-    ensureStudent({
-      rollNo: student.rollNo,
-      studentName: student.studentName,
-    });
-  });
-
-  const addCategoryEntries = (entries, category, presentField = 'status') => {
-    (Array.isArray(entries) ? entries : []).forEach((entry) => {
-      const students = Array.isArray(entry?.students) ? entry.students : [];
-
-      students.forEach((studentEntry) => {
-        if (!isAllowedStudent(studentEntry)) return;
-
-        const student = ensureStudent(studentEntry);
-        if (!student) return;
-
-        student[category].total += 1;
-
-        const status = normalizeAttendanceStatus(studentEntry[presentField]);
-        if (status === 'present') {
-          student[category].present += 1;
-        }
-      });
-    });
-  };
-
-  const finalize = () => {
-    return Array.from(studentsMap.values())
-      .map((student) => {
-        student.theory.percentage = calculatePercentage(
-          student.theory.present,
-          student.theory.total,
-        );
-        student.practical.percentage = calculatePercentage(
-          student.practical.present,
-          student.practical.total,
-        );
-        student.tutorial.percentage = calculatePercentage(
-          student.tutorial.present,
-          student.tutorial.total,
-        );
-
-        student.overall.present =
-          student.theory.present +
-          student.practical.present +
-          student.tutorial.present;
-        student.overall.total =
-          student.theory.total +
-          student.practical.total +
-          student.tutorial.total;
-        student.overall.percentage = calculatePercentage(
-          student.overall.present,
-          student.overall.total,
-        );
-
-        return student;
-      })
-      .sort((a, b) => {
-        const rollA = String(a.rollNo || '');
-        const rollB = String(b.rollNo || '');
-        if (rollA && rollB && rollA !== '-' && rollB !== '-') {
-          return rollA.localeCompare(rollB, undefined, { numeric: true, sensitivity: 'base' });
-        }
-        return String(a.studentName || '').localeCompare(String(b.studentName || ''), undefined, {
-          sensitivity: 'base',
-        });
-      });
-  };
-
-  return {
-    addCategoryEntries,
-    finalize,
-  };
-};
-
 router.get('/:ciannId', async (req, res) => {
   try {
     const ciannId = parseInt(req.params.ciannId);
@@ -374,36 +253,13 @@ router.get('/:ciannId', async (req, res) => {
     const tutorialPercentage = calculatePercentage(tutorialAttendance, tutorialsEngaged * totalStudentsInClass);
     const tutorialSummary = { tutorialsEngaged, attendance: tutorialAttendance, percentage: tutorialPercentage };
 
-    const attendanceAggregator = createStudentAttendanceAggregator({
-      divisionStudents,
-      isAllowedStudent,
-    });
-
-    attendanceAggregator.addCategoryEntries(theoryAttendances, 'theory', 'status');
-    attendanceAggregator.addCategoryEntries(extraAttendances, 'theory', 'attendance');
-    attendanceAggregator.addCategoryEntries(practicals, 'practical', 'status');
-    attendanceAggregator.addCategoryEntries(extraPracticals, 'practical', 'attendance');
-    attendanceAggregator.addCategoryEntries(tutorials, 'tutorial', 'attendance');
-
-    const studentRecords = attendanceAggregator.finalize();
-
     // --- Debug logging ---
     console.log('Theory Summary:', JSON.stringify(theorySummary, null, 2));
     console.log('Practical Summary:', JSON.stringify(practicalSummary, null, 2));
     console.log('Tutorial Summary:', JSON.stringify(tutorialSummary, null, 2));
-    console.log(`Student-wise attendance records generated: ${studentRecords.length}`);
 
     // --- Final Response ---
-    res.json({
-      theory: theorySummary,
-      practical: practicalSummary,
-      tutorial: tutorialSummary,
-      studentRecords,
-      attendanceMeta: {
-        totalStudents: totalStudentsInClass,
-        ciannId,
-      },
-    });
+    res.json({ theory: theorySummary, practical: practicalSummary, tutorial: tutorialSummary });
 
   } catch (error) {
     console.error('Error in summary route:', error);

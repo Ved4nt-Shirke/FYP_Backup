@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
+import React, { useState } from "react";
 
 export default function Rubric() {
-  const { unifiedData, updateUnifiedData } = useOutletContext();
   const [showRubric, setShowRubric] = useState(false);
-
-  const defaultRubric = {
+  const [submittedRubricData, setSubmittedRubricData] = useState(null);
+  const [rubricFormData, setRubricFormData] = useState({
     attendance: '',
     assignments: '',
     performance: '',
@@ -13,60 +11,28 @@ export default function Rubric() {
     tests: '',
     other: '',
     total: ''
-  };
-
-  const submittedRubricData = unifiedData?.rubric || defaultRubric;
-
-  const [rubricFormData, setRubricFormData] = useState(defaultRubric);
-
-  const keys = ['attendance', 'assignments', 'performance', 'journal', 'tests', 'other', 'total'];
-
-  // Sync form when modal opens
-  useEffect(() => {
-    if (showRubric) {
-      setRubricFormData({
-        attendance: submittedRubricData.attendance || '',
-        assignments: submittedRubricData.assignments || '',
-        performance: submittedRubricData.performance || '',
-        journal: submittedRubricData.journal || '',
-        tests: submittedRubricData.tests || '',
-        other: submittedRubricData.other || '',
-        total: submittedRubricData.total || ''
-      });
-    }
-  }, [showRubric, submittedRubricData]);
-
-  // Lock scroll when modal is open
-  useEffect(() => {
-    if (showRubric) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-    return () => (document.body.style.overflow = "auto");
-  }, [showRubric]);
+  });
 
   const handleRubricChange = (e) => {
     const { name, value } = e.target;
     setRubricFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRubricSubmit = (e) => {
-    e.preventDefault();
-    updateUnifiedData("rubric", rubricFormData);
+  const handleRubricSubmit = () => {
+    setSubmittedRubricData(rubricFormData);
+    setRubricFormData({
+      attendance: '',
+      assignments: '',
+      performance: '',
+      journal: '',
+      tests: '',
+      other: '',
+      total: ''
+    });
     setShowRubric(false);
   };
 
   const handleCancelRubric = () => setShowRubric(false);
-
-  const hasRubric = Object.values(submittedRubricData).some(val => val);
-
-  const handleRubricDelete = () => {
-    if (window.confirm("Are you sure you want to delete this rubric?")) {
-      updateUnifiedData("rubric", defaultRubric);
-    }
-  };
-
 
   return (
     <>
@@ -430,30 +396,22 @@ export default function Rubric() {
       <div className='rubric-container'>
         <div className='header-row'>
           <h2 className='title'>3.12 Rubric for Grading & Marking of Term Work</h2>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="button" onClick={() => setShowRubric(true)}>
-              {hasRubric ? 'Edit Rubric' : 'Add Rubric'}
-            </button>
-            {hasRubric && (
-              <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={handleRubricDelete}>
-                Delete
-              </button>
-            )}
-          </div>
+          <button className="button" onClick={() => setShowRubric(true)}>Add Rubric</button>
         </div>
 
         {showRubric && (
           <div className="modal-backdrop">
             <div className="modal-box">
               <div className="modal-header">
-                <span>{hasRubric ? 'Edit Rubric' : 'Add Rubric'}</span>
+                <span>Add Rubric</span>
                 <button className="close-btn" onClick={handleCancelRubric}>&times;</button>
               </div>
-              <form onSubmit={handleRubricSubmit}>
-                <div className="modal-body-content">
-                  <div className="table-wrapper" style={{ maxHeight: 'calc(70vh - 100px)' }}>
-                    <table className="modal-rubric-table">
-                      <colgroup>
+              <div className="modal-body-content">
+                <div className="table-wrapper" style={{ maxHeight: 'calc(70vh - 100px)' }}> {/* Added max-height for modal table scroll */}
+                  <table className="modal-rubric-table">
+                    <thead>
+                      <tr>
+                        {/* Define column widths for the modal table */}
                         <col style={{ width: '14%' }} />
                         <col style={{ width: '14%' }} />
                         <col style={{ width: '14%' }} />
@@ -461,57 +419,56 @@ export default function Rubric() {
                         <col style={{ width: '14%' }} />
                         <col style={{ width: '14%' }} />
                         <col style={{ width: '14%' }} />
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <th>Lecture + Practical<br />(% Attendance)</th>
-                          <th>Assignments</th>
-                          <th>Lab / Practical Performance</th>
-                          <th>Lab Journal Assessment</th>
-                          <th>Class Tests<br />(Other than PT)</th>
-                          <th>Other Specify</th>
-                          <th>Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          {keys.map((key) => (
-                            <td key={key}>
-                              <input
-                                type="text"
-                                className="form-control"
-                                name={key}
-                                value={rubricFormData[key]}
-                                onChange={handleRubricChange}
-                              />
-                            </td>
-                          ))}
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="btn-row">
-                    <button type="submit" className="btn-save">Submit</button>
-                    <button type="button" className="btn-cancel" onClick={handleCancelRubric}>Cancel</button>
-                  </div>
+                      </tr>
+                      <tr>
+                        <th>Lecture + Practical<br />(% Attendance)</th>
+                        <th>Assignments</th>
+                        <th>Lab / Practical Performance</th>
+                        <th>Lab Journal Assessment</th>
+                        <th>Class Tests<br />(Other than PT)</th>
+                        <th>Other Specify</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        {Object.keys(rubricFormData).map((key) => (
+                          <td key={key}>
+                            <input
+                              type="text"
+                              className="form-control"
+                              name={key}
+                              value={rubricFormData[key]}
+                              onChange={handleRubricChange}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-              </form>
+                <div className="btn-row">
+                  <button className="btn-save" onClick={handleRubricSubmit}>Submit</button>
+                  <button className="btn-cancel" onClick={handleCancelRubric}>Cancel</button>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        <div className="table-wrapper" style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
+        <div className="table-wrapper" style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}> {/* Added max-height for main table scroll */}
           <table>
-            <colgroup>
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '14%' }} />
-            </colgroup>
             <thead>
+              <tr>
+                {/* Define column widths for the main table */}
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '14%' }} />
+              </tr>
               <tr>
                 <th>Lecture +<br />Practical<br />(%Attendance)</th>
                 <th>Assignment</th>
@@ -524,8 +481,8 @@ export default function Rubric() {
             </thead>
             <tbody>
               <tr>
-                {keys.map((key) => (
-                  <td key={key}>{submittedRubricData[key] || '-'}</td>
+                {Object.keys(rubricFormData).map((key) => (
+                  <td key={key}>{submittedRubricData?.[key] || ''}</td>
                 ))}
               </tr>
             </tbody>

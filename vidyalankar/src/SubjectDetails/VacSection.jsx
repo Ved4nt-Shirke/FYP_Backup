@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export default function VacSection({ unifiedData, updateUnifiedData }) {
+export default function VacSection() {
   const blankVac = [
     { name: '', conductedBy: '', duration: '', certificate: '' },
     { name: '', conductedBy: '', duration: '', certificate: '' }
@@ -9,18 +9,10 @@ export default function VacSection({ unifiedData, updateUnifiedData }) {
   // Helper to create a deep copy of the rows array
   const deepCloneRows = (rows) => rows.map(r => ({ ...r }));
 
-  const rawVac = unifiedData?.vacSection;
-  const submittedVacData = Array.isArray(rawVac) && rawVac.length >= 2 ? rawVac : blankVac;
-
   const [showVacForm, setShowVacForm] = useState(false);
   const [currentVacForm, setCurrentVacForm] = useState(deepCloneRows(blankVac));
-
-  // Sync form when modal opens
-  useEffect(() => {
-    if (showVacForm) {
-      setCurrentVacForm(deepCloneRows(submittedVacData));
-    }
-  }, [showVacForm, submittedVacData]);
+  const [submittedVacData, setSubmittedVacData] = useState(deepCloneRows(blankVac));
+  const [vacBtn, setVacBtn] = useState('Add/Edit List');
 
   // Effect to prevent body scroll when modal is open
   useEffect(() => {
@@ -42,20 +34,12 @@ export default function VacSection({ unifiedData, updateUnifiedData }) {
     });
     setCurrentVacForm(updatedForm);
   };
-
+  
   const handleSubmit = () => {
-    updateUnifiedData("vacSection", currentVacForm);
+    setSubmittedVacData(deepCloneRows(currentVacForm));
+    setVacBtn('Edit List');
     setShowVacForm(false);
   };
-
-  const hasVac = submittedVacData.some(r => r.name);
-
-  const handleDelete = () => {
-    if (window.confirm("Are you sure you want to delete all VAC courses?")) {
-      updateUnifiedData("vacSection", blankVac);
-    }
-  };
-
 
   return (
     <>
@@ -216,16 +200,7 @@ export default function VacSection({ unifiedData, updateUnifiedData }) {
             <h2 className="title">Recommended VAC Courses</h2>
             <p className="subtitle">3.13.6 List of relevant Value Added Courses</p>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="button" onClick={() => setShowVacForm(true)}>
-              {hasVac ? 'Edit List' : 'Add/Edit List'}
-            </button>
-            {hasVac && (
-              <button className="button-delete" style={{ padding: '12px 24px', fontSize: '16px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }} onClick={handleDelete}>
-                Delete
-              </button>
-            )}
-          </div>
+          <button className="button" onClick={() => setShowVacForm(true)}>{vacBtn}</button>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -247,15 +222,21 @@ export default function VacSection({ unifiedData, updateUnifiedData }) {
               </tr>
             </thead>
             <tbody>
-              {submittedVacData.map((r, i) => (
-                <tr key={i}>
-                  <td>{i + 1}</td>
-                  <td>{r.name || '-'}</td>
-                  <td>{r.conductedBy || '-'}</td>
-                  <td>{r.duration || '-'}</td>
-                  <td>{r.certificate || '-'}</td>
+              {submittedVacData[0]?.name ? (
+                submittedVacData.map((r, i) => (
+                  <tr key={i}>
+                    <td>{i + 1}</td>
+                    <td>{r.name}</td>
+                    <td>{r.conductedBy}</td>
+                    <td>{r.duration}</td>
+                    <td>{r.certificate}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5">No VAC courses have been added yet.</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -264,7 +245,7 @@ export default function VacSection({ unifiedData, updateUnifiedData }) {
           <div className="modal-overlay">
             <div className="modal-box" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <span>{hasVac ? 'Edit Recommended VAC Courses' : 'Add/Edit Recommended VAC Courses'}</span>
+                <span>Add/Edit Recommended VAC Courses</span>
                 <button type="button" className="close-btn" onClick={() => setShowVacForm(false)}>&times;</button>
               </div>
               <div className="modal-body">

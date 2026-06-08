@@ -321,9 +321,11 @@ const LabPlanningSheet = () => {
                     <thead>
                       <tr>
                         <th>Week No.</th>
+                        <th>Batch</th>
+                        <th>CO</th>
+                        <th>LLO</th>
                         <th>Expt. No.</th>
                         <th>Name of Experiment</th>
-                        <th>Batch</th>
                         <th>Date of Performance (Planned)</th>
                         <th>Date of Completion (Actual)</th>
                       </tr>
@@ -346,9 +348,11 @@ const LabPlanningSheet = () => {
                                   {i === 0 && (
                                     <td rowSpan={weekPlans.length}>{weekNo}</td>
                                   )}
+                                  <td>{p.batch}</td>
+                                  <td>{p.co || ""}</td>
+                                  <td>{p.llo || ""}</td>
                                   <td>{p.exptNo}</td>
                                   <td>{p.exptName}</td>
-                                  <td>{p.batch}</td>
                                   <td>{p.date}</td>
                                   <td>{p.actualDate || "--"}</td>
                                 </tr>
@@ -361,9 +365,11 @@ const LabPlanningSheet = () => {
                                   }`}
                                 >
                                   {i === 0 && <td rowSpan={3}>{weekNo}</td>}
-                                  <td></td>
-                                  <td></td>
                                   <td>{batch}</td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
                                   <td></td>
                                   <td>--</td>
                                 </tr>

@@ -32,6 +32,16 @@ const SecondarySidebar = ({
       path: "/subject-details",
       icon: "bi-book",
     },
+    {
+      label: "TLO Details",
+      path: "/tlo",
+      icon: "bi-journal-text",
+    },
+    {
+      label: "LLO Details",
+      path: "/llo",
+      icon: "bi-flask",
+    },
     { label: "Students List", path: "/student-list", icon: "bi-people" },
     {
       label: "Teaching Plan (TP)",
@@ -42,6 +52,11 @@ const SecondarySidebar = ({
       label: "Laboratory Plan (LP)",
       path: "/laboratory-plan",
       icon: "bi-beaker",
+    },
+    {
+      label: "Tutorial Planning",
+      path: "/tutorial-plan",
+      icon: "bi-book-half",
     },
   ];
 
@@ -92,8 +107,12 @@ const SecondarySidebar = ({
       "Syllabus Contents": "/syllabus",
       "Teaching Plan (TP)": "/teaching-plan",
       "Laboratory Plan (LP)": "/laboratory-plan",
+      "Tutorial Planning": "/tutorial-plan",
+      "Tutorial Plan (TUT)": "/tutorial-plan",
       "Students List": "/student-list",
       "Subject Details": "/subject-details",
+      "TLO Details": "/tlo",
+      "LLO Details": "/llo",
     };
     const route = routes[label];
     if (!route) {

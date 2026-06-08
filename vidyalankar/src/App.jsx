@@ -20,6 +20,9 @@ import StudentDashboard from "./student/StudentDashboard";
 import StudyMaterial from "./student/StudyMaterial";
 import Results from "./student/Results";
 import Notices from "./student/Notices";
+import MockExamList from "./student/MockExamList";
+import MockExamAttempt from "./student/MockExamAttempt";
+import MockExamResult from "./student/MockExamResult";
 import StudentPracticalExamList from "./student/StudentPracticalExamList";
 import StudentPracticalExamUpload from "./student/StudentPracticalExamUpload";
 import StudentTimetable from "./student/StudentTimetable";
@@ -34,6 +37,7 @@ import TimeTable from "./editCiann/Timetable";
 import Syllabus from "./editCiann/Syllabus";
 import LabPlanningSheet from "./editCiann/LabPlanningSheet";
 import TeachingPlanSheet from "./editCiann/TeachingPlanSheet";
+import TutorialPlanSheet from "./editCiann/TutorialPlanSheet";
 import Studentlist from "./editCiann/studentlist";
 import PrintCiann from "./editCiann/PrintCiann";
 
@@ -50,6 +54,8 @@ import CourseOutcomes from "./SubjectDetails/CourseOutcomes";
 import Recommendations from "./SubjectDetails/Recommendations";
 import Resources from "./SubjectDetails/Resources";
 import Rubric from "./SubjectDetails/Rubric";
+import Tlo from "./SubjectDetails/Tlo";
+import Llo from "./SubjectDetails/Llo";
 
 // Attendance Components
 import MarkAttendance from "./components/MarkAttendance";
@@ -125,6 +131,7 @@ import OfficeStaffForm from "./admin/OfficeStaffForm";
 import CreateOfficeStaff from "./admin/CreateOfficeStaff";
 import SubjectManagement from "./admin/subjects/SubjectManagement";
 import SubjectsView from "./admin/subjects/SubjectsView";
+import CourseDetailsView from "./admin/subjects/CourseDetailsView";
 
 import OfficeDashboard from "./office/OfficeDashboard";
 import OfficeSidebar from "./office/OfficeSidebar";
@@ -180,16 +187,12 @@ import SAPRK4Print from "./pages/msbte/SAPRK4Print";
 import FATHK5CiannCards from "./pages/msbte/FATHK5CiannCards";
 import FATHK5Print from "./pages/msbte/FATHK5Print";
 import AttendanceReport from "./pages/msbte/AttendanceReport";
-import IndustrialVisitK8 from "./pages/msbte/IndustrialVisitK8";
-import IndustrialVisitK8Generate from "./pages/msbte/IndustrialVisitK8Generate";
-import IndustrialVisitK8Edit from "./pages/msbte/IndustrialVisitK8Edit";
-import IndustrialVisitK8Print from "./pages/msbte/IndustrialVisitK8Print";
-import ExpertLectureK9 from "./pages/msbte/ExpertLectureK9";
-import ExpertLectureK9Generate from "./pages/msbte/ExpertLectureK9Generate";
-import ExpertLectureK9Edit from "./pages/msbte/ExpertLectureK9Edit";
-import ExpertLectureK9Print from "./pages/msbte/ExpertLectureK9Print";
 import StudentTimetableManager from "./pages/faculty/StudentTimetableManager";
 import FacultyStudyMaterialManager from "./pages/faculty/FacultyStudyMaterialManager";
+import MockExamDashboard from "./pages/faculty/MockExamDashboard";
+import MockExamForm from "./pages/faculty/MockExamForm";
+import MockExamManage from "./pages/faculty/MockExamManage";
+import MockExamResults from "./pages/faculty/MockExamResults";
 
 // CT / PT / Course Components
 import CTCiannCards from "./CT/CTCiannCards";
@@ -202,6 +205,9 @@ import ManageChapters1 from "./Course/managechp1";
 import ManageChapters2 from "./Course/managechp2";
 import UpdateChapter from "./Course/managechp3";
 import Microproject from "./PTMicroProject/Microproject";
+import PTDashboard from "./PTMicroProject/PTDashboard";
+import PTConfiguration from "./PTMicroProject/PTConfiguration";
+import PTMarksEntry from "./PTMicroProject/PTMarksEntry";
 
 // Defaulters
 import Defaulter from "./components/defaulter";
@@ -229,6 +235,7 @@ import {
 // Merged Theme Application Logic
 const applyTheme = async (college, role) => {
   console.log("Applying theme for:", college, "Role:", role);
+  const root = document.documentElement;
   const institutionPaletteRaw = localStorage.getItem("institutionPalette");
   const cachedPaletteRaw = localStorage.getItem(`palette:${college}`);
 
@@ -383,6 +390,7 @@ const AppContent = () => {
     "/syllabus",
     "/teaching-plan",
     "/laboratory-plan",
+    "/tutorial-plan",
     "/student-list",
     "/subject-details",
   ].some((path) => location.pathname.startsWith(path));
@@ -421,6 +429,9 @@ const AppContent = () => {
             <Route path="dashboard" element={<StudentDashboard />} />
             <Route path="study-material" element={<StudyMaterial />} />
             <Route path="messages" element={<ChatPage />} />
+            <Route path="mock-exams" element={<MockExamList />} />
+            <Route path="mock-exams/:examId/attempt" element={<MockExamAttempt />} />
+            <Route path="mock-exams/result" element={<MockExamResult />} />
             <Route
               path="practical-exams"
               element={<StudentPracticalExamList />}
@@ -526,11 +537,19 @@ const AppContent = () => {
               path="/faculty/study-material"
               element={<FacultyStudyMaterialManager />}
             />
+            <Route path="/faculty/mock-exams" element={<MockExamDashboard />} />
+            <Route path="/faculty/mock-exams/create" element={<MockExamForm />} />
+            <Route path="/faculty/mock-exams/edit/:examId" element={<MockExamForm />} />
+            <Route path="/faculty/mock-exams/manage" element={<MockExamManage />} />
+            <Route path="/faculty/mock-exams/results" element={<MockExamResults />} />
             <Route path="/messages" element={<ChatPage />} />
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/laboratory-plan" element={<LabPlanningSheet />} />
             <Route path="/teaching-plan" element={<TeachingPlanSheet />} />
+            <Route path="/tutorial-plan" element={<TutorialPlanSheet />} />
             <Route path="/student-list" element={<Studentlist />} />
+            <Route path="/tlo" element={<Tlo />} />
+            <Route path="/llo" element={<Llo />} />
             {/* Subject Details Sub-routes */}
             <Route path="/subject-details" element={<SubjectDetails />}>
               <Route path="lecture-schedule" element={<LectureSchedule />} />
@@ -544,10 +563,6 @@ const AppContent = () => {
               <Route path="recommendations" element={<Recommendations />} />
               <Route path="resources" element={<Resources />} />
               <Route path="rubric" element={<Rubric />} />
-              <Route path="chapters" element={<ManageChapters2 />} />
-              <Route path="update-chapter" element={<UpdateChapter />} />
-              <Route path="experiments" element={<Course2 />} />
-              <Route path="edit-experiment" element={<Course4 />} />
               <Route index element={<Navigate to="lecture-schedule" />} />
             </Route>
             {/* Attendance Routes */}
@@ -789,7 +804,26 @@ const AppContent = () => {
               path="/pt-microproject/microproject/step-3"
               element={<Microproject />}
             />
-
+            <Route
+              path="/pt-microproject/dashboard"
+              element={<PTDashboard />}
+            />
+            <Route
+              path="/pt-microproject/configuration"
+              element={<PTConfiguration />}
+            />
+            <Route
+              path="/pt-microproject/entry"
+              element={<PTMarksEntry />}
+            />
+            {/* Course Management */}
+            <Route path="/chapters" element={<ManageChapters1 />} />
+            <Route path="/add-chapters" element={<ManageChapters2 />} />
+            <Route path="/update-chapter" element={<UpdateChapter />} />
+            <Route path="/experiment" element={<Course1 />} />
+            <Route path="/course2" element={<Course2 />} />
+            <Route path="/course3" element={<Course3 />} />
+            <Route path="/course4" element={<Course4 />} />
             {/* MSBTE Formats Routes */}
             <Route
               path="/msbte/fa-pr-k3/cianns"
@@ -816,38 +850,6 @@ const AppContent = () => {
             <Route path="/msbte/sa-pr-k4/edit" element={<SAPRK4Edit />} />
             <Route path="/msbte/sa-pr-k4/print" element={<SAPRK4Print />} />
             <Route path="/msbte/attendance" element={<AttendanceReport />} />
-            <Route
-              path="/msbte/industrial-visit/k8"
-              element={<IndustrialVisitK8 />}
-            />
-            <Route
-              path="/msbte/industrial-visit/k8/generate"
-              element={<IndustrialVisitK8Generate />}
-            />
-            <Route
-              path="/msbte/industrial-visit/k8/edit"
-              element={<IndustrialVisitK8Edit />}
-            />
-            <Route
-              path="/msbte/industrial-visit/k8/print"
-              element={<IndustrialVisitK8Print />}
-            />
-            <Route
-              path="/msbte/expert-lecture/k9"
-              element={<ExpertLectureK9 />}
-            />
-            <Route
-              path="/msbte/expert-lecture/k9/generate"
-              element={<ExpertLectureK9Generate />}
-            />
-            <Route
-              path="/msbte/expert-lecture/k9/edit"
-              element={<ExpertLectureK9Edit />}
-            />
-            <Route
-              path="/msbte/expert-lecture/k9/print"
-              element={<ExpertLectureK9Print />}
-            />
             {/* Admin/Panel Routes */}
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/admin-panel" element={<AdminPanel />} />
@@ -882,6 +884,10 @@ const AppContent = () => {
             />
             <Route path="/admin/subjects" element={<SubjectManagement />} />
             <Route path="/admin/subjects-view" element={<SubjectsView />} />
+            <Route
+              path="/admin/course-details-view/:subjectId"
+              element={<CourseDetailsView />}
+            />
             {/* SuperAdmin Routes */}
             <Route
               path="/superadmin-dashboard"
