@@ -221,7 +221,7 @@ function CourseOutcomes() {
             {submittedOutcomes.length > 0 ? (
               submittedOutcomes.map((outcome, index) => (
                 <tr key={index}>
-                  <td>{index + 1}</td>
+                  <td>CO{index + 1}</td>
                   <td>{outcome || "-"}</td>
                 </tr>
               ))

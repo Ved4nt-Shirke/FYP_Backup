@@ -466,7 +466,7 @@ export default function App() { // Renamed to App for default export in Canvas
             className="button"
             onClick={() => setShowResultForm(true)}
           >
-            Add Past Result
+            {results ? 'Edit Past Result' : 'Add Past Result'}
           </button>
         </div>
 

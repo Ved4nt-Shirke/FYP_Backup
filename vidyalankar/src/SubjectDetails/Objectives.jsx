@@ -381,7 +381,7 @@ export default function Objectives() {
         <div className="header-row">
           <h2 className="title">3.4 Objectives of the Course</h2>
           <button className="button" onClick={() => setShowForm(true)}>
-            Add Course Objectives
+            {submittedData.cognitive || submittedData.affective || submittedData.behavioral ? 'Edit Course Objectives' : 'Add Course Objectives'}
           </button>
         </div>
 

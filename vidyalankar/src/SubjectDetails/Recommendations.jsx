@@ -486,7 +486,9 @@ function Recommendation() {
         {/* Faculty Recommendation Section */}
         <div className="header-row">
           <h2 className="title">3.9 Recommendations of Faculty who have taught this Subject Earlier</h2>
-          <button className="button" onClick={() => setShowFacultyForm(true)}>Add Faculty Recommendation</button>
+          <button className="button" onClick={() => setShowFacultyForm(true)}>
+            {savedRecommendation.cy1 || savedRecommendation.cy2 || savedRecommendation.cy3 ? 'Edit Faculty Recommendation' : 'Add Faculty Recommendation'}
+          </button>
         </div>
         <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
           <table>
@@ -506,7 +508,9 @@ function Recommendation() {
         {/* Cluster Mentor Section */}
         <div className="header-row"> {/* Re-using header-row for consistent spacing/styling */}
           <h2 className="title">3.10 Recommendations of Cluster Mentor / Industry Mentor</h2>
-          <button className="button" onClick={() => setShowClusterModel(true)}>Add Cluster / Industry Mentor Recommendation</button>
+          <button className="button" onClick={() => setShowClusterModel(true)}>
+            {savedClusterData.cmMeeting || savedClusterData.imMeeting ? 'Edit Cluster / Industry Mentor Recommendation' : 'Add Cluster / Industry Mentor Recommendation'}
+          </button>
         </div>
         <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
           <table>
@@ -526,7 +530,9 @@ function Recommendation() {
         {/* Subject Teacher Section */}
         <div className="header-row"> {/* Re-using header-row for consistent spacing/styling */}
           <h2 className="title">3.11 Final List of Recommendations</h2>
-          <button className="button" onClick={() => setShowSubjectTeacher(true)}>Add Subject Teacher Recommendation</button>
+          <button className="button" onClick={() => setShowSubjectTeacher(true)}>
+            {recommendationEntries.length > 0 ? 'Edit Subject Teacher Recommendation' : 'Add Subject Teacher Recommendation'}
+          </button>
         </div>
         <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
           <table>

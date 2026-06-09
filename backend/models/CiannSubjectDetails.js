@@ -99,8 +99,8 @@ const ciannSubjectDetailsSchema = new mongoose.Schema(
       details: String
     }],
     recommendedWebsiteResource: [{
-      link: String,
-      description: String,
+      name: String,
+      url: String,
       module: String
     }],
     vacSection: [{

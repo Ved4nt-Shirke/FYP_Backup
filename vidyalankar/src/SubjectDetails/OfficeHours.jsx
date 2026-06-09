@@ -502,19 +502,8 @@ export default function OfficeHours() {
                           }
                         }
                       }}
-                      style={{ /* Inline style for checkbox for quick visual check */
-                        width: '20px',
-                        height: '20px',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        verticalAlign: 'middle',
-                        appearance: 'none',
-                        WebkitAppearance: 'none',
-                        MozAppearance: 'none',
-                        backgroundColor: '#fff',
-                        transition: 'background-color 0.2s, border-color 0.2s'
-                      }}
+                      className="form-check-input"
+                      style={{ margin: 0 }}
                     />
                   </td>
                 </tr>
