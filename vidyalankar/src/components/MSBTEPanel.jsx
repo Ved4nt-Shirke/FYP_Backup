@@ -127,6 +127,22 @@ const MSBTEPanel = ({ isOpen, onClose }) => {
           <span>FA-TH-K5</span>
         </button>
 
+        <button
+          className="msbte-dropdown-option"
+          onClick={() => handleItemClick("/msbte/industrial-visit/k8")}
+        >
+          <i className="bi bi-building"></i>
+          <span>Industrial Visit K8</span>
+        </button>
+
+        <button
+          className="msbte-dropdown-option"
+          onClick={() => handleItemClick("/msbte/expert-lecture/k9")}
+        >
+          <i className="bi bi-person-video3"></i>
+          <span>Expert Lecture K9</span>
+        </button>
+
       </div>
     </div>
   );
