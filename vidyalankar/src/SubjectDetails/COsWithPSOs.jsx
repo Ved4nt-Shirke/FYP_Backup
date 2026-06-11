@@ -1,13 +1,68 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 export default function COsWithPSOs() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [ciannId, setCiannId] = useState(null);
+
+  const [courseOutcomes, setCourseOutcomes] = useState([]);
+  const [mappingData, setMappingData] = useState([]);
+  const [formData, setFormData] = useState([]);
   const [showPSOForm, setShowPSOForm] = useState(false);
-  const [mappingData, setMappingData] = useState(
-    Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" })) // Corrected initialization
-  );
-  const [formData, setFormData] = useState(
-    Array.from({ length: 6 }, () => ({ pso1: "-", pso2: "-" })) // Separate state for form
-  );
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Resolve CIANN Data
+      const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
+      if (!stored) {
+        setError("No active CIANN session found.");
+        return;
+      }
+
+      const ciannData = JSON.parse(stored);
+      if (!ciannData || !ciannData.ciannId) {
+        setError("Invalid CIANN session details.");
+        return;
+      }
+      setCiannId(ciannData.ciannId);
+
+      const res = await axios.get(config.ciannSubjectDetails.get(ciannData.ciannId));
+      
+      const loadedCOs = res.data.adminDetails?.courseOutcomes || [];
+      setCourseOutcomes(loadedCOs);
+
+      const savedMapping = res.data.details?.cosWithPSOs || [];
+      const N = loadedCOs.length;
+
+      const matrix = Array.from({ length: N }, (_, i) => {
+        if (savedMapping[i] && typeof savedMapping[i] === "object") {
+          return {
+            pso1: savedMapping[i].pso1 || "-",
+            pso2: savedMapping[i].pso2 || "-"
+          };
+        }
+        return { pso1: "-", pso2: "-" };
+      });
+
+      setMappingData(matrix);
+      setFormData(matrix.map(row => ({ ...row })));
+    } catch (err) {
+      console.error("Failed to load CO-PSO mapping:", err);
+      setError(err.response?.data?.error || "Failed to load mapping details.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePSOChange = (index, field, value) => {
     const updated = [...formData];
@@ -15,61 +70,76 @@ export default function COsWithPSOs() {
     setFormData(updated);
   };
 
-  const handlePSOSubmit = () => {
-    setMappingData(formData.map(row => ({ ...row }))); // Deep copy to update display
-    setShowPSOForm(false);
+  const handlePSOSubmit = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        cosWithPSOs: formData
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setMappingData(formData.map(row => ({ ...row })));
+        setShowPSOForm(false);
+      }
+    } catch (err) {
+      console.error("Failed to save CO-PSO mapping:", err);
+      setError(err.response?.data?.error || "Failed to save mapping.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="cos-psos-container">
       <style>{`
-        /* Overall container and typography */
         .cos-psos-container {
-          padding: 30px; /* Increased padding */
-          font-family: 'Inter', sans-serif; /* Modern, clean font */
-          background-color: #f8f9fa; /* Light background */
+          padding: 30px;
+          font-family: 'Inter', sans-serif;
+          background-color: #f8f9fa;
           min-height: 100vh;
-          margin-left: 0; /* Changed to 0 to move it to the far left */
-          width: 100%; /* Changed to 100% to take full available space */
+          margin-left: 0;
+          width: 100%;
           box-sizing: border-box;
-          color: #333; /* Default text color */
+          color: #333;
         }
 
-        /* Header Row */
         .header-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 30px; /* More space below header */
-          padding: 20px 25px; /* Increased padding */
+          margin-bottom: 30px;
+          padding: 20px 25px;
           background-color: #fff;
-          border-radius: 12px; /* Rounded corners */
-          box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Subtle shadow */
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
         .title {
           margin: 0;
-          font-weight: 700; /* Bolder title */
-          font-size: 2rem; /* Larger title */
-          color: #28a745; /* Green color for title */
+          font-weight: 700;
+          font-size: 2rem;
+          color: var(--primary-color, #28a745);
         }
 
-        /* Main Button */
         .button {
-          background-color: #4CAF50; /* Apple-like green */
+          background-color: var(--primary-color, #4CAF50);
           color: white;
-          padding: 12px 24px; /* Generous padding */
+          padding: 12px 24px;
           border: none;
-          font-size: 16px; /* Slightly larger font */
-          font-weight: 600; /* Semi-bold */
-          border-radius: 10px; /* More rounded */
+          font-size: 16px;
+          font-weight: 600;
+          border-radius: 10px;
           cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* Prominent shadow */
+          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047; /* Darker green on hover */
-          transform: translateY(-2px); /* Lift effect */
+          background-color: var(--primary-accent-dark, #43A047);
+          transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
         .button:active {
@@ -77,55 +147,45 @@ export default function COsWithPSOs() {
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Instruction text */
         .instruction {
-          font-size: 15px; /* Slightly larger */
-          margin-bottom: 20px; /* More space */
+          font-size: 15px;
+          margin-bottom: 20px;
           color: #555;
           font-weight: 500;
         }
 
-        /* Table Scroll Wrapper */
         .table-scroll-wrapper {
-          max-height: 400px; /* Max height for vertical scrolling */
-          overflow-y: auto; /* Enable vertical scrolling */
-          overflow-x: auto; /* Enable horizontal scrolling */
+          overflow-y: auto;
+          overflow-x: auto;
           margin-bottom: 20px;
           background: #fff;
-          border-radius: 12px; /* Rounded corners for the wrapper */
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Subtle shadow */
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
 
-        /* Table Styling */
         table {
           width: 100%;
-          min-width: 400px; /* Ensure a minimum width for horizontal scroll */
           border-collapse: collapse;
-          table-layout: auto; /* Allow columns to auto-adjust */
           font-size: 14px;
         }
         th, td {
-          border: 1px solid #e0e0e0; /* Lighter borders */
-          padding: 12px 10px; /* Increased padding */
+          border: 1px solid #e0e0e0;
+          padding: 12px 10px;
           text-align: center;
-          vertical-align: middle; /* Vertically center content */
+          vertical-align: middle;
         }
         th {
-          background-color: #f0f2f5; /* Light grey-blue header background */
+          background-color: #f0f2f5;
           font-weight: 600;
           color: #495057;
-          position: sticky; /* Make header sticky */
-          top: 0; /* Stick to the top of the scrolling container */
-          z-index: 1; /* Ensure header is above scrolling content */
         }
-        tbody tr:nth-child(even) { /* Subtle zebra striping */
+        tbody tr:nth-child(even) {
           background-color: #fdfdfd;
         }
-        tbody tr:hover { /* Hover effect for rows */
+        tbody tr:hover {
           background-color: #f5f5f5;
         }
 
-        /* Form Select in table */
         .form-select {
           width: 100%;
           padding: 6px;
@@ -136,11 +196,10 @@ export default function COsWithPSOs() {
           cursor: pointer;
         }
 
-        /* Modal Styling */
         .modal-backdrop {
           position: fixed;
           top: 0; left: 0; width: 100%; height: 100%;
-          background-color: rgba(0, 0, 0, 0.7); /* Darker, more opaque backdrop */
+          background-color: rgba(0, 0, 0, 0.7);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -148,105 +207,88 @@ export default function COsWithPSOs() {
         }
         .modal-box {
           background: white;
-          border-radius: 16px; /* More rounded corners */
+          border-radius: 16px;
           width: 90%;
-          max-width: 700px; /* Adjusted max-width for the form */
+          max-width: 650px;
           animation: fadeIn 0.3s ease-in-out;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); /* Deeper shadow */
-          overflow: hidden; /* Ensures rounded corners are respected */
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+          overflow: hidden;
         }
         @keyframes fadeIn {
           from { opacity: 0; transform: scale(0.95); }
           to { opacity: 1; transform: scale(1); }
         }
         .modal-header {
-          background: #fff; /* Match modal box background */
-          color: #333; /* Dark text for header */
-          padding: 15px 25px; /* Adjusted padding */
+          background: #fff;
+          color: #333;
+          padding: 15px 25px;
           font-size: 20px;
           font-weight: 600;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 1px solid #eee; /* Subtle separator */
+          border-bottom: 1px solid #eee;
         }
         .modal-header button {
           background: none;
           border: none;
-          color: #999; /* Muted close button color */
-          font-size: 28px; /* Larger close button */
+          color: #999;
+          font-size: 28px;
           cursor: pointer;
           transition: transform 0.2s ease, color 0.2s ease;
         }
         .modal-header button:hover {
-          color: #dc3545; /* Red on hover */
+          color: #dc3545;
           transform: rotate(90deg);
         }
         .modal-body {
-          padding: 25px; /* Increased padding */
+          padding: 25px;
           max-height: 70vh;
           overflow-y: auto;
         }
 
-        /* Button Row in Modal */
         .btn-row {
           display: flex;
           justify-content: flex-end;
-          gap: 15px; /* More space between buttons */
-          padding: 15px 25px; /* Adjusted padding */
-          background: #f8f9fa; /* Light background for button row */
-          border-top: 1px solid #eee; /* Separator */
+          gap: 15px;
+          padding: 15px 25px;
+          background: #f8f9fa;
+          border-top: 1px solid #eee;
         }
         .btn-save {
-          background-color: #4CAF50; /* Apple-like green */
+          background-color: var(--primary-color, #4CAF50);
           color: white;
           border: none;
-          padding: 10px 20px; /* Adjusted padding */
-          border-radius: 8px; /* More rounded */
-          cursor: pointer;
-          font-size: 15px;
-          font-weight: 600;
-          transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .btn-save:hover {
-          background-color: #43A047;
-          transform: translateY(-1px);
-          box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-        }
-        .btn-cancel {
-          background-color: #e0e0e0; /* Muted grey */
-          color: #555;
-          border: none;
-          padding: 10px 20px; /* Adjusted padding */
+          padding: 10px 20px;
           border-radius: 8px;
           cursor: pointer;
           font-size: 15px;
           font-weight: 600;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn-save:hover {
+          background-color: var(--primary-accent-dark, #43A047);
+        }
+        .btn-cancel {
+          background-color: #e0e0e0;
+          color: #555;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 15px;
+          font-weight: 600;
+          transition: background-color 0.3s ease;
         }
         .btn-cancel:hover {
           background-color: #d5d5d5;
-          transform: translateY(-1px);
-          box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 1200px) {
-          .cos-psos-container {
-            margin-left: 0; /* Ensure it's 0 on smaller desktops too */
-            width: 100%; /* Take full width */
-          }
         }
 
         @media (max-width: 768px) {
           .cos-psos-container {
             padding: 15px;
-            margin-left: 0; /* Remove margin-left on smaller screens if sidebar collapses */
-            width: 100%;
           }
           .header-row {
             flex-direction: column;
@@ -260,85 +302,33 @@ export default function COsWithPSOs() {
           .button {
             width: 100%;
             text-align: center;
-            padding: 10px 20px;
-          }
-          th, td {
-            font-size: 13px;
-            padding: 10px 8px;
           }
           .modal-box {
-            padding: 20px;
             width: 95%;
-          }
-          .modal-header {
-            font-size: 18px;
-            padding: 12px 20px;
-          }
-          .modal-header button {
-            font-size: 24px;
           }
           .modal-body {
             padding: 20px;
-          }
-          /* Form Controls in modal */
-          .modal-body .form-select { /* Specificity for modal form controls */
-            padding: 8px 10px;
-            font-size: 14px;
-            margin-bottom: 10px;
           }
           .btn-row {
             flex-direction: column;
-            align-items: center;
             gap: 10px;
-            padding: 15px;
           }
           .btn-save, .btn-cancel {
             width: 100%;
-            padding: 10px 15px;
-            font-size: 14px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .cos-psos-container {
-            padding: 10px;
-          }
-          .header-row {
-            padding: 10px;
-          }
-          .title {
-            font-size: 1.5rem;
-          }
-          .instruction {
-            font-size: 13px;
-          }
-          th, td {
-            font-size: 12px;
-            padding: 8px 6px;
-          }
-          .modal-body {
-            padding: 15px;
-          }
-          .modal-header {
-            font-size: 16px;
-            padding: 10px 15px;
-          }
-          .modal-header button {
-            font-size: 22px;
-          }
-          .modal-body .form-select { /* Specificity for modal form controls */
-            padding: 6px 8px;
-            font-size: 13px;
           }
         }
       `}</style>
 
       <div className="header-row">
         <h2 className="title">3.6 Mapping of COs with PSOs</h2>
-        <button className="button" onClick={() => {
-          setFormData(mappingData.map(row => ({ ...row }))); // Copy current data to form data
-          setShowPSOForm(true);
-        }}>
+        <button 
+          className="button"
+          disabled={loading || courseOutcomes.length === 0}
+          onClick={() => {
+            setFormData(mappingData.map(row => ({ ...row })));
+            setShowPSOForm(true);
+          }}
+        >
           Add COs with PSOs Mapping
         </button>
       </div>
@@ -347,29 +337,54 @@ export default function COsWithPSOs() {
         (Mark: 3 - Strong, 2 - Moderate, 1 - Weak, Dash '-' - Not Mapped)
       </p>
 
-      {/* Main table display wrapped for scrolling */}
-      <div className="table-scroll-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>COs</th>
-              <th>PSO1</th>
-              <th>PSO2</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mappingData.map((row, idx) => (
-              <tr key={idx}>
-                <td>{`CO${idx + 1}`}</td>
-                <td>{row.pso1}</td>
-                <td>{row.pso2}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {error && (
+        <div className="alert alert-danger" style={{ 
+          backgroundColor: '#f8d7da', 
+          color: '#721c24', 
+          padding: '12px', 
+          borderRadius: '8px', 
+          marginBottom: '20px',
+          border: '1px solid #f5c6cb'
+        }}>
+          {error}
+        </div>
+      )}
 
-      {/* Modal Form for editing/adding mappings */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+          Loading mapping matrix...
+        </div>
+      ) : (
+        <div className="table-scroll-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style={{ width: '15%' }}>COs</th>
+                <th>PSO1</th>
+                <th>PSO2</th>
+              </tr>
+            </thead>
+            <tbody>
+              {courseOutcomes.length > 0 ? (
+                courseOutcomes.map((co, idx) => (
+                  <tr key={idx}>
+                    <td title={co.description}><strong>{co.coNumber || `CO${idx + 1}`}</strong></td>
+                    <td>{mappingData[idx]?.pso1 || "-"}</td>
+                    <td>{mappingData[idx]?.pso2 || "-"}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3" style={{ padding: '30px' }}>
+                    No Course Outcomes defined for this subject. Set them up in the Admin panel.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       {showPSOForm && (
         <div className="modal-backdrop">
           <div className="modal-box">
@@ -384,19 +399,19 @@ export default function COsWithPSOs() {
               <table>
                 <thead>
                   <tr>
-                    <th>COs</th>
+                    <th style={{ width: '20%' }}>COs</th>
                     <th>PSO1</th>
                     <th>PSO2</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {formData.map((row, idx) => (
+                  {courseOutcomes.map((co, idx) => (
                     <tr key={idx}>
-                      <td>{`CO${idx + 1}`}</td>
+                      <td title={co.description}><strong>{co.coNumber || `CO${idx + 1}`}</strong></td>
                       <td>
                         <select
                           className="form-select"
-                          value={row.pso1}
+                          value={formData[idx]?.pso1 || "-"}
                           onChange={(e) => handlePSOChange(idx, "pso1", e.target.value)}
                         >
                           {["-", "3", "2", "1"].map((val) => (
@@ -407,7 +422,7 @@ export default function COsWithPSOs() {
                       <td>
                         <select
                           className="form-select"
-                          value={row.pso2}
+                          value={formData[idx]?.pso2 || "-"}
                           onChange={(e) => handlePSOChange(idx, "pso2", e.target.value)}
                         >
                           {["-", "3", "2", "1"].map((val) => (
@@ -420,8 +435,10 @@ export default function COsWithPSOs() {
                 </tbody>
               </table>
               <div className="btn-row">
-                <button type="button" className="btn-cancel" onClick={() => setShowPSOForm(false)}>Cancel</button>
-                <button type="button" className="btn-save" onClick={handlePSOSubmit}>Submit</button>
+                <button type="button" className="btn-cancel" onClick={() => setShowPSOForm(false)} disabled={saving}>Cancel</button>
+                <button type="button" className="btn-save" onClick={handlePSOSubmit} disabled={saving}>
+                  {saving ? "Saving..." : "Submit"}
+                </button>
               </div>
             </div>
           </div>

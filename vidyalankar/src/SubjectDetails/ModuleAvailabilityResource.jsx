@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 export default function ModuleAvailabilityResource() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [ciannId, setCiannId] = useState(null);
+
   const [moduleForm, setModuleForm] = useState({
     module: '',
     textbook: false,
@@ -14,6 +21,40 @@ export default function ModuleAvailabilityResource() {
   });
   const [moduleData, setModuleData] = useState([]);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
+      if (!stored) {
+        setError("No active CIANN session found.");
+        return;
+      }
+
+      const ciannData = JSON.parse(stored);
+      if (!ciannData || !ciannData.ciannId) {
+        setError("Invalid CIANN session details.");
+        return;
+      }
+      setCiannId(ciannData.ciannId);
+
+      const res = await axios.get(config.ciannSubjectDetails.get(ciannData.ciannId));
+      if (res.data.success && Array.isArray(res.data.details?.moduleAvailabilityResource)) {
+        setModuleData(res.data.details.moduleAvailabilityResource);
+      }
+    } catch (err) {
+      console.error("Failed to load module availability details:", err);
+      setError(err.response?.data?.error || "Failed to load module availability data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Effect to prevent body scroll when modal is open
   useEffect(() => {
@@ -34,16 +75,63 @@ export default function ModuleAvailabilityResource() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setModuleData([...moduleData, moduleForm]);
-    // Reset form to initial state and close modal
-    setModuleForm({
-      module: '', textbook: false, referenceBook: false, otherBook: false,
-      magazine: false, journalRegular: false, journalE: false,
-      available: '', details: ''
-    });
-    setShowModal(false);
+    const nextData = [...moduleData, moduleForm];
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        moduleAvailabilityResource: nextData
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setModuleData(nextData);
+        setModuleForm({
+          module: '', textbook: false, referenceBook: false, otherBook: false,
+          magazine: false, journalRegular: false, journalE: false,
+          available: '', details: ''
+        });
+        setShowModal(false);
+      }
+    } catch (err) {
+      console.error("Failed to save module availability data:", err);
+      setError(err.response?.data?.error || "Failed to save module availability details.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (indexToDelete) => {
+    if (!window.confirm("Are you sure you want to delete this entry?")) {
+      return;
+    }
+
+    const nextData = moduleData.filter((_, idx) => idx !== indexToDelete);
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        moduleAvailabilityResource: nextData
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setModuleData(nextData);
+      }
+    } catch (err) {
+      console.error("Failed to delete module entry:", err);
+      setError(err.response?.data?.error || "Failed to delete entry.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -69,7 +157,7 @@ export default function ModuleAvailabilityResource() {
 
         .title-container .title {
           margin: 0 0 5px 0; font-weight: 700;
-          font-size: 2rem; color: #28a745;
+          font-size: 2rem; color: var(--primary-color, #28a745);
         }
 
         .title-container .subtitle {
@@ -78,14 +166,14 @@ export default function ModuleAvailabilityResource() {
         }
 
         .button {
-          background-color: #4CAF50; color: white;
+          background-color: var(--primary-color, #4CAF50); color: white;
           padding: 12px 24px; border: none; font-size: 16px;
           font-weight: 600; border-radius: 10px; cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047; transform: translateY(-2px);
+          background-color: var(--primary-accent-dark, #43A047); transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
         
@@ -114,7 +202,7 @@ export default function ModuleAvailabilityResource() {
         }
         .modal-box {
           background: white; border-radius: 16px; width: 90%;
-          max-width: 900px; /* Adjusted max-width for better form layout */
+          max-width: 900px;
           box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
           overflow: hidden; display: flex; flex-direction: column;
         }
@@ -140,18 +228,17 @@ export default function ModuleAvailabilityResource() {
           padding: 25px; max-height: 70vh; overflow-y: auto;
         }
         
-        /* --- ✅ FIXED MODAL FORM STYLES --- */
+        /* --- MODAL FORM STYLES --- */
         .form-grid-modal {
           display: grid;
-          /* Creates a responsive grid with 2 columns */
           grid-template-columns: repeat(2, 1fr);
-          gap: 25px; /* Space between grid items */
+          gap: 25px;
         }
 
         .form-group {
           display: flex;
           flex-direction: column;
-          gap: 8px; /* Space between label and input */
+          gap: 8px;
         }
         
         .form-group label {
@@ -159,7 +246,6 @@ export default function ModuleAvailabilityResource() {
           font-size: 14px;
         }
         
-        /* Make a grid item span both columns */
         .form-group-span-2 {
           grid-column: 1 / -1;
         }
@@ -174,14 +260,14 @@ export default function ModuleAvailabilityResource() {
         }
         .form-control:focus, textarea:focus {
            outline: none;
-           border-color: #81c784;
-           box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+           border-color: var(--primary-color, #81c784);
+           box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
         .checkbox-group, .radio-group {
           display: flex;
           flex-wrap: wrap;
-          gap: 10px 20px; /* Row and column gap */
+          gap: 10px 20px;
           padding-top: 5px;
         }
 
@@ -208,9 +294,9 @@ export default function ModuleAvailabilityResource() {
           font-weight: 600; transition: all 0.3s ease;
           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .btn-save { background-color: #4CAF50; }
+        .btn-save { background-color: var(--primary-color, #4CAF50); }
         .btn-cancel { background-color: #6c757d; }
-        .btn-save:hover { background-color: #43A047; transform: translateY(-1px); }
+        .btn-save:hover { background-color: var(--primary-accent-dark, #43A047); transform: translateY(-1px); }
         .btn-cancel:hover { background-color: #5a6268; transform: translateY(-1px); }
 
         @media (max-width: 768px) {
@@ -218,61 +304,98 @@ export default function ModuleAvailabilityResource() {
           .header-row { flex-direction: column; align-items: flex-start; gap: 15px; }
           .title-container .title { font-size: 1.7rem; }
           .button { width: 100%; }
-          .form-grid-modal { grid-template-columns: 1fr; } /* Single column on small screens */
+          .form-grid-modal { grid-template-columns: 1fr; }
         }
       `}</style>
 
       <div className="module-availability-container">
+        {error && (
+          <div style={{ 
+            backgroundColor: '#f8d7da', 
+            color: '#721c24', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
+
         <div className="header-row">
           <div className="title-container">
             <h2 className="title">Module-wise Resource Availability</h2>
             <p className="subtitle">3.13.3 Details on Available Resources for Each Module</p>
           </div>
-          <button className="button" onClick={() => setShowModal(true)}>Add Module Info</button>
+          <button className="button" disabled={loading} onClick={() => setShowModal(true)}>Add Module Info</button>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table>
-            <thead>
-              <tr>
-                <th rowSpan="3">Module No.</th>
-                <th colSpan="7">Category (Tick Mark Indicates Availability)</th>
-                <th rowSpan="3">Details of the Resource</th>
-              </tr>
-              <tr>
-                <th colSpan="3">Book</th>
-                <th rowSpan="2">Magazine</th>
-                <th colSpan="2">Journals</th>
-                <th rowSpan="2">In Library?</th>
-              </tr>
-              <tr>
-                <th>Text</th><th>Reference</th><th>Other</th>
-                <th>Regular</th><th>E-Journal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {moduleData.length > 0 ? (
-                moduleData.map((item, i) => (
-                  <tr key={i}>
-                    <td>{item.module}</td>
-                    <td>{item.textbook && '✔'}</td>
-                    <td>{item.referenceBook && '✔'}</td>
-                    <td>{item.otherBook && '✔'}</td>
-                    <td>{item.magazine && '✔'}</td>
-                    <td>{item.journalRegular && '✔'}</td>
-                    <td>{item.journalE && '✔'}</td>
-                    <td>{item.available === 'yes' ? 'Yes' : 'No'}</td>
-                    <td>{item.details}</td>
-                  </tr>
-                ))
-              ) : (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Loading module availability details...
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <thead>
                 <tr>
-                  <td colSpan="9">No module information has been added yet.</td>
+                  <th rowSpan="3">Module No.</th>
+                  <th colSpan="7">Category (Tick Mark Indicates Availability)</th>
+                  <th rowSpan="3">Details of the Resource</th>
+                  <th rowSpan="3">Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                <tr>
+                  <th colSpan="3">Book</th>
+                  <th rowSpan="2">Magazine</th>
+                  <th colSpan="2">Journals</th>
+                  <th rowSpan="2">In Library?</th>
+                </tr>
+                <tr>
+                  <th>Text</th><th>Reference</th><th>Other</th>
+                  <th>Regular</th><th>E-Journal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {moduleData.length > 0 ? (
+                  moduleData.map((item, i) => (
+                    <tr key={i}>
+                      <td>{item.module}</td>
+                      <td>{item.textbook && '✔'}</td>
+                      <td>{item.referenceBook && '✔'}</td>
+                      <td>{item.otherBook && '✔'}</td>
+                      <td>{item.magazine && '✔'}</td>
+                      <td>{item.journalRegular && '✔'}</td>
+                      <td>{item.journalE && '✔'}</td>
+                      <td>{item.available === 'yes' ? 'Yes' : 'No'}</td>
+                      <td>{item.details}</td>
+                      <td>
+                        <button
+                          onClick={() => handleDelete(i)}
+                          style={{
+                            background: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px'
+                          }}
+                          disabled={saving}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="10">No module information has been added yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {showModal && (
           <div className="modal-overlay" onClick={() => setShowModal(false)}>
@@ -284,7 +407,6 @@ export default function ModuleAvailabilityResource() {
                 </div>
 
                 <div className="modal-body">
-                  {/* ✅ REPLACED TABLE WITH CSS GRID FOR A CLEAN, RESPONSIVE FORM */}
                   <div className="form-grid-modal">
                     <div className="form-group">
                       <label htmlFor="module">Module No.</label>
@@ -319,8 +441,10 @@ export default function ModuleAvailabilityResource() {
                 </div>
 
                 <div className="btn-row">
-                  <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="btn-save">Add Info</button>
+                  <button type="button" className="btn-cancel" onClick={() => setShowModal(false)} disabled={saving}>Cancel</button>
+                  <button type="submit" className="btn-save" disabled={saving}>
+                    {saving ? "Adding..." : "Add Info"}
+                  </button>
                 </div>
               </form>
             </div>
@@ -330,3 +454,4 @@ export default function ModuleAvailabilityResource() {
     </>
   );
 }
+

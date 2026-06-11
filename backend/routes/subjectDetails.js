@@ -8,6 +8,14 @@ const MoocCourse = require("../models/MoocCourse");
 const SubjectObjective = require("../models/SubjectObjective");
 const WebResource = require("../models/WebResource");
 const KnowledgeMap = require("../models/KnowledgeMap");
+const CiannSubjectDetails = require("../models/CiannSubjectDetails");
+const Ciann = require("../models/Ciann");
+const CourseDetails = require("../models/CourseDetails");
+const { authenticate } = require("../middleware/auth");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
 
 // ==================== BOOK RESOURCES ====================
 
@@ -291,7 +299,6 @@ router.put("/knowledge-map/:id", async (req, res) => {
 
 // ==================== TLO & LLO DETAILS ====================
 const TloLlo = require("../models/TloLlo");
-const { authenticate } = require("../middleware/auth");
 
 // GET: Fetch TloLlo details
 router.get("/tlo-llo/:ciannId/:subjectId", authenticate, async (req, res) => {
@@ -339,6 +346,97 @@ router.post("/tlo-llo", authenticate, async (req, res) => {
   } catch (error) {
     console.error("Error saving TloLlo:", error);
     res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// ==================== CIANN UNIFIED SUBJECT DETAILS ====================
+
+// Configure multer for knowledge map image uploads
+const kmUploadDir = path.join(__dirname, "../uploads/knowledge-maps");
+if (!fs.existsSync(kmUploadDir)) {
+  fs.mkdirSync(kmUploadDir, { recursive: true });
+}
+
+const kmStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/knowledge-maps/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "km-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const kmUpload = multer({ storage: kmStorage });
+
+// GET: Fetch Ciann unified subject details + admin details
+router.get("/ciann-subject-details/:ciannId", authenticate, async (req, res) => {
+  try {
+    const { ciannId } = req.params;
+    
+    // Find the associated CIANN
+    const ciannDoc = await Ciann.findOne({ ciannId: Number(ciannId) });
+    if (!ciannDoc) {
+      return res.status(404).json({ success: false, error: "CIANN workbook not found" });
+    }
+
+    // Find the faculty worksheet details
+    let details = await CiannSubjectDetails.findOne({ ciannId: Number(ciannId) });
+    
+    // Find the Admin-defined CourseDetails for the subject
+    const subjectId = ciannDoc.subject?._id || ciannDoc.subjectId;
+    let adminDetails = null;
+    if (subjectId) {
+      adminDetails = await CourseDetails.findOne({ subjectId }).populate("subjectId");
+    }
+
+    res.json({
+      success: true,
+      details: details || { ciannId: Number(ciannId) },
+      adminDetails
+    });
+  } catch (error) {
+    console.error("Error fetching unified subject details:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch subject details" });
+  }
+});
+
+// POST: Save/Update Ciann unified subject details
+router.post("/ciann-subject-details", authenticate, async (req, res) => {
+  try {
+    const { ciannId } = req.body;
+    if (!ciannId) {
+      return res.status(400).json({ success: false, error: "ciannId is required" });
+    }
+
+    const updatedDetails = await CiannSubjectDetails.findOneAndUpdate(
+      { ciannId: Number(ciannId) },
+      req.body,
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Subject details saved successfully",
+      details: updatedDetails
+    });
+  } catch (error) {
+    console.error("Error saving unified subject details:", error);
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// POST: Upload Knowledge Map Image
+router.post("/ciann-subject-details/knowledge-map-image", authenticate, kmUpload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: "No file uploaded" });
+    }
+    const imagePath = `/uploads/knowledge-maps/${req.file.filename}`;
+    res.json({ success: true, imagePath });
+  } catch (error) {
+    console.error("Error uploading knowledge map image:", error);
+    res.status(500).json({ success: false, error: "Failed to upload image" });
   }
 });
 

@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 export default function VacSection() {
   const blankVac = [
@@ -9,10 +11,56 @@ export default function VacSection() {
   // Helper to create a deep copy of the rows array
   const deepCloneRows = (rows) => rows.map(r => ({ ...r }));
 
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [ciannId, setCiannId] = useState(null);
+
   const [showVacForm, setShowVacForm] = useState(false);
   const [currentVacForm, setCurrentVacForm] = useState(deepCloneRows(blankVac));
   const [submittedVacData, setSubmittedVacData] = useState(deepCloneRows(blankVac));
   const [vacBtn, setVacBtn] = useState('Add/Edit List');
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
+      if (!stored) {
+        setError("No active CIANN session found.");
+        return;
+      }
+
+      const ciannData = JSON.parse(stored);
+      if (!ciannData || !ciannData.ciannId) {
+        setError("Invalid CIANN session details.");
+        return;
+      }
+      setCiannId(ciannData.ciannId);
+
+      const res = await axios.get(config.ciannSubjectDetails.get(ciannData.ciannId));
+      if (res.data.success && Array.isArray(res.data.details?.vacSection) && res.data.details.vacSection.length > 0) {
+        const data = res.data.details.vacSection;
+        setSubmittedVacData(deepCloneRows(data));
+        setCurrentVacForm(deepCloneRows(data));
+        setVacBtn('Edit List');
+      } else {
+        setSubmittedVacData(deepCloneRows(blankVac));
+        setCurrentVacForm(deepCloneRows(blankVac));
+        setVacBtn('Add/Edit List');
+      }
+    } catch (err) {
+      console.error("Failed to load VAC courses details:", err);
+      setError(err.response?.data?.error || "Failed to load VAC details.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Effect to prevent body scroll when modal is open
   useEffect(() => {
@@ -35,10 +83,28 @@ export default function VacSection() {
     setCurrentVacForm(updatedForm);
   };
   
-  const handleSubmit = () => {
-    setSubmittedVacData(deepCloneRows(currentVacForm));
-    setVacBtn('Edit List');
-    setShowVacForm(false);
+  const handleSubmit = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        vacSection: currentVacForm
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setSubmittedVacData(deepCloneRows(currentVacForm));
+        setVacBtn('Edit List');
+        setShowVacForm(false);
+      }
+    } catch (err) {
+      console.error("Failed to save VAC details:", err);
+      setError(err.response?.data?.error || "Failed to save VAC details.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -64,7 +130,7 @@ export default function VacSection() {
 
         .title-container .title {
           margin: 0 0 5px 0; font-weight: 700;
-          font-size: 2rem; color: #28a745;
+          font-size: 2rem; color: var(--primary-color, #28a745);
         }
 
         .title-container .subtitle {
@@ -73,14 +139,14 @@ export default function VacSection() {
         }
 
         .button {
-          background-color: #4CAF50; color: white;
+          background-color: var(--primary-color, #4CAF50); color: white;
           padding: 12px 24px; border: none; font-size: 16px;
           font-weight: 600; border-radius: 10px; cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047; transform: translateY(-2px);
+          background-color: var(--primary-accent-dark, #43A047); transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
         
@@ -135,7 +201,7 @@ export default function VacSection() {
           padding: 25px; max-height: 70vh; overflow-y: auto;
         }
         
-        /* --- ✅ MODAL FORM STYLES --- */
+        /* --- MODAL FORM STYLES --- */
         .form-list {
           display: flex; flex-direction: column; gap: 20px;
         }
@@ -165,8 +231,8 @@ export default function VacSection() {
            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .form-control:focus {
-           outline: none; border-color: #81c784;
-           box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+           outline: none; border-color: var(--primary-color, #81c784);
+           box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
         /* --- Modal Button Row Styles --- */
@@ -181,9 +247,9 @@ export default function VacSection() {
           font-weight: 600; transition: all 0.3s ease;
           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .btn-save { background-color: #4CAF50; }
+        .btn-save { background-color: var(--primary-color, #4CAF50); }
         .btn-cancel { background-color: #6c757d; }
-        .btn-save:hover { background-color: #43A047; transform: translateY(-1px); }
+        .btn-save:hover { background-color: var(--primary-accent-dark, #43A047); transform: translateY(-1px); }
         .btn-cancel:hover { background-color: #5a6268; transform: translateY(-1px); }
 
         @media (max-width: 768px) {
@@ -195,54 +261,73 @@ export default function VacSection() {
       `}</style>
       
       <div className="vac-section-container">
+        {error && (
+          <div style={{ 
+            backgroundColor: '#f8d7da', 
+            color: '#721c24', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
+
         <div className="header-row">
           <div className="title-container">
             <h2 className="title">Recommended VAC Courses</h2>
             <p className="subtitle">3.13.6 List of relevant Value Added Courses</p>
           </div>
-          <button className="button" onClick={() => setShowVacForm(true)}>{vacBtn}</button>
+          <button className="button" disabled={loading} onClick={() => setShowVacForm(true)}>{vacBtn}</button>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table>
-            <colgroup>
-              <col style={{ width: '10%' }} />
-              <col style={{ width: '30%' }} />
-              <col style={{ width: '25%' }} />
-              <col style={{ width: '15%' }} />
-              <col style={{ width: '20%' }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Sr. No.</th>
-                <th>Name</th>
-                <th>Conducted By</th>
-                <th>Duration</th>
-                <th>Certificate</th>
-              </tr>
-            </thead>
-            <tbody>
-              {submittedVacData[0]?.name ? (
-                submittedVacData.map((r, i) => (
-                  <tr key={i}>
-                    <td>{i + 1}</td>
-                    <td>{r.name}</td>
-                    <td>{r.conductedBy}</td>
-                    <td>{r.duration}</td>
-                    <td>{r.certificate}</td>
-                  </tr>
-                ))
-              ) : (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Loading recommended VAC courses...
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <colgroup>
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '30%' }} />
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '15%' }} />
+                <col style={{ width: '20%' }} />
+              </colgroup>
+              <thead>
                 <tr>
-                  <td colSpan="5">No VAC courses have been added yet.</td>
+                  <th>Sr. No.</th>
+                  <th>Name</th>
+                  <th>Conducted By</th>
+                  <th>Duration</th>
+                  <th>Certificate</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {submittedVacData[0]?.name ? (
+                  submittedVacData.map((r, i) => (
+                    <tr key={i}>
+                      <td>{i + 1}</td>
+                      <td>{r.name}</td>
+                      <td>{r.conductedBy}</td>
+                      <td>{r.duration}</td>
+                      <td>{r.certificate}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5">No VAC courses have been added yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {showVacForm && (
-          <div className="modal-overlay">
+          <div className="modal-overlay" onClick={() => setShowVacForm(false)}>
             <div className="modal-box" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <span>Add/Edit Recommended VAC Courses</span>
@@ -276,8 +361,10 @@ export default function VacSection() {
                 </div>
               </div>
               <div className="btn-row">
-                <button type="button" className="btn-cancel" onClick={() => setShowVacForm(false)}>Cancel</button>
-                <button type="button" className="btn-save" onClick={handleSubmit}>Submit</button>
+                <button type="button" className="btn-cancel" onClick={() => setShowVacForm(false)} disabled={saving}>Cancel</button>
+                <button type="button" className="btn-save" onClick={handleSubmit} disabled={saving}>
+                  {saving ? "Submitting..." : "Submit"}
+                </button>
               </div>
             </div>
           </div>

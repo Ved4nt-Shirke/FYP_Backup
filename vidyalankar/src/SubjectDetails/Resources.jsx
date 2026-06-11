@@ -37,7 +37,7 @@ function Resources() {
           margin: 0;
           font-weight: 700;
           font-size: 2rem;
-          color: #28a745;
+          color: var(--primary-color, #28a745);
         }
 
         /* --- Section Wrapper Card --- */
@@ -62,7 +62,7 @@ function Resources() {
         /* --- Generic Button Style (from Rubric) --- */
         /* Applies to .button, and is inherited by old class names */
         .button, .resources-button, .mooc-button {
-          background-color: #4CAF50;
+          background-color: var(--primary-color, #4CAF50);
           color: white;
           padding: 12px 24px;
           border: none;
@@ -74,7 +74,7 @@ function Resources() {
           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover, .resources-button:hover, .mooc-button:hover {
-          background-color: #43A047;
+          background-color: var(--primary-accent-dark, #43A047);
           transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }

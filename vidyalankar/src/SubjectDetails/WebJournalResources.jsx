@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 export default function WebJournalResources() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [ciannId, setCiannId] = useState(null);
+
   const [webForm, setWebForm] = useState({
     journal: '',
     magazine: '',
@@ -9,6 +16,41 @@ export default function WebJournalResources() {
 
   const [webData, setWebData] = useState([]);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Resolve CIANN Data
+      const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
+      if (!stored) {
+        setError("No active CIANN session found.");
+        return;
+      }
+
+      const ciannData = JSON.parse(stored);
+      if (!ciannData || !ciannData.ciannId) {
+        setError("Invalid CIANN session details.");
+        return;
+      }
+      setCiannId(ciannData.ciannId);
+
+      const res = await axios.get(config.ciannSubjectDetails.get(ciannData.ciannId));
+      if (res.data.success && Array.isArray(res.data.details?.webJournalResources)) {
+        setWebData(res.data.details.webJournalResources);
+      }
+    } catch (err) {
+      console.error("Failed to load web journal resources:", err);
+      setError(err.response?.data?.error || "Failed to load resources.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Effect to prevent body scroll when modal is open
   useEffect(() => {
@@ -24,17 +66,36 @@ export default function WebJournalResources() {
     setWebForm({ ...webForm, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setWebData(prev => [...prev, webForm]);
-    setWebForm({ journal: '', magazine: '', module: '' });
-    setShowModal(false);
+    const nextData = [...webData, webForm];
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        webJournalResources: nextData
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setWebData(nextData);
+        setWebForm({ journal: '', magazine: '', module: '' });
+        setShowModal(false);
+      }
+    } catch (err) {
+      console.error("Failed to save web resource:", err);
+      setError(err.response?.data?.error || "Failed to save web resource.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <>
       <style>{`
-        /* Styles adapted from the BookResource component */
         .web-journal-container {
           font-family: 'Inter', sans-serif;
           background-color: #f8f9fa;
@@ -56,7 +117,7 @@ export default function WebJournalResources() {
           margin: 0 0 5px 0;
           font-weight: 700;
           font-size: 2rem;
-          color: #28a745;
+          color: var(--primary-color, #28a745);
         }
 
         .title-container .subtitle {
@@ -67,7 +128,7 @@ export default function WebJournalResources() {
         }
 
         .button {
-          background-color: #4CAF50;
+          background-color: var(--primary-color, #4CAF50);
           color: white;
           padding: 12px 24px;
           border: none;
@@ -79,7 +140,7 @@ export default function WebJournalResources() {
           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047;
+          background-color: var(--primary-accent-dark, #43A047);
           transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
@@ -162,8 +223,8 @@ export default function WebJournalResources() {
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .form-control:focus, .form-select:focus {
-          outline: none; border-color: #81c784;
-          box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+          outline: none; border-color: var(--primary-color, #81c784);
+          box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
         .btn-row {
@@ -178,10 +239,10 @@ export default function WebJournalResources() {
           transition: all 0.3s ease;
           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .btn-save { background-color: #4CAF50; }
-        .btn-cancel { background-color: #6c757d; }
-        .btn-save:hover { background-color: #43A047; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
-        .btn-cancel:hover { background-color: #5a6268; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+        .btn-save { background-color: var(--primary-color, #4CAF50); }
+        .btn-cancel { background-color: #dc3545; }
+        .btn-save:hover { background-color: var(--primary-accent-dark, #43A047); transform: translateY(-1px); }
+        .btn-cancel:hover { background-color: #bb2d3b; transform: translateY(-1px); }
 
         @media (max-width: 768px) {
           .web-journal-container { padding: 15px; }
@@ -192,45 +253,70 @@ export default function WebJournalResources() {
       `}</style>
 
       <div className="web-journal-container">
+        {error && (
+          <div className="alert alert-danger" style={{ 
+            backgroundColor: '#f8d7da', 
+            color: '#721c24', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
+
         <div className="header-row">
           <div className="title-container">
             <h2 className="title">Web & Journal Resources</h2>
             <p className="subtitle">3.13.2 Web Links, Magazines, Journals, & E-journals</p>
           </div>
-          <button className="button" onClick={() => setShowModal(true)}>Add Web Resource</button>
+          <button className="button" disabled={loading} onClick={() => setShowModal(true)}>Add Web Resource</button>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table>
-            <colgroup>
-              <col style={{ width: '40%' }} />
-              <col style={{ width: '40%' }} />
-              <col style={{ width: '20%' }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Web-Links and Journals</th>
-                <th>Magazines</th>
-                <th>For Module</th>
-              </tr>
-            </thead>
-            <tbody>
-              {webData.length > 0 ? (
-                webData.map((data, index) => (
-                  <tr key={index}>
-                    <td>{data.journal}</td>
-                    <td>{data.magazine}</td>
-                    <td>{data.module}</td>
-                  </tr>
-                ))
-              ) : (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Loading web/journal resources...
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <colgroup>
+                <col style={{ width: '40%' }} />
+                <col style={{ width: '40%' }} />
+                <col style={{ width: '20%' }} />
+              </colgroup>
+              <thead>
                 <tr>
-                  <td colSpan="3">No web resources have been added yet.</td>
+                  <th>Web-Links and Journals</th>
+                  <th>Magazines</th>
+                  <th>For Module</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {webData.length > 0 ? (
+                  webData.map((data, index) => (
+                    <tr key={index}>
+                      <td style={{ textAlign: 'left' }}>
+                        {data.journal?.startsWith('http') ? (
+                          <a href={data.journal} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color, #0056b3)' }}>
+                            {data.journal}
+                          </a>
+                        ) : data.journal}
+                      </td>
+                      <td>{data.magazine}</td>
+                      <td>{data.module}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="3">No web resources have been added yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {showModal && (
           <div className="modal-overlay" onClick={() => setShowModal(false)}>
@@ -272,8 +358,10 @@ export default function WebJournalResources() {
                   </div>
                 </div>
                 <div className="btn-row">
-                  <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="btn-save">Add Resource</button>
+                  <button type="button" className="btn-cancel" onClick={() => setShowModal(false)} disabled={saving}>Cancel</button>
+                  <button type="submit" className="btn-save" disabled={saving}>
+                    {saving ? "Adding..." : "Add Resource"}
+                  </button>
                 </div>
               </form>
             </div>

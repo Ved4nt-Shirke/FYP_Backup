@@ -152,6 +152,12 @@ export const config = {
     bySubject: (subjectId) => `${API_BASE_URL}/course-details/subject/${subjectId}`,
     listAll: `${API_BASE_URL}/course-details/list`,
   },
+  ciannSubjectDetails: {
+    get: (ciannId) => `${API_BASE_URL}/subject-details/ciann-subject-details/${ciannId}`,
+    save: `${API_BASE_URL}/subject-details/ciann-subject-details`,
+    uploadImage: `${API_BASE_URL}/subject-details/ciann-subject-details/knowledge-map-image`,
+  },
+
 
   // Office Staff Panel Endpoints
   office: {

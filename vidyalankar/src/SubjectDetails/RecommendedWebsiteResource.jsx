@@ -1,9 +1,50 @@
 import React, { useState, useEffect } from 'react';
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 export default function RecommendedWebsiteResource() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [ciannId, setCiannId] = useState(null);
+
   const [form, setForm] = useState({ name: '', url: '', module: '' });
   const [recommendedSites, setRecommendedSites] = useState([]);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
+      if (!stored) {
+        setError("No active CIANN session found.");
+        return;
+      }
+
+      const ciannData = JSON.parse(stored);
+      if (!ciannData || !ciannData.ciannId) {
+        setError("Invalid CIANN session details.");
+        return;
+      }
+      setCiannId(ciannData.ciannId);
+
+      const res = await axios.get(config.ciannSubjectDetails.get(ciannData.ciannId));
+      if (res.data.success && Array.isArray(res.data.details?.recommendedWebsiteResource)) {
+        setRecommendedSites(res.data.details.recommendedWebsiteResource);
+      }
+    } catch (err) {
+      console.error("Failed to load recommended websites:", err);
+      setError(err.response?.data?.error || "Failed to load recommended websites.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Effect to prevent body scroll when modal is open
   useEffect(() => {
@@ -19,11 +60,59 @@ export default function RecommendedWebsiteResource() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setRecommendedSites([...recommendedSites, form]);
-    setForm({ name: '', url: '', module: '' });
-    setShowModal(false);
+    const nextData = [...recommendedSites, form];
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        recommendedWebsiteResource: nextData
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setRecommendedSites(nextData);
+        setForm({ name: '', url: '', module: '' });
+        setShowModal(false);
+      }
+    } catch (err) {
+      console.error("Failed to save recommended website:", err);
+      setError(err.response?.data?.error || "Failed to save website details.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (indexToDelete) => {
+    if (!window.confirm("Are you sure you want to delete this website?")) {
+      return;
+    }
+
+    const nextData = recommendedSites.filter((_, idx) => idx !== indexToDelete);
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        recommendedWebsiteResource: nextData
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setRecommendedSites(nextData);
+      }
+    } catch (err) {
+      console.error("Failed to delete website:", err);
+      setError(err.response?.data?.error || "Failed to delete website.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -51,7 +140,7 @@ export default function RecommendedWebsiteResource() {
           margin: 0 0 5px 0;
           font-weight: 700;
           font-size: 2rem;
-          color: #28a745;
+          color: var(--primary-color, #28a745);
         }
 
         .title-container .subtitle {
@@ -62,7 +151,7 @@ export default function RecommendedWebsiteResource() {
         }
 
         .button {
-          background-color: #4CAF50;
+          background-color: var(--primary-color, #4CAF50);
           color: white;
           padding: 12px 24px;
           border: none;
@@ -74,7 +163,7 @@ export default function RecommendedWebsiteResource() {
           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047;
+          background-color: var(--primary-accent-dark, #43A047);
           transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
@@ -97,7 +186,7 @@ export default function RecommendedWebsiteResource() {
           word-wrap: break-word;
         }
         td a {
-            color: #0056b3;
+            color: var(--primary-color, #0056b3);
             text-decoration: none;
             font-weight: 500;
         }
@@ -165,8 +254,8 @@ export default function RecommendedWebsiteResource() {
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .form-control:focus {
-          outline: none; border-color: #81c784;
-          box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+          outline: none; border-color: var(--primary-color, #81c784);
+          box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
         .btn-row {
@@ -181,9 +270,9 @@ export default function RecommendedWebsiteResource() {
           transition: all 0.3s ease;
           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .btn-save { background-color: #4CAF50; }
+        .btn-save { background-color: var(--primary-color, #4CAF50); }
         .btn-cancel { background-color: #6c757d; }
-        .btn-save:hover { background-color: #43A047; transform: translateY(-1px); }
+        .btn-save:hover { background-color: var(--primary-accent-dark, #43A047); transform: translateY(-1px); }
         .btn-cancel:hover { background-color: #5a6268; transform: translateY(-1px); }
 
         @media (max-width: 768px) {
@@ -195,45 +284,83 @@ export default function RecommendedWebsiteResource() {
       `}</style>
 
       <div className="recommended-website-container">
+        {error && (
+          <div style={{ 
+            backgroundColor: '#f8d7da', 
+            color: '#721c24', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
+
         <div className="header-row">
           <div className="title-container">
             <h2 className="title">Recommended Websites</h2>
             <p className="subtitle">3.13.4 List of YouTube, NPTEL, MOOC, or other relevant sites</p>
           </div>
-          <button className="button" onClick={() => setShowModal(true)}>Add Website</button>
+          <button className="button" disabled={loading} onClick={() => setShowModal(true)}>Add Website</button>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table>
-            <colgroup>
-              <col style={{ width: '30%' }} />
-              <col style={{ width: '50%' }} />
-              <col style={{ width: '20%' }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Website Name</th>
-                <th>URL</th>
-                <th>Module No.</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recommendedSites.length > 0 ? (
-                recommendedSites.map((site, index) => (
-                  <tr key={index}>
-                    <td>{site.name}</td>
-                    <td><a href={site.url} target="_blank" rel="noopener noreferrer">{site.url}</a></td>
-                    <td>{site.module}</td>
-                  </tr>
-                ))
-              ) : (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Loading recommended websites...
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <colgroup>
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '45%' }} />
+                <col style={{ width: '15%' }} />
+                <col style={{ width: '15%' }} />
+              </colgroup>
+              <thead>
                 <tr>
-                  <td colSpan="3">No recommended websites have been added yet.</td>
+                  <th>Website Name</th>
+                  <th>URL</th>
+                  <th>Module No.</th>
+                  <th>Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {recommendedSites.length > 0 ? (
+                  recommendedSites.map((site, index) => (
+                    <tr key={index}>
+                      <td>{site.name}</td>
+                      <td><a href={site.url} target="_blank" rel="noopener noreferrer">{site.url}</a></td>
+                      <td>{site.module}</td>
+                      <td>
+                        <button
+                          onClick={() => handleDelete(index)}
+                          style={{
+                            background: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px'
+                          }}
+                          disabled={saving}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4">No recommended websites have been added yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {showModal && (
           <div className="modal-overlay" onClick={() => setShowModal(false)}>
@@ -275,8 +402,10 @@ export default function RecommendedWebsiteResource() {
                   </div>
                 </div>
                 <div className="btn-row">
-                  <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="btn-save">Add Website</button>
+                  <button type="button" className="btn-cancel" onClick={() => setShowModal(false)} disabled={saving}>Cancel</button>
+                  <button type="submit" className="btn-save" disabled={saving}>
+                    {saving ? "Adding..." : "Add Website"}
+                  </button>
                 </div>
               </form>
             </div>
@@ -286,3 +415,4 @@ export default function RecommendedWebsiteResource() {
     </>
   );
 }
+
