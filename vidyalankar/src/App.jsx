@@ -195,6 +195,8 @@ import ExpertLectureK9 from "./pages/msbte/ExpertLectureK9";
 import ExpertLectureK9Edit from "./pages/msbte/ExpertLectureK9Edit";
 import ExpertLectureK9Generate from "./pages/msbte/ExpertLectureK9Generate";
 import ExpertLectureK9Print from "./pages/msbte/ExpertLectureK9Print";
+import TermAnalysisK7 from "./pages/msbte/TermAnalysisK7";
+import TermAnalysisK7Print from "./pages/msbte/TermAnalysisK7Print";
 import StudentTimetableManager from "./pages/faculty/StudentTimetableManager";
 import FacultyStudyMaterialManager from "./pages/faculty/FacultyStudyMaterialManager";
 import MockExamDashboard from "./pages/faculty/MockExamDashboard";
@@ -866,6 +868,8 @@ const AppContent = () => {
             <Route path="/msbte/expert-lecture/k9/edit" element={<ExpertLectureK9Edit />} />
             <Route path="/msbte/expert-lecture/k9/generate" element={<ExpertLectureK9Generate />} />
             <Route path="/msbte/expert-lecture/k9/print" element={<ExpertLectureK9Print />} />
+            <Route path="/msbte/term-analysis" element={<TermAnalysisK7 />} />
+            <Route path="/msbte/term-analysis/print" element={<TermAnalysisK7Print />} />
             {/* Admin/Panel Routes */}
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/admin-panel" element={<AdminPanel />} />
@@ -886,9 +890,13 @@ const AppContent = () => {
               path="/admin/departments/:id/practical-exams"
               element={<DepartmentPracticalExams />}
             />
-            <Route path="/admin-faculty" element={<FacultyList />} />
-            <Route path="/admin-create-faculty" element={<CreateFaculty />} />
+            <Route path="/admin-faculty" element={<FacultyList filterRole="faculty" />} />
+            <Route path="/admin-create-faculty" element={<CreateFaculty defaultRole="faculty" />} />
             <Route path="/admin-edit-faculty/:id" element={<FacultyForm />} />
+            <Route path="/admin-hod" element={<FacultyList filterRole="hod" />} />
+            <Route path="/admin-create-hod" element={<CreateFaculty defaultRole="hod" />} />
+            <Route path="/admin-academic-coordinator" element={<FacultyList filterRole="academic_coordinator" />} />
+            <Route path="/admin-create-academic-coordinator" element={<CreateFaculty defaultRole="academic_coordinator" />} />
             <Route path="/admin-office-staff" element={<OfficeStaffList />} />
             <Route
               path="/admin-create-office-staff"

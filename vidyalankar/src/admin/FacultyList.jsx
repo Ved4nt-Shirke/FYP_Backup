@@ -5,7 +5,7 @@ import { showSuccessAlert, showErrorAlert } from "../utils/alertUtils.jsx";
 import { config } from "../config/api";
 import "./FacultyList.css";
 
-const FacultyList = () => {
+const FacultyList = ({ filterRole = "faculty" }) => {
   const navigate = useNavigate();
   const [faculty, setFaculty] = useState([]);
   const [filteredFaculty, setFilteredFaculty] = useState([]);
@@ -62,7 +62,7 @@ const FacultyList = () => {
 
   const fetchFaculty = async () => {
     try {
-      const response = await axios.get(config.admin.faculty);
+      const response = await axios.get(`${config.admin.faculty}?role=${filterRole}`);
       if (response.data.success) {
         setFaculty(response.data.faculty);
       } else {
@@ -136,7 +136,15 @@ const FacultyList = () => {
     }
   };
 
-  const handleCreateFaculty = () => navigate("/admin-create-faculty");
+  const handleCreateFaculty = () => {
+    if (filterRole === "hod") {
+      navigate("/admin-create-hod");
+    } else if (filterRole === "academic_coordinator") {
+      navigate("/admin-create-academic-coordinator");
+    } else {
+      navigate("/admin-create-faculty");
+    }
+  };
   const handleEditFaculty = (facultyMember) =>
     navigate(`/admin-edit-faculty/${facultyMember._id}`, {
       state: { faculty: facultyMember },
@@ -288,7 +296,7 @@ const FacultyList = () => {
       <div className="admin-content">
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading faculty...</p>
+          <p>Loading {filterRole === "hod" ? "HODs" : filterRole === "academic_coordinator" ? "Coordinators" : "faculty"}...</p>
         </div>
       </div>
     );
@@ -305,7 +313,13 @@ const FacultyList = () => {
             </div>
             <div className="stat-content">
               <div className="stat-number">{filteredFaculty.length}</div>
-              <div className="stat-label">Total Faculty</div>
+              <div className="stat-label">
+                {filterRole === "hod"
+                  ? "Total HODs"
+                  : filterRole === "academic_coordinator"
+                  ? "Total Coordinators"
+                  : "Total Faculty"}
+              </div>
             </div>
           </div>
           <div className="stat-card">
@@ -316,7 +330,13 @@ const FacultyList = () => {
               <div className="stat-number">
                 {filteredFaculty.filter((f) => f.status === "active").length}
               </div>
-              <div className="stat-label">Active Faculty</div>
+              <div className="stat-label">
+                {filterRole === "hod"
+                  ? "Active HODs"
+                  : filterRole === "academic_coordinator"
+                  ? "Active Coordinators"
+                  : "Active Faculty"}
+              </div>
             </div>
           </div>
           <div className="stat-card">
@@ -339,7 +359,7 @@ const FacultyList = () => {
           <i className="bi bi-search"></i>
           <input
             type="text"
-            placeholder="Search faculty name, ID, email..."
+            placeholder={`Search ${filterRole === "hod" ? "HOD" : filterRole === "academic_coordinator" ? "coordinator" : "faculty"} name, ID, email...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -363,7 +383,12 @@ const FacultyList = () => {
             </button>
           </div>
           <button className="btn-primary" onClick={handleCreateFaculty}>
-            <i className="bi bi-person-plus"></i> Add Faculty
+            <i className="bi bi-person-plus"></i>{" "}
+            {filterRole === "hod"
+              ? "Add HOD"
+              : filterRole === "academic_coordinator"
+              ? "Add Coordinator"
+              : "Add Faculty"}
           </button>
         </div>
       </div>
@@ -374,11 +399,25 @@ const FacultyList = () => {
           <div className="empty-state-icon">
             <i className="bi bi-people"></i>
           </div>
-          <h3>{searchTerm ? "No faculty found" : "No Faculty Yet"}</h3>
+          <h3>
+            {searchTerm
+              ? "No matching records found"
+              : filterRole === "hod"
+              ? "No HODs Yet"
+              : filterRole === "academic_coordinator"
+              ? "No Academic Coordinators Yet"
+              : "No Faculty Yet"}
+          </h3>
           <p>
             {searchTerm
               ? "Try adjusting your search criteria."
-              : "Get started by adding your first faculty member."}
+              : `Get started by adding your first ${
+                  filterRole === "hod"
+                    ? "HOD"
+                    : filterRole === "academic_coordinator"
+                    ? "academic coordinator"
+                    : "faculty member"
+                }.`}
           </p>
         </div>
       ) : viewMode === "cards" ? (

@@ -32,7 +32,7 @@ const isSameDay = (a, b) => {
 
 const ChatPage = () => {
   const role = localStorage.getItem("role") || "faculty";
-  const isFaculty = role === "faculty";
+  const isFaculty = role === "faculty" || role === "hod" || role === "academic_coordinator";
   const isStudent = role === "student";
 
   const [conversations, setConversations] = useState([]);

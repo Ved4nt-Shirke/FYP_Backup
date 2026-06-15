@@ -5,7 +5,7 @@ import { showSuccessAlert, showErrorAlert } from "../utils/alertUtils.jsx";
 import { config } from "../config/api";
 import "./AdminPanel.css";
 
-const CreateFaculty = () => {
+const CreateFaculty = ({ defaultRole = "faculty" }) => {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -73,6 +73,7 @@ const CreateFaculty = () => {
         skills: skills.filter((s) => s.trim()),
         institution: adminInstitution,
         department: department || null,
+        role: defaultRole,
       };
 
       const response = await axios.post(config.admin.createFaculty, payload);
@@ -134,9 +135,21 @@ const CreateFaculty = () => {
       <div className="panel-card">
         <div className="panel-header">
           <div className="panel-titles">
-            <h1 className="panel-title">Create Faculty Member</h1>
+            <h1 className="panel-title">
+              {defaultRole === "hod"
+                ? "Create HOD"
+                : defaultRole === "academic_coordinator"
+                ? "Create Academic Coordinator"
+                : "Create Faculty Member"}
+            </h1>
             <p className="panel-subtitle">
-              Create new faculty account for {adminInstitution}
+              Create new{" "}
+              {defaultRole === "hod"
+                ? "HOD"
+                : defaultRole === "academic_coordinator"
+                ? "Academic Coordinator"
+                : "faculty"}{" "}
+              account for {adminInstitution}
             </p>
           </div>
           <div className="panel-actions">
@@ -295,7 +308,11 @@ const CreateFaculty = () => {
                 ) : (
                   <>
                     <i className="bi bi-person-plus"></i>
-                    Create Faculty Account
+                    {defaultRole === "hod"
+                      ? "Create HOD Account"
+                      : defaultRole === "academic_coordinator"
+                      ? "Create Coordinator Account"
+                      : "Create Faculty Account"}
                   </>
                 )}
               </button>
@@ -304,8 +321,23 @@ const CreateFaculty = () => {
 
           {createdUser && (
             <div className="success-card">
-              <h3>✓ Faculty Account Created Successfully!</h3>
-              <p>Share these credentials with the faculty member:</p>
+              <h3>
+                ✓{" "}
+                {defaultRole === "hod"
+                  ? "HOD Account Created Successfully!"
+                  : defaultRole === "academic_coordinator"
+                  ? "Academic Coordinator Account Created Successfully!"
+                  : "Faculty Account Created Successfully!"}
+              </h3>
+              <p>
+                Share these credentials with the{" "}
+                {defaultRole === "hod"
+                  ? "HOD"
+                  : defaultRole === "academic_coordinator"
+                  ? "Academic Coordinator"
+                  : "faculty member"}
+                :
+              </p>
               <div className="credentials">
                 <div className="credentials-item">
                   <span className="credentials-label">Username:</span>
@@ -333,9 +365,22 @@ const CreateFaculty = () => {
               <div style={{ marginTop: "16px" }}>
                 <button
                   className="btn-primary"
-                  onClick={() => navigate("/admin-faculty")}
+                  onClick={() =>
+                    navigate(
+                      defaultRole === "hod"
+                        ? "/admin-hod"
+                        : defaultRole === "academic_coordinator"
+                        ? "/admin-academic-coordinator"
+                        : "/admin-faculty"
+                    )
+                  }
                 >
-                  View All Faculty
+                  View All{" "}
+                  {defaultRole === "hod"
+                    ? "HODs"
+                    : defaultRole === "academic_coordinator"
+                    ? "Coordinators"
+                    : "Faculty"}
                 </button>
               </div>
             </div>

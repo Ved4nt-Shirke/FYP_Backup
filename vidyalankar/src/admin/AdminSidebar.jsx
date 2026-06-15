@@ -95,6 +95,18 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
       available: true,
     },
     {
+      path: "/admin-hod",
+      icon: "bi-people-fill",
+      label: "Manage HODs",
+      available: true,
+    },
+    {
+      path: "/admin-academic-coordinator",
+      icon: "bi-people-fill",
+      label: "Manage Coordinators",
+      available: true,
+    },
+    {
       path: "/admin-office-staff",
       icon: "bi-person-vcard-fill",
       label: "Manage Office Staff",

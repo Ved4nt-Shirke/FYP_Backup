@@ -70,12 +70,6 @@ export default function OfficeHours() {
       alert(handleApiError(err, 'Failed to update office hours'));
     }
   };
-    setDay(formDay);
-    setTime(formTime);
-    setVenue(formVenue);
-    setInformed(formInformed);
-    setShowForm(false);
-  };
 
   // ✅ Lock background scroll when modal is open
   useEffect(() => {

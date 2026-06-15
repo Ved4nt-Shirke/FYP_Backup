@@ -213,7 +213,7 @@ const Header = ({
   );
   const userRole = localStorage.getItem("role") || "faculty";
   const isSuperAdmin = userRole === "superadmin";
-  const isFaculty = userRole === "faculty";
+  const isFaculty = userRole === "faculty" || userRole === "hod" || userRole === "academic_coordinator";
 
   useEffect(() => {
     const fetchPendingRequests = async () => {
@@ -314,7 +314,15 @@ const Header = ({
             </span>
           )}
           <span className="institution-name-text">{institutionName}</span>
-          {isFaculty && <span className="role-chip">Faculty</span>}
+          {isFaculty && (
+            <span className="role-chip">
+              {userRole === "hod"
+                ? "HOD"
+                : userRole === "academic_coordinator"
+                ? "Academic Coordinator"
+                : "Faculty"}
+            </span>
+          )}
         </span>
       </div>
       {showSearch && false && (

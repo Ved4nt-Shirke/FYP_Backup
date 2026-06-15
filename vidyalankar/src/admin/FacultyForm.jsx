@@ -22,6 +22,7 @@ const FacultyForm = () => {
     skills: [""],
     department: "",
     status: "active",
+    role: "faculty",
   });
 
   // Get admin's institution from localStorage
@@ -79,6 +80,7 @@ const FacultyForm = () => {
       skills: faculty.skills?.length > 0 ? faculty.skills : [""],
       department: faculty.department?._id || "",
       status: faculty.status || "active",
+      role: faculty.role || "faculty",
     });
   };
 
@@ -201,6 +203,7 @@ const FacultyForm = () => {
         department: formData.department || null,
         institution: adminInstitution,
         status: formData.status,
+        role: formData.role || "faculty",
         ...(isEdit ? {} : { employeeId }),
       };
 
@@ -222,7 +225,8 @@ const FacultyForm = () => {
               : "Faculty profile created successfully!"
           );
         }
-        navigate("/admin-faculty");
+        const redirectPath = formData.role === "hod" ? "/admin-hod" : formData.role === "academic_coordinator" ? "/admin-academic-coordinator" : "/admin-faculty";
+        navigate(redirectPath);
       } else {
         showErrorAlert(response.data.message);
       }
@@ -376,6 +380,22 @@ const FacultyForm = () => {
                 <option value="inactive">Inactive</option>
               </select>
             </div>
+
+            {/* Role */}
+            <div className="form-field">
+              <label htmlFor="role">Role</label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role || "faculty"}
+                onChange={handleChange}
+                disabled={loading}
+              >
+                <option value="faculty">Faculty</option>
+                <option value="hod">HOD</option>
+                <option value="academic_coordinator">Academic Coordinator</option>
+              </select>
+            </div>
           </div>
 
           {/* Skills Section */}
@@ -421,7 +441,10 @@ const FacultyForm = () => {
             <button
               type="button"
               className="btn-secondary"
-              onClick={() => navigate("/admin-faculty")}
+              onClick={() => {
+                const redirectPath = formData.role === "hod" ? "/admin-hod" : formData.role === "academic_coordinator" ? "/admin-academic-coordinator" : "/admin-faculty";
+                navigate(redirectPath);
+              }}
               disabled={loading}
             >
               Cancel

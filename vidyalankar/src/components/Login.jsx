@@ -273,6 +273,8 @@ const Login = () => {
                 className="form-input"
               >
                 <option value="faculty">Faculty</option>
+                <option value="hod">HOD</option>
+                <option value="academic_coordinator">Academic Coordinator</option>
                 <option value="student">Student</option>
                 <option value="office">Office Staff</option>
                 <option value="admin">Admin</option>
