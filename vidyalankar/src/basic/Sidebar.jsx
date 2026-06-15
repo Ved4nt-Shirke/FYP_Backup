@@ -15,6 +15,7 @@ const Sidebar = ({
     k4: false,
     k8: false,
     k9: false,
+    k7: false,
   });
   const [isMobile, setIsMobile] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
@@ -940,6 +941,112 @@ const Sidebar = ({
                         }}
                       >
                         Print
+                      </a>
+                    </li>
+                  </>
+                )}
+                <li>
+                  <a
+                    className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleMsbteSection("k7");
+                    }}
+                  >
+                    <span className="d-flex align-items-center gap-2">
+                      <i className="bi bi-file-earmark"></i> K7 (Parts A-G)
+                    </span>
+                    <i
+                      className={`bi ${openMsbteSections.k7 ? "bi-chevron-down" : "bi-chevron-left"}`}
+                    ></i>
+                  </a>
+                </li>
+                {openMsbteSections.k7 && (
+                  <>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigateAndClose("/msbte/k7/placeholder/Part A");
+                        }}
+                      >
+                        Part A
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigateAndClose("/msbte/k7/report-selector");
+                        }}
+                        style={{ fontWeight: "600", color: "#4f46e5" }}
+                      >
+                        Part B
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigateAndClose("/msbte/k7/placeholder/Part C");
+                        }}
+                      >
+                        Part C
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigateAndClose("/msbte/k7/placeholder/Part D");
+                        }}
+                      >
+                        Part D
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigateAndClose("/msbte/k7/placeholder/Part E");
+                        }}
+                      >
+                        Part E
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigateAndClose("/msbte/k7/placeholder/Part F");
+                        }}
+                      >
+                        Part F
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigateAndClose("/msbte/k7/placeholder/Part G");
+                        }}
+                      >
+                        Part G
                       </a>
                     </li>
                   </>

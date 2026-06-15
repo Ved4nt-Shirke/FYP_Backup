@@ -195,6 +195,11 @@ import ExpertLectureK9 from "./pages/msbte/ExpertLectureK9";
 import ExpertLectureK9Generate from "./pages/msbte/ExpertLectureK9Generate";
 import ExpertLectureK9Edit from "./pages/msbte/ExpertLectureK9Edit";
 import ExpertLectureK9Print from "./pages/msbte/ExpertLectureK9Print";
+import K7CiannSelection from "./pages/msbte/K7CiannSelection";
+import K7Generate from "./pages/msbte/K7Generate";
+import K7Print from "./pages/msbte/K7Print";
+import K7Placeholder from "./pages/msbte/K7Placeholder";
+import K7ReportSelector from "./pages/msbte/K7ReportSelector";
 import StudentTimetableManager from "./pages/faculty/StudentTimetableManager";
 import FacultyStudyMaterialManager from "./pages/faculty/FacultyStudyMaterialManager";
 import MockExamDashboard from "./pages/faculty/MockExamDashboard";
@@ -889,6 +894,27 @@ const AppContent = () => {
             <Route
               path="/msbte/expert-lecture/k9/print"
               element={<ExpertLectureK9Print />}
+            />
+            {/* K7 Routes */}
+            <Route
+              path="/msbte/k7/cianns"
+              element={<K7CiannSelection />}
+            />
+            <Route
+              path="/msbte/k7/generate"
+              element={<K7Generate />}
+            />
+            <Route
+              path="/msbte/k7/print"
+              element={<K7Print />}
+            />
+            <Route
+              path="/msbte/k7/report-selector"
+              element={<K7ReportSelector />}
+            />
+            <Route
+              path="/msbte/k7/placeholder/:partName"
+              element={<K7Placeholder />}
             />
             {/* Admin/Panel Routes */}
             <Route path="/admin-dashboard" element={<AdminDashboard />} />

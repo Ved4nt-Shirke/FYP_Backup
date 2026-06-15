@@ -6,7 +6,7 @@ const MSBTEPanel = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
-  const [openSections, setOpenSections] = useState({ k3: true, k4: true });
+  const [openSections, setOpenSections] = useState({ k3: true, k4: true, k7: false });
 
   useEffect(() => {
     if (isOpen) {
@@ -142,6 +142,77 @@ const MSBTEPanel = ({ isOpen, onClose }) => {
           <i className="bi bi-person-video3"></i>
           <span>Expert Lecture K9</span>
         </button>
+
+        <button
+          className="msbte-dropdown-option"
+          onClick={() => toggleSection("k7")}
+        >
+          <i className="bi bi-file-earmark"></i>
+          <span>K7 (Parts A-G)</span>
+          <i
+            className={`bi ms-auto ${openSections.k7 ? "bi-chevron-down" : "bi-chevron-left"}`}
+          ></i>
+        </button>
+        {openSections.k7 && (
+          <>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() => handleItemClick("/msbte/k7/placeholder/Part A")}
+              style={{ paddingLeft: "25px" }}
+            >
+              <i className="bi bi-dot"></i>
+              <span>Part A</span>
+            </button>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() => handleItemClick("/msbte/k7/report-selector")}
+              style={{ paddingLeft: "25px", fontWeight: "600", color: "#4f46e5" }}
+            >
+              <i className="bi bi-dot"></i>
+              <span>Part B</span>
+            </button>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() => handleItemClick("/msbte/k7/placeholder/Part C")}
+              style={{ paddingLeft: "25px" }}
+            >
+              <i className="bi bi-dot"></i>
+              <span>Part C</span>
+            </button>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() => handleItemClick("/msbte/k7/placeholder/Part D")}
+              style={{ paddingLeft: "25px" }}
+            >
+              <i className="bi bi-dot"></i>
+              <span>Part D</span>
+            </button>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() => handleItemClick("/msbte/k7/placeholder/Part E")}
+              style={{ paddingLeft: "25px" }}
+            >
+              <i className="bi bi-dot"></i>
+              <span>Part E</span>
+            </button>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() => handleItemClick("/msbte/k7/placeholder/Part F")}
+              style={{ paddingLeft: "25px" }}
+            >
+              <i className="bi bi-dot"></i>
+              <span>Part F</span>
+            </button>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() => handleItemClick("/msbte/k7/placeholder/Part G")}
+              style={{ paddingLeft: "25px" }}
+            >
+              <i className="bi bi-dot"></i>
+              <span>Part G</span>
+            </button>
+          </>
+        )}
 
       </div>
     </div>

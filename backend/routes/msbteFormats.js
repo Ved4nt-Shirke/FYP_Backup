@@ -4,6 +4,15 @@ const SaPrK4 = require("../models/SaPrK4");
 const Student = require("../models/Student");
 const IndustrialVisitK8 = require("../models/IndustrialVisitK8");
 const ExpertLectureK9 = require("../models/ExpertLectureK9");
+const K7Result = require("../models/K7Result");
+const Division = require("../models/Division");
+const Course = require("../models/Course");
+const Subject = require("../models/Subject");
+const Ciann = require("../models/Ciann");
+const CTMarks = require("../models/CTMarks");
+const PTMicroProject = require("../models/PTMicroProject");
+const Assessment = require("../models/Assessment");
+const StudentResult = require("../models/StudentResult");
 const { authenticate } = require("../middleware/auth");
 
 // All routes require authentication
@@ -350,6 +359,389 @@ router.delete("/expert-lecture/k9/:id", async (req, res) => {
   } catch (error) {
     console.error("Error deleting K9 record:", error);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// --- K7 Result Analysis ---
+
+// GET list of saved K7 records for owner
+router.get("/k7/list", async (req, res) => {
+  try {
+    const records = await K7Result.find({ owner: req.user._id })
+      .populate("departmentId", "name")
+      .populate("divisionId", "name")
+      .sort({ updatedAt: -1 });
+
+    res.json({ success: true, data: records });
+  } catch (error) {
+    console.error("Error listing K7 records:", error);
+    res.status(500).json({ success: false, message: "Server error listing K7 records" });
+  }
+});
+
+// GET K7 record
+router.get("/k7", async (req, res) => {
+  try {
+    const { academicYear, semester, departmentId, divisionId } = req.query;
+
+    if (!academicYear || !semester || !departmentId || !divisionId) {
+      return res.status(400).json({ success: false, message: "Missing required parameters" });
+    }
+
+    const record = await K7Result.findOne({
+      academicYear,
+      semester,
+      departmentId,
+      divisionId
+    });
+
+    res.json({ success: true, data: record || null });
+  } catch (error) {
+    console.error("Error fetching K7 Result:", error);
+    res.status(500).json({ success: false, message: "Server error fetching K7 record" });
+  }
+});
+
+// SAVE/UPDATE K7 record (consolidated for all courses)
+router.post("/k7/save", async (req, res) => {
+  try {
+    const {
+      academicYear,
+      semester,
+      departmentId,
+      divisionId,
+      courseConfigs, // Array of { courseCode, courseName, maxMarks }
+      studentMarks,  // [ { studentId, rollNo, studentName, courses: [ { courseCode, ct1, ct2, ... } ] } ]
+      courseStats    // Array of { courseCode, stats: [ { passingHead, lowest, highest, appeared, passed, passPct, above60Pct } ] }
+    } = req.body;
+
+    if (!academicYear || !semester || !departmentId || !divisionId) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    // Find existing record
+    let record = await K7Result.findOne({
+      academicYear,
+      semester,
+      departmentId,
+      divisionId
+    });
+
+    if (!record) {
+      record = new K7Result({
+        academicYear,
+        semester,
+        departmentId,
+        divisionId,
+        owner: req.user._id,
+        courseConfigs: [],
+        studentMarks: [],
+        courseStats: []
+      });
+    }
+
+    // 1. Update configurations (merge by courseCode)
+    if (Array.isArray(courseConfigs)) {
+      const mergedConfigs = [...(record.courseConfigs || [])];
+      courseConfigs.forEach(newConf => {
+        const idx = mergedConfigs.findIndex(c => c.courseCode === newConf.courseCode);
+        if (idx >= 0) {
+          mergedConfigs[idx] = newConf;
+        } else {
+          mergedConfigs.push(newConf);
+        }
+      });
+      record.courseConfigs = mergedConfigs;
+    }
+
+    // 2. Update student marks snapshot (merge courses course-wise)
+    if (Array.isArray(studentMarks) && studentMarks.length > 0) {
+      const mergedStudentMarks = [...(record.studentMarks || [])];
+      studentMarks.forEach(newStud => {
+        const idx = mergedStudentMarks.findIndex(s => s.studentId?.toString() === newStud.studentId?.toString());
+        if (idx >= 0) {
+          const existingCourses = [...(mergedStudentMarks[idx].courses || [])];
+          (newStud.courses || []).forEach(newCourse => {
+            const cIdx = existingCourses.findIndex(c => c.courseCode === newCourse.courseCode);
+            if (cIdx >= 0) {
+              existingCourses[cIdx] = newCourse;
+            } else {
+              existingCourses.push(newCourse);
+            }
+          });
+          mergedStudentMarks[idx].courses = existingCourses;
+        } else {
+          mergedStudentMarks.push(newStud);
+        }
+      });
+      record.studentMarks = mergedStudentMarks;
+    }
+
+    // 3. Update summary statistics (merge by courseCode)
+    if (Array.isArray(courseStats)) {
+      const mergedStats = [...(record.courseStats || [])];
+      courseStats.forEach(newStat => {
+        const idx = mergedStats.findIndex(s => s.courseCode === newStat.courseCode);
+        if (idx >= 0) {
+          mergedStats[idx] = newStat;
+        } else {
+          mergedStats.push(newStat);
+        }
+      });
+      record.courseStats = mergedStats;
+    }
+
+    await record.save();
+    res.json({ success: true, data: record });
+
+  } catch (error) {
+    console.error("Error saving K7 Result:", error);
+    res.status(500).json({ success: false, message: "Server error during save" });
+  }
+});
+
+// POPULATE K7 record from database
+router.get("/k7/populate", async (req, res) => {
+  try {
+    const { academicYear, semester, departmentId, divisionId, ciannId } = req.query;
+
+    if (!academicYear || !semester || !departmentId || !divisionId) {
+      return res.status(400).json({ success: false, message: "Missing required query parameters" });
+    }
+
+    // 1. Fetch division name
+    const divisionObj = await Division.findById(divisionId);
+    if (!divisionObj) {
+      return res.status(404).json({ success: false, message: "Division not found" });
+    }
+    const divisionName = divisionObj.name;
+
+    // 2. Fetch all students in this division
+    const students = await Student.find({ departmentId, divisionId }).sort({ rollNo: 1 });
+    if (students.length === 0) {
+      return res.json({ success: true, courseConfigs: [], studentMarks: [], message: "No students found in this division" });
+    }
+
+    // 3. Find courses
+    const semNum = parseInt(semester);
+    const courses = await Course.find({
+      departmentId,
+      $or: [{ semester: semNum }, { semester: semester }]
+    });
+
+    const courseIds = courses.map(c => c._id);
+
+    // 4. Find subjects
+    let subjects = [];
+    let targetCiann = null;
+    if (ciannId) {
+      targetCiann = await Ciann.findOne({ ciannId: Number(ciannId) });
+      if (targetCiann) {
+        subjects = await Subject.find({
+          courseId: { $in: courseIds },
+          $or: [
+            { code: targetCiann.subject?.code },
+            { name: targetCiann.subject?.name }
+          ]
+        });
+      }
+    }
+
+    if (subjects.length === 0) {
+      subjects = await Subject.find({
+        courseId: { $in: courseIds }
+      }).sort({ code: 1 });
+    }
+
+    // Initialize course configs with default MSBTE maximum marks
+    const courseConfigs = subjects.map(sub => ({
+      courseCode: sub.code,
+      courseName: sub.name,
+      maxMarks: {
+        ct1: 30,
+        ct2: 30,
+        finalFaTh: 10,
+        faTh: 40,
+        saTh: 70,
+        faPr: 25,
+        saPr: 25,
+        sla: 25
+      }
+    }));
+
+    // Find all CIANNs matching this department, divisionName, academicYear, and semester
+    const semesterStr = semester.toString();
+    const ciannQuery = {
+      "department._id": departmentId.toString(),
+      division: divisionName,
+      academicYear,
+      $or: [
+        { semester: semesterStr },
+        { semester: semNum.toString() }
+      ]
+    };
+    if (ciannId) {
+      ciannQuery.ciannId = Number(ciannId);
+    }
+
+    const cianns = await Ciann.find(ciannQuery);
+    const ciannIds = cianns.map(c => c.ciannId);
+
+    // Fetch related marks in bulk
+    const ctMarksList = await CTMarks.find({ ciannId: { $in: ciannIds } });
+    const microProjectsList = await PTMicroProject.find({ ciannId: { $in: ciannIds }, activityType: "Microproject" });
+    const assessmentsList = await Assessment.find({ ciannId: { $in: ciannIds } });
+    const saPrK4List = await SaPrK4.find({ ciannId: { $in: ciannIds }, division: divisionName });
+
+    // Fetch StudentResults (SA-TH)
+    const studentIds = students.map(s => s._id);
+    const studentResultsList = await StudentResult.find({
+      studentId: { $in: studentIds },
+      $or: [
+        { semester: semesterStr },
+        { semester: `Semester ${semesterStr}` },
+        { semester: `Semester ${semNum}` }
+      ]
+    });
+
+    // Populate marks for each student
+    const studentMarks = [];
+
+    for (const student of students) {
+      const studentIdStr = student._id.toString();
+      const rollNoStr = (student.rollNo || "").toString().trim().toLowerCase();
+      const studentNameStr = (student.studentName || "").toString().trim().toLowerCase();
+
+      const studentCourseMarks = [];
+
+      for (const sub of subjects) {
+        const subCode = sub.code;
+        const subName = sub.name;
+
+        // Find matching CIANN
+        const ciannObj = cianns.find(c => 
+          (c.subject?.code && c.subject.code.toString() === subCode.toString()) ||
+          (c.subject?.name && c.subject.name.toString().toLowerCase() === subName.toLowerCase())
+        );
+
+        let ct1 = null;
+        let ct2 = null;
+        let finalFaTh = null;
+        let faPr = null;
+        let saPr = null;
+        let saTh = null;
+        let sla = null;
+
+        if (ciannObj) {
+          const cId = ciannObj.ciannId;
+
+          // 1. CT Marks
+          const studentCT1 = ctMarksList.find(m => 
+            m.ciannId === cId && 
+            m.ctNumber === 1 && 
+            (
+              (m.rollNo && m.rollNo.toString().trim().toLowerCase() === rollNoStr) ||
+              (m.studentName && m.studentName.toString().trim().toLowerCase() === studentNameStr)
+            )
+          );
+          if (studentCT1) ct1 = studentCT1.marks;
+
+          const studentCT2 = ctMarksList.find(m => 
+            m.ciannId === cId && 
+            m.ctNumber === 2 && 
+            (
+              (m.rollNo && m.rollNo.toString().trim().toLowerCase() === rollNoStr) ||
+              (m.studentName && m.studentName.toString().trim().toLowerCase() === studentNameStr)
+            )
+          );
+          if (studentCT2) ct2 = studentCT2.marks;
+
+          // 2. Microproject (Final FA-TH)
+          const studentMP = microProjectsList.find(m => 
+            m.ciannId === cId && 
+            m.studentId?.toString() === studentIdStr
+          );
+          if (studentMP) finalFaTh = studentMP.marks;
+
+          // 3. FA-PR (Continuous Assessment average)
+          const studentAssessments = assessmentsList.filter(a => 
+            a.ciannId === cId && 
+            (
+              (a.rollNo && a.rollNo.toString().trim().toLowerCase() === rollNoStr) ||
+              (a.studentName && a.studentName.toString().trim().toLowerCase() === studentNameStr)
+            )
+          );
+          if (studentAssessments.length > 0) {
+            const sum = studentAssessments.reduce((acc, curr) => acc + (curr.marks || 0), 0);
+            faPr = Math.round(sum / studentAssessments.length);
+          }
+
+          // 4. SA-PR (SaPrK4 marks)
+          const saPrRecord = saPrK4List.find(r => r.ciannId === cId);
+          if (saPrRecord && Array.isArray(saPrRecord.students)) {
+            const studentSaPr = saPrRecord.students.find(s => 
+              (s.studentId && s.studentId.toString() === studentIdStr) ||
+              (s.rollNo && s.rollNo.toString().trim().toLowerCase() === rollNoStr) ||
+              (s.enrollmentNo && s.enrollmentNo.toString().trim().toLowerCase() === (student.enrollmentNo || "").toString().trim().toLowerCase())
+            );
+            if (studentSaPr && studentSaPr.marks !== undefined) saPr = studentSaPr.marks;
+          }
+        }
+
+        // 5. SA-TH (StudentResult end-term theory marks)
+        const studentRes = studentResultsList.find(r => 
+          r.studentId?.toString() === studentIdStr && 
+          (
+            r.subject.toString().toLowerCase() === subName.toLowerCase() ||
+            r.subject.toString() === subCode.toString()
+          )
+        );
+        if (studentRes) saTh = studentRes.marks;
+
+        // Compute FA-TH = CT average + Final
+        let ctAvg = null;
+        if (ct1 !== null && ct2 !== null) {
+          ctAvg = (ct1 + ct2) / 2;
+        } else if (ct1 !== null) {
+          ctAvg = ct1;
+        } else if (ct2 !== null) {
+          ctAvg = ct2;
+        }
+
+        let computedFaTh = null;
+        if (ctAvg !== null || finalFaTh !== null) {
+          computedFaTh = Math.round(ctAvg || 0) + (finalFaTh || 0);
+        }
+
+        studentCourseMarks.push({
+          courseCode: subCode,
+          ct1,
+          ct2,
+          finalFaTh,
+          faTh: computedFaTh,
+          saTh,
+          faPr,
+          saPr,
+          sla
+        });
+      }
+
+      studentMarks.push({
+        studentId: student._id,
+        rollNo: student.rollNo,
+        studentName: student.studentName,
+        courses: studentCourseMarks
+      });
+    }
+
+    res.json({
+      success: true,
+      courseConfigs,
+      studentMarks
+    });
+  } catch (error) {
+    console.error("Error in populate K7 Result:", error);
+    res.status(500).json({ success: false, message: "Server error during population" });
   }
 });
 
