@@ -24,7 +24,7 @@ async function generateUniqueCiannId() {
 function buildScopedFilter(user) {
   if (!user) return {};
 
-  if (user.role === "faculty" || user.role === "office") {
+  if (["faculty", "office", "hod", "academic_coordinator"].includes(user.role)) {
     return {
       $or: [{ owner: user._id }, { "sharedWith.user": user._id }],
     };
@@ -631,8 +631,8 @@ router.delete("/:ciannId", async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    // Verify password only if user is faculty
-    if (req.user.role === "faculty") {
+    // Verify password only if user is faculty, HOD, or Academic Coordinator
+    if (["faculty", "hod", "academic_coordinator"].includes(req.user.role)) {
       if (!password) {
         return res.status(400).json({
           message: "Password is required to delete CIANN",
@@ -646,14 +646,14 @@ router.delete("/:ciannId", async (req, res) => {
       const bcryptjs = require("bcryptjs");
 
       const user = await User.findById(req.user._id);
-      if (!user || !user.passwordHash) {
+      if (!user || !user.password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       // Verify password
       const isPasswordValid = await bcryptjs.compare(
         password,
-        user.passwordHash,
+        user.password,
       );
       if (!isPasswordValid) {
         return res.status(401).json({

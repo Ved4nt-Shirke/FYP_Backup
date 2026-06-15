@@ -6,6 +6,16 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { authenticate, authorizeOffice } = require("../middleware/auth");
 
+const generateSafePassword = (length = 8) => {
+  const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
+
 // GET all students with optional filters - Public endpoint (for office panel)
 // Note: Office staff access is controlled via authorization in the frontend
 router.get("/", async (req, res) => {
@@ -107,7 +117,7 @@ router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
 
       // Generate username and password
       const username = enrollmentNo.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const plainPassword = Math.random().toString(36).slice(-8);
+      const plainPassword = generateSafePassword(8);
 
       // Hash password for user account
       const hashedPassword = await bcrypt.hash(plainPassword, 10);

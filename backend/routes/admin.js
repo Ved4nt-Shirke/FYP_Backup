@@ -8,6 +8,16 @@ const OfficeStaff = require("../models/OfficeStaff");
 const { authenticate, authorizeAdmin, authorizeOffice } = require("../middleware/auth");
 const Institution = require("../models/Institution");
 
+const generateSafePassword = (length = 8) => {
+  const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
+
 // Institution and department mappings
 // Departments will be fetched dynamically from the database
 const institutionDepartments = {};
@@ -78,7 +88,7 @@ router.post(
       const employeeId = `FAC${Date.now().toString().slice(-6)}`;
 
       // Generate random password
-      const password = Math.random().toString(36).slice(-8);
+      const password = generateSafePassword(8);
 
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -86,7 +96,7 @@ router.post(
       console.log("Creating user with:", {
         username,
         college: institution,
-        role: "faculty",
+        role: req.body.role || "faculty",
       });
 
       // Create user
@@ -94,7 +104,7 @@ router.post(
         username,
         password: hashedPassword,
         college: institution,
-        role: "faculty",
+        role: req.body.role || "faculty",
       });
 
       await newUser.save();
@@ -113,6 +123,7 @@ router.post(
         generatedUsername: username,
         currentPassword: password, // store plain password for admin reference
         createdBy: req.user._id,
+        role: req.body.role || "faculty",
       });
 
       console.log("Creating faculty record with:", {
@@ -196,7 +207,7 @@ router.post(
       const employeeId = `OFF${Date.now().toString().slice(-6)}`;
 
       // Generate random password
-      const password = Math.random().toString(36).slice(-8);
+      const password = generateSafePassword(8);
 
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -513,9 +524,7 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
     }
 
     // Generate random password (8 characters)
-    const generatedPassword =
-      Math.random().toString(36).slice(-8) +
-      Math.random().toString(36).slice(-2);
+    const generatedPassword = generateSafePassword(10);
 
     // Hash the password for User model
     const hashedPassword = await bcrypt.hash(generatedPassword, 10);
@@ -525,7 +534,7 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
       username: facultyData.generatedUsername,
       password: hashedPassword,
       college: institution,
-      role: "faculty",
+      role: facultyData.role || "faculty",
       department: facultyData.department || null,
     });
 
@@ -544,6 +553,7 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
       createdBy: req.user._id,
       currentPassword: generatedPassword, // Store plain text password for admin access
       status: facultyData.status || "active",
+      role: facultyData.role || "faculty",
     });
 
     await newFaculty.save();
@@ -574,9 +584,14 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
 router.get("/faculty", authenticate, authorizeAdmin, async (req, res) => {
   try {
     const institution = req.user.college;
-    const { department, status, search } = req.query;
+    const { department, status, search, role } = req.query;
 
     let query = { institution };
+
+    // Filter by role if provided
+    if (role) {
+      query.role = role;
+    }
 
     // Filter by department if provided
     if (department) {
@@ -708,6 +723,14 @@ router.put("/faculty/:id", authenticate, authorizeAdmin, async (req, res) => {
       { ...updateData, updatedAt: new Date() },
       { new: true, runValidators: true },
     ).populate("department", "name code");
+
+    // Also update the User role if role is changed
+    if (updateData.role) {
+      await User.findOneAndUpdate(
+        { username: existingFaculty.generatedUsername },
+        { role: updateData.role }
+      );
+    }
 
     res.json({
       success: true,
@@ -917,9 +940,7 @@ router.post(
       }
 
       // Generate new password
-      const newPassword =
-        Math.random().toString(36).slice(-8) +
-        Math.random().toString(36).slice(-2);
+      const newPassword = generateSafePassword(10);
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 
       // Update user password
@@ -1247,9 +1268,7 @@ router.post("/office-staff", authenticate, authorizeAdmin, async (req, res) => {
     staffData.generatedUsername = finalUsername;
 
     // Generate random password (8 characters)
-    const generatedPassword =
-      Math.random().toString(36).slice(-8) +
-      Math.random().toString(36).slice(-2);
+    const generatedPassword = generateSafePassword(10);
 
     // Hash the password for User model
     const hashedPassword = await bcrypt.hash(generatedPassword, 10);
@@ -1753,9 +1772,7 @@ router.post(
       }
 
       // Generate new password
-      const newPassword =
-        Math.random().toString(36).slice(-8) +
-        Math.random().toString(36).slice(-2);
+      const newPassword = generateSafePassword(10);
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 
       // Update user password

@@ -192,7 +192,44 @@ client.on("message", async (message) => {
     const phone = message.from.replace("@c.us", "");
     const text = raw.toLowerCase();
 
+    // Log incoming message to local file for diagnostic review
+    try {
+        fs.appendFileSync(
+            path.resolve(__dirname, "../incoming_messages.log"),
+            `${new Date().toISOString()} | Sender: ${phone} | Msg: ${raw}\n`
+        );
+    } catch (logErr) {
+        console.error("Failed to write incoming messages log:", logErr);
+    }
+
     console.log(`📨 [${phone}] ${raw.substring(0, 120)}`);
+
+    // ── Roll Number Validation/Attendance Flow (Student/Direct Validation) ─────
+    if (isRollNoFormat(raw)) {
+        const faculty = await findFaculty(phone);
+        // If they are a registered faculty in an active session or executing a faculty flow, bypass this check
+        const isFacultySession = faculty && (
+            getSession(phone) ||
+            ["hi", "hello", "hey", "start", "help", "cancel", "exit", "quit", "reset", "stop"].includes(text) ||
+            raw.toUpperCase().startsWith("ATT")
+        );
+
+        if (!isFacultySession) {
+            try {
+                const student = await findStudentByRollNo(raw);
+                if (!student) {
+                    await message.reply("Roll number is not valid");
+                } else {
+                    await message.reply(`Attendance marked for ${student.rollNo}`);
+                }
+                return;
+            } catch (err) {
+                console.error("Roll number verification error:", err);
+                await message.reply("❌ Error checking roll number. Try again.");
+                return;
+            }
+        }
+    }
 
     // ── Verify faculty ────────────────────────────────────────────────────────
     const faculty = await findFaculty(phone);
@@ -481,13 +518,17 @@ async function handleAbsentRolls(message, raw, faculty, phone, session) {
 
     let absentRolls = [];
     if (raw.toUpperCase() !== "ALL") {
-        // Parse rolls like "106, 107" perfectly ignoring "roll" text.
-        absentRolls = raw.replace(/ROLL/gi, "").split(",").map((s) => parseInt(s.trim())).filter((n) => !isNaN(n));
+        // Parse and resolve rolls using the student list for this division
+        const studentRolls = students.map(s => String(s.rollNo));
+        absentRolls = raw
+            .replace(/ROLL/gi, "")
+            .split(",")
+            .map((s) => matchRollNoInList(s.trim(), studentRolls))
+            .filter(Boolean);
     }
 
     const attendanceStudents = students.map((s) => {
-        const rn = parseInt(s.rollNo);
-        const status = absentRolls.includes(rn) ? "Absent" : "Present";
+        const status = absentRolls.includes(String(s.rollNo)) ? "Absent" : "Present";
         return { rollNo: String(s.rollNo), studentName: s.studentName, status };
     });
 
@@ -703,21 +744,6 @@ async function handleDirectAttendance(message, body, faculty, phone) {
     let presentRolls = [], absentRolls = [];
     let hasPresentLine = false, hasAbsentLine = false;
 
-    if (pMatch) {
-        hasPresentLine = true;
-        presentRolls = pMatch[1].replace(/ROLL/gi, "").split(",").map((s) => parseInt(s.trim())).filter((n) => !isNaN(n));
-        restOfMessage = restOfMessage.replace(pMatch[0], "").trim();
-    }
-    
-    if (aMatch) {
-        hasAbsentLine = true;
-        absentRolls = aMatch[1].replace(/ROLL/gi, "").split(",").map((s) => parseInt(s.trim())).filter((n) => !isNaN(n));
-        restOfMessage = restOfMessage.replace(aMatch[0], "").trim();
-    }
-    
-    // What's left of the message after stripping P: and A: is the Topic.
-    let topic = restOfMessage.replace(/\|/g, "").trim();
-
     if (isNaN(ciannId)) { await message.reply("❌ Invalid CIANN ID."); return; }
     if (!isValidDate(date)) { await message.reply("❌ Invalid date. Use YYYY-MM-DD."); return; }
     if (new Date(date) > new Date()) { await message.reply("❌ Cannot mark future attendance."); return; }
@@ -744,24 +770,49 @@ async function handleDirectAttendance(message, body, faculty, phone) {
             return;
         }
 
+        const studentRolls = students.map(s => String(s.rollNo));
+
+        if (pMatch) {
+            hasPresentLine = true;
+            presentRolls = pMatch[1]
+                .replace(/ROLL/gi, "")
+                .split(",")
+                .map((s) => matchRollNoInList(s.trim(), studentRolls))
+                .filter(Boolean);
+            restOfMessage = restOfMessage.replace(pMatch[0], "").trim();
+        }
+        
+        if (aMatch) {
+            hasAbsentLine = true;
+            absentRolls = aMatch[1]
+                .replace(/ROLL/gi, "")
+                .split(",")
+                .map((s) => matchRollNoInList(s.trim(), studentRolls))
+                .filter(Boolean);
+            restOfMessage = restOfMessage.replace(aMatch[0], "").trim();
+        }
+        
+        // What's left of the message after stripping P: and A: is the Topic.
+        let topic = restOfMessage.replace(/\|/g, "").trim();
+
         const attendanceStudents = students.map((s) => {
-            const rn = parseInt(s.rollNo);
+            const sRoll = String(s.rollNo);
             let status = "Present"; // Default is everyone is present!
 
             if (hasPresentLine && !hasAbsentLine) {
                 // If they ONLY provided P:, everyone else is Absent
-                status = presentRolls.includes(rn) ? "Present" : "Absent";
+                status = presentRolls.includes(sRoll) ? "Present" : "Absent";
             } else if (!hasPresentLine && hasAbsentLine) {
                 // If they ONLY provided A:, everyone else is Present
-                status = absentRolls.includes(rn) ? "Absent" : "Present";
+                status = absentRolls.includes(sRoll) ? "Absent" : "Present";
             } else if (hasPresentLine && hasAbsentLine) {
                 // Both provided: explicit takes priority, default absent if not in P:
-                if (absentRolls.includes(rn)) status = "Absent";
-                else if (presentRolls.includes(rn)) status = "Present";
+                if (absentRolls.includes(sRoll)) status = "Absent";
+                else if (presentRolls.includes(sRoll)) status = "Present";
                 else status = "Absent";
             }
 
-            return { rollNo: String(s.rollNo), studentName: s.studentName, status };
+            return { rollNo: sRoll, studentName: s.studentName, status };
         });
 
         await new TheoryAttendance({
@@ -791,17 +842,28 @@ async function handleDirectAttendance(message, body, faculty, phone) {
 async function findFaculty(phone) {
     try {
         const Faculty = getModel("Faculty");
-        let stripped = phone;
-        // If it starts with 91 but the DB has numbers without 91, check both
-        if (phone.startsWith("91")) stripped = phone.substring(2);
+        
+        // Clean the incoming phone number (keep only digits)
+        const cleanPhone = String(phone || "").replace(/\D/g, "");
+        const last10 = cleanPhone.slice(-10);
 
-        // Find active faculties matching the phone
-        // Note: If multiple faculties have the exact same test phone number, findOne returns the first one it finds.
+        if (last10.length < 10) {
+            // Fallback to exact matching if the phone number is too short
+            return await Faculty.findOne({
+                $or: [
+                    { whatsappPhone: phone },
+                    { whatsappPhone: `+${phone}` }
+                ],
+                status: "active"
+            }).lean();
+        }
+
+        // Find active faculties matching the phone number exactly, with +, or by the last 10 digits suffix
         const faculty = await Faculty.findOne({
             $or: [
                 { whatsappPhone: phone },
-                { whatsappPhone: stripped },
-                { whatsappPhone: `+${phone}` }
+                { whatsappPhone: `+${phone}` },
+                { whatsappPhone: { $regex: new RegExp(last10 + "$") } }
             ],
             status: "active"
         }).lean();
@@ -822,10 +884,64 @@ function todayStr() {
     return new Date(d.getTime() - off * 60000).toISOString().split("T")[0];
 }
 
+function isRollNoFormat(input) {
+    if (!input || typeof input !== "string") return false;
+    const cleaned = input.trim().toUpperCase();
+    return /^\d{5}[A-Z]\d{4}$/.test(cleaned) || /^\d{1,4}$/.test(cleaned);
+}
+
+async function findStudentByRollNo(input) {
+    if (!input || typeof input !== "string") return null;
+    const cleaned = input.trim().toUpperCase();
+
+    // 1. If it's a full roll number (5 digits + 1 letter + 4 digits)
+    if (/^\d{5}[A-Z]\d{4}$/.test(cleaned)) {
+        const Student = getModel("Student");
+        return await Student.findOne({ rollNo: cleaned }).lean();
+    }
+
+    // 2. If it's a short roll number (1 to 4 digits)
+    if (/^\d{1,4}$/.test(cleaned)) {
+        const Student = getModel("Student");
+        const suffix = cleaned.padStart(4, '0');
+        // Look for exact match (e.g. "106") or suffix match (e.g. ending with "0056")
+        return await Student.findOne({
+            $or: [
+                { rollNo: cleaned },
+                { rollNo: { $regex: new RegExp(suffix + "$") } }
+            ]
+        }).lean();
+    }
+
+    return null;
+}
+
+function matchRollNoInList(input, studentRolls) {
+    if (!input || typeof input !== "string") return null;
+    const cleaned = input.trim().toUpperCase();
+
+    // If it's a full roll number, return it if it is in the list
+    if (/^\d{5}[A-Z]\d{4}$/.test(cleaned)) {
+        return studentRolls.find(r => r.toUpperCase() === cleaned) || null;
+    }
+
+    // If it's a short roll number, check suffix
+    if (/^\d{1,4}$/.test(cleaned)) {
+        const suffix = cleaned.padStart(4, '0');
+        return studentRolls.find(r => {
+            const rUpper = r.toUpperCase();
+            return rUpper === cleaned || rUpper.endsWith(suffix);
+        }) || null;
+    }
+
+    // Otherwise, fallback to exact string match
+    return studentRolls.find(r => r.toUpperCase() === cleaned) || null;
+}
+
 // ── Start ────────────────────────────────────────────────────────────────────
 function startWhatsAppBot() {
     console.log("🚀 Starting Conversational WhatsApp Attendance Bot...");
     initializeWithRecovery();
 }
 
-module.exports = { startWhatsAppBot, client };
+module.exports = { startWhatsAppBot, client, isRollNoFormat, findStudentByRollNo, matchRollNoInList };

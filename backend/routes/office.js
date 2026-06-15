@@ -12,6 +12,15 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { authenticate, authorizeOffice } = require("../middleware/auth");
 
+const generateSafePassword = () => {
+  const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let password = "";
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
 const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const institutionFilter = (institutionCode = "") => ({
@@ -394,7 +403,7 @@ router.post(
       }
 
       // Generate new password
-      const newPassword = Math.random().toString(36).slice(-8);
+      const newPassword = generateSafePassword();
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 
       // Update student record
@@ -619,14 +628,14 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
           if (existingCredentialStudent?.plainPassword) {
             plainPassword = existingCredentialStudent.plainPassword;
           } else {
-            plainPassword = Math.random().toString(36).slice(-8);
+            plainPassword = generateSafePassword();
             hashedPassword = await bcrypt.hash(plainPassword, 10);
             existingUser.password = hashedPassword;
             existingUser.college = req.user.college;
             await existingUser.save();
           }
         } else {
-          plainPassword = Math.random().toString(36).slice(-8);
+          plainPassword = generateSafePassword();
           hashedPassword = await bcrypt.hash(plainPassword, 10);
         }
 

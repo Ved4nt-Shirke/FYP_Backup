@@ -126,17 +126,16 @@ function parseAttendanceMessage(body) {
 }
 
 /**
- * Parse a comma-separated string of roll numbers into sorted integers.
+ * Parse a comma-separated string of roll numbers.
  * @param {string} str - e.g. "1,3,5,7"
- * @returns {number[]}
+ * @returns {string[]}
  */
 function parseRollNumbers(str) {
   if (!str) return [];
   return str
     .split(",")
-    .map((s) => parseInt(s.trim()))
-    .filter((n) => !isNaN(n) && n > 0)
-    .sort((a, b) => a - b);
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
 }
 
 module.exports = { parseAttendanceMessage };
