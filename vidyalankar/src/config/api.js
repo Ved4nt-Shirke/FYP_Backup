@@ -174,6 +174,7 @@ export const config = {
     clearStudents: `${API_BASE_URL}/office/students`,
     updateStudent: (studentId) => `${API_BASE_URL}/office/student/${studentId}`,
     deleteStudent: (studentId) => `${API_BASE_URL}/office/student/${studentId}`,
+    saveSeatNumbers: `${API_BASE_URL}/office/students/seat-numbers`,
     // New endpoints for department/course/division selection
     departments: `${API_BASE_URL}/office/departments`,
     courses: (departmentId) => `${API_BASE_URL}/office/courses/${departmentId}`,

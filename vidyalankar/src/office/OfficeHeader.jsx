@@ -4,6 +4,7 @@ import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
 } from "../utils/institutionBranding";
+import "./OfficeHeader.css";
 
 const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff" }) => {
   const navigate = useNavigate();

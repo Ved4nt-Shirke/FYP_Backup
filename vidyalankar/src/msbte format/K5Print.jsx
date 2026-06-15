@@ -247,7 +247,7 @@ const K5Print = () => {
                   <td>{row.rollNo || "-"}</td>
                   <td>{row.enrollmentNo || "-"}</td>
                   <td className="k5-name">{row.studentName || "-"}</td>
-                  <td>{row.examSeatNo || row.examSeat || "-"}</td>
+                  <td>{row.examSeatNo || row.seatNo || row.examSeat || "-"}</td>
                   <td>{Number.isFinite(row.ct1) ? row.ct1 : "-"}</td>
                   <td>{Number.isFinite(row.ct2) ? row.ct2 : "-"}</td>
                   <td>{Number.isFinite(row.average) ? row.average : "-"}</td>

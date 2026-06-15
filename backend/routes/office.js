@@ -430,6 +430,45 @@ router.post(
 );
 
 /**
+ * POST /api/office/students/seat-numbers
+ * Batch update seat numbers for multiple students
+ * Auth: Office staff or admin
+ * Body: { seatNumbers: { [studentId]: seatNo } }
+ */
+router.post(
+  "/students/seat-numbers",
+  authenticate,
+  authorizeOffice,
+  async (req, res) => {
+    try {
+      const { seatNumbers } = req.body;
+
+      if (!seatNumbers || typeof seatNumbers !== "object") {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid seat numbers payload" });
+      }
+
+      const bulkOps = Object.entries(seatNumbers).map(([studentId, seatNo]) => ({
+        updateOne: {
+          filter: { _id: studentId },
+          update: { $set: { seatNo: (seatNo || "").toString().trim() } },
+        },
+      }));
+
+      if (bulkOps.length > 0) {
+        await Student.bulkWrite(bulkOps);
+      }
+
+      res.json({ success: true, message: "Seat numbers updated successfully" });
+    } catch (err) {
+      console.error("Batch update seat numbers error:", err);
+      res.status(500).json({ success: false, message: err.message });
+    }
+  },
+);
+
+/**
  * GET /api/office/student/:id
  * Get specific student details (with auth)
  * Auth: Office staff or admin
@@ -576,13 +615,12 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
       }
 
       try {
-        // Check if student already exists in THIS batch/course/division combo
-        // (allows same student info in different batches/courses/divisions)
+        // Check if student already exists in this class (same department, course, and division)
+        // (allows same student info in different classes)
         const existingStudent = await Student.findOne({
           departmentId,
           courseId,
           divisionId,
-          batch: assignedBatch,
           $or: [{ rollNo }, { enrollmentNo }],
         });
 
@@ -702,12 +740,37 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
       departmentId,
       courseId,
       divisionId,
+      seatNo,
     } = req.body;
 
     if (!studentName || !rollNo || !enrollmentNo || !batch) {
       return res.status(400).json({
         success: false,
         message: "Required fields missing",
+      });
+    }
+
+    const currentStudent = await Student.findById(req.params.id);
+    if (!currentStudent) {
+      return res.status(404).json({ success: false, message: "Student not found" });
+    }
+
+    const deptId = departmentId || currentStudent.departmentId;
+    const crsId = courseId || currentStudent.courseId;
+    const divId = divisionId || currentStudent.divisionId;
+
+    const duplicate = await Student.findOne({
+      _id: { $ne: req.params.id },
+      departmentId: deptId,
+      courseId: crsId,
+      divisionId: divId,
+      $or: [{ rollNo }, { enrollmentNo }],
+    });
+
+    if (duplicate) {
+      return res.status(400).json({
+        success: false,
+        message: "Another student with this roll number or enrollment number already exists in this class",
       });
     }
 
@@ -719,6 +782,7 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
       academicYear: (academicYear || "").toString().trim(),
       division: division || "",
       aadhaarNo: (aadhaarNo || "").toString().trim(),
+      seatNo: (seatNo || "").toString().trim(),
     };
 
     // If new department/course/division IDs are provided, validate and update them

@@ -30,6 +30,7 @@ const studentSchema = new mongoose.Schema({
   passwordGeneratedAt: { type: Date }, // Track when password was generated
   aadhaarNo: { type: String, default: '' }, // Encrypted Aadhaar card number
   aadhaarLastFour: { type: String, default: '' }, // Last 4 digits for masked display
+  seatNo: { type: String, default: "" }, // Exam seat number
   createdAt: { type: Date, default: Date.now }
 }, {
   timestamps: true,

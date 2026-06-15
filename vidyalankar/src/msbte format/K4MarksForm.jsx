@@ -72,11 +72,23 @@ const K4MarksForm = () => {
 
         const marksMap = {};
         const seatMap = {};
+
+        // 1. Populate seat numbers from the student list (office staff entries)
+        studentList.forEach((student) => {
+          const key = student._id || student.studentId || student.enrollmentNo || student.rollNo;
+          if (key) {
+            seatMap[key] = student.seatNo || "";
+          }
+        });
+
+        // 2. Overwrite marks and check/overwrite seat numbers from the saved K4 record
         (record?.students || []).forEach((student) => {
           const key = student.studentId || student.enrollmentNo || student.rollNo;
           if (key) {
             marksMap[key] = student.marks ?? "";
-            seatMap[key] = student.seatNo || "";
+            if (!seatMap[key] && student.seatNo) {
+              seatMap[key] = student.seatNo;
+            }
           }
         });
 

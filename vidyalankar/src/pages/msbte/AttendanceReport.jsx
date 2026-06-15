@@ -77,8 +77,8 @@ const AttendanceReport = () => {
               {students.length > 0 ? (
                 students.map((student) => (
                   <tr key={student._id}>
-                    <td>{student.rollId || student.regNumber || "-"}</td>
-                    <td>{student.name || "-"}</td>
+                    <td>{student.rollNo || student.rollId || student.regNumber || "-"}</td>
+                    <td>{student.studentName || student.name || "-"}</td>
                     <td>{student.seatNo || "-"}</td>
                     <td className="text-center">30</td>
                     <td className="text-center">25</td>

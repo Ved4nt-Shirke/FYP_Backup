@@ -13,6 +13,8 @@ const Sidebar = ({
   const [openMsbteSections, setOpenMsbteSections] = useState({
     k3: false,
     k4: false,
+    k8: false,
+    k9: false,
   });
   const [isMobile, setIsMobile] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
@@ -22,7 +24,6 @@ const Sidebar = ({
   const dropdownRefs = {
     ciann: useRef(null),
     attendance: useRef(null),
-    course: useRef(null),
     assessment: useRef(null),
     ct: useRef(null),
     ptMicroProject: useRef(null),
@@ -158,15 +159,6 @@ const Sidebar = ({
     }
   };
 
-  const handleCourseSelect = (option) => {
-    setOpenDropdown(null);
-    if (option === "Chapters") {
-      navigateAndClose("/chapters");
-    } else if (option === "Experiment") {
-      navigateAndClose("/experiment");
-    }
-  };
-
   const handleAssessmentSelect = (option) => {
     setOpenDropdown(null);
     if (option === "Assess") {
@@ -209,6 +201,18 @@ const Sidebar = ({
       navigateAndClose("/msbte/sa-pr-k4/cianns?mode=edit");
     } else if (option === "SA-PR-K4 Print") {
       navigateAndClose("/msbte/sa-pr-k4/cianns?mode=print");
+    } else if (option === "K8 Generate") {
+      navigateAndClose("/msbte/industrial-visit/k8/generate");
+    } else if (option === "K8 Edit") {
+      navigateAndClose("/msbte/industrial-visit/k8/edit");
+    } else if (option === "K8 Print") {
+      navigateAndClose("/msbte/industrial-visit/k8/print");
+    } else if (option === "K9 Generate") {
+      navigateAndClose("/msbte/expert-lecture/k9/generate");
+    } else if (option === "K9 Edit") {
+      navigateAndClose("/msbte/expert-lecture/k9/edit");
+    } else if (option === "K9 Print") {
+      navigateAndClose("/msbte/expert-lecture/k9/print");
     } else if (option === "Attendance Report") {
       navigateAndClose("/msbte/attendance");
     }
@@ -549,51 +553,6 @@ const Sidebar = ({
             </div>
           </li>
           <li className="sidebar-item">
-            <div className="dropdown" ref={dropdownRefs.course}>
-              <button
-                className={`btn dropdown-toggle dropdown-header w-100 text-start ${
-                  openDropdown === "course" ? "open" : ""
-                }`}
-                type="button"
-                onClick={() => handleDropdownToggle("course")}
-              >
-                <i className="bi bi-book"></i>
-                <span>Course</span>
-                <i className="bi bi-chevron-down dropdown-chevron"></i>
-              </button>
-              <ul
-                className={`dropdown-menu sidebar-submenu ${
-                  openDropdown === "course" ? "show" : ""
-                }`}
-              >
-                <li>
-                  <a
-                    className="dropdown-item d-flex align-items-center gap-2"
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleCourseSelect("Chapters");
-                    }}
-                  >
-                    <i className="bi bi-list-ol"></i> Chapters
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="dropdown-item d-flex align-items-center gap-2"
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleCourseSelect("Experiment");
-                    }}
-                  >
-                    <i className="bi bi-flask"></i> Experiment
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </li>
-          <li className="sidebar-item">
             <div className="dropdown" ref={dropdownRefs.assessment}>
               <button
                 className={`btn dropdown-toggle dropdown-header w-100 text-start ${
@@ -871,6 +830,120 @@ const Sidebar = ({
                     <i className="bi bi-file-earmark"></i> FA-TH-K5
                   </a>
                 </li>
+                <li>
+                  <a
+                    className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleMsbteSection("k8");
+                    }}
+                  >
+                    <span className="d-flex align-items-center gap-2">
+                      <i className="bi bi-file-earmark"></i> Industrial Visit (K8)
+                    </span>
+                    <i
+                      className={`bi ${openMsbteSections.k8 ? "bi-chevron-down" : "bi-chevron-left"}`}
+                    ></i>
+                  </a>
+                </li>
+                {openMsbteSections.k8 && (
+                  <>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMSBTESelect("K8 Generate");
+                        }}
+                      >
+                        Generate
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMSBTESelect("K8 Edit");
+                        }}
+                      >
+                        Edit
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMSBTESelect("K8 Print");
+                        }}
+                      >
+                        Print
+                      </a>
+                    </li>
+                  </>
+                )}
+                <li>
+                  <a
+                    className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleMsbteSection("k9");
+                    }}
+                  >
+                    <span className="d-flex align-items-center gap-2">
+                      <i className="bi bi-file-earmark"></i> Expert Lecture (K9)
+                    </span>
+                    <i
+                      className={`bi ${openMsbteSections.k9 ? "bi-chevron-down" : "bi-chevron-left"}`}
+                    ></i>
+                  </a>
+                </li>
+                {openMsbteSections.k9 && (
+                  <>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMSBTESelect("K9 Generate");
+                        }}
+                      >
+                        Generate
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMSBTESelect("K9 Edit");
+                        }}
+                      >
+                        Edit
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMSBTESelect("K9 Print");
+                        }}
+                      >
+                        Print
+                      </a>
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
           </li>

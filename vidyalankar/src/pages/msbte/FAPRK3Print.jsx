@@ -230,7 +230,7 @@ const FAPRK3Print = () => {
                   <tr key={`${student.rollNo}-${student.studentName}`}>
                     <td>{student.rollNo || "-"}</td>
                     <td>{student.enrollmentNo || "-"}</td>
-                    <td>{student.examSeatNo || student.examSeat || "-"}</td>
+                    <td>{student.examSeatNo || student.seatNo || student.examSeat || "-"}</td>
                     <td className="k3-name">{student.studentName || "-"}</td>
                     {experimentColumns.length > 0 ? (
                       experimentColumns.map((column) => {
