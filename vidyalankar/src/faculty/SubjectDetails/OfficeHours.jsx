@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 export default function OfficeHours() {
-  const [ciannId, setCiannId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [ciannId, setCiannId] = useState(null);
 
   const [day, setDay] = useState("");
   const [time, setTime] = useState("");
   const [venue, setVenue] = useState("");
   const [informed, setInformed] = useState(false);
-  
+
   const [showForm, setShowForm] = useState(false);
   const [formDay, setFormDay] = useState("");
   const [formTime, setFormTime] = useState("");
@@ -18,56 +20,72 @@ export default function OfficeHours() {
   const [formInformed, setFormInformed] = useState(false);
 
   useEffect(() => {
-    const id = getCurrentCiannId();
-    if (id) {
-      setCiannId(id);
-      fetchDetails(id);
-    } else {
-      setError('No CIANN selected');
-      setLoading(false);
-    }
+    loadData();
   }, []);
 
-  const fetchDetails = async (id) => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const data = await ciannSubjectDetailsApi.getDetails(id);
-      if (data?.officeHours) {
-        setDay(data.officeHours.day || "");
-        setTime(data.officeHours.time || "");
-        setVenue(data.officeHours.venue || "");
-        setInformed(data.officeHours.informed || false);
-        
-        setFormDay(data.officeHours.day || "");
-        setFormTime(data.officeHours.time || "");
-        setFormVenue(data.officeHours.venue || "");
-        setFormInformed(data.officeHours.informed || false);
+      setError(null);
+
+      // Resolve CIANN Data
+      const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
+      if (!stored) {
+        setError("No active CIANN session found.");
+        return;
+      }
+
+      const ciannData = JSON.parse(stored);
+      if (!ciannData || !ciannData.ciannId) {
+        setError("Invalid CIANN session details.");
+        return;
+      }
+      setCiannId(ciannData.ciannId);
+
+      const res = await axios.get(config.ciannSubjectDetails.get(ciannData.ciannId));
+      if (res.data.success && res.data.details?.officeHours) {
+        const oh = res.data.details.officeHours;
+        setDay(oh.day || "");
+        setTime(oh.time || "");
+        setVenue(oh.venue || "");
+        setInformed(!!oh.informed);
       }
     } catch (err) {
-      setError(handleApiError(err, 'Failed to fetch details'));
+      console.error("Failed to load office hours details:", err);
+      setError(err.response?.data?.error || "Failed to load office hours.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!ciannId) return;
     try {
-      await ciannSubjectDetailsApi.updateDetails(ciannId, {
-        "officeHours": {
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        officeHours: {
           day: formDay,
           time: formTime,
           venue: formVenue,
           informed: formInformed
         }
-      });
-      setDay(formDay);
-      setTime(formTime);
-      setVenue(formVenue);
-      setInformed(formInformed);
-      setShowForm(false);
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setDay(formDay);
+        setTime(formTime);
+        setVenue(formVenue);
+        setInformed(formInformed);
+        setShowForm(false);
+      }
     } catch (err) {
-      alert(handleApiError(err, 'Failed to update office hours'));
+      console.error("Failed to save office hours:", err);
+      setError(err.response?.data?.error || "Failed to save office hours.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -84,10 +102,9 @@ export default function OfficeHours() {
   return (
     <>
       <style>{`
-        /* Overall container and typography - Consistent with other components */
-        .office-hours-container { /* Renamed from office-hours-page for consistency */
+        .office-hours-container {
           padding: 30px;
-          font-family: 'Inter', sans-serif; /* Changed to Inter for consistency */
+          font-family: 'Inter', sans-serif;
           background-color: #f8f9fa;
           min-height: 100vh;
           margin-left: 0;
@@ -96,44 +113,39 @@ export default function OfficeHours() {
           color: #333;
         }
 
-        /* Header Row - Consistent with other components */
         .header-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 30px; /* More space below header */
-          padding: 20px 25px; /* Increased padding */
+          margin-bottom: 30px;
+          padding: 20px 25px;
           background-color: #fff;
-          border-radius: 12px; /* Rounded corners */
-          box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Subtle shadow */
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
-        /* Title - Consistent with other components */
         .title {
           margin: 0;
-          font-weight: 700; /* Bolder title */
-          font-size: 2rem; /* Larger title */
-          color: #28a745; /* Green color for title */
-          padding-left: 0; /* Removed specific padding-left */
+          font-weight: 700;
+          font-size: 2rem;
+          color: var(--primary-color, #28a745);
         }
 
-        /* Main Button - Consistent with other components */
         .button {
-          background-color: #4CAF50; /* Apple-like green */
+          background-color: var(--primary-color, #4CAF50);
           color: white;
-          padding: 12px 24px; /* Generous padding */
+          padding: 12px 24px;
           border: none;
-          font-size: 16px; /* Slightly larger font */
-          font-weight: 600; /* Semi-bold */
-          border-radius: 10px; /* More rounded */
+          font-size: 16px;
+          font-weight: 600;
+          border-radius: 10px;
           cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* Prominent shadow */
-          margin-right: 0; /* Removed specific margin-right */
+          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047; /* Darker green on hover */
-          transform: translateY(-2px); /* Lift effect */
+          background-color: var(--primary-accent-dark, #43A047);
+          transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
         .button:active {
@@ -141,54 +153,46 @@ export default function OfficeHours() {
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Instruction text - Consistent with other components */
         .instruction {
-          font-size: 15px; /* Slightly larger */
-          margin-bottom: 20px; /* More space */
+          font-size: 15px;
+          margin-bottom: 20px;
           color: #555;
           font-weight: 500;
-          margin-left: 0; /* Removed specific margin-left */
-          padding-left: 0; /* Ensure no extra padding */
         }
 
-        /* Table Styling - Consistent with other components */
         table {
           width: 100%;
           border-collapse: collapse;
           margin-bottom: 20px;
           background: #fff;
-          border-radius: 12px; /* Rounded corners for the table */
-          overflow: hidden; /* Ensures rounded corners are visible */
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Subtle shadow */
-          table-layout: auto; /* Allow columns to auto-adjust */
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+          table-layout: auto;
         }
-        table th, table td { /* Changed from .table th, .table td */
-          border: 1px solid #e0e0e0; /* Lighter borders */
-          padding: 12px 10px; /* Increased padding */
+        table th, table td {
+          border: 1px solid #e0e0e0;
+          padding: 12px 10px;
           text-align: center;
-          vertical-align: middle; /* Vertically center content */
+          vertical-align: middle;
           font-size: 14px;
         }
-        table th { /* Changed from .table th */
-          background-color: #f0f2f5; /* Light grey-blue header background */
+        table th {
+          background-color: #f0f2f5;
           font-weight: 600;
           color: #495057;
-          position: sticky; /* Make the header sticky */
-          top: 0;          /* Stick to the top of its scroll container */
-          z-index: 10;     /* Ensure it stays above scrolling content */
         }
-        table tbody tr:nth-child(even) { /* Subtle zebra striping */
+        table tbody tr:nth-child(even) {
           background-color: #fdfdfd;
         }
-        table tbody tr:hover { /* Hover effect for rows */
+        table tbody tr:hover {
           background-color: #f5f5f5;
         }
 
-        /* Modal Styling - Consistent with other components */
-        .modal-backdrop { /* Renamed from modal-overlay for consistency */
+        .modal-backdrop {
           position: fixed;
           top: 0; left: 0; width: 100%; height: 100%;
-          background-color: rgba(0, 0, 0, 0.7); /* Darker, more opaque backdrop */
+          background-color: rgba(0, 0, 0, 0.7);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -196,70 +200,64 @@ export default function OfficeHours() {
         }
         .modal-box {
           background: white;
-          border-radius: 16px; /* More rounded corners */
+          border-radius: 16px;
           width: 90%;
-          max-width: 700px; /* Adjusted max-width for the form */
+          max-width: 600px;
           animation: fadeIn 0.3s ease-in-out;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); /* Deeper shadow */
-          overflow: hidden; /* Ensures rounded corners are respected */
-          padding: 0; /* Remove padding here, add to inner sections */
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+          overflow: hidden;
         }
         @keyframes fadeIn {
           from { opacity: 0; transform: scale(0.95); }
           to { opacity: 1; transform: scale(1); }
         }
         .modal-header {
-          background: #fff; /* Match modal box background */
-          color: #333; /* Dark text for header */
-          padding: 15px 25px; /* Adjusted padding */
+          background: #fff;
+          color: #333;
+          padding: 15px 25px;
           font-size: 20px;
           font-weight: 600;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 1px solid #eee; /* Subtle separator */
+          border-bottom: 1px solid #eee;
         }
         .close-btn {
           background: none;
           border: none;
-          color: #999; /* Muted close button color */
-          font-size: 28px; /* Larger close button */
+          color: #999;
+          font-size: 28px;
           cursor: pointer;
           transition: transform 0.2s ease, color 0.2s ease;
         }
         .close-btn:hover {
-          color: #dc3545; /* Red on hover */
+          color: #dc3545;
           transform: rotate(90deg);
         }
-        .modal-body-content { /* New class for modal body content padding */
-          padding: 25px; /* Increased padding */
+        .modal-body-content {
+          padding: 25px;
           max-height: 70vh;
           overflow-y: auto;
         }
 
-        /* Form Controls - Consistent with other components */
         .form-control {
           width: 100%;
-          padding: 10px 12px; /* Adjusted padding */
-          margin-bottom: 15px; /* More space between inputs */
-          border: 1px solid #ddd; /* Lighter border */
-          border-radius: 8px; /* More rounded */
+          padding: 10px 12px;
+          margin-bottom: 15px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
           font-size: 15px;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.06); /* Subtle inner shadow */
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .form-control:focus {
           outline: none;
-          border-color: #81c784; /* Green focus border */
-          box-shadow: 0 0 0 3px rgba(76,175,80,0.2); /* Green glow */
-        }
-        .form-control::placeholder {
-          color: #aaa;
+          border-color: var(--primary-color, #81c784);
+          box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
-        /* Form Labels */
         .form-label {
           display: block;
           margin-bottom: 5px;
@@ -268,7 +266,6 @@ export default function OfficeHours() {
           font-size: 14px;
         }
 
-        /* Checkbox Styling */
         .form-check {
           display: flex;
           align-items: center;
@@ -278,22 +275,7 @@ export default function OfficeHours() {
           width: 18px;
           height: 18px;
           margin-right: 8px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
           cursor: pointer;
-          appearance: none;
-          -webkit-appearance: none;
-          -moz-appearance: none;
-          background-color: #fff;
-          transition: background-color 0.2s, border-color 0.2s;
-        }
-        .form-check-input:checked {
-          background-color: #4CAF50;
-          border-color: #4CAF50;
-          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
-          background-size: 100% 100%;
-          background-repeat: no-repeat;
-          background-position: center;
         }
         .form-check-label {
           font-size: 14px;
@@ -301,71 +283,46 @@ export default function OfficeHours() {
           cursor: pointer;
         }
 
-
-        /* Button Row in Modal - Consistent with other components */
         .btn-row {
           display: flex;
           justify-content: flex-end;
-          gap: 15px; /* More space between buttons */
-          padding: 15px 25px; /* Adjusted padding */
-          background: #f8f9fa; /* Light background for button row */
-          border-top: 1px solid #eee; /* Separator */
-          margin-top: 25px; /* Ensure spacing from form fields */
+          gap: 15px;
+          padding: 15px 25px;
+          background: #f8f9fa;
+          border-top: 1px solid #eee;
         }
         .btn-save {
-          margin-right: 455px;
-          background-color: #4CAF50; /* Apple-like green */
+          background-color: var(--primary-color, #4CAF50);
           color: white;
           border: none;
-          padding: 10px 20px; /* Adjusted padding */
-          border-radius: 8px; /* More rounded */
-          cursor: pointer;
-          font-size: 15px;
-          font-weight: 600;
-          transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .btn-save:hover {
-          background-color: #43A047;
-          transform: translateY(-1px);
-          box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-        }
-        .btn-cancel {
-          background-color: #dc3545; /* Muted grey */
-          color: white;
-          border: none;
-          padding: 10px 20px; /* Adjusted padding */
+          padding: 10px 20px;
           border-radius: 8px;
           cursor: pointer;
           font-size: 15px;
           font-weight: 600;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn-save:hover {
+          background-color: var(--primary-accent-dark, #43A047);
+        }
+        .btn-cancel {
+          background-color: #dc3545;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 15px;
+          font-weight: 600;
+          transition: background-color 0.3s ease;
         }
         .btn-cancel:hover {
-          background-color: #d5d5d5;
-          transform: translateY(-1px);
-          box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-
-        /* Responsive adjustments - Consistent with other components */
-        @media (max-width: 1200px) {
-          .office-hours-container {
-            margin-left: 0;
-            width: 100%;
-          }
+          background-color: #bb2d3b;
         }
 
         @media (max-width: 768px) {
           .office-hours-container {
             padding: 15px;
-            margin-left: 0;
-            width: 100%;
           }
           .header-row {
             flex-direction: column;
@@ -379,74 +336,19 @@ export default function OfficeHours() {
           .button {
             width: 100%;
             text-align: center;
-            padding: 10px 20px;
-          }
-          th, td {
-            font-size: 13px;
-            padding: 10px 8px;
           }
           .modal-box {
-            padding: 0; /* Adjusted for inner padding */
             width: 95%;
-          }
-          .modal-header {
-            font-size: 18px;
-            padding: 12px 20px;
-          }
-          .close-btn {
-            font-size: 24px;
           }
           .modal-body-content {
             padding: 20px;
           }
-          .form-control {
-            padding: 8px 10px;
-            font-size: 14px;
-            margin-bottom: 10px;
-          }
           .btn-row {
             flex-direction: column;
-            align-items: center;
             gap: 10px;
-            padding: 15px;
           }
           .btn-save, .btn-cancel {
             width: 100%;
-            padding: 10px 15px;
-            font-size: 14px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .office-hours-container {
-            padding: 10px;
-          }
-          .header-row {
-            padding: 10px;
-          }
-          .title {
-            font-size: 1.5rem;
-          }
-          .instruction {
-            font-size: 13px;
-          }
-          th, td {
-            font-size: 12px;
-            padding: 8px 6px;
-          }
-          .modal-body-content {
-            padding: 15px;
-          }
-          .modal-header {
-            font-size: 16px;
-            padding: 10px 15px;
-          }
-          .close-btn {
-            font-size: 22px;
-          }
-          .form-control {
-            padding: 6px 8px;
-            font-size: 13px;
           }
         }
       `}</style>
@@ -454,7 +356,17 @@ export default function OfficeHours() {
       <div className="office-hours-container mb-5">
         <div className="header-row">
           <h2 className="title">3.2 Office Hours</h2>
-          <button className="button" onClick={() => setShowForm(true)}>
+          <button 
+            className="button"
+            disabled={loading}
+            onClick={() => {
+              setFormDay(day);
+              setFormTime(time);
+              setFormVenue(venue);
+              setFormInformed(informed);
+              setShowForm(true);
+            }}
+          >
             Edit Office Hours
           </button>
         </div>
@@ -462,55 +374,65 @@ export default function OfficeHours() {
           Staff must remain at office in this duration for solving students query
         </p>
 
-        {/* Added a scrollable container for the table */}
-        <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
-          <table> {/* Changed className to table for consistency with CSS */}
-            <thead>
-              <tr>
-                <th>Day</th>
-                <th>Time</th>
-                <th>Venue</th>
-                <th>Informed</th>
-              </tr>
-            </thead>
-            <tbody>
-              {day || time || venue ? (
+        {error && (
+          <div className="alert alert-danger" style={{ 
+            backgroundColor: '#f8d7da', 
+            color: '#721c24', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Loading office hours details...
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
+            <table>
+              <thead>
                 <tr>
-                  <td>{day}</td>
-                  <td>{time}</td>
-                  <td>{venue}</td>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={informed}
-                      onChange={async () => {
-                        const newInformed = !informed;
-                        setInformed(newInformed);
-                        if (ciannId) {
-                          try {
-                            await ciannSubjectDetailsApi.updateDetails(ciannId, {
-                              "officeHours.informed": newInformed
-                            });
-                          } catch (err) {
-                            console.error('Failed to update informed status', err);
-                          }
-                        }
-                      }}
-                      className="form-check-input"
-                      style={{ margin: 0 }}
-                    />
-                  </td>
+                  <th>Day</th>
+                  <th>Time</th>
+                  <th>Venue</th>
+                  <th>Informed</th>
                 </tr>
-              ) : (
-                <tr>
-                  <td colSpan="4" style={{ textAlign: "center" }}>
-                    No Data Entered
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {day || time || venue ? (
+                  <tr>
+                    <td>{day}</td>
+                    <td>{time}</td>
+                    <td>{venue}</td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={informed}
+                        disabled
+                        style={{
+                          width: '20px',
+                          height: '20px',
+                          cursor: 'default',
+                          accentColor: 'var(--primary-color, #4CAF50)'
+                        }}
+                      />
+                    </td>
+                  </tr>
+                ) : (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: "center", padding: '20px' }}>
+                      No Data Entered
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {showForm && (
           <div className="modal-backdrop">
@@ -519,11 +441,10 @@ export default function OfficeHours() {
                 <span>Edit Office Hours</span>
                 <button className="close-btn" onClick={() => setShowForm(false)}>&times;</button>
               </div>
-              {/* Added a div for modal body content padding */}
               <div className="modal-body-content">
                 <label className="form-label">Select Weekday</label>
                 <select
-                  className="form-control" // Removed mb-2 as form-control has its own margin-bottom
+                  className="form-control"
                   value={formDay}
                   onChange={(e) => setFormDay(e.target.value)}
                 >
@@ -535,21 +456,23 @@ export default function OfficeHours() {
 
                 <label className="form-label">Time</label>
                 <input
-                  className="form-control" // Removed mb-2
-                  type="time"
+                  className="form-control"
+                  type="text"
+                  placeholder="e.g. 10:30 AM - 11:30 AM"
                   value={formTime}
                   onChange={(e) => setFormTime(e.target.value)}
                 />
 
                 <label className="form-label">Venue</label>
                 <input
-                  className="form-control" // Removed mb-2
+                  className="form-control"
                   type="text"
+                  placeholder="e.g. Staff Room 4"
                   value={formVenue}
                   onChange={(e) => setFormVenue(e.target.value)}
                 />
 
-                <div className="form-check"> {/* Removed mb-3 as form-control has its own margin-bottom */}
+                <div className="form-check">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -561,12 +484,12 @@ export default function OfficeHours() {
                     Tick if Informed Students
                   </label>
                 </div>
-
-                {/* Button row is outside modal-body-content to maintain consistent padding/background */}
               </div>
               <div className="btn-row">
-                <button type="button" className="btn-save" onClick={handleSubmit}>Submit</button>
-                <button type="button" className="btn-cancel" onClick={() => setShowForm(false)}>Cancel</button>
+                <button type="button" className="btn-cancel" onClick={() => setShowForm(false)} disabled={saving}>Cancel</button>
+                <button type="button" className="btn-save" onClick={handleSubmit} disabled={saving}>
+                  {saving ? "Saving..." : "Submit"}
+                </button>
               </div>
             </div>
           </div>

@@ -161,7 +161,7 @@ export default function BookResource() {
           margin: 0 0 5px 0;
           font-weight: 700;
           font-size: 2rem;
-          color: #28a745;
+          color: var(--primary-color, #28a745);
         }
 
         .title-container .subtitle {
@@ -172,7 +172,7 @@ export default function BookResource() {
         }
 
         .button {
-          background-color: #4CAF50;
+          background-color: var(--primary-color, #4CAF50);
           color: white;
           padding: 12px 24px;
           border: none;
@@ -184,7 +184,7 @@ export default function BookResource() {
           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047;
+          background-color: var(--primary-accent-dark, #43A047);
           transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
@@ -268,8 +268,8 @@ export default function BookResource() {
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .form-control:focus, .form-select:focus {
-          outline: none; border-color: #81c784;
-          box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+          outline: none; border-color: var(--primary-color, #81c784);
+          box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
         .btn-row {
@@ -284,9 +284,9 @@ export default function BookResource() {
           transition: all 0.3s ease;
           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .btn-save { background-color: #4CAF50; }
+        .btn-save { background-color: var(--primary-color, #4CAF50); }
         .btn-cancel { background-color: #6c757d; }
-        .btn-save:hover { background-color: #43A047; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+        .btn-save:hover { background-color: var(--primary-accent-dark, #43A047); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
         .btn-cancel:hover { background-color: #5a6268; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
 
         @media (max-width: 768px) {

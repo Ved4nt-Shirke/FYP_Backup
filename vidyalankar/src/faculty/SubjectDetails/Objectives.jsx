@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 export default function Objectives() {
-  const [ciannId, setCiannId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [ciannId, setCiannId] = useState(null);
 
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -20,26 +22,42 @@ export default function Objectives() {
   });
 
   useEffect(() => {
-    const id = getCurrentCiannId();
-    if (id) {
-      setCiannId(id);
-      fetchDetails(id);
-    } else {
-      setError('No CIANN selected');
-      setLoading(false);
-    }
+    loadData();
   }, []);
 
-  const fetchDetails = async (id) => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const data = await ciannSubjectDetailsApi.getDetails(id);
-      if (data?.objectives) {
-        setSubmittedData(data.objectives);
-        setFormData(data.objectives);
+      setError(null);
+
+      // Resolve CIANN Data
+      const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
+      if (!stored) {
+        setError("No active CIANN session found.");
+        return;
+      }
+
+      const ciannData = JSON.parse(stored);
+      if (!ciannData || !ciannData.ciannId) {
+        setError("Invalid CIANN session details.");
+        return;
+      }
+      setCiannId(ciannData.ciannId);
+
+      const res = await axios.get(config.ciannSubjectDetails.get(ciannData.ciannId));
+      if (res.data.success && res.data.details?.objectives) {
+        const obj = res.data.details.objectives;
+        const loadedObj = {
+          cognitive: obj.cognitive || "",
+          affective: obj.affective || "",
+          behavioral: obj.behavioral || ""
+        };
+        setSubmittedData(loadedObj);
+        setFormData(loadedObj);
       }
     } catch (err) {
-      setError(handleApiError(err, 'Failed to fetch objectives'));
+      console.error("Failed to load objectives:", err);
+      setError(err.response?.data?.error || "Failed to load course objectives.");
     } finally {
       setLoading(false);
     }
@@ -51,78 +69,75 @@ export default function Objectives() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!ciannId) return;
     try {
-      await ciannSubjectDetailsApi.updateDetails(ciannId, {
-        "objectives": formData
-      });
-      setSubmittedData(formData);
-      setShowForm(false);
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        objectives: formData
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setSubmittedData(formData);
+        setShowForm(false);
+      }
     } catch (err) {
-      alert(handleApiError(err, 'Failed to update objectives'));
+      console.error("Failed to save objectives:", err);
+      setError(err.response?.data?.error || "Failed to save objectives.");
+    } finally {
+      setSaving(false);
     }
   };
-
-  // ✅ Lock background scroll when modal is open
-  useEffect(() => {
-    if (showForm) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-    return () => (document.body.style.overflow = "auto");
-  }, [showForm]);
 
   return (
     <>
       <style>{`
-        /* Overall container and typography - Copied from KnowledgeMap */
-        .objectives-container { /* Changed class name for specificity */
-          padding: 30px; /* Increased padding */
-          font-family: 'Inter', sans-serif; /* Modern, clean font */
-          background-color: #f8f9fa; /* Light background */
+        .objectives-container {
+          padding: 30px;
+          font-family: 'Inter', sans-serif;
+          background-color: #f8f9fa;
           min-height: 100vh;
           margin-left: 0;
           width: 100%;
           box-sizing: border-box;
-          color: #333; /* Default text color */
+          color: #333;
         }
 
-        /* Header Row - Copied from KnowledgeMap */
         .header-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 30px; /* More space below header */
-          padding: 20px 25px; /* Increased padding */
+          margin-bottom: 30px;
+          padding: 20px 25px;
           background-color: #fff;
-          border-radius: 12px; /* Rounded corners */
-          box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Subtle shadow */
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
         .title {
           margin: 0;
-          font-weight: 700; /* Bolder title */
-          font-size: 2rem; /* Larger title */
-          color: #28a745; /* Green color for title */
+          font-weight: 700;
+          font-size: 2rem;
+          color: var(--primary-color, #28a745);
         }
 
-        /* Main Button - Copied from KnowledgeMap */
         .button {
-          background-color: #4CAF50; /* Apple-like green */
+          background-color: var(--primary-color, #4CAF50);
           color: white;
-          padding: 12px 24px; /* Generous padding */
+          padding: 12px 24px;
           border: none;
-          font-size: 16px; /* Slightly larger font */
-          font-weight: 600; /* Semi-bold */
-          border-radius: 10px; /* More rounded */
+          font-size: 16px;
+          font-weight: 600;
+          border-radius: 10px;
           cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* Prominent shadow */
+          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047; /* Darker green on hover */
-          transform: translateY(-2px); /* Lift effect */
+          background-color: var(--primary-accent-dark, #43A047);
+          transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
         .button:active {
@@ -130,44 +145,39 @@ export default function Objectives() {
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Table Styling - Copied from KnowledgeMap, with sticky header */
         table {
           width: 100%;
           border-collapse: collapse;
           margin-bottom: 20px;
           background: #fff;
-          border-radius: 12px; /* Rounded corners for the table */
-          overflow: hidden; /* Ensures rounded corners are visible */
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Subtle shadow */
-          table-layout: auto; /* Allow columns to auto-adjust */
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+          table-layout: auto;
         }
         th, td {
-          border: 1px solid #e0e0e0; /* Lighter borders */
-          padding: 12px 10px; /* Increased padding */
-          text-align: center;
-          vertical-align: middle; /* Vertically center content */
+          border: 1px solid #e0e0e0;
+          padding: 14px 12px;
+          text-align: left;
+          vertical-align: middle;
           font-size: 14px;
         }
         th {
-          background-color: #f0f2f5; /* Light grey-blue header background */
+          background-color: #f0f2f5;
           font-weight: 600;
           color: #495057;
-          position: sticky; /* Make the header sticky */
-          top: 0;          /* Stick to the top of its scroll container */
-          z-index: 10;     /* Ensure it stays above scrolling content */
         }
-        tbody tr:nth-child(even) { /* Subtle zebra striping */
+        tbody tr:nth-child(even) {
           background-color: #fdfdfd;
         }
-        tbody tr:hover { /* Hover effect for rows */
+        tbody tr:hover {
           background-color: #f5f5f5;
         }
 
-        /* Modal Styling - Copied from KnowledgeMap */
         .modal-overlay {
           position: fixed;
           top: 0; left: 0; width: 100%; height: 100%;
-          background-color: rgba(0, 0, 0, 0.7); /* Darker, more opaque backdrop */
+          background-color: rgba(0, 0, 0, 0.7);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -175,123 +185,103 @@ export default function Objectives() {
         }
         .modal-box {
           background: white;
-          border-radius: 16px; /* More rounded corners */
+          border-radius: 16px;
           width: 90%;
-          max-width: 700px; /* Adjusted max-width for the form */
+          max-width: 700px;
           animation: fadeIn 0.3s ease-in-out;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); /* Deeper shadow */
-          overflow: hidden; /* Ensures rounded corners are respected */
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+          overflow: hidden;
         }
         @keyframes fadeIn {
           from { opacity: 0; transform: scale(0.95); }
           to { opacity: 1; transform: scale(1); }
         }
         .modal-header {
-          background: #fff; /* Match modal box background */
-          color: #333; /* Dark text for header */
-          padding: 15px 25px; /* Adjusted padding */
+          background: #fff;
+          color: #333;
+          padding: 15px 25px;
           font-size: 20px;
           font-weight: 600;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 1px solid #eee; /* Subtle separator */
+          border-bottom: 1px solid #eee;
         }
         .modal-header button {
           background: none;
           border: none;
-          color: #999; /* Muted close button color */
-          font-size: 28px; /* Larger close button */
+          color: #999;
+          font-size: 28px;
           cursor: pointer;
           transition: transform 0.2s ease, color 0.2s ease;
         }
         .modal-header button:hover {
-          color: #dc3545; /* Red on hover */
+          color: #dc3545;
           transform: rotate(90deg);
         }
         .modal-body {
-          padding: 25px; /* Increased padding */
+          padding: 25px;
           max-height: 70vh;
           overflow-y: auto;
         }
 
-        /* Form Controls - Adapted for textareas */
         .form-control {
           width: 100%;
-          padding: 10px 12px; /* Adjusted padding */
-          margin-bottom: 15px; /* More space between inputs */
-          border: 1px solid #ddd; /* Lighter border */
-          border-radius: 8px; /* More rounded */
+          padding: 10px 12px;
+          margin-bottom: 15px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
           font-size: 15px;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.06); /* Subtle inner shadow */
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .form-control:focus {
           outline: none;
-          border-color: #81c784; /* Green focus border */
-          box-shadow: 0 0 0 3px rgba(76,175,80,0.2); /* Green glow */
-        }
-        .form-control::placeholder {
-          color: #aaa;
+          border-color: var(--primary-color, #81c784);
+          box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
-        /* Button Row in Modal - Copied from KnowledgeMap */
         .btn-row {
           display: flex;
           justify-content: flex-end;
-          gap: 15px; /* More space between buttons */
-          padding: 15px 25px; /* Adjusted padding */
-          background: #f8f9fa; /* Light background for button row */
-          border-top: 1px solid #eee; /* Separator */
+          gap: 15px;
+          padding: 15px 25px;
+          background: #f8f9fa;
+          border-top: 1px solid #eee;
         }
         .btn-save {
-          margin-right: 465px; 
-          background-color: #198754;
+          background-color: var(--primary-color, #198754);
           color: white;
-          padding: 8px 20px;
+          padding: 10px 25px;
           border: none;
           font-weight: 600;
-          border-radius: 6px;
+          border-radius: 8px;
           cursor: pointer;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .btn-save:hover {
-          background-color: #43A047;
-          transform: translateY(-1px);
-          box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+          background-color: var(--primary-accent-dark, #43A047);
         }
         .btn-cancel {
-          background-color: #dc3545; /* Muted grey */
+          background-color: #dc3545;
           color: white;
           border: none;
-          padding: 10px 20px; /* Adjusted padding */
+          padding: 10px 20px;
           border-radius: 8px;
           cursor: pointer;
           font-size: 15px;
           font-weight: 600;
-          transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          transition: background-color 0.3s ease;
         }
         .btn-cancel:hover {
-          background-color: #d5d5d5;
-          transform: translateY(-1px);
-          box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-        }
-
-        /* Responsive adjustments - Copied from KnowledgeMap */
-        @media (max-width: 1200px) {
-          .objectives-container {
-            margin-left: 0;
-            width: 100%;
-          }
+          background-color: #bb2d3b;
         }
 
         @media (max-width: 768px) {
           .objectives-container {
             padding: 15px;
-            margin-left: 0;
-            width: 100%;
           }
           .header-row {
             flex-direction: column;
@@ -305,74 +295,19 @@ export default function Objectives() {
           .button {
             width: 100%;
             text-align: center;
-            padding: 10px 20px;
-          }
-          th, td {
-            font-size: 13px;
-            padding: 10px 8px;
           }
           .modal-box {
-            padding: 20px;
             width: 95%;
-          }
-          .modal-header {
-            font-size: 18px;
-            padding: 12px 20px;
-          }
-          .modal-header button {
-            font-size: 24px;
           }
           .modal-body {
             padding: 20px;
-          }
-          .form-control {
-            padding: 8px 10px;
-            font-size: 14px;
-            margin-bottom: 10px;
           }
           .btn-row {
             flex-direction: column;
-            align-items: center;
             gap: 10px;
-            padding: 15px;
           }
           .btn-save, .btn-cancel {
             width: 100%;
-            padding: 10px 15px;
-            font-size: 14px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .objectives-container {
-            padding: 10px;
-          }
-          .header-row {
-            padding: 10px;
-          }
-          .title {
-            font-size: 1.5rem;
-          }
-          .instruction {
-            font-size: 13px;
-          }
-          th, td {
-            font-size: 12px;
-            padding: 8px 6px;
-          }
-          .modal-body {
-            padding: 15px;
-          }
-          .modal-header {
-            font-size: 16px;
-            padding: 10px 15px;
-          }
-          .modal-header button {
-            font-size: 22px;
-          }
-          .form-control {
-            padding: 6px 8px;
-            font-size: 13px;
           }
         }
       `}</style>
@@ -380,86 +315,115 @@ export default function Objectives() {
       <div className="objectives-container mb-5">
         <div className="header-row">
           <h2 className="title">3.4 Objectives of the Course</h2>
-          <button className="button" onClick={() => setShowForm(true)}>
+          <button 
+            className="button" 
+            disabled={loading}
+            onClick={() => {
+              setFormData(submittedData);
+              setShowForm(true);
+            }}
+          >
             {submittedData.cognitive || submittedData.affective || submittedData.behavioral ? 'Edit Course Objectives' : 'Add Course Objectives'}
           </button>
         </div>
 
-        {/* Added a scrollable container for the table */}
-        <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
-          <table>
-            <thead>
-              {/* Added a dummy header row for sticky functionality, as your table body has no <th> */}
-              <tr>
-                <th>Category</th>
-                <th>Description</th>
-                <th>Objective</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Cognitive</strong></td>
-                <td>What do you want students to Know?</td>
-                <td>{submittedData.cognitive || "-"}</td>
-              </tr>
-              <tr>
-                <td><strong>Affective</strong></td>
-                <td>What do you want students to think/care about?</td>
-                <td>{submittedData.affective || "-"}</td>
-              </tr>
-              <tr>
-                <td><strong>Behavioral</strong></td>
-                <td>What do you want students to be able to do?</td>
-                <td>{submittedData.behavioral || "-"}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        {error && (
+          <div className="alert alert-danger" style={{ 
+            backgroundColor: '#f8d7da', 
+            color: '#721c24', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Loading course objectives...
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
+            <table>
+              <thead>
+                <tr>
+                  <th style={{ width: '20%' }}>Category</th>
+                  <th style={{ width: '40%' }}>Description</th>
+                  <th>Objective</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Cognitive</strong></td>
+                  <td>What do you want students to Know?</td>
+                  <td>{submittedData.cognitive || "-"}</td>
+                </tr>
+                <tr>
+                  <td><strong>Affective</strong></td>
+                  <td>What do you want students to think/care about?</td>
+                  <td>{submittedData.affective || "-"}</td>
+                </tr>
+                <tr>
+                  <td><strong>Behavioral</strong></td>
+                  <td>What do you want students to be able to do?</td>
+                  <td>{submittedData.behavioral || "-"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {showForm && (
           <div className="modal-overlay">
             <div className="modal-box">
               <div className="modal-header">
-                Add Course Objectives
+                <span>Add Course Objectives</span>
                 <button className="close-btn" onClick={() => setShowForm(false)}>
                   &times;
                 </button>
               </div>
               <form onSubmit={handleSubmit}>
-                <textarea // Changed to textarea for potentially longer inputs
-                  className="form-control"
-                  placeholder="Cognitive (What do you want students to Know?)"
-                  name="cognitive"
-                  value={formData.cognitive}
-                  onChange={handleChange}
-                  rows="3" // Added rows for better textarea sizing
-                  required
-                />
-                <textarea // Changed to textarea
-                  className="form-control"
-                  placeholder="Affective (What do you want students to think/care about?)"
-                  name="affective"
-                  value={formData.affective}
-                  onChange={handleChange}
-                  rows="3"
-                  required
-                />
-                <textarea // Changed to textarea
-                  className="form-control"
-                  placeholder="Behavioral (What do you want students to be able to do?)"
-                  name="behavioral"
-                  value={formData.behavioral}
-                  onChange={handleChange}
-                  rows="3"
-                  required
-                />
+                <div className="modal-body">
+                  <label style={{ fontWeight: '600', marginBottom: '6px', display: 'block' }}>Cognitive Objective</label>
+                  <textarea
+                    className="form-control"
+                    placeholder="Cognitive (What do you want students to Know?)"
+                    name="cognitive"
+                    value={formData.cognitive}
+                    onChange={handleChange}
+                    rows="3"
+                    required
+                  />
+                  <label style={{ fontWeight: '600', marginBottom: '6px', display: 'block' }}>Affective Objective</label>
+                  <textarea
+                    className="form-control"
+                    placeholder="Affective (What do you want students to think/care about?)"
+                    name="affective"
+                    value={formData.affective}
+                    onChange={handleChange}
+                    rows="3"
+                    required
+                  />
+                  <label style={{ fontWeight: '600', marginBottom: '6px', display: 'block' }}>Behavioral Objective</label>
+                  <textarea
+                    className="form-control"
+                    placeholder="Behavioral (What do you want students to be able to do?)"
+                    name="behavioral"
+                    value={formData.behavioral}
+                    onChange={handleChange}
+                    rows="3"
+                    required
+                  />
+                </div>
 
                 <div className="btn-row">
-                  <button type="submit" className="btn-save">
-                    Submit
-                  </button>
-                  <button type="button" className="btn-cancel" onClick={() => setShowForm(false)}>
+                  <button type="button" className="btn-cancel" onClick={() => setShowForm(false)} disabled={saving}>
                     Cancel
+                  </button>
+                  <button type="submit" className="btn-save" disabled={saving}>
+                    {saving ? "Saving..." : "Submit"}
                   </button>
                 </div>
               </form>

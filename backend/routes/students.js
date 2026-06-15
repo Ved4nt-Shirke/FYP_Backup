@@ -52,7 +52,7 @@ router.get("/", async (req, res) => {
       .populate("courseId", "name semester class")
       .populate("divisionId", "name")
       .select(
-        "rollNo studentName enrollmentNo batch academicYear division departmentId courseId divisionId",
+        "rollNo studentName enrollmentNo batch academicYear division departmentId courseId divisionId seatNo plainPassword",
       )
       .lean()
       .exec();
@@ -87,6 +87,120 @@ router.get("/divisions", async (req, res) => {
   } catch (err) {
     console.error("Error fetching divisions:", err);
     res.status(500).json({ message: err.message });
+  }
+});
+
+// POST create a single student
+router.post("/", authenticate, authorizeOffice, async (req, res) => {
+  try {
+    const {
+      rollNo,
+      enrollmentNo,
+      studentName,
+      batch,
+      academicYear,
+      division,
+      aadhaarNo,
+      departmentId,
+      courseId,
+      divisionId,
+    } = req.body;
+
+    if (
+      !studentName?.trim() ||
+      !rollNo?.trim() ||
+      !enrollmentNo?.trim() ||
+      !batch?.trim() ||
+      !departmentId ||
+      !courseId ||
+      !divisionId
+    ) {
+      return res.status(400).json({
+        message: "Required fields (Name, Roll No, Enrollment No, Batch, Department, Course, Division) missing",
+      });
+    }
+
+    // Check if student already exists in this class (same department, course, and division)
+    const existingStudent = await Student.findOne({
+      departmentId,
+      courseId,
+      divisionId,
+      $or: [{ rollNo }, { enrollmentNo }],
+    });
+
+    if (existingStudent) {
+      return res.status(400).json({
+        message: "Student with this roll number or enrollment number already exists in this class",
+      });
+    }
+
+    // Generate/reuse credentials (keep stable by username)
+    const username = enrollmentNo.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const existingUser = await User.findOne({ username });
+    let plainPassword = "";
+    let hashedPassword = "";
+
+    if (existingUser) {
+      if (existingUser.role !== "student") {
+        return res.status(400).json({
+          message: "Username already exists for a non-student account",
+        });
+      }
+
+      // Reuse credentials
+      const existingCredentialStudent = await Student.findOne({
+        username,
+        plainPassword: { $exists: true, $ne: "" },
+      }).sort({ updatedAt: -1, createdAt: -1 });
+
+      if (existingCredentialStudent?.plainPassword) {
+        plainPassword = existingCredentialStudent.plainPassword;
+      } else {
+        plainPassword = Math.random().toString(36).slice(-8);
+        hashedPassword = await bcrypt.hash(plainPassword, 10);
+        existingUser.password = hashedPassword;
+        await existingUser.save();
+      }
+    } else {
+      plainPassword = Math.random().toString(36).slice(-8);
+      hashedPassword = await bcrypt.hash(plainPassword, 10);
+    }
+
+    // Create student record
+    const newStudent = new Student({
+      rollNo,
+      enrollmentNo,
+      studentName,
+      batch,
+      academicYear: (academicYear || "").toString().trim(),
+      division: division || "",
+      departmentId,
+      courseId,
+      divisionId,
+      username,
+      plainPassword,
+      passwordGeneratedAt: new Date(),
+      aadhaarNo: (aadhaarNo || "").toString().trim(),
+      seatNo: "", // Explicitly set empty seatNo on creation
+    });
+
+    await newStudent.save();
+
+    // Create user account for student (if not existing)
+    if (!existingUser) {
+      const newUser = new User({
+        username,
+        password: hashedPassword,
+        college: req.user.college || "VP",
+        role: "student",
+      });
+      await newUser.save();
+    }
+
+    res.status(201).json({ success: true, student: newStudent });
+  } catch (error) {
+    console.error("Create student error:", error);
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -167,7 +281,31 @@ router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
 // PUT update student
 router.put("/:id", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const { rollNo, enrollmentNo, studentName, batch, academicYear, division, aadhaarNo } = req.body;
+    const { rollNo, enrollmentNo, studentName, batch, academicYear, division, aadhaarNo, seatNo } = req.body;
+
+    const currentStudent = await Student.findById(req.params.id);
+    if (!currentStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const deptId = currentStudent.departmentId;
+    const crsId = currentStudent.courseId;
+    const divId = currentStudent.divisionId;
+
+    // Check if another student has the same rollNo or enrollmentNo in the same class
+    const duplicate = await Student.findOne({
+      _id: { $ne: req.params.id },
+      departmentId: deptId,
+      courseId: crsId,
+      divisionId: divId,
+      $or: [{ rollNo }, { enrollmentNo }],
+    });
+
+    if (duplicate) {
+      return res.status(400).json({
+        message: "Another student with this roll number or enrollment number already exists in this class",
+      });
+    }
 
     const updatedStudent = await Student.findByIdAndUpdate(
       req.params.id,
@@ -179,13 +317,10 @@ router.put("/:id", authenticate, authorizeOffice, async (req, res) => {
         academicYear: (academicYear || "").toString().trim(),
         division: division || "",
         aadhaarNo: (aadhaarNo || "").toString().trim(),
+        seatNo: (seatNo || "").toString().trim(),
       },
       { new: true },
     );
-
-    if (!updatedStudent) {
-      return res.status(404).json({ message: "Student not found" });
-    }
 
     res.json({ student: updatedStudent });
   } catch (error) {

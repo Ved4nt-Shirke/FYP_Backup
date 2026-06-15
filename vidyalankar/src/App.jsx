@@ -188,15 +188,20 @@ import FATHK5CiannCards from "./pages/msbte/FATHK5CiannCards";
 import FATHK5Print from "./pages/msbte/FATHK5Print";
 import AttendanceReport from "./pages/msbte/AttendanceReport";
 import IndustrialVisitK8 from "./pages/msbte/IndustrialVisitK8";
-import IndustrialVisitK8Edit from "./pages/msbte/IndustrialVisitK8Edit";
 import IndustrialVisitK8Generate from "./pages/msbte/IndustrialVisitK8Generate";
+import IndustrialVisitK8Edit from "./pages/msbte/IndustrialVisitK8Edit";
 import IndustrialVisitK8Print from "./pages/msbte/IndustrialVisitK8Print";
 import ExpertLectureK9 from "./pages/msbte/ExpertLectureK9";
-import ExpertLectureK9Edit from "./pages/msbte/ExpertLectureK9Edit";
 import ExpertLectureK9Generate from "./pages/msbte/ExpertLectureK9Generate";
+import ExpertLectureK9Edit from "./pages/msbte/ExpertLectureK9Edit";
 import ExpertLectureK9Print from "./pages/msbte/ExpertLectureK9Print";
 import TermAnalysisK7 from "./pages/msbte/TermAnalysisK7";
 import TermAnalysisK7Print from "./pages/msbte/TermAnalysisK7Print";
+import K7CiannSelection from "./pages/msbte/K7CiannSelection";
+import K7Generate from "./pages/msbte/K7Generate";
+import K7Print from "./pages/msbte/K7Print";
+import K7Placeholder from "./pages/msbte/K7Placeholder";
+import K7ReportSelector from "./pages/msbte/K7ReportSelector";
 import StudentTimetableManager from "./pages/faculty/StudentTimetableManager";
 import FacultyStudyMaterialManager from "./pages/faculty/FacultyStudyMaterialManager";
 import MockExamDashboard from "./pages/faculty/MockExamDashboard";
@@ -861,15 +866,21 @@ const AppContent = () => {
             <Route path="/msbte/sa-pr-k4/print" element={<SAPRK4Print />} />
             <Route path="/msbte/attendance" element={<AttendanceReport />} />
             <Route path="/msbte/industrial-visit/k8" element={<IndustrialVisitK8 />} />
-            <Route path="/msbte/industrial-visit/k8/edit" element={<IndustrialVisitK8Edit />} />
             <Route path="/msbte/industrial-visit/k8/generate" element={<IndustrialVisitK8Generate />} />
+            <Route path="/msbte/industrial-visit/k8/edit" element={<IndustrialVisitK8Edit />} />
             <Route path="/msbte/industrial-visit/k8/print" element={<IndustrialVisitK8Print />} />
             <Route path="/msbte/expert-lecture/k9" element={<ExpertLectureK9 />} />
-            <Route path="/msbte/expert-lecture/k9/edit" element={<ExpertLectureK9Edit />} />
             <Route path="/msbte/expert-lecture/k9/generate" element={<ExpertLectureK9Generate />} />
+            <Route path="/msbte/expert-lecture/k9/edit" element={<ExpertLectureK9Edit />} />
             <Route path="/msbte/expert-lecture/k9/print" element={<ExpertLectureK9Print />} />
             <Route path="/msbte/term-analysis" element={<TermAnalysisK7 />} />
             <Route path="/msbte/term-analysis/print" element={<TermAnalysisK7Print />} />
+            {/* K7 Routes */}
+            <Route path="/msbte/k7/cianns" element={<K7CiannSelection />} />
+            <Route path="/msbte/k7/generate" element={<K7Generate />} />
+            <Route path="/msbte/k7/print" element={<K7Print />} />
+            <Route path="/msbte/k7/report-selector" element={<K7ReportSelector />} />
+            <Route path="/msbte/k7/placeholder/:partName" element={<K7Placeholder />} />
             {/* Admin/Panel Routes */}
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/admin-panel" element={<AdminPanel />} />

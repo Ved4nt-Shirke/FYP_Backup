@@ -1,15 +1,58 @@
-import { useState, useEffect } from "react";
-import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
+import React, { useState, useEffect } from "react";
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 export default function OtherContributionsSection() {
-  const [ciannId, setCiannId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [ciannId, setCiannId] = useState(null);
 
   const [showContribForm, setShowContribForm] = useState(false);
   const [contribText, setContribText] = useState('');
   const [submittedContrib, setSubmittedContrib] = useState('');
   const [contribBtn, setContribBtn] = useState('Add/Edit');
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
+      if (!stored) {
+        setError("No active CIANN session found.");
+        return;
+      }
+
+      const ciannData = JSON.parse(stored);
+      if (!ciannData || !ciannData.ciannId) {
+        setError("Invalid CIANN session details.");
+        return;
+      }
+      setCiannId(ciannData.ciannId);
+
+      const res = await axios.get(config.ciannSubjectDetails.get(ciannData.ciannId));
+      if (res.data.success && typeof res.data.details?.otherContributionsSection === 'string') {
+        const text = res.data.details.otherContributionsSection;
+        setSubmittedContrib(text);
+        setContribText(text);
+        setContribBtn('Edit');
+      } else {
+        setSubmittedContrib('');
+        setContribText('');
+        setContribBtn('Add/Edit');
+      }
+    } catch (err) {
+      console.error("Failed to load other contributions:", err);
+      setError(err.response?.data?.error || "Failed to load other contributions.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Effect to prevent body scroll when modal is open
   useEffect(() => {
@@ -21,45 +64,27 @@ export default function OtherContributionsSection() {
     return () => (document.body.style.overflow = 'auto');
   }, [showContribForm]);
 
-  useEffect(() => {
-    const id = getCurrentCiannId();
-    if (id) {
-      setCiannId(id);
-      fetchDetails(id);
-    } else {
-      setError('No CIANN selected');
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchDetails = async (id) => {
+  const handleSubmit = async () => {
     try {
-      setLoading(true);
-      const data = await ciannSubjectDetailsApi.getDetails(id);
-      if (data?.otherContributionsSection) {
-        const text = data.otherContributionsSection || '';
-        setSubmittedContrib(text);
-        setContribText(text);
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        otherContributionsSection: contribText
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setSubmittedContrib(contribText);
         setContribBtn('Edit');
+        setShowContribForm(false);
       }
     } catch (err) {
-      setError(handleApiError(err, 'Failed to fetch Other Contributions data'));
+      console.error("Failed to save other contributions:", err);
+      setError(err.response?.data?.error || "Failed to save details.");
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!ciannId) return;
-    try {
-      await ciannSubjectDetailsApi.updateDetails(ciannId, {
-        "otherContributionsSection": contribText
-      });
-      setSubmittedContrib(contribText);
-      setContribBtn('Edit');
-      setShowContribForm(false);
-    } catch (err) {
-      alert(handleApiError(err, 'Failed to update Other Contributions'));
+      setSaving(false);
     }
   };
 
@@ -73,7 +98,6 @@ export default function OtherContributionsSection() {
           color: #333;
           padding: 25px;
           border-radius: 12px;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
         .header-row {
@@ -85,7 +109,7 @@ export default function OtherContributionsSection() {
 
         .title-container .title {
           margin: 0 0 5px 0; font-weight: 700;
-          font-size: 1.7rem; color: #28a745;
+          font-size: 1.7rem; color: var(--primary-color, #28a745);
         }
 
         .title-container .subtitle {
@@ -94,14 +118,14 @@ export default function OtherContributionsSection() {
         }
 
         .button {
-          background-color: #4CAF50; color: white;
+          background-color: var(--primary-color, #4CAF50); color: white;
           padding: 12px 24px; border: none; font-size: 16px;
           font-weight: 600; border-radius: 10px; cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047; transform: translateY(-2px);
+          background-color: var(--primary-accent-dark, #43A047); transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
         
@@ -168,8 +192,8 @@ export default function OtherContributionsSection() {
            min-height: 120px;
         }
         .form-control:focus {
-           outline: none; border-color: #81c784;
-           box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+           outline: none; border-color: var(--primary-color, #81c784);
+           box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
         /* --- Modal Button Row Styles --- */
@@ -183,8 +207,10 @@ export default function OtherContributionsSection() {
           border-radius: 8px; cursor: pointer; font-size: 15px;
           font-weight: 600; transition: all 0.3s ease;
         }
-        .btn-save { background-color: #4CAF50; }
+        .btn-save { background-color: var(--primary-color, #4CAF50); }
         .btn-cancel { background-color: #6c757d; }
+        .btn-save:hover { background-color: var(--primary-accent-dark, #43A047); }
+        .btn-cancel:hover { background-color: #5a6268; }
         
         @media (max-width: 768px) {
           .header-row { flex-direction: column; align-items: flex-start; gap: 15px; }
@@ -193,23 +219,42 @@ export default function OtherContributionsSection() {
         }
       `}</style>
       
-      <div >
+      <div className="other-contributions-container">
+        {error && (
+          <div style={{ 
+            backgroundColor: '#f8d7da', 
+            color: '#721c24', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
+
         <div className="header-row">
           <div className="title-container">
             <h2 className="title">Other Contributions</h2>
             <p className="subtitle">3.13.8 Any other recommendations or contributions</p>
           </div>
-          <button className="button" onClick={() => setShowContribForm(true)}>{contribBtn}</button>
+          <button className="button" disabled={loading} onClick={() => setShowContribForm(true)}>{contribBtn}</button>
         </div>
 
-        <div className="contribution-display">
-          {submittedContrib ? submittedContrib : (
-            <span className="contribution-display-placeholder">No contributions added yet.</span>
-          )}
-        </div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Loading other contributions...
+          </div>
+        ) : (
+          <div className="contribution-display">
+            {submittedContrib ? submittedContrib : (
+              <span className="contribution-display-placeholder">No contributions added yet.</span>
+            )}
+          </div>
+        )}
 
         {showContribForm && (
-          <div className="modal-overlay">
+          <div className="modal-overlay" onClick={() => setShowContribForm(false)}>
             <div className="modal-box" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <span>Edit Recommendations / Contributions</span>
@@ -228,8 +273,10 @@ export default function OtherContributionsSection() {
                 </div>
               </div>
               <div className="btn-row">
-                <button type="button" className="btn-cancel" onClick={() => setShowContribForm(false)}>Cancel</button>
-                <button type="button" className="btn-save" onClick={handleSubmit}>Submit</button>
+                <button type="button" className="btn-cancel" onClick={() => setShowContribForm(false)} disabled={saving}>Cancel</button>
+                <button type="button" className="btn-save" onClick={handleSubmit} disabled={saving}>
+                  {saving ? "Submitting..." : "Submit"}
+                </button>
               </div>
             </div>
           </div>

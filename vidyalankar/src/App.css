@@ -199,9 +199,16 @@ body {
 
 /* Office page specific styles */
 .office-page .main-content-wrapper {
-  /* margin-top: 70px; Account for fixed office header height */
   padding-top: 0;
-  margin-top: 0px;
+  margin-top: 56px;
+}
+
+@media (min-width: 769px) {
+  .office-page .main-content-wrapper {
+    margin-left: 280px !important;
+    width: calc(100% - 280px) !important;
+    box-sizing: border-box;
+  }
 }
 
 .office-page .scrollable-content {

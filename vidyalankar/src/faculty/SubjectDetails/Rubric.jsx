@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 export default function Rubric() {
-  const [ciannId, setCiannId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [ciannId, setCiannId] = useState(null);
 
   const [showRubric, setShowRubric] = useState(false);
   const [submittedRubricData, setSubmittedRubricData] = useState(null);
@@ -19,26 +21,46 @@ export default function Rubric() {
   });
 
   useEffect(() => {
-    const id = getCurrentCiannId();
-    if (id) {
-      setCiannId(id);
-      fetchDetails(id);
-    } else {
-      setError('No CIANN selected');
-      setLoading(false);
-    }
+    loadData();
   }, []);
 
-  const fetchDetails = async (id) => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const data = await ciannSubjectDetailsApi.getDetails(id);
-      if (data?.rubric) {
-        setSubmittedRubricData(data.rubric);
-        setRubricFormData(data.rubric);
+      setError(null);
+
+      // Resolve CIANN Data
+      const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
+      if (!stored) {
+        setError("No active CIANN session found.");
+        return;
+      }
+
+      const ciannData = JSON.parse(stored);
+      if (!ciannData || !ciannData.ciannId) {
+        setError("Invalid CIANN session details.");
+        return;
+      }
+      setCiannId(ciannData.ciannId);
+
+      const res = await axios.get(config.ciannSubjectDetails.get(ciannData.ciannId));
+      if (res.data.success && res.data.details?.rubric) {
+        const rub = res.data.details.rubric;
+        const loadedRub = {
+          attendance: rub.attendance || "",
+          assignments: rub.assignments || "",
+          performance: rub.performance || "",
+          journal: rub.journal || "",
+          tests: rub.tests || "",
+          other: rub.other || "",
+          total: rub.total || ""
+        };
+        setSubmittedRubricData(loadedRub);
+        setRubricFormData(loadedRub);
       }
     } catch (err) {
-      setError(handleApiError(err, 'Failed to fetch rubric'));
+      console.error("Failed to load rubric details:", err);
+      setError(err.response?.data?.error || "Failed to load rubric.");
     } finally {
       setLoading(false);
     }
@@ -50,15 +72,25 @@ export default function Rubric() {
   };
 
   const handleRubricSubmit = async () => {
-    if (!ciannId) return;
     try {
-      await ciannSubjectDetailsApi.updateDetails(ciannId, {
-        "rubric": rubricFormData
-      });
-      setSubmittedRubricData(rubricFormData);
-      setShowRubric(false);
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        rubric: rubricFormData
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setSubmittedRubricData(rubricFormData);
+        setShowRubric(false);
+      }
     } catch (err) {
-      alert(handleApiError(err, 'Failed to update rubric'));
+      console.error("Failed to save rubric:", err);
+      setError(err.response?.data?.error || "Failed to save rubric.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -67,8 +99,7 @@ export default function Rubric() {
   return (
     <>
       <style>{`
-        /* Overall container and typography - Consistent with other components */
-        .rubric-container { /* Renamed for consistency */
+        .rubric-container {
           padding: 30px;
           font-family: 'Inter', sans-serif;
           background-color: #f8f9fa;
@@ -79,7 +110,6 @@ export default function Rubric() {
           color: #333;
         }
 
-        /* Header Row - Consistent with other components */
         .header-row {
           display: flex;
           justify-content: space-between;
@@ -91,18 +121,15 @@ export default function Rubric() {
           box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
-        /* Title - Consistent with other components */
         .title {
           margin: 0;
           font-weight: 700;
           font-size: 2rem;
-          color: #28a745;
-          padding-left: 0; /* Ensure no extra padding */
+          color: var(--primary-color, #28a745);
         }
 
-        /* Main Button - Consistent with other components */
         .button {
-          background-color: #4CAF50;
+          background-color: var(--primary-color, #4CAF50);
           color: white;
           padding: 12px 24px;
           border: none;
@@ -112,20 +139,13 @@ export default function Rubric() {
           cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-          float: none; /* Remove float */
-          margin-bottom: 0; /* Remove specific margin */
         }
         .button:hover {
-          background-color: #43A047;
+          background-color: var(--primary-accent-dark, #43A047);
           transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
-        .button:active {
-          transform: translateY(0);
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
 
-        /* Table Styling - Consistent with other components */
         table {
           width: 100%;
           border-collapse: collapse;
@@ -134,23 +154,20 @@ export default function Rubric() {
           border-radius: 12px;
           overflow: hidden;
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-          table-layout: fixed; /* Fixed table layout for consistent column widths */
+          table-layout: fixed;
         }
         table th, table td {
           border: 1px solid #e0e0e0;
-          padding: 10px 8px; /* Adjusted padding */
+          padding: 12px 10px;
           text-align: center;
           vertical-align: middle;
-          font-size: 13px; /* Adjusted font size */
-          word-wrap: break-word; /* Allow long words to break */
+          font-size: 13px;
+          word-wrap: break-word;
         }
         table th {
           background-color: #f0f2f5;
           font-weight: 600;
           color: #495057;
-          position: sticky; /* Make the header sticky */
-          top: 0;          /* Stick to the top of its scroll container */
-          z-index: 10;     /* Ensure it stays above scrolling content */
         }
         table tbody tr:nth-child(even) {
           background-color: #fdfdfd;
@@ -159,7 +176,6 @@ export default function Rubric() {
           background-color: #f5f5f5;
         }
 
-        /* Modal Styling - Consistent with other components */
         .modal-backdrop {
           position: fixed;
           top: 0; left: 0; width: 100%; height: 100%;
@@ -173,13 +189,12 @@ export default function Rubric() {
           background: white;
           border-radius: 16px;
           width: 90%;
-          max-width: 700px;
+          max-width: 800px;
           animation: fadeIn 0.3s ease-in-out;
           display: flex;
           flex-direction: column;
           box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
           overflow: hidden;
-          padding: 0;
         }
         @keyframes fadeIn {
           from { opacity: 0; transform: scale(0.95); }
@@ -214,7 +229,6 @@ export default function Rubric() {
           overflow-y: auto;
         }
 
-        /* Form Controls - Consistent with other components */
         .form-control {
           width: 100%;
           padding: 10px 12px;
@@ -227,22 +241,10 @@ export default function Rubric() {
         }
         .form-control:focus {
           outline: none;
-          border-color: #81c784;
-          box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
-        }
-        .form-control::placeholder {
-          color: #aaa;
+          border-color: var(--primary-color, #81c784);
+          box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
-        /* Main Heading for Rubric Table */
-        .rubric-heading {
-          font-size: 1.8rem;
-          font-weight: 700;
-          margin: 25px 0 15px;
-          color: #333;
-        }
-
-        /* Button Row in Modal - Consistent with other components */
         .btn-row {
           display: flex;
           justify-content: flex-end;
@@ -253,8 +255,7 @@ export default function Rubric() {
           margin-top: 25px;
         }
         .btn-save {
-          margin-right: 410px;
-          background-color: #4CAF50;
+          background-color: var(--primary-color, #4CAF50);
           color: white;
           border: none;
           padding: 10px 20px;
@@ -263,15 +264,12 @@ export default function Rubric() {
           font-size: 15px;
           font-weight: 600;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .btn-save:hover {
-          background-color: #43A047;
-          transform: translateY(-1px);
-          box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+          background-color: var(--primary-accent-dark, #43A047);
         }
         .btn-cancel {
-          background-color: #d22e2eff;
+          background-color: #dc3545;
           color: white;
           border: none;
           padding: 10px 20px;
@@ -279,44 +277,23 @@ export default function Rubric() {
           cursor: pointer;
           font-size: 15px;
           font-weight: 600;
-          transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          transition: background-color 0.3s ease;
         }
         .btn-cancel:hover {
-          background-color: #ab8686ff;
-          transform: translateY(-1px);
-          box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+          background-color: #bb2d3b;
         }
 
-        /* Table specific styles for the modal form table */
         .modal-rubric-table {
-            table-layout: fixed; /* Ensure fixed layout for modal table */
-            width: 100%;
+          width: 100%;
         }
         .modal-rubric-table th, .modal-rubric-table td {
-            font-size: 13px;
-            padding: 8px;
-        }
-        .modal-rubric-table input[type="text"] {
-            padding: 6px;
-            font-size: 13px;
-            min-width: 0;
-        }
-
-
-        /* Responsive adjustments - Consistent with other components */
-        @media (max-width: 1200px) {
-          .rubric-container {
-            margin-left: 0;
-            width: 100%;
-          }
+          font-size: 13px;
+          padding: 8px;
         }
 
         @media (max-width: 768px) {
           .rubric-container {
             padding: 15px;
-            margin-left: 0;
-            width: 100%;
           }
           .header-row {
             flex-direction: column;
@@ -330,95 +307,19 @@ export default function Rubric() {
           .button {
             width: 100%;
             text-align: center;
-            padding: 10px 20px;
-          }
-          th, td {
-            font-size: 13px;
-            padding: 10px 8px;
           }
           .modal-box {
-            padding: 0;
             width: 95%;
-          }
-          .modal-header {
-            font-size: 18px;
-            padding: 12px 20px;
-          }
-          .close-btn {
-            font-size: 24px;
           }
           .modal-body-content {
             padding: 20px;
           }
-          .form-control {
-            padding: 8px 10px;
-            font-size: 14px;
-            margin-bottom: 10px;
-          }
           .btn-row {
             flex-direction: column;
-            align-items: center;
             gap: 10px;
-            padding: 15px;
           }
           .btn-save, .btn-cancel {
             width: 100%;
-            padding: 10px 15px;
-            font-size: 14px;
-          }
-          .rubric-heading {
-            font-size: 1.5rem;
-          }
-          /* Specific adjustments for modal table on smaller screens */
-          .modal-rubric-table th, .modal-rubric-table td {
-            font-size: 12px;
-            padding: 6px;
-          }
-          .modal-rubric-table input[type="text"] {
-            font-size: 12px;
-            padding: 4px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .rubric-container {
-            padding: 10px;
-          }
-          .header-row {
-            padding: 10px;
-          }
-          .title {
-            font-size: 1.5rem;
-          }
-          th, td {
-            font-size: 12px;
-            padding: 8px 6px;
-          }
-          .modal-body-content {
-            padding: 15px;
-          }
-          .modal-header {
-            font-size: 16px;
-            padding: 10px 15px;
-          }
-          .close-btn {
-            font-size: 22px;
-          }
-          .form-control {
-            padding: 6px 8px;
-            font-size: 13px;
-          }
-          .rubric-heading {
-            font-size: 1.3rem;
-          }
-          /* Further specific adjustments for modal table on very small screens */
-          .modal-rubric-table th, .modal-rubric-table td {
-            font-size: 10px;
-            padding: 4px;
-          }
-          .modal-rubric-table input[type="text"] {
-            font-size: 10px;
-            padding: 3px;
           }
         }
       `}</style>
@@ -426,8 +327,32 @@ export default function Rubric() {
       <div className='rubric-container'>
         <div className='header-row'>
           <h2 className='title'>3.12 Rubric for Grading & Marking of Term Work</h2>
-          <button className="button" onClick={() => setShowRubric(true)}>Add Rubric</button>
+          <button 
+            className="button"
+            disabled={loading}
+            onClick={() => {
+              if (submittedRubricData) {
+                setRubricFormData(submittedRubricData);
+              }
+              setShowRubric(true);
+            }}
+          >
+            {submittedRubricData ? "Edit Rubric" : "Add Rubric"}
+          </button>
         </div>
+
+        {error && (
+          <div className="alert alert-danger" style={{ 
+            backgroundColor: '#f8d7da', 
+            color: '#721c24', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
 
         {showRubric && (
           <div className="modal-backdrop">
@@ -437,19 +362,9 @@ export default function Rubric() {
                 <button className="close-btn" onClick={handleCancelRubric}>&times;</button>
               </div>
               <div className="modal-body-content">
-                <div className="table-wrapper" style={{ maxHeight: 'calc(70vh - 100px)' }}> {/* Added max-height for modal table scroll */}
+                <div className="table-wrapper">
                   <table className="modal-rubric-table">
                     <thead>
-                      <tr>
-                        {/* Define column widths for the modal table */}
-                        <col style={{ width: '14%' }} />
-                        <col style={{ width: '14%' }} />
-                        <col style={{ width: '14%' }} />
-                        <col style={{ width: '14%' }} />
-                        <col style={{ width: '14%' }} />
-                        <col style={{ width: '14%' }} />
-                        <col style={{ width: '14%' }} />
-                      </tr>
                       <tr>
                         <th>Lecture + Practical<br />(% Attendance)</th>
                         <th>Assignments</th>
@@ -467,6 +382,7 @@ export default function Rubric() {
                             <input
                               type="text"
                               className="form-control"
+                              style={{ margin: 0, padding: '6px' }}
                               name={key}
                               value={rubricFormData[key]}
                               onChange={handleRubricChange}
@@ -478,46 +394,50 @@ export default function Rubric() {
                   </table>
                 </div>
                 <div className="btn-row">
-                  <button className="btn-save" onClick={handleRubricSubmit}>Submit</button>
-                  <button className="btn-cancel" onClick={handleCancelRubric}>Cancel</button>
+                  <button className="btn-cancel" onClick={handleCancelRubric} disabled={saving}>Cancel</button>
+                  <button className="btn-save" onClick={handleRubricSubmit} disabled={saving}>
+                    {saving ? "Saving..." : "Submit"}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        <div className="table-wrapper" style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}> {/* Added max-height for main table scroll */}
-          <table>
-            <thead>
-              <tr>
-                {/* Define column widths for the main table */}
-                <col style={{ width: '14%' }} />
-                <col style={{ width: '14%' }} />
-                <col style={{ width: '14%' }} />
-                <col style={{ width: '14%' }} />
-                <col style={{ width: '14%' }} />
-                <col style={{ width: '14%' }} />
-                <col style={{ width: '14%' }} />
-              </tr>
-              <tr>
-                <th>Lecture +<br />Practical<br />(%Attendance)</th>
-                <th>Assignment</th>
-                <th>Lab/<br />Practical<br />Performance</th>
-                <th>Lab Journal<br />Assessment</th>
-                <th>Class Tests<br />(Other than<br />PT)</th>
-                <th>Other<br />Specify</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {Object.keys(rubricFormData).map((key) => (
-                  <td key={key}>{submittedRubricData?.[key] || ''}</td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Loading grading rubric...
+          </div>
+        ) : (
+          <div className="table-wrapper" style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Lecture +<br />Practical<br />(%Attendance)</th>
+                  <th>Assignment</th>
+                  <th>Lab/<br />Practical<br />Performance</th>
+                  <th>Lab Journal<br />Assessment</th>
+                  <th>Class Tests<br />(Other than<br />PT)</th>
+                  <th>Other<br />Specify</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {submittedRubricData ? (
+                    Object.keys(rubricFormData).map((key) => (
+                      <td key={key}>{submittedRubricData[key] || '-'}</td>
+                    ))
+                  ) : (
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
+                      No grading rubrics specified yet.
+                    </td>
+                  )}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </>
   );

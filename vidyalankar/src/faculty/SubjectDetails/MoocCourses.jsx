@@ -117,7 +117,7 @@ export default function MoocCourses() {
 
         .title-container .title {
           margin: 0 0 5px 0; font-weight: 700;
-          font-size: 2rem; color: #28a745;
+          font-size: 2rem; color: var(--primary-color, #28a745);
         }
 
         .title-container .subtitle {
@@ -126,14 +126,14 @@ export default function MoocCourses() {
         }
 
         .button {
-          background-color: #4CAF50; color: white;
+          background-color: var(--primary-color, #4CAF50); color: white;
           padding: 12px 24px; border: none; font-size: 16px;
           font-weight: 600; border-radius: 10px; cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047; transform: translateY(-2px);
+          background-color: var(--primary-accent-dark, #43A047); transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
         
@@ -218,8 +218,8 @@ export default function MoocCourses() {
            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .form-control:focus {
-           outline: none; border-color: #81c784;
-           box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+           outline: none; border-color: var(--primary-color, #81c784);
+           box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
         /* --- Modal Button Row Styles --- */
@@ -227,6 +227,7 @@ export default function MoocCourses() {
           display: flex; justify-content: flex-end; gap: 15px;
           padding: 15px 25px; background: #f8f9fa;
           border-top: 1px solid #eee;
+          margin-top: 25px;
         }
         .btn-save, .btn-cancel {
           color: white; border: none; padding: 10px 25px;
@@ -234,9 +235,9 @@ export default function MoocCourses() {
           font-weight: 600; transition: all 0.3s ease;
           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .btn-save { background-color: #4CAF50; }
+        .btn-save { background-color: var(--primary-color, #4CAF50); }
         .btn-cancel { background-color: #6c757d; }
-        .btn-save:hover { background-color: #43A047; transform: translateY(-1px); }
+        .btn-save:hover { background-color: var(--primary-accent-dark, #43A047); transform: translateY(-1px); }
         .btn-cancel:hover { background-color: #5a6268; transform: translateY(-1px); }
 
         @media (max-width: 768px) {

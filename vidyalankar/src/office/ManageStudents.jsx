@@ -45,6 +45,8 @@ const normalizeAcademicYear = (value) => {
 
 const ManageStudents = () => {
   const [students, setStudents] = useState([]);
+  const [seatNumbers, setSeatNumbers] = useState({});
+  const [savingSeats, setSavingSeats] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -59,6 +61,7 @@ const ManageStudents = () => {
   const [selectedDivision, setSelectedDivision] = useState("");
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
+  const [showFilters, setShowFilters] = useState(true);
 
   // Dropdown data
   const [departments, setDepartments] = useState([]);
@@ -108,6 +111,17 @@ const ManageStudents = () => {
       }
     }
   }, []);
+
+  // Sync seat numbers state with student records
+  useEffect(() => {
+    if (students && Array.isArray(students)) {
+      const seats = {};
+      students.forEach((student) => {
+        seats[student._id] = student.seatNo || "";
+      });
+      setSeatNumbers(seats);
+    }
+  }, [students]);
 
   const fetchDepartments = async () => {
     try {
@@ -357,6 +371,55 @@ const ManageStudents = () => {
     setCurrentPage(1);
   };
 
+  const handleSeatNumberChange = (studentId, value) => {
+    setSeatNumbers((prev) => ({
+      ...prev,
+      [studentId]: value,
+    }));
+  };
+
+  const handleSaveAllSeats = async () => {
+    try {
+      setSavingSeats(true);
+      setError("");
+      setSuccess("");
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Session expired. Please login again.");
+      }
+
+      const res = await fetch(config.office.saveSeatNumbers, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ seatNumbers }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || "Failed to save seat numbers");
+      }
+
+      setSuccess("All seat numbers saved successfully.");
+      
+      setStudents((prev) =>
+        prev.map((student) => ({
+          ...student,
+          seatNo: seatNumbers[student._id] !== undefined ? seatNumbers[student._id] : student.seatNo,
+        }))
+      );
+      
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingSeats(false);
+    }
+  };
+
   const handleEditStart = (student) => {
     setEditingId(student._id);
     setEditData({ ...student });
@@ -404,6 +467,7 @@ const ManageStudents = () => {
           batch: editData.batch.trim(),
           division: editData.division?.trim() || "",
           aadhaarNo: editData.aadhaarNo?.trim() || "",
+          seatNo: seatNumbers[editingId] !== undefined ? seatNumbers[editingId] : (editData.seatNo || ""),
         }),
       });
 
@@ -773,19 +837,6 @@ const ManageStudents = () => {
               </div>
 
               <div className="form-row">
-                <label>Seat Number</label>
-                <input
-                  type="text"
-                  placeholder="e.g., A1"
-                  value={newStudent.seatNo}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, seatNo: e.target.value })
-                  }
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="form-row">
                 <label>Section</label>
                 <input
                   type="text"
@@ -834,120 +885,141 @@ const ManageStudents = () => {
 
       {/* Filters */}
       <div className="manage-controls">
-        <div className="filter-group">
-          <div className="form-row">
-            <label>
-              Department <span className="required">*</span>
-            </label>
-            <select
-              value={selectedDepartment}
-              onChange={handleDepartmentChange}
-              disabled={loading}
-            >
-              <option value="">-- Select Department --</option>
-              {departments.map((dept) => (
-                <option key={dept._id} value={dept._id}>
-                  {dept.name} ({dept.code})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-row">
-            <label>Course</label>
-            <select
-              value={selectedCourse}
-              onChange={handleCourseChange}
-              disabled={!selectedDepartment || loading}
-            >
-              <option value="">-- Select Course --</option>
-              {courses.map((course) => (
-                <option key={course._id} value={course._id}>
-                  Semester {course.semester} - {course.courseCode} (
-                  {course.scheme})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-row">
-            <label>Division</label>
-            <select
-              value={selectedDivision}
-              onChange={handleDivisionChange}
-              disabled={!selectedCourse || loading}
-            >
-              <option value="">-- Select Division --</option>
-              {divisions.map((div) => (
-                <option key={div._id} value={div._id}>
-                  {div.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-row">
-            <label>Academic Year</label>
-            <select
-              value={selectedAcademicYear}
-              onChange={handleAcademicYearChange}
-              disabled={loading}
-            >
-              <option value="">-- Select Academic Year --</option>
-              {generateAcademicYearOptions().map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-row">
-            <label>Batch</label>
-            <select
-              value={selectedBatch}
-              onChange={handleBatchChange}
-              disabled={loading}
-            >
-              <option value="">-- Select Batch --</option>
-              {generateBatchOptions().map((batch) => (
-                <option key={batch} value={batch}>
-                  {batch}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-row">
-            <label>
-              Search <span className="hint">(optional)</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Name, roll no, or enrollment..."
-              value={filterSearch}
-              onChange={(e) => setFilterSearch(e.target.value)}
-              disabled={loading}
-            />
+        <div className="controls-header" onClick={() => setShowFilters(!showFilters)}>
+          <h3>🔍 Filters & Search {selectedDepartment && "• Active"}</h3>
+          <div className="controls-header-right">
+            {!showFilters && selectedDepartment && (
+              <span className="filter-summary-pill">
+                Active: {departments.find((d) => d._id === selectedDepartment)?.code || "Dept"}
+                {selectedCourse && ` / Sem ${courses.find((c) => c._id === selectedCourse)?.semester || ""}`}
+                {selectedDivision && ` / Div ${divisions.find((d) => d._id === selectedDivision)?.name || ""}`}
+                {selectedAcademicYear && ` / ${selectedAcademicYear}`}
+                {selectedBatch && ` / ${selectedBatch}`}
+              </span>
+            )}
+            <button className="btn-toggle-filters">
+              {showFilters ? "Hide ▲" : "Show ▼"}
+            </button>
           </div>
         </div>
 
-        <div className="filter-buttons">
-          <button
-            className="btn-primary"
-            onClick={handleFilterApply}
-            disabled={loading || !selectedDepartment}
-          >
-            {loading ? "Loading..." : "Apply Filters"}
-          </button>
-          <button
-            className="btn-secondary"
-            onClick={handleFilterClear}
-            disabled={loading}
-          >
-            Clear All
-          </button>
-        </div>
+        {showFilters && (
+          <>
+            <div className="filter-group">
+              <div className="form-row">
+                <label>
+                  Department <span className="required">*</span>
+                </label>
+                <select
+                  value={selectedDepartment}
+                  onChange={handleDepartmentChange}
+                  disabled={loading}
+                >
+                  <option value="">-- Select Department --</option>
+                  {departments.map((dept) => (
+                    <option key={dept._id} value={dept._id}>
+                      {dept.name} ({dept.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-row">
+                <label>Course</label>
+                <select
+                  value={selectedCourse}
+                  onChange={handleCourseChange}
+                  disabled={!selectedDepartment || loading}
+                >
+                  <option value="">-- Select Course --</option>
+                  {courses.map((course) => (
+                    <option key={course._id} value={course._id}>
+                      Semester {course.semester} - {course.courseCode} ({course.scheme})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-row">
+                <label>Division</label>
+                <select
+                  value={selectedDivision}
+                  onChange={handleDivisionChange}
+                  disabled={!selectedCourse || loading}
+                >
+                  <option value="">-- Select Division --</option>
+                  {divisions.map((div) => (
+                    <option key={div._id} value={div._id}>
+                      {div.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-row">
+                <label>Academic Year</label>
+                <select
+                  value={selectedAcademicYear}
+                  onChange={handleAcademicYearChange}
+                  disabled={loading}
+                >
+                  <option value="">-- Select Academic Year --</option>
+                  {generateAcademicYearOptions().map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-row">
+                <label>Batch</label>
+                <select
+                  value={selectedBatch}
+                  onChange={handleBatchChange}
+                  disabled={loading}
+                >
+                  <option value="">-- Select Batch --</option>
+                  {generateBatchOptions().map((batch) => (
+                    <option key={batch} value={batch}>
+                      {batch}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-row">
+                <label>
+                  Search <span className="hint">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Name, roll no, or enrollment..."
+                  value={filterSearch}
+                  onChange={(e) => setFilterSearch(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="filter-buttons">
+              <button
+                className="btn-primary"
+                onClick={handleFilterApply}
+                disabled={loading || !selectedDepartment}
+              >
+                {loading ? "Loading..." : "Apply Filters"}
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={handleFilterClear}
+                disabled={loading}
+              >
+                Clear All
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Table Section */}
@@ -955,6 +1027,15 @@ const ManageStudents = () => {
         <div className="table-info">
           <span className="pill">{filteredStudents.length} students found</span>
           <div className="table-actions">
+            {filteredStudents.length > 0 && (
+              <button
+                className="btn-save-seats"
+                onClick={handleSaveAllSeats}
+                disabled={loading || savingSeats}
+              >
+                {savingSeats ? "Saving..." : "💾 Save Seat Numbers"}
+              </button>
+            )}
             <button
               className="btn-secondary"
               onClick={handleDownloadPdf}
@@ -985,6 +1066,7 @@ const ManageStudents = () => {
                   <th>Year</th>
                   <th>Batch</th>
                   <th>Division</th>
+                  <th>Seat No</th>
                   <th>Aadhaar</th>
                   <th>Actions</th>
                 </tr>
@@ -1072,6 +1154,16 @@ const ManageStudents = () => {
                         </td>
                         <td>
                           <input
+                            type="text"
+                            className="table-seat-input"
+                            value={seatNumbers[student._id] !== undefined ? seatNumbers[student._id] : ""}
+                            onChange={(e) => handleSeatNumberChange(student._id, e.target.value)}
+                            placeholder="Seat No"
+                            disabled={loading || savingSeats}
+                          />
+                        </td>
+                        <td>
+                          <input
                             value={editData.aadhaarNo || ""}
                             onChange={(e) =>
                               handleEditChange("aadhaarNo", e.target.value)
@@ -1117,6 +1209,16 @@ const ManageStudents = () => {
                         <td>{student.academicYear || "—"}</td>
                         <td>{student.batch}</td>
                         <td>{student.division || "—"}</td>
+                        <td>
+                          <input
+                            type="text"
+                            className="table-seat-input"
+                            value={seatNumbers[student._id] !== undefined ? seatNumbers[student._id] : ""}
+                            onChange={(e) => handleSeatNumberChange(student._id, e.target.value)}
+                            placeholder="Seat No"
+                            disabled={loading || savingSeats}
+                          />
+                        </td>
                         <td>{student.aadhaarMasked || "—"}</td>
                         <td>
                           <div className="action-buttons">
@@ -1141,29 +1243,40 @@ const ManageStudents = () => {
               </tbody>
             </table>
 
-            {totalPages > 1 && (
-              <div className="pagination">
+            <div className="table-bottom-actions">
+              {filteredStudents.length > 0 && (
                 <button
-                  className="btn-nav"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
+                  className="btn-save-seats bottom-btn"
+                  onClick={handleSaveAllSeats}
+                  disabled={loading || savingSeats}
                 >
-                  Previous
+                  {savingSeats ? "Saving..." : "💾 Save Seat Numbers"}
                 </button>
-                <span className="page-info">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  className="btn-nav"
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </button>
-              </div>
-            )}
+              )}
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button
+                    className="btn-nav"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="page-info">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    className="btn-nav"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
           </>
         )}
       </div>

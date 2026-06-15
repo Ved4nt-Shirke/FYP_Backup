@@ -83,6 +83,15 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
 
   const hasPreview = useMemo(() => parsedRows.length > 0, [parsedRows]);
 
+  const isUploadDisabled = useMemo(() => {
+    if (!selectedDepartment || !selectedDivision) return false;
+    return students.some(
+      (s) =>
+        s.departmentId?._id === selectedDepartment &&
+        s.divisionId?._id === selectedDivision
+    );
+  }, [selectedDepartment, selectedDivision, students]);
+
   useEffect(() => {
     fetchDepartments();
     fetchStudents();
@@ -430,13 +439,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
 
   return (
     <div className="office-page">
-      {/* Header */}
-      <div className="office-header">
-        <div>
-          <h1>🏢 Office Staff Panel</h1>
-          <p>Upload new students and manage existing records</p>
-        </div>
-      </div>
+      {/* Active page views */}
 
       {/* Upload Tab */}
       {currentTab === "upload" ? (
@@ -538,6 +541,15 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                   disabled={uploading}
                 />
               </div>
+
+              {isUploadDisabled && (
+                <div className="alert error" style={{ marginTop: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span>⚠️</span>
+                  <div>
+                    <strong>Bulk upload is disabled:</strong> Students already exist in the database for the selected Department and Division.
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Step 2: File Upload */}
@@ -554,7 +566,8 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                     !selectedCourse ||
                     !selectedDivision ||
                     !selectedAcademicYear ||
-                    uploading
+                    uploading ||
+                    isUploadDisabled
                   }
                 />
                 {fileName && <span className="file-chip">✓ {fileName}</span>}
@@ -570,7 +583,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
             <button
               className="primary-btn"
               onClick={handleUpload}
-              disabled={uploading || !hasPreview}
+              disabled={uploading || !hasPreview || isUploadDisabled}
             >
               {uploading ? "Uploading Students..." : "Upload Students"}
             </button>

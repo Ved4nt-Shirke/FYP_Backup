@@ -1,48 +1,81 @@
 /* OfficeTheme.css - Professional Office Staff Theme */
 :root {
-  /* Primary Colors (from Superadmin Palette) */
-  --office-primary: var(--primary-accent, #2563eb);
-  --office-primary-dark: var(--primary-accent-dark, #1d4ed8);
-  --office-primary-light: var(--primary-accent-light, #ecfdf5);
+  /* Primary Theme Colors */
+  --office-primary: #2563eb;
+  --office-primary-dark: #1d4ed8;
+  --office-primary-light: #eff6ff;
   
+  /* Advanced Gradients */
+  --office-gradient-primary: linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%);
+  --office-gradient-primary-hover: linear-gradient(135deg, #1d4ed8 0%, #3730a3 100%);
+  --office-gradient-accent: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+  --office-gradient-card: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --office-gradient-alert-error: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  --office-gradient-alert-success: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+
   /* Background & Surface */
   --office-bg: #f8fafc;
-  --office-surface: var(--card-bg, #ffffff);
-  --office-border: var(--border-color, #dbe5f1);
+  --office-surface: #ffffff;
+  --office-border: #e2e8f0;
   
   /* Text Colors */
-  --office-text: var(--text-main, #0f172a);
-  --office-text-secondary: var(--text-muted, #64748b);
+  --office-text: #0f172a;
+  --office-text-secondary: #64748b;
   --office-muted: #94a3b8;
   
   /* Status Colors */
   --office-success: #10b981;
+  --office-success-dark: #047857;
   --office-success-light: #ecfdf5;
   --office-warning: #f59e0b;
   --office-warning-light: #fffbeb;
   --office-danger: #ef4444;
+  --office-danger-dark: #b91c1c;
   --office-danger-light: #fee2e2;
   --office-info: #3b82f6;
   --office-info-light: #dbeafe;
   
-  /* Transition */
+  /* Shadows */
+  --office-shadow-sm: 0 2px 8px rgba(37, 99, 235, 0.03);
+  --office-shadow-md: 0 10px 30px -10px rgba(79, 70, 229, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --office-shadow-lg: 0 20px 40px -15px rgba(79, 70, 229, 0.12), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --office-shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  
+  /* Borders & Radius */
+  --office-radius-sm: 8px;
+  --office-radius-md: 12px;
+  --office-radius-lg: 20px;
+  --office-radius-xl: 28px;
+  
+  /* Glassmorphism */
+  --office-glass-bg: rgba(255, 255, 255, 0.8);
+  --office-glass-border: rgba(226, 232, 240, 0.6);
+  --office-glass-blur: blur(12px);
+
+  /* Transitions */
   --office-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --office-transition-fast: all 0.15s ease-out;
 }
 
-/* Light theme adjustments if needed */
+/* Light theme adjustments */
 body.light-mode,
 [data-theme="light"] {
-  --office-bg: #f9fafb;
+  --office-bg: #f8fafc;
   --office-surface: #ffffff;
+  --office-border: #e2e8f0;
 }
 
-/* Dark theme support */
+/* Dark theme adjustments */
 body.dark-mode,
 [data-theme="dark"] {
-  --office-bg: #1a1f2e;
-  --office-surface: #232d3f;
-  --office-border: #374151;
-  --office-text: #f3f4f6;
-  --office-text-secondary: #d1d5db;
-  --office-muted: #9ca3af;
+  --office-bg: #0f172a;
+  --office-surface: #1e293b;
+  --office-border: #334155;
+  --office-text: #f8fafc;
+  --office-text-secondary: #94a3b8;
+  --office-muted: #64748b;
+  --office-primary-light: rgba(37, 99, 235, 0.1);
+  --office-glass-bg: rgba(30, 41, 59, 0.85);
+  --office-glass-border: rgba(51, 65, 85, 0.5);
+  --office-gradient-card: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
 }

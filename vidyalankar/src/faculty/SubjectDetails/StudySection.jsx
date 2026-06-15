@@ -1,17 +1,60 @@
-import { useState, useEffect } from "react";
-import { ciannSubjectDetailsApi, getCurrentCiannId, handleApiError } from './api/subjectDetailsApi';
+import React, { useState, useEffect } from "react";
+import axios from "../utils/axiosConfig";
+import { config } from "../config/api";
 
 export default function StudySection() {
-  const [ciannId, setCiannId] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   const blankStudy = { gq: false, notes: false, digital: false, ppt: false, eq: false, other: '' };
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [ciannId, setCiannId] = useState(null);
 
   const [showStudyForm, setShowStudyForm] = useState(false);
   const [studyForm, setStudyForm] = useState({ ...blankStudy });
   const [submittedStudy, setSubmittedStudy] = useState({ ...blankStudy });
   const [studyBtn, setStudyBtn] = useState('Add/Edit');
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
+      if (!stored) {
+        setError("No active CIANN session found.");
+        return;
+      }
+
+      const ciannData = JSON.parse(stored);
+      if (!ciannData || !ciannData.ciannId) {
+        setError("Invalid CIANN session details.");
+        return;
+      }
+      setCiannId(ciannData.ciannId);
+
+      const res = await axios.get(config.ciannSubjectDetails.get(ciannData.ciannId));
+      if (res.data.success && res.data.details?.studySection) {
+        const data = res.data.details.studySection;
+        setSubmittedStudy({ ...data });
+        setStudyForm({ ...data });
+        setStudyBtn('Edit');
+      } else {
+        setSubmittedStudy({ ...blankStudy });
+        setStudyForm({ ...blankStudy });
+        setStudyBtn('Add/Edit');
+      }
+    } catch (err) {
+      console.error("Failed to load study details:", err);
+      setError(err.response?.data?.error || "Failed to load study details.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (showStudyForm) {
@@ -30,45 +73,27 @@ export default function StudySection() {
     }));
   };
 
-  useEffect(() => {
-    const id = getCurrentCiannId();
-    if (id) {
-      setCiannId(id);
-      fetchDetails(id);
-    } else {
-      setError('No CIANN selected');
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchDetails = async (id) => {
+  const handleSubmit = async () => {
     try {
-      setLoading(true);
-      const data = await ciannSubjectDetailsApi.getDetails(id);
-      if (data?.studySection) {
-        const mapped = { ...blankStudy, ...data.studySection };
-        setSubmittedStudy(mapped);
-        setStudyForm(mapped);
+      setSaving(true);
+      setError(null);
+
+      const payload = {
+        ciannId,
+        studySection: studyForm
+      };
+
+      const res = await axios.post(config.ciannSubjectDetails.save, payload);
+      if (res.data.success) {
+        setSubmittedStudy({ ...studyForm });
         setStudyBtn('Edit');
+        setShowStudyForm(false);
       }
     } catch (err) {
-      setError(handleApiError(err, 'Failed to fetch Study Material data'));
+      console.error("Failed to save study details:", err);
+      setError(err.response?.data?.error || "Failed to save study details.");
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!ciannId) return;
-    try {
-      await ciannSubjectDetailsApi.updateDetails(ciannId, {
-        "studySection": studyForm
-      });
-      setSubmittedStudy({ ...studyForm });
-      setStudyBtn('Edit');
-      setShowStudyForm(false);
-    } catch (err) {
-      alert(handleApiError(err, 'Failed to update Study Material'));
+      setSaving(false);
     }
   };
 
@@ -91,7 +116,6 @@ export default function StudySection() {
           color: #333;
           padding: 25px;
           border-radius: 12px;
-          
         }
 
         .header-row {
@@ -103,7 +127,7 @@ export default function StudySection() {
 
         .title-container .title {
           margin: 0 0 5px 0; font-weight: 700;
-          font-size: 1.7rem; color: #28a745;
+          font-size: 1.7rem; color: var(--primary-color, #28a745);
         }
 
         .title-container .subtitle {
@@ -112,14 +136,14 @@ export default function StudySection() {
         }
 
         .button {
-          background-color: #4CAF50; color: white;
+          background-color: var(--primary-color, #4CAF50); color: white;
           padding: 12px 24px; border: none; font-size: 16px;
           font-weight: 600; border-radius: 10px; cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
         }
         .button:hover {
-          background-color: #43A047; transform: translateY(-2px);
+          background-color: var(--primary-accent-dark, #43A047); transform: translateY(-2px);
           box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
         
@@ -194,7 +218,7 @@ export default function StudySection() {
         }
         input[type="checkbox"] {
           transform: scale(1.4);
-          accent-color: #4CAF50;
+          accent-color: var(--primary-color, #4CAF50);
         }
         .form-group {
           display: flex; flex-direction: column; gap: 5px;
@@ -208,8 +232,8 @@ export default function StudySection() {
            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .form-control:focus {
-           outline: none; border-color: #81c784;
-           box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+           outline: none; border-color: var(--primary-color, #81c784);
+           box-shadow: 0 0 0 3px var(--primary-light, rgba(76,175,80,0.2));
         }
 
         /* --- Modal Button Row Styles --- */
@@ -223,8 +247,10 @@ export default function StudySection() {
           border-radius: 8px; cursor: pointer; font-size: 15px;
           font-weight: 600; transition: all 0.3s ease;
         }
-        .btn-save { background-color: #4CAF50; }
+        .btn-save { background-color: var(--primary-color, #4CAF50); }
         .btn-cancel { background-color: #6c757d; }
+        .btn-save:hover { background-color: var(--primary-accent-dark, #43A047); }
+        .btn-cancel:hover { background-color: #5a6268; }
         
         @media (max-width: 768px) {
           .header-row { flex-direction: column; align-items: flex-start; gap: 15px; }
@@ -234,50 +260,68 @@ export default function StudySection() {
       `}</style>
       
       <div className="study-section-container">
+        {error && (
+          <div style={{ 
+            backgroundColor: '#f8d7da', 
+            color: '#721c24', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
+
         <div className="header-row">
           <div className="title-container">
             <h2 className="title">Study Material Distributed</h2>
             <p className="subtitle">3.13.7 Record of Materials Provided to Students</p>
           </div>
-          <button className="button" onClick={() => setShowStudyForm(true)}>{studyBtn}</button>
+          <button className="button" disabled={loading} onClick={() => setShowStudyForm(true)}>{studyBtn}</button>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table>
-            {/* ✅ UPDATED COLGROUP FOR CUSTOM COLUMN WIDTHS */}
-            <colgroup>
-              <col style={{ width: '10%' }} />
-              <col style={{ width: '15%' }} />
-              <col style={{ width: '25%' }} />
-              <col style={{ width: '10%' }} />
-              <col style={{ width: '10%' }} />
-              <col style={{ width: '30%' }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>GQ</th>
-                <th>Notes</th>
-                <th>Digital</th>
-                <th>PPT</th>
-                <th>EQ</th>
-                <th>Other</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{submittedStudy.gq ? '✔' : ''}</td>
-                <td>{submittedStudy.notes ? '✔' : ''}</td>
-                <td>{submittedStudy.digital ? '✔' : ''}</td>
-                <td>{submittedStudy.ppt ? '✔' : ''}</td>
-                <td>{submittedStudy.eq ? '✔' : ''}</td>
-                <td>{submittedStudy.other}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Loading study material details...
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <colgroup>
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '15%' }} />
+                <col style={{ width: '25%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '30%' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>GQ</th>
+                  <th>Notes</th>
+                  <th>Digital</th>
+                  <th>PPT</th>
+                  <th>EQ</th>
+                  <th>Other</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{submittedStudy.gq ? '✔' : ''}</td>
+                  <td>{submittedStudy.notes ? '✔' : ''}</td>
+                  <td>{submittedStudy.digital ? '✔' : ''}</td>
+                  <td>{submittedStudy.ppt ? '✔' : ''}</td>
+                  <td>{submittedStudy.eq ? '✔' : ''}</td>
+                  <td>{submittedStudy.other}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {showStudyForm && (
-          <div className="modal-overlay">
+          <div className="modal-overlay" onClick={() => setShowStudyForm(false)}>
             <div className="modal-box" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <span>Select Study Materials</span>
@@ -312,8 +356,10 @@ export default function StudySection() {
                 </div>
               </div>
               <div className="btn-row">
-                <button type="button" className="btn-cancel" onClick={() => setShowStudyForm(false)}>Cancel</button>
-                <button type="button" className="btn-save" onClick={handleSubmit}>Submit</button>
+                <button type="button" className="btn-cancel" onClick={() => setShowStudyForm(false)} disabled={saving}>Cancel</button>
+                <button type="button" className="btn-save" onClick={handleSubmit} disabled={saving}>
+                  {saving ? "Submitting..." : "Submit"}
+                </button>
               </div>
             </div>
           </div>
