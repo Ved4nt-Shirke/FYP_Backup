@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./CTDashboard.css";
 
 export default function CTDashboard() {

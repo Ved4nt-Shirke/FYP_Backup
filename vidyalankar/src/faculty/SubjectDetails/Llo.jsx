@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import SecondarySidebar from "../editCiann/SecondarySidebar";
+import SecondarySidebar from "../faculty/editCiann/SecondarySidebar";
 import { config, getApiUrl } from "../config/api";
-import "../editCiann/EditCiannModern.css";
+import "../faculty/editCiann/EditCiannModern.css";
 
-export default function Tlo() {
+export default function Llo() {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -114,7 +114,7 @@ export default function Tlo() {
 
         setCoMappings(initialMappings);
       } catch (err) {
-        console.error("Error fetching TLO details:", err);
+        console.error("Error fetching LLO details:", err);
         setError("Error loading Course Outcomes: " + err.message);
       } finally {
         setLoading(false);
@@ -125,35 +125,35 @@ export default function Tlo() {
   }, [ciannData]);
 
   // Mutation Handlers
-  const handleAddTloField = () => {
+  const handleAddLloField = () => {
     if (!selectedCo) return;
     setCoMappings((prev) => {
       const current = prev[selectedCo] ? { ...prev[selectedCo] } : { tlos: [""], llos: [""] };
-      current.tlos = [...current.tlos, ""];
+      current.llos = [...current.llos, ""];
       return { ...prev, [selectedCo]: current };
     });
   };
 
-  const handleRemoveTloField = (index) => {
+  const handleRemoveLloField = (index) => {
     if (!selectedCo) return;
     setCoMappings((prev) => {
       const current = prev[selectedCo] ? { ...prev[selectedCo] } : { tlos: [""], llos: [""] };
-      if (current.tlos.length <= 1) {
-        current.tlos = [""];
+      if (current.llos.length <= 1) {
+        current.llos = [""];
       } else {
-        current.tlos = current.tlos.filter((_, idx) => idx !== index);
+        current.llos = current.llos.filter((_, idx) => idx !== index);
       }
       return { ...prev, [selectedCo]: current };
     });
   };
 
-  const handleTloFieldChange = (index, value) => {
+  const handleLloFieldChange = (index, value) => {
     if (!selectedCo) return;
     setCoMappings((prev) => {
       const current = prev[selectedCo] ? { ...prev[selectedCo] } : { tlos: [""], llos: [""] };
-      const updatedTlos = [...current.tlos];
-      updatedTlos[index] = value;
-      current.tlos = updatedTlos;
+      const updatedLlos = [...current.llos];
+      updatedLlos[index] = value;
+      current.llos = updatedLlos;
       return { ...prev, [selectedCo]: current };
     });
   };
@@ -191,7 +191,7 @@ export default function Tlo() {
 
       const resData = await res.json();
       if (resData.success) {
-        setSuccess("TLO mapping saved successfully!");
+        setSuccess("LLO mapping saved successfully!");
         setTimeout(() => setSuccess(""), 3000);
       } else {
         throw new Error(resData.error || "Failed to save mapping.");
@@ -204,7 +204,7 @@ export default function Tlo() {
     }
   };
 
-  const activeTlos = selectedCo && coMappings[selectedCo] ? coMappings[selectedCo].tlos : [""];
+  const activeLlos = selectedCo && coMappings[selectedCo] ? coMappings[selectedCo].llos : [""];
   const selectedCoObj = courseOutcomes.find((c) => c.coNumber === selectedCo);
 
   return (
@@ -225,22 +225,22 @@ export default function Tlo() {
             {/* Header / Title */}
             <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
               <div>
-                <h2 className="fw-bold text-dark mb-1">Topic Learning Outcomes (TLO)</h2>
+                <h2 className="fw-bold text-dark mb-1">Lab Learning Outcomes (LLO)</h2>
                 <p className="text-secondary mb-0">
-                  Select a Course Outcome (CO) from Admin Subject Course Details and define its corresponding Topic Learning Outcomes.
+                  Select a Course Outcome (CO) from Admin Subject Course Details and define its corresponding Lab Learning Outcomes.
                 </p>
               </div>
               <div>
                 <button
                   onClick={handleSave}
                   disabled={saving || loading || !ciannData}
-                  className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+                  className="btn btn-info rounded-pill px-4 fw-bold text-white shadow-sm"
                 >
                   {saving ? (
                     <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                   ) : (
                     <>
-                      <i className="bi bi-cloud-arrow-up-fill me-2"></i> Save TLO Details
+                      <i className="bi bi-cloud-arrow-up-fill me-2"></i> Save LLO Details
                     </>
                   )}
                 </button>
@@ -264,7 +264,7 @@ export default function Tlo() {
 
             {loading ? (
               <div className="text-center py-5 bg-white rounded-3 shadow-sm my-4">
-                <div className="spinner-border text-primary" role="status">
+                <div className="spinner-border text-info" role="status">
                   <span className="visually-hidden">Loading Course Outcomes...</span>
                 </div>
                 <p className="mt-3 text-muted">Loading Course Outcomes & mappings...</p>
@@ -276,8 +276,8 @@ export default function Tlo() {
                   <div className="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                     {/* Header */}
                     <div className="card-header border-0 bg-dark text-white p-3 d-flex align-items-center justify-content-between">
-                      <h5 className="mb-0 fw-semibold text-white">TLO Management</h5>
-                      <span className="badge bg-primary px-3 py-2 rounded-pill fs-7">
+                      <h5 className="mb-0 fw-semibold text-white">LLO Management</h5>
+                      <span className="badge bg-info text-white px-3 py-2 rounded-pill fs-7">
                         Subject: {ciannData?.subject?.name || "Active subject"}
                       </span>
                     </div>
@@ -302,8 +302,8 @@ export default function Tlo() {
                           </select>
 
                           {selectedCoObj && (
-                            <div className="mt-4 p-3 bg-light rounded-3 border-start border-4 border-primary">
-                              <span className="text-primary fw-bold text-uppercase fs-7 block mb-1">
+                            <div className="mt-4 p-3 bg-light rounded-3 border-start border-4 border-info">
+                              <span className="text-info fw-bold text-uppercase fs-7 block mb-1">
                                 Description
                               </span>
                               <p className="mb-0 text-dark small fw-semibold">
@@ -317,34 +317,34 @@ export default function Tlo() {
                         <div className="col-md-8">
                           <div className="d-flex align-items-center justify-content-between mb-3">
                             <h6 className="fw-bold text-dark d-flex align-items-center gap-2 mb-0">
-                              <i className="bi bi-journal-text text-primary"></i>
-                              Mapped Topic Learning Outcomes for {selectedCo}
+                              <i className="bi bi-flask text-info"></i>
+                              Mapped Lab Learning Outcomes for {selectedCo}
                             </h6>
                             <button
                               type="button"
-                              onClick={handleAddTloField}
-                              className="btn btn-sm btn-primary rounded-pill px-3 py-1 d-flex align-items-center gap-1 shadow-sm"
+                              onClick={handleAddLloField}
+                              className="btn btn-sm btn-info text-white rounded-pill px-3 py-1 d-flex align-items-center gap-1 shadow-sm"
                             >
-                              <i className="bi bi-plus-lg"></i> Add TLO
+                              <i className="bi bi-plus-lg"></i> Add LLO
                             </button>
                           </div>
 
                           <div className="outcome-inputs-list" style={{ minHeight: "150px" }}>
-                            {activeTlos.map((tlo, idx) => (
+                            {activeLlos.map((llo, idx) => (
                               <div key={idx} className="input-group mb-2 shadow-sm rounded-3 overflow-hidden">
                                 <span className="input-group-text border-0 bg-light text-secondary small fw-semibold">
-                                  TLO {idx + 1}
+                                  LLO {idx + 1}
                                 </span>
                                 <input
                                   type="text"
-                                  value={tlo}
-                                  onChange={(e) => handleTloFieldChange(idx, e.target.value)}
-                                  placeholder="Describe topic learning outcome..."
+                                  value={llo}
+                                  onChange={(e) => handleLloFieldChange(idx, e.target.value)}
+                                  placeholder="Describe laboratory outcome..."
                                   className="form-control border-0 px-3 bg-light text-dark"
                                 />
                                 <button
                                   type="button"
-                                  onClick={() => handleRemoveTloField(idx)}
+                                  onClick={() => handleRemoveLloField(idx)}
                                   className="btn btn-outline-danger border-0 bg-light"
                                   title="Delete Field"
                                 >
@@ -362,35 +362,35 @@ export default function Tlo() {
                 {/* Summary Section */}
                 <div className="col-12">
                   <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
-                    <h5 className="fw-bold text-dark mb-3">TLO Mapping Summary</h5>
+                    <h5 className="fw-bold text-dark mb-3">LLO Mapping Summary</h5>
                     <div className="table-responsive">
                       <table className="table table-bordered align-middle">
                         <thead className="table-dark">
                           <tr>
                             <th style={{ width: "10%" }}>CO</th>
                             <th style={{ width: "35%" }}>Course Outcome Description</th>
-                            <th>Mapped Topic Learning Outcomes</th>
+                            <th>Mapped Lab Learning Outcomes</th>
                           </tr>
                         </thead>
                         <tbody>
                           {courseOutcomes.map((co) => {
-                            const mapping = coMappings[co.coNumber] || { tlos: [] };
-                            const nonEmpties = mapping.tlos.filter(Boolean);
+                            const mapping = coMappings[co.coNumber] || { llos: [] };
+                            const nonEmpties = mapping.llos.filter(Boolean);
 
                             return (
                               <tr key={co.coNumber}>
                                 <td>
-                                  <span className="badge bg-primary fs-7 rounded-pill">{co.coNumber}</span>
+                                  <span className="badge bg-info text-white fs-7 rounded-pill">{co.coNumber}</span>
                                 </td>
                                 <td className="text-secondary small fw-semibold">{co.description}</td>
                                 <td>
                                   {nonEmpties.length === 0 ? (
-                                    <span className="text-muted italic small">No TLOs mapped yet</span>
+                                    <span className="text-muted italic small">No LLOs mapped yet</span>
                                   ) : (
                                     <ul className="mb-0 ps-3">
-                                      {nonEmpties.map((t, idx) => (
+                                      {nonEmpties.map((l, idx) => (
                                         <li key={idx} className="small text-dark fw-semibold mb-1">
-                                          {t}
+                                          {l}
                                         </li>
                                       ))}
                                     </ul>

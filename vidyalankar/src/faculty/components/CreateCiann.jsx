@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import Header from "../basic/Header";
-import Sidebar from "../basic/Sidebar";
+import Header from "../../basic/Header.jsx";
+import Sidebar from "../../basic/Sidebar.jsx";
 import EditCiann from "./EditCiann.jsx";
-import { config } from "../config/api";
+import { config } from "../../config/api.js";
 import "./CreateCiann.css";
 
 const CreateCiann = ({

@@ -26,20 +26,20 @@ import MockExamResult from "./student/MockExamResult";
 import StudentPracticalExamList from "./student/StudentPracticalExamList";
 import StudentPracticalExamUpload from "./student/StudentPracticalExamUpload";
 import StudentTimetable from "./student/StudentTimetable";
-import ChatPage from "./chat/ChatPage";
+import ChatPage from "./faculty/chat/ChatPage";
 
 // CIANN / Edit CIANN Components
 import CreateCiann from "./components/CreateCiann";
 import EditCiann from "./components/EditCiann";
-import CourseDiary from "./editCiann/CourseDiary";
-import CourseDiary2 from "./editCiann/CourseDiary2";
-import TimeTable from "./editCiann/Timetable";
-import Syllabus from "./editCiann/Syllabus";
-import LabPlanningSheet from "./editCiann/LabPlanningSheet";
-import TeachingPlanSheet from "./editCiann/TeachingPlanSheet";
-import TutorialPlanSheet from "./editCiann/TutorialPlanSheet";
-import Studentlist from "./editCiann/studentlist";
-import PrintCiann from "./editCiann/PrintCiann";
+import CourseDiary from "./faculty/editCiann/CourseDiary";
+import CourseDiary2 from "./faculty/editCiann/CourseDiary2";
+import TimeTable from "./faculty/editCiann/Timetable";
+import Syllabus from "./faculty/editCiann/Syllabus";
+import LabPlanningSheet from "./faculty/editCiann/LabPlanningSheet";
+import TeachingPlanSheet from "./faculty/editCiann/TeachingPlanSheet";
+import TutorialPlanSheet from "./faculty/editCiann/TutorialPlanSheet";
+import Studentlist from "./faculty/editCiann/studentlist";
+import PrintCiann from "./faculty/editCiann/PrintCiann";
 
 // Subject Details
 import SubjectDetails from "./SubjectDetails/SubjectDetails";
@@ -61,57 +61,57 @@ import Llo from "./SubjectDetails/Llo";
 import MarkAttendance from "./components/MarkAttendance";
 import ViewAttendance from "./components/ViewAttendance";
 import EditAttendance from "./components/EditAttendance";
-import TheoryCiannCards from "./Attendance/TheoryAttend";
-import SmartAttendanceHub from "./Attendance/SmartAttendanceHub";
-import ExtraTheoryCiannCards from "./Attendance/EtheoryCard";
-import ExtraPracticalCiannCards from "./Attendance/EpractCard";
-import TutorialCiannCards from "./Attendance/tutCard";
-import PracticalCiannCards from "./Attendance/PracticalCiannCards";
-import PracticalAttendance from "./Attendance/PracticalAttendance";
-import PracticalAttendanceForm from "./Attendance/PracticalAttendanceForm";
-import PracticalFinalAtt from "./Attendance/PracticalFinalAtt";
-import PracticalBatchDistribution from "./Attendance/PracticalBatchDistribution";
-import TheoryEdit from "./Attendance/TheoryEdit";
-import AttendanceForm from "./Attendance/Theory";
-import FinalAttendance from "./Attendance/FinalAtt";
-import ExtraTheory from "./Attendance/ExtraTheory";
-import StudentExtraAttendance from "./Attendance/Extratattend";
-import ExtraAttendanceForm from "./Attendance/ExtraPract";
-import ExtraAttendance from "./Attendance/Tutorial";
-import StudentAttendancePage from "./Attendance/Extrapattend";
-import StudentAttendance from "./Attendance/Tutattend";
+import TheoryCiannCards from "./faculty/Attendance/TheoryAttend";
+import SmartAttendanceHub from "./faculty/Attendance/SmartAttendanceHub";
+import ExtraTheoryCiannCards from "./faculty/Attendance/EtheoryCard";
+import ExtraPracticalCiannCards from "./faculty/Attendance/EpractCard";
+import TutorialCiannCards from "./faculty/Attendance/tutCard";
+import PracticalCiannCards from "./faculty/Attendance/PracticalCiannCards";
+import PracticalAttendance from "./faculty/Attendance/PracticalAttendance";
+import PracticalAttendanceForm from "./faculty/Attendance/PracticalAttendanceForm";
+import PracticalFinalAtt from "./faculty/Attendance/PracticalFinalAtt";
+import PracticalBatchDistribution from "./faculty/Attendance/PracticalBatchDistribution";
+import TheoryEdit from "./faculty/Attendance/TheoryEdit";
+import AttendanceForm from "./faculty/Attendance/Theory";
+import FinalAttendance from "./faculty/Attendance/FinalAtt";
+import ExtraTheory from "./faculty/Attendance/ExtraTheory";
+import StudentExtraAttendance from "./faculty/Attendance/Extratattend";
+import ExtraAttendanceForm from "./faculty/Attendance/ExtraPract";
+import ExtraAttendance from "./faculty/Attendance/Tutorial";
+import StudentAttendancePage from "./faculty/Attendance/Extrapattend";
+import StudentAttendance from "./faculty/Attendance/Tutattend";
 
 // Edit Attendance Routes
-import EditAttendance1 from "./Attendance/edit/EditAttendance1";
-import EditAttendance2 from "./Attendance/edit/EditAttendance2";
-import EditIndividualAttendance from "./Attendance/edit/EditIndividualAttendance";
-import EditExtraTheoryAttendance1 from "./Attendance/edit/EditExtraTheoryAttendance1";
-import EditExtraTheoryAttendance2 from "./Attendance/edit/EditExtraTheoryAttendance2";
-import EditIndividualExtraTheoryAttendance from "./Attendance/edit/EditIndividualExtraTheoryAttendance";
-import EditPracticalAttendance1 from "./Attendance/edit/EditPracticalAttendance1";
-import EditPracticalAttendance2 from "./Attendance/edit/EditPracticalAttendance2";
-import EditIndividualPracticalAttendance from "./Attendance/edit/EditIndividualPracticalAttendance";
-import EditTutorialAttendance1 from "./Attendance/edit/EditTutorialAttendance1";
-import EditTutorialAttendance2 from "./Attendance/edit/EditTutorialAttendance2";
-import EditIndividualTutorialAttendance from "./Attendance/edit/EditIndividualTutorialAttendance";
-import EditExistingPracticalAttendance from "./Attendance/edit/EditExistingPracticalAttendance";
-import EditExtraPracticalAttendance1 from "./Attendance/edit/EditExtraPracticalAttendance1";
-import EditExtraPracticalAttendance2 from "./Attendance/edit/EditExtraPracticalAttendance2";
-import EditIndividualExtraPracticalAttendance from "./Attendance/edit/EditIndividualExtraPracticalAttendance";
+import EditAttendance1 from "./faculty/Attendance/edit/EditAttendance1";
+import EditAttendance2 from "./faculty/Attendance/edit/EditAttendance2";
+import EditIndividualAttendance from "./faculty/Attendance/edit/EditIndividualAttendance";
+import EditExtraTheoryAttendance1 from "./faculty/Attendance/edit/EditExtraTheoryAttendance1";
+import EditExtraTheoryAttendance2 from "./faculty/Attendance/edit/EditExtraTheoryAttendance2";
+import EditIndividualExtraTheoryAttendance from "./faculty/Attendance/edit/EditIndividualExtraTheoryAttendance";
+import EditPracticalAttendance1 from "./faculty/Attendance/edit/EditPracticalAttendance1";
+import EditPracticalAttendance2 from "./faculty/Attendance/edit/EditPracticalAttendance2";
+import EditIndividualPracticalAttendance from "./faculty/Attendance/edit/EditIndividualPracticalAttendance";
+import EditTutorialAttendance1 from "./faculty/Attendance/edit/EditTutorialAttendance1";
+import EditTutorialAttendance2 from "./faculty/Attendance/edit/EditTutorialAttendance2";
+import EditIndividualTutorialAttendance from "./faculty/Attendance/edit/EditIndividualTutorialAttendance";
+import EditExistingPracticalAttendance from "./faculty/Attendance/edit/EditExistingPracticalAttendance";
+import EditExtraPracticalAttendance1 from "./faculty/Attendance/edit/EditExtraPracticalAttendance1";
+import EditExtraPracticalAttendance2 from "./faculty/Attendance/edit/EditExtraPracticalAttendance2";
+import EditIndividualExtraPracticalAttendance from "./faculty/Attendance/edit/EditIndividualExtraPracticalAttendance";
 
 // View Attendance Routes
-import ViewAttend1 from "./Attendance/view/ViewAttend1";
-import ViewAttend2 from "./Attendance/view/ViewAttend2";
-import ViewPractical1 from "./Attendance/view/ViewPractical1";
-import ViewPractical2 from "./Attendance/view/ViewPractical2";
-import ViewPractical3 from "./Attendance/view/ViewPractical3";
-import ViewExtraPractical1 from "./Attendance/view/ViewExtraPractical1";
-import ViewExtraPractical2 from "./Attendance/view/ViewExtraPractical2";
-import ViewExtraPractical3 from "./Attendance/view/ViewExtraPractical3";
-import ViewExtraTheory1 from "./Attendance/view/ViewET1";
-import ViewExtraTheory2 from "./Attendance/view/ViewET2";
-import ViewT1 from "./Attendance/view/ViewTut";
-import ViewT2 from "./Attendance/view/ViewTut2";
+import ViewAttend1 from "./faculty/Attendance/view/ViewAttend1";
+import ViewAttend2 from "./faculty/Attendance/view/ViewAttend2";
+import ViewPractical1 from "./faculty/Attendance/view/ViewPractical1";
+import ViewPractical2 from "./faculty/Attendance/view/ViewPractical2";
+import ViewPractical3 from "./faculty/Attendance/view/ViewPractical3";
+import ViewExtraPractical1 from "./faculty/Attendance/view/ViewExtraPractical1";
+import ViewExtraPractical2 from "./faculty/Attendance/view/ViewExtraPractical2";
+import ViewExtraPractical3 from "./faculty/Attendance/view/ViewExtraPractical3";
+import ViewExtraTheory1 from "./faculty/Attendance/view/ViewET1";
+import ViewExtraTheory2 from "./faculty/Attendance/view/ViewET2";
+import ViewT1 from "./faculty/Attendance/view/ViewTut";
+import ViewT2 from "./faculty/Attendance/view/ViewTut2";
 
 // Admin & Office Components
 import AdminPanel from "./admin/AdminPanel";
@@ -205,15 +205,15 @@ import MockExamManage from "./pages/faculty/MockExamManage";
 import MockExamResults from "./pages/faculty/MockExamResults";
 
 // CT / PT / Course Components
-import CTCiannCards from "./CT/CTCiannCards";
-import CTDashboard from "./CT/CTDashboard";
-import Course1 from "./Course/Course1";
-import Course2 from "./Course/Course2";
-import Course3 from "./Course/Course3";
-import Course4 from "./Course/Course4";
-import ManageChapters1 from "./Course/managechp1";
-import ManageChapters2 from "./Course/managechp2";
-import UpdateChapter from "./Course/managechp3";
+import CTCiannCards from "./faculty/CT/CTCiannCards";
+import CTDashboard from "./faculty/CT/CTDashboard";
+import Course1 from "./faculty/Course/Course1";
+import Course2 from "./faculty/Course/Course2";
+import Course3 from "./faculty/Course/Course3";
+import Course4 from "./faculty/Course/Course4";
+import ManageChapters1 from "./faculty/Course/managechp1";
+import ManageChapters2 from "./faculty/Course/managechp2";
+import UpdateChapter from "./faculty/Course/managechp3";
 import Microproject from "./PTMicroProject/Microproject";
 import PTDashboard from "./PTMicroProject/PTDashboard";
 import PTConfiguration from "./PTMicroProject/PTConfiguration";
@@ -500,10 +500,10 @@ const AppContent = () => {
           onSecondaryMenuToggle={
             showGlobalSecondaryToggle
               ? () => {
-                  window.dispatchEvent(
-                    new CustomEvent("faculty:toggle-secondary-sidebar"),
-                  );
-                }
+                window.dispatchEvent(
+                  new CustomEvent("faculty:toggle-secondary-sidebar"),
+                );
+              }
               : undefined
           }
           showUserDropdown={showUserDropdown}

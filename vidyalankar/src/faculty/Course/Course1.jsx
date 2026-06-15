@@ -1,11 +1,9 @@
-// managechp1.jsx
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./CourseSectionShared.css";
 
-const ManageChapters1 = () => {
+const CourseForm = () => {
   const navigate = useNavigate();
 
   const [selectedDepartment, setSelectedDepartment] = useState("");
@@ -145,13 +143,10 @@ const ManageChapters1 = () => {
     }
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
+  const handleSubmit = (e) => {
+    e.preventDefault();
     if (!selectedDepartment || !selectedCourse || !selectedSubject) {
-      alert(
-        "Please select a department, course, and subject before submitting.",
-      );
+      alert("Please select all fields before submitting.");
       return;
     }
 
@@ -159,22 +154,17 @@ const ManageChapters1 = () => {
     const selectedCourseObj = courses.find((c) => c._id === selectedCourse);
     const selectedSubj = subjects.find((s) => s._id === selectedSubject);
 
-    // Pass the selected data to the next route using the state property
-    navigate("/add-chapters", {
-      state: {
-        program: selectedDept.name,
-        className: `${selectedCourseObj.class}`,
-        course: selectedSubj.name,
-        // Also pass IDs for future use
-        departmentId: selectedDept._id,
-        courseId: selectedCourse,
-        subjectId: selectedSubj._id,
-      },
-    });
+    // Navigate to Course2 with state
+    const queryParams = new URLSearchParams({
+      program: selectedDept.name,
+      className: `${selectedCourseObj.class}`,
+      course: selectedSubj.name,
+    }).toString();
+    navigate(`/course2?${queryParams}`);
   };
 
   return (
-    <div className="manage-chapters-container">
+    <div className="course-form-container">
       <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
         <button
           className="btn btn-secondary"
@@ -190,22 +180,18 @@ const ManageChapters1 = () => {
         >
           <i className="bi bi-arrow-left"></i> Back
         </button>
-        <h2 className="page-title" style={{ margin: 0 }}>Select Course To Add Chapters</h2>
+        <h1 style={{ margin: 0 }}>Select Course To Add Experiments</h1>
       </div>
-
       {error && <div className="error-message">{error}</div>}
-
-      <form className="chapter-form" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="department-select">Select Department</label>
+          <label>Select Department</label>
           <select
-            id="department-select"
             value={selectedDepartment}
             onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="department-select"
             disabled={loading}
           >
-            <option value="">-- Select Department --</option>
+            <option value="">--- Select Department ---</option>
             {departments.map((dept) => (
               <option key={dept._id} value={dept._id}>
                 {dept.name} ({dept.code})
@@ -215,14 +201,13 @@ const ManageChapters1 = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="course-select">Select Course (Semester)</label>
+          <label>Select Course (Semester)</label>
           <select
-            id="course-select"
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}
             disabled={!selectedDepartment || loading}
           >
-            <option value="">-- Select Course --</option>
+            <option value="">--- Select Course ---</option>
             {courses.map((course) => (
               <option key={course._id} value={course._id}>
                 Semester {course.semester} - {course.class}
@@ -233,14 +218,13 @@ const ManageChapters1 = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="subject-select">Select Subject</label>
+          <label>Select Subject</label>
           <select
-            id="subject-select"
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value)}
             disabled={!selectedDepartment || loading}
           >
-            <option value="">-- Select Subject --</option>
+            <option value="">--- Select Subject ---</option>
             {subjects.map((subject) => (
               <option key={subject._id} value={subject._id}>
                 {subject.name} ({subject.code})
@@ -259,4 +243,4 @@ const ManageChapters1 = () => {
   );
 };
 
-export default ManageChapters1;
+export default CourseForm;

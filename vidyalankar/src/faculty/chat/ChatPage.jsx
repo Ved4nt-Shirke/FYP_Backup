@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./ChatPage.css";
 
 const formatTime = (dateValue) => {
@@ -339,11 +339,10 @@ const ChatPage = () => {
               conversations.map((conversation) => (
                 <button
                   key={conversation._id}
-                  className={`conversation-item ${
-                    String(conversation._id) === String(selectedId)
+                  className={`conversation-item ${String(conversation._id) === String(selectedId)
                       ? "active"
                       : ""
-                  }`}
+                    }`}
                   onClick={() => setSelectedId(String(conversation._id))}
                   type="button"
                 >

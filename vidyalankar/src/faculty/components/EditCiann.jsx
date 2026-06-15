@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../basic/Header';
-import { config } from '../config/api';
-import { ciannUtils } from '../utils/ciannUtils';
+import Header from '../../basic/Header';
+import { config } from '../../config/api';
+import { ciannUtils } from '../../utils/ciannUtils';
 import './EditCiann.css';
 
 const EditCiann = () => {
@@ -223,46 +223,46 @@ const EditCiann = () => {
                   typeof ciannData?.canShare === 'undefined';
 
                 return (
-              <Link
-                key={ciannData._id}
-                to="/course-diary"
-                state={{ ciannData: ciannData }}
-                className="ciann-dashboard-card-link"
-                onClick={() => {
-                  console.log('Selected CIAAN:', ciannData);
-                  setSelectedCiannData(ciannData);
-                  // Store CIAAN data in both sessionStorage and localStorage
-                  sessionStorage.setItem('currentCiannData', JSON.stringify(ciannData));
-                  localStorage.setItem('ciannData', JSON.stringify(ciannData));
-                }}
-              >
-                <div className="ciann-dashboard-card">
-                  {canShare && (
-                    <button
-                      type="button"
-                      className="ciann-share-btn"
-                      onClick={(event) => shareCiann(event, ciannData)}
-                    >
-                      Share
-                    </button>
-                  )}
-                  <div className="card-content">
-                    <i className="bi bi-journal-text ciann-icon"></i>
-                    <div className="ciann-id">CIAAN ID: {ciannData.ciannId}</div>
-                    <div className="card-text">
-                      <strong>{ciannData.subject?.name}</strong>
-                      <span className="subject-code">({ciannData.subject?.code})</span>
+                  <Link
+                    key={ciannData._id}
+                    to="/course-diary"
+                    state={{ ciannData: ciannData }}
+                    className="ciann-dashboard-card-link"
+                    onClick={() => {
+                      console.log('Selected CIAAN:', ciannData);
+                      setSelectedCiannData(ciannData);
+                      // Store CIAAN data in both sessionStorage and localStorage
+                      sessionStorage.setItem('currentCiannData', JSON.stringify(ciannData));
+                      localStorage.setItem('ciannData', JSON.stringify(ciannData));
+                    }}
+                  >
+                    <div className="ciann-dashboard-card">
+                      {canShare && (
+                        <button
+                          type="button"
+                          className="ciann-share-btn"
+                          onClick={(event) => shareCiann(event, ciannData)}
+                        >
+                          Share
+                        </button>
+                      )}
+                      <div className="card-content">
+                        <i className="bi bi-journal-text ciann-icon"></i>
+                        <div className="ciann-id">CIAAN ID: {ciannData.ciannId}</div>
+                        <div className="card-text">
+                          <strong>{ciannData.subject?.name}</strong>
+                          <span className="subject-code">({ciannData.subject?.code})</span>
+                        </div>
+                        <div className="card-text">
+                          <span className="division-label">Division:</span> <strong>{ciannData.division}</strong>
+                        </div>
+                        {accessLevel && accessLevel !== 'owner' && (
+                          <div className="ciann-access-pill">Access: {accessLevel}</div>
+                        )}
+                      </div>
+                      <div className="card-hover-text">Click to Edit</div>
                     </div>
-                    <div className="card-text">
-                      <span className="division-label">Division:</span> <strong>{ciannData.division}</strong>
-                    </div>
-                    {accessLevel && accessLevel !== 'owner' && (
-                      <div className="ciann-access-pill">Access: {accessLevel}</div>
-                    )}
-                  </div>
-                  <div className="card-hover-text">Click to Edit</div>
-                </div>
-              </Link>
+                  </Link>
                 );
               })()
             ))
