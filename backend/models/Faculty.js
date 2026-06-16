@@ -80,6 +80,10 @@ const FacultySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  profilePhoto: {
+    type: String,
+    default: "",
+  },
 });
 
 // Update the updatedAt field before saving

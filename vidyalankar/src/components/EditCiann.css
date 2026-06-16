@@ -5,9 +5,9 @@
   padding: 2rem; /* Even padding on all sides */
   box-sizing: border-box;
   background-color: #f8f9fa;
-  min-height: 100vh;
+  min-height: 100%;
   max-width: none; /* Remove any max-width constraints */
-  overflow-x: auto; /* Allow horizontal scrolling if ever needed */
+  overflow: visible;
 }
 
 .edit-ciann-header {

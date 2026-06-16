@@ -13,6 +13,7 @@ import Header from "./basic/Header";
 import Sidebar from "./basic/Sidebar";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
+import Profile from "./basic/Profile";
 
 // Student Components
 import StudentLayout from "./student/StudentLayout";
@@ -536,6 +537,7 @@ const AppContent = () => {
               }
             />
             {/* General Routes */}
+            <Route path="/profile" element={<Profile />} />
             <Route path="/create-ciann" element={<CreateCiann />} />
             <Route path="/edit-ciann" element={<EditCiann />} />
             <Route path="/course-diary" element={<CourseDiary />} />

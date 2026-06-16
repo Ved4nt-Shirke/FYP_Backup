@@ -269,4 +269,140 @@ router.post("/login", async (req, res) => {
   }
 });
 
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
+const { authenticate } = require("../middleware/auth");
+
+const profilePhotoDir = path.join(__dirname, "../uploads/profile-photos");
+if (!fs.existsSync(profilePhotoDir)) {
+  fs.mkdirSync(profilePhotoDir, { recursive: true });
+}
+
+const profilePhotoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, profilePhotoDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname || "").toLowerCase() || ".png";
+    const name = (req.user?.username || "profile")
+      .toString()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-");
+    cb(null, `${name}-${Date.now()}${ext}`);
+  },
+});
+
+const profilePhotoUpload = multer({
+  storage: profilePhotoStorage,
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+      return;
+    }
+    cb(new Error("Only PNG, JPEG/JPG, and WEBP profile photos are allowed"));
+  },
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+});
+
+// GET /api/auth/profile
+router.get("/profile", authenticate, async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ msg: "Not authorized" });
+    }
+
+    let profile = null;
+    if (user.role === "faculty") {
+      const Faculty = require("../models/Faculty");
+      profile = await Faculty.findOne({ generatedUsername: user.username }).populate("department", "name code");
+    }
+
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+        college: user.college,
+      },
+      profile,
+    });
+  } catch (err) {
+    res.status(500).json({ msg: "Server error fetching profile", error: err.message });
+  }
+});
+
+// PUT /api/auth/profile
+router.put("/profile", authenticate, profilePhotoUpload.single("profilePhoto"), async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ msg: "Not authorized" });
+    }
+
+    if (user.role !== "faculty") {
+      return res.status(403).json({ msg: "Only faculty can edit their profile details" });
+    }
+
+    const Faculty = require("../models/Faculty");
+    const facultyProfile = await Faculty.findOne({ generatedUsername: user.username });
+    if (!facultyProfile) {
+      return res.status(404).json({ msg: "Faculty profile not found" });
+    }
+
+    const { email, whatsappPhone, password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ msg: "Password verification is required to update profile details" });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: "Incorrect password. Verification failed." });
+    }
+
+    // Email validation & uniqueness
+    if (email && email.toLowerCase().trim() !== facultyProfile.email.toLowerCase()) {
+      const trimmedEmail = email.toLowerCase().trim();
+      const emailExists = await Faculty.findOne({ email: trimmedEmail });
+      if (emailExists) {
+        return res.status(400).json({ msg: "Email is already in use by another faculty member" });
+      }
+      facultyProfile.email = trimmedEmail;
+    }
+
+    if (whatsappPhone !== undefined) {
+      facultyProfile.whatsappPhone = (whatsappPhone || "").toString().trim();
+    }
+
+    if (req.file) {
+      // Delete old photo if it exists to clean up disk storage
+      if (facultyProfile.profilePhoto) {
+        const oldPath = path.join(__dirname, "..", facultyProfile.profilePhoto);
+        fs.unlink(oldPath, (err) => {
+          if (err && err.code !== 'ENOENT') {
+            console.warn("Failed to delete old profile photo:", err.message);
+          }
+        });
+      }
+      facultyProfile.profilePhoto = `/uploads/profile-photos/${req.file.filename}`;
+    }
+
+    await facultyProfile.save();
+
+    res.json({
+      success: true,
+      msg: "Profile updated successfully",
+      profile: facultyProfile,
+    });
+  } catch (err) {
+    console.error("Profile update failed:", err);
+    res.status(500).json({ msg: "Server error updating profile", error: err.message });
+  }
+});
+
 module.exports = router;
