@@ -30,6 +30,7 @@ const K7Print = () => {
     const sem = params.get("semester") || "";
     const deptId = params.get("departmentId") || "";
     const divId = params.get("divisionId") || "";
+    const urlCourseCode = params.get("courseCode") || "";
 
     setAcademicYear(ay);
     setSemester(sem);
@@ -40,14 +41,14 @@ const K7Print = () => {
     setInstituteName(brand);
 
     if (ay && sem && deptId && divId) {
-      loadK7Data(ay, sem, deptId, divId);
+      loadK7Data(ay, sem, deptId, divId, urlCourseCode);
     } else {
       setLoading(false);
     }
   }, [location.search]);
 
   // Load K7 Saved data and details
-  const loadK7Data = async (ay, sem, deptId, divId) => {
+  const loadK7Data = async (ay, sem, deptId, divId, urlCourseCode) => {
     setLoading(true);
     try {
       // Fetch department details
@@ -83,9 +84,15 @@ const K7Print = () => {
 
       if (k7Res.data?.success && k7Res.data.data) {
         const record = k7Res.data.data;
-        setCourseConfigs(record.courseConfigs || []);
+        let configs = record.courseConfigs || [];
+        let stats = record.courseStats || [];
+        if (urlCourseCode) {
+          configs = configs.filter(c => c.courseCode.toLowerCase() === urlCourseCode.toLowerCase());
+          stats = stats.filter(s => s.courseCode.toLowerCase() === urlCourseCode.toLowerCase());
+        }
+        setCourseConfigs(configs);
         setStudentMarks(record.studentMarks || []);
-        setCourseStats(record.courseStats || []);
+        setCourseStats(stats);
       }
     } catch (err) {
       console.error("Failed to load K7 data:", err);
@@ -492,7 +499,7 @@ const K7Print = () => {
 
                 // Define standard components list matching the database stats array keys
                 const components = [
-                  { key: "faTh", label: "FA-TH", maxMark: max.faTh || 40 },
+                  { key: "faTh", label: "FA-TH", maxMark: max.faTh || 30 },
                   { key: "saTh", label: "SA-TH", maxMark: max.saTh || 70 },
                   { key: "faPr", label: "FA-PR", maxMark: max.faPr || 25 },
                   { key: "saPr", label: "SA-PR", maxMark: max.saPr || 25 },

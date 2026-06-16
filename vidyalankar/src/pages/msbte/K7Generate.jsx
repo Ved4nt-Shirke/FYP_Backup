@@ -7,7 +7,6 @@ const PASSING_HEADS = [
   { key: "ct1",       label: "CT-1",        isEditable: true,  indent: true },
   { key: "ct2",       label: "CT-2",        isEditable: true,  indent: true },
   { key: "finalFaTh", label: "Final (Avg)", isEditable: false, indent: true },
-  { key: "faTh",      label: "FA-TH",       isEditable: false, indent: false },
   { key: "saTh",      label: "SA-TH",       isEditable: true,  indent: false },
   { key: "faPr",      label: "FA-PR",       isEditable: true,  indent: false },
   { key: "saPr",      label: "SA-PR",       isEditable: true,  indent: false },
@@ -76,14 +75,11 @@ function deriveCalculatedStats(courseStats) {
     above60Pct: finalAbove60
   };
 
-  // 2. Calculate FA-TH (derived from Final scaled to 40 max marks)
-  const faThLowest = finalLowest !== "" ? String(Math.round(Number(finalLowest) * 40 / 30)) : "";
-  const faThHighest = finalHighest !== "" ? String(Math.round(Number(finalHighest) * 40 / 30)) : "";
-
+  // 2. Calculate FA-TH (identical to Final average out of 30)
   updated["faTh"] = {
     passingHead: "faTh",
-    lowest: faThLowest,
-    highest: faThHighest,
+    lowest: finalLowest,
+    highest: finalHighest,
     appeared: finalApp,
     passed: finalPas,
     passPct: finalPassPct,
@@ -136,7 +132,7 @@ const K7Generate = () => {
   const [ciannId, setCiannId] = useState("");
   const [ciannData, setCiannData] = useState(null);
 
-  const handleLoadCiann = async (cid) => {
+  const handleLoadCiann = async (cid, urlDivId = "") => {
     if (!cid) return;
     setLoading(true);
     try {
@@ -158,7 +154,7 @@ const K7Generate = () => {
         setDivisionName(divisionName);
 
         // Re-run init logic with the new parameters
-        await init(academicYear, semester, deptId, "", divisionName, cid, courseCode);
+        await init(academicYear, semester, deptId, urlDivId, divisionName, cid, courseCode);
       } else {
         alert("CIANN not found or access denied.");
       }
@@ -189,7 +185,7 @@ const K7Generate = () => {
 
     if (urlCiannId) {
       setCiannId(urlCiannId);
-      handleLoadCiann(urlCiannId);
+      handleLoadCiann(urlCiannId, divId);
     } else if (ay && sem && deptId) {
       init(ay, sem, deptId, divId, divName, "", urlCourseCode);
     } else {
@@ -211,10 +207,9 @@ const K7Generate = () => {
       let targetDivId = divId;
       const courseRes = await axios.get(`/catalog/courses/${deptId}`);
       if (courseRes.data?.success && Array.isArray(courseRes.data.courses)) {
-        const semNum = parseInt(sem);
         let found = false;
         for (const c of courseRes.data.courses) {
-          if (c.semester !== semNum) continue;
+          if (Number(c.semester) !== Number(sem)) continue;
           const divRes = await axios.get(`/catalog/divisions/${c._id}`);
           if (divRes.data?.success) {
             if (divId) {
@@ -253,7 +248,14 @@ const K7Generate = () => {
 
       if (k7Res.data?.success && k7Res.data.data) {
         const rec = k7Res.data.data;
-        loadFromRecord(rec, urlCourseCode);
+        const hasCourse = urlCourseCode && (rec.courseConfigs || []).some(
+          c => c.courseCode.toLowerCase() === urlCourseCode.toLowerCase()
+        );
+        if (urlCourseCode && !hasCourse) {
+          await autoPopulate(ay, sem, deptId, targetDivId, urlCiannId, urlCourseCode);
+        } else {
+          loadFromRecord(rec, urlCourseCode);
+        }
       } else {
         // populate from DB (auto)
         await autoPopulate(ay, sem, deptId, targetDivId, urlCiannId, urlCourseCode);
@@ -274,7 +276,7 @@ const K7Generate = () => {
     }));
 
     if (urlCourseCode) {
-      subs = subs.filter(s => s.courseCode === urlCourseCode);
+      subs = subs.filter(s => s.courseCode.toLowerCase() === urlCourseCode.toLowerCase());
     }
     setSubjects(subs);
 
@@ -366,13 +368,13 @@ const K7Generate = () => {
   // ─────────────────────────────────────────────────────────────────────────────
   //  STATS COMPUTATION
   // ─────────────────────────────────────────────────────────────────────────────
-  const defaultMaxMarks = () => ({ ct1: 30, ct2: 30, finalFaTh: 30, faTh: 40, saTh: 70, faPr: 25, saPr: 25, sla: 25 });
+  const defaultMaxMarks = () => ({ ct1: 30, ct2: 30, finalFaTh: 30, faTh: 30, saTh: 70, faPr: 25, saPr: 25, sla: 25 });
 
   const getMaxForKey = (maxMarks, key) => {
     if (key === "ct1")      return maxMarks?.ct1      ?? 30;
     if (key === "ct2")      return maxMarks?.ct2      ?? 30;
     if (key === "finalFaTh")return maxMarks?.ct1      ?? 30; // CT avg uses CT max
-    if (key === "faTh")     return maxMarks?.faTh     ?? 40;
+    if (key === "faTh")     return maxMarks?.faTh     ?? 30;
     if (key === "saTh")     return maxMarks?.saTh     ?? 70;
     if (key === "faPr")     return maxMarks?.faPr     ?? 25;
     if (key === "saPr")     return maxMarks?.saPr     ?? 25;
@@ -529,19 +531,28 @@ const K7Generate = () => {
       // Build courseStats
       const courseStats = subjects.map(s => {
         const code  = s.courseCode;
-        const heads = activeHeads[code] || [];
+        let heads = activeHeads[code] || [];
         const ss    = summaryStats[code] || {};
+
+        // Map finalFaTh stats to faTh in the database
+        if (!heads.includes("faTh")) {
+          heads = [...heads, "faTh"];
+        }
+
         return {
           courseCode: code,
-          stats: heads.map(key => ({
-            passingHead:  key,
-            lowest:       ss[key]?.lowest      ?? "",
-            highest:      ss[key]?.highest     ?? "",
-            appeared:     ss[key]?.appeared    ?? 0,
-            passed:       ss[key]?.passed      ?? 0,
-            passPct:      ss[key]?.passPct     ?? 0,
-            above60Pct:   ss[key]?.above60Pct  ?? 0,
-          })),
+          stats: heads.map(key => {
+            const statSource = key === "faTh" ? (ss["finalFaTh"] || {}) : (ss[key] || {});
+            return {
+              passingHead:  key,
+              lowest:       statSource.lowest      ?? "",
+              highest:      statSource.highest     ?? "",
+              appeared:     statSource.appeared    ?? 0,
+              passed:       statSource.passed      ?? 0,
+              passPct:      statSource.passPct     ?? 0,
+              above60Pct:   statSource.above60Pct  ?? 0,
+            };
+          }),
         };
       });
 
@@ -625,67 +636,12 @@ const K7Generate = () => {
           </button>
         </div>
 
-        {/* ── CIANN manual input card ── */}
-        <div className="card mb-4" style={{ borderRadius: "12px", border: "1px solid #cbd5e1", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" }}>
-          <div className="card-body p-4">
-            <h5 style={{ fontWeight: 600, color: "#1e293b", marginBottom: "16px" }}>
-              <i className="bi bi-card-checklist text-primary me-2"></i> CIANN Course Verification
-            </h5>
-            <div className="row g-3 align-items-end">
-              <div className="col-md-4">
-                <label className="form-label" style={{ fontWeight: "600", fontSize: "0.85rem", color: "#475569" }}>
-                  CIANN ID
-                </label>
-                <div className="input-group">
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="Enter CIANN ID (e.g. 1045)"
-                    value={ciannId}
-                    onChange={(e) => setCiannId(e.target.value)}
-                    style={{ borderRadius: "8px 0 0 8px" }}
-                  />
-                  <button
-                    className="btn btn-primary"
-                    type="button"
-                    onClick={() => handleLoadCiann(ciannId)}
-                    style={{ borderRadius: "0 8px 8px 0", background: "#4f46e5", border: "none" }}
-                  >
-                    Load details
-                  </button>
-                </div>
-                <span 
-                  onClick={() => navigate(`/msbte/k7/cianns?academicYear=${academicYear}&semester=${semester}&departmentId=${departmentId}&divisionName=${divisionName}`)}
-                  style={{ fontSize: "0.8rem", color: "#4f46e5", cursor: "pointer", textDecoration: "underline", display: "block", marginTop: "6px", fontWeight: "600" }}
-                >
-                  <i className="bi bi-list-ul"></i> Select from CIANN list
-                </span>
-              </div>
-              {ciannData ? (
-                <div className="col-md-8">
-                  <div className="p-3" style={{ background: "#eff6ff", borderRadius: "8px", border: "1px solid #bfdbfe", fontSize: "0.9rem", color: "#1e3a8a" }}>
-                    <i className="bi bi-check-circle-fill text-success me-2"></i>
-                    <strong>Verified:</strong> {ciannData.subject?.name || "N/A"} ({ciannData.subject?.code || "N/A"}) &bull; Semester {ciannData.semester} &bull; Division {ciannData.division}
-                  </div>
-                </div>
-              ) : (
-                <div className="col-md-8">
-                  <div className="p-3" style={{ background: "#fff7ed", borderRadius: "8px", border: "1px solid #ffedd5", fontSize: "0.9rem", color: "#9a3412" }}>
-                    <i className="bi bi-exclamation-triangle-fill text-warning me-2"></i>
-                    Please enter your CIANN ID to activate the Result Analysis entry sheet for your course.
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
         {!currentSubject ? (
           <div className="text-center py-5 card" style={{ background: "#ffffff", borderRadius: "14px", border: "1px solid #e2e8f0", padding: "45px 20px" }}>
             <i className="bi bi-journal-x" style={{ fontSize: "3.5rem", color: "#94a3b8" }}></i>
-            <h5 className="mt-3" style={{ fontWeight: "600", color: "#334155" }}>Result Analysis Worksheet Inactive</h5>
+            <h5 className="mt-3" style={{ fontWeight: "600", color: "#334155" }}>Result Analysis Worksheet Empty</h5>
             <p className="text-muted" style={{ maxWidth: "500px", margin: "10px auto 0" }}>
-              Enter your assigned CIANN ID in the verification card above to load the course statistics template.
+              Please check your URL parameters. We could not find a subject/course configuration matching this selection.
             </p>
           </div>
         ) : (
@@ -713,30 +669,6 @@ const K7Generate = () => {
               </div>
             </div>
 
-            {/* ── max marks configuration panel ── */}
-            <div className="card mb-4" style={{ borderRadius: "12px", border: "1px solid #e2e8f0" }}>
-              <div className="card-body">
-                <h5 style={{ fontWeight: 600, color: "#1e293b", marginBottom: "16px" }}>Configure Max Marks</h5>
-                <div className="row g-3">
-                  {PASSING_HEADS.map(head => (
-                    <div key={head.key} className="col-md-2 col-sm-4">
-                      <label className="form-label" style={{ fontWeight: "600", fontSize: "0.85rem", color: "#475569" }}>
-                        {head.label}
-                      </label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={currentMaxMarks[head.key] ?? ""}
-                        onChange={(e) => handleMaxMarkChange(head.key, e.target.value)}
-                        disabled={!head.isEditable}
-                        style={{ borderRadius: "8px", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
             {/* ── main summary stats entry table ── */}
             <div className="card mb-4" style={{ borderRadius: "12px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
               <div className="card-body p-0">
@@ -760,89 +692,98 @@ const K7Generate = () => {
                         };
                         
                         return (
-                          <tr key={head.key} style={!head.isEditable ? { background: "#f8fafc" } : {}}>
-                            <td style={{ 
-                              fontWeight: "600", 
-                              color: !head.isEditable ? "#475569" : "#0f172a", 
-                              verticalAlign: "middle", 
-                              paddingLeft: head.indent ? "35px" : "20px",
-                              fontStyle: !head.isEditable ? "italic" : "normal"
-                            }}>
-                              {head.indent ? `├── ${head.label}` : head.label}
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-                                placeholder={!head.isEditable ? "Calculated" : "Lowest"}
-                                value={hStats.lowest ?? ""}
-                                onChange={(e) => handleSummaryStatChange(head.key, "lowest", e.target.value)}
-                                disabled={!head.isEditable}
-                                style={{ borderRadius: "6px", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-                                placeholder={!head.isEditable ? "Calculated" : "Highest"}
-                                value={hStats.highest ?? ""}
-                                onChange={(e) => handleSummaryStatChange(head.key, "highest", e.target.value)}
-                                disabled={!head.isEditable}
-                                style={{ borderRadius: "6px", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                className="form-control"
-                                placeholder={!head.isEditable ? "Calculated" : "Appeared"}
-                                value={hStats.appeared ?? ""}
-                                onChange={(e) => handleSummaryStatChange(head.key, "appeared", e.target.value)}
-                                disabled={!head.isEditable}
-                                style={{ borderRadius: "6px", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                className="form-control"
-                                placeholder={!head.isEditable ? "Calculated" : "Passed"}
-                                value={hStats.passed ?? ""}
-                                onChange={(e) => handleSummaryStatChange(head.key, "passed", e.target.value)}
-                                disabled={!head.isEditable}
-                                style={{ borderRadius: "6px", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
-                              />
-                            </td>
-                            <td>
-                              <div className="input-group">
+                          <React.Fragment key={head.key}>
+                            {head.key === "ct1" && (
+                              <tr style={{ background: "#e0e7ff" }}>
+                                <td colSpan="7" style={{ fontWeight: "700", color: "#1e1b4b", padding: "12px 20px" }}>
+                                  FA-TH (Formative Assessment - Theory)
+                                </td>
+                              </tr>
+                            )}
+                            <tr style={!head.isEditable ? { background: "#f8fafc" } : {}}>
+                              <td style={{ 
+                                fontWeight: "600", 
+                                color: !head.isEditable ? "#475569" : "#0f172a", 
+                                verticalAlign: "middle", 
+                                paddingLeft: head.indent ? "35px" : "20px",
+                                fontStyle: !head.isEditable ? "italic" : "normal"
+                              }}>
+                                {head.indent ? `├── ${head.label}` : head.label}
+                              </td>
+                              <td>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder={!head.isEditable ? "Calculated" : "Lowest"}
+                                  value={hStats.lowest ?? ""}
+                                  onChange={(e) => handleSummaryStatChange(head.key, "lowest", e.target.value)}
+                                  disabled={!head.isEditable}
+                                  style={{ borderRadius: "6px", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder={!head.isEditable ? "Calculated" : "Highest"}
+                                  value={hStats.highest ?? ""}
+                                  onChange={(e) => handleSummaryStatChange(head.key, "highest", e.target.value)}
+                                  disabled={!head.isEditable}
+                                  style={{ borderRadius: "6px", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
+                                />
+                              </td>
+                              <td>
                                 <input
                                   type="number"
                                   className="form-control"
-                                  placeholder={!head.isEditable ? "Calculated" : "Pass %"}
-                                  value={hStats.passPct ?? ""}
-                                  onChange={(e) => handleSummaryStatChange(head.key, "passPct", e.target.value)}
+                                  placeholder={!head.isEditable ? "Calculated" : "Appeared"}
+                                  value={hStats.appeared ?? ""}
+                                  onChange={(e) => handleSummaryStatChange(head.key, "appeared", e.target.value)}
                                   disabled={!head.isEditable}
-                                  style={{ borderRadius: "6px", borderRight: "none", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
+                                  style={{ borderRadius: "6px", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
                                 />
-                                <span className="input-group-text" style={{ borderLeft: "none", background: "#f8fafc", color: "#64748b", fontWeight: "600" }}>%</span>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="input-group">
+                              </td>
+                              <td>
                                 <input
                                   type="number"
                                   className="form-control"
-                                  placeholder={!head.isEditable ? "Calculated" : "> 60%"}
-                                  value={hStats.above60Pct ?? ""}
-                                  onChange={(e) => handleSummaryStatChange(head.key, "above60Pct", e.target.value)}
+                                  placeholder={!head.isEditable ? "Calculated" : "Passed"}
+                                  value={hStats.passed ?? ""}
+                                  onChange={(e) => handleSummaryStatChange(head.key, "passed", e.target.value)}
                                   disabled={!head.isEditable}
-                                  style={{ borderRadius: "6px", borderRight: "none", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
+                                  style={{ borderRadius: "6px", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
                                 />
-                                <span className="input-group-text" style={{ borderLeft: "none", background: "#f8fafc", color: "#64748b", fontWeight: "600" }}>%</span>
-                              </div>
-                            </td>
-                          </tr>
+                              </td>
+                              <td>
+                                <div className="input-group">
+                                  <input
+                                    type="number"
+                                    className="form-control"
+                                    placeholder={!head.isEditable ? "Calculated" : "Pass %"}
+                                    value={hStats.passPct ?? ""}
+                                    onChange={(e) => handleSummaryStatChange(head.key, "passPct", e.target.value)}
+                                    disabled={!head.isEditable}
+                                    style={{ borderRadius: "6px", borderRight: "none", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
+                                  />
+                                  <span className="input-group-text" style={{ borderLeft: "none", background: "#f8fafc", color: "#64748b", fontWeight: "600" }}>%</span>
+                                </div>
+                              </td>
+                              <td>
+                                <div className="input-group">
+                                  <input
+                                    type="number"
+                                    className="form-control"
+                                    placeholder={!head.isEditable ? "Calculated" : "> 60%"}
+                                    value={hStats.above60Pct ?? ""}
+                                    onChange={(e) => handleSummaryStatChange(head.key, "above60Pct", e.target.value)}
+                                    disabled={!head.isEditable}
+                                    style={{ borderRadius: "6px", borderRight: "none", background: !head.isEditable ? "#f1f5f9" : "#fff" }}
+                                  />
+                                  <span className="input-group-text" style={{ borderLeft: "none", background: "#f8fafc", color: "#64748b", fontWeight: "600" }}>%</span>
+                                </div>
+                              </td>
+                            </tr>
+                          </React.Fragment>
                         );
                       })}
                     </tbody>

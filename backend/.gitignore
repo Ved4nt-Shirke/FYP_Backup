@@ -30,3 +30,5 @@ coverage/
 backend/.wwebjs_cache/
 backend/whatsapp/auth/
 whatsapp/auth/
+backend/uploads/profile-photos/
+uploads/profile-photos/

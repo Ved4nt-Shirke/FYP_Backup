@@ -37,6 +37,9 @@ const Header = ({
       : setLocalShowUserDropdown;
   const userDropdownRef = propUserDropdownRef || localUserDropdownRef;
 
+  // Profile states
+  const [profile, setProfile] = useState(null);
+
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -214,6 +217,41 @@ const Header = ({
   const userRole = localStorage.getItem("role") || "faculty";
   const isSuperAdmin = userRole === "superadmin";
   const isFaculty = userRole === "faculty" || userRole === "hod" || userRole === "academic_coordinator";
+
+  // Fetch profile details
+  const fetchProfile = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/auth/profile`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.profile) {
+          setProfile(data.profile);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!isFaculty) return;
+
+    fetchProfile();
+
+    // Listen for profile updates
+    window.addEventListener("profile:updated", fetchProfile);
+    return () => {
+      window.removeEventListener("profile:updated", fetchProfile);
+    };
+  }, [isFaculty]);
 
   useEffect(() => {
     const fetchPendingRequests = async () => {
@@ -428,7 +466,15 @@ const Header = ({
             }}
             aria-expanded={showUserDropdown}
           >
-            <span className="user-icon">👤</span>
+            {profile && profile.profilePhoto ? (
+              <img
+                src={buildInstitutionLogoUrl(profile.profilePhoto)}
+                alt="Profile"
+                className="user-profile-img"
+              />
+            ) : (
+              <span className="user-icon">👤</span>
+            )}
             <span
               className="user-name"
               title={username}
@@ -454,6 +500,22 @@ const Header = ({
                 >
                   <i className="fas fa-user-shield"></i> Super Admin Panel
                 </button>
+              )}
+              {isFaculty && (
+                <>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                      navigate("/profile");
+                    }}
+                  >
+                    <i className="bi bi-person-gear"></i> Edit Profile
+                  </button>
+                  <button className="dropdown-item logout" onClick={handleLogout}>
+                    <i className="bi bi-box-arrow-right"></i> Logout
+                  </button>
+                </>
               )}
               {!isFaculty && (
                 <button className="dropdown-item logout" onClick={handleLogout}>
