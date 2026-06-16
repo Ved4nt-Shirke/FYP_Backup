@@ -150,6 +150,12 @@ app.get("/api/health", (req, res) => {
 // CIAAN Routes
 app.use("/api/cianns", require("./routes/cianns"));
 
+// Notifications Routes
+app.use("/api/notifications", require("./routes/notifications"));
+
+// Faculty Routes
+app.use("/api/faculty", require("./routes/faculty"));
+
 // Student Portal Routes
 app.use("/api/student-portal", require("./routes/studentPortal"));
 
