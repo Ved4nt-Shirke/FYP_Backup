@@ -20,7 +20,12 @@ const K7ReportSelector = () => {
 
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [loadingDivisions, setLoadingDivisions] = useState(false);
-  const [showCreateCard, setShowCreateCard] = useState(false);
+  const [showCreateCard, setShowCreateCard] = useState(true); // default open
+
+  // CIANNs
+  const [cianns, setCianns] = useState([]);
+  const [selectedCiannId, setSelectedCiannId] = useState("");
+  const [loadingCianns, setLoadingCianns] = useState(false);
 
   const fetchRecords = async () => {
     setLoading(true);
@@ -47,9 +52,24 @@ const K7ReportSelector = () => {
     }
   };
 
+  const fetchCianns = async () => {
+    setLoadingCianns(true);
+    try {
+      const res = await axios.get("/cianns");
+      if (Array.isArray(res.data)) {
+        setCianns(res.data.sort((a, b) => b.ciannId - a.ciannId));
+      }
+    } catch (err) {
+      console.error("Failed to fetch CIANNs:", err);
+    } finally {
+      setLoadingCianns(false);
+    }
+  };
+
   useEffect(() => {
     fetchRecords();
     fetchDepartments();
+    fetchCianns();
   }, []);
 
   // Handle department change
@@ -98,6 +118,74 @@ const K7ReportSelector = () => {
     }
   };
 
+  // Handle CIANN change with auto-population of cascades
+  const handleCiannChange = async (ciannId) => {
+    setSelectedCiannId(ciannId);
+    if (!ciannId) {
+      setSelectedDeptId("");
+      setSelectedCourseId("");
+      setSelectedDivId("");
+      setCourses([]);
+      setDivisions([]);
+      return;
+    }
+
+    const ciann = cianns.find((c) => String(c.ciannId) === String(ciannId));
+    if (!ciann) return;
+
+    setAcademicYear(ciann.academicYear);
+
+    const deptId = ciann.department?._id || ciann.department;
+    setSelectedDeptId(deptId);
+
+    setLoadingCourses(true);
+    try {
+      const courseRes = await axios.get(`/catalog/courses/${deptId}`);
+      if (courseRes.data?.success && Array.isArray(courseRes.data.courses)) {
+        setCourses(courseRes.data.courses);
+        
+        const matchedCourse = courseRes.data.courses.find(
+          (c) => Number(c.semester) === Number(ciann.semester)
+        );
+        if (matchedCourse) {
+          setSelectedCourseId(matchedCourse._id);
+          
+          setLoadingDivisions(true);
+          const divRes = await axios.get(`/catalog/divisions/${matchedCourse._id}`);
+          if (divRes.data?.success && Array.isArray(divRes.data.divisions)) {
+            setDivisions(divRes.data.divisions);
+            
+            const matchedDiv = divRes.data.divisions.find(
+              (d) => String(d.name).toLowerCase() === String(ciann.division).toLowerCase()
+            );
+            if (matchedDiv) {
+              setSelectedDivId(matchedDiv._id);
+            } else {
+              setSelectedDivId("");
+            }
+          } else {
+            setDivisions([]);
+            setSelectedDivId("");
+          }
+        } else {
+          setSelectedCourseId("");
+          setDivisions([]);
+          setSelectedDivId("");
+        }
+      } else {
+        setCourses([]);
+        setSelectedCourseId("");
+        setDivisions([]);
+        setSelectedDivId("");
+      }
+    } catch (err) {
+      console.error("Failed to auto-populate parameters from CIANN:", err);
+    } finally {
+      setLoadingCourses(false);
+      setLoadingDivisions(false);
+    }
+  };
+
   const handleAction = (type) => {
     if (!academicYear || !selectedDeptId || !selectedCourseId || !selectedDivId) {
       alert("Please select Academic Year, Department, Course, and Division.");
@@ -107,16 +195,42 @@ const K7ReportSelector = () => {
     const courseObj = courses.find((c) => c._id === selectedCourseId);
     const semester = courseObj ? courseObj.semester : "";
 
+    let queryStr = `academicYear=${academicYear}&semester=${semester}&departmentId=${selectedDeptId}&divisionId=${selectedDivId}`;
+    
+    if (selectedCiannId) {
+      const ciann = cianns.find((c) => String(c.ciannId) === String(selectedCiannId));
+      if (ciann) {
+        queryStr += `&ciannId=${ciann.ciannId}&courseCode=${ciann.subject?.code}`;
+      }
+    }
+
     if (type === "edit") {
-      navigate(
-        `/msbte/k7/generate?academicYear=${academicYear}&semester=${semester}&departmentId=${selectedDeptId}&divisionId=${selectedDivId}`
-      );
+      navigate(`/msbte/k7/generate?${queryStr}`);
     } else {
-      navigate(
-        `/msbte/k7/print?academicYear=${academicYear}&semester=${semester}&departmentId=${selectedDeptId}&divisionId=${selectedDivId}`
-      );
+      navigate(`/msbte/k7/print?${queryStr}`);
     }
   };
+
+  const filteredCianns = cianns.filter((c) => {
+    const deptId = c.department?._id || c.department;
+    const matchedRecord = records.find(
+      (rec) =>
+        rec.academicYear === c.academicYear &&
+        String(rec.semester) === String(c.semester) &&
+        String(rec.departmentId?._id || rec.departmentId) === String(deptId) &&
+        String(rec.divisionId?.name || "").toLowerCase() === String(c.division || "").toLowerCase()
+    );
+
+    if (matchedRecord) {
+      const hasStats = matchedRecord.courseStats?.some(
+        (stat) => String(stat.courseCode).toLowerCase() === String(c.subject?.code).toLowerCase()
+      );
+      if (hasStats) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <div
@@ -150,21 +264,6 @@ const K7ReportSelector = () => {
               K7 Part B: Consolidated Result Analysis Dashboard
             </h2>
           </div>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowCreateCard(!showCreateCard)}
-            style={{
-              background: showCreateCard ? "#64748b" : "#10b981",
-              color: "#fff",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              fontWeight: "600",
-              border: "none",
-            }}
-          >
-            <i className={`bi ${showCreateCard ? "bi-x-lg" : "bi-eye"}`}></i>{" "}
-            {showCreateCard ? "Close Selection" : "View Report by Class"}
-          </button>
         </div>
 
         {/* Configuration Card */}
@@ -183,6 +282,29 @@ const K7ReportSelector = () => {
               Select Report Parameters
             </h5>
             <div className="row g-3">
+              <div className="col-12">
+                <label className="form-label" style={{ fontWeight: "600", color: "#4f46e5" }}>
+                  Select CIANN Course (Auto-populates parameters below)
+                </label>
+                {loadingCianns ? (
+                  <div className="text-muted">Loading assigned CIANN courses...</div>
+                ) : (
+                  <select
+                    className="form-select"
+                    value={selectedCiannId}
+                    onChange={(e) => handleCiannChange(e.target.value)}
+                    style={{ borderColor: "#4f46e5", borderWidth: "2px", fontWeight: "600" }}
+                  >
+                    <option value="">-- Choose CIANN --</option>
+                    {filteredCianns.map((c) => (
+                      <option key={c._id} value={c.ciannId}>
+                        CIANN {c.ciannId} - {c.subject?.name} ({c.subject?.code}) | Sem {c.semester} - Div {c.division} | {c.academicYear}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
               <div className="col-md-6">
                 <label className="form-label" style={{ fontWeight: "500" }}>Academic Year</label>
                 <select
@@ -327,12 +449,13 @@ const K7ReportSelector = () => {
               >
                 <thead>
                   <tr style={{ background: "#f1f5f9" }}>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px" }}>Academic Year</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px" }}>Semester</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px" }}>Programme / Department</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px" }}>Division</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px" }}>Last Updated</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px", textAlign: "center", width: "240px" }}>Actions</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px", width: "10%", minWidth: "100px" }}>Academic Year</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px", width: "10%", minWidth: "100px" }}>Semester</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px", width: "20%", minWidth: "180px" }}>Programme / Department</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px", width: "8%", minWidth: "70px" }}>Division</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px", width: "22%", minWidth: "180px" }}>Courses / Subjects</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px", width: "15%", minWidth: "130px" }}>Last Updated</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px", textAlign: "center", width: "240px", minWidth: "240px" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -342,6 +465,20 @@ const K7ReportSelector = () => {
                       <td style={{ border: "1px solid #cbd5e1", padding: "12px" }}>Semester {rec.semester}</td>
                       <td style={{ border: "1px solid #cbd5e1", padding: "12px" }}>{rec.departmentId?.name || "N/A"}</td>
                       <td style={{ border: "1px solid #cbd5e1", padding: "12px" }}>{rec.divisionId?.name || "N/A"}</td>
+                      <td style={{ border: "1px solid #cbd5e1", padding: "12px" }}>
+                        {(rec.courseConfigs || []).map((c) => (
+                          <span
+                            key={c.courseCode}
+                            className="badge bg-primary me-1 text-white"
+                            style={{ fontSize: "0.75rem", padding: "5px 8px", borderRadius: "4px", display: "inline-block", marginBottom: "4px" }}
+                          >
+                            {c.courseCode} - {c.courseName}
+                          </span>
+                        ))}
+                        {(!rec.courseConfigs || rec.courseConfigs.length === 0) && (
+                          <span className="text-muted">None</span>
+                        )}
+                      </td>
                       <td style={{ border: "1px solid #cbd5e1", padding: "12px" }}>
                         {new Date(rec.updatedAt).toLocaleDateString()} {new Date(rec.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </td>

@@ -195,7 +195,6 @@ import ExpertLectureK9 from "./pages/msbte/ExpertLectureK9";
 import ExpertLectureK9Generate from "./pages/msbte/ExpertLectureK9Generate";
 import ExpertLectureK9Edit from "./pages/msbte/ExpertLectureK9Edit";
 import ExpertLectureK9Print from "./pages/msbte/ExpertLectureK9Print";
-import K7CiannSelection from "./pages/msbte/K7CiannSelection";
 import K7Generate from "./pages/msbte/K7Generate";
 import K7Print from "./pages/msbte/K7Print";
 import K7Placeholder from "./pages/msbte/K7Placeholder";
@@ -894,11 +893,6 @@ const AppContent = () => {
             <Route
               path="/msbte/expert-lecture/k9/print"
               element={<ExpertLectureK9Print />}
-            />
-            {/* K7 Routes */}
-            <Route
-              path="/msbte/k7/cianns"
-              element={<K7CiannSelection />}
             />
             <Route
               path="/msbte/k7/generate"

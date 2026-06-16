@@ -560,8 +560,8 @@ router.get("/k7/populate", async (req, res) => {
       maxMarks: {
         ct1: 30,
         ct2: 30,
-        finalFaTh: 10,
-        faTh: 40,
+        finalFaTh: 30,
+        faTh: 30,
         saTh: 70,
         faPr: 25,
         saPr: 25,
@@ -708,16 +708,13 @@ router.get("/k7/populate", async (req, res) => {
           ctAvg = ct2;
         }
 
-        let computedFaTh = null;
-        if (ctAvg !== null || finalFaTh !== null) {
-          computedFaTh = Math.round(ctAvg || 0) + (finalFaTh || 0);
-        }
+        let computedFaTh = ctAvg !== null ? Math.round(ctAvg) : null;
 
         studentCourseMarks.push({
           courseCode: subCode,
           ct1,
           ct2,
-          finalFaTh,
+          finalFaTh: computedFaTh,
           faTh: computedFaTh,
           saTh,
           faPr,
