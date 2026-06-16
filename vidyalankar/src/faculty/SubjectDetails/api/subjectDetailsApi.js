@@ -1,5 +1,5 @@
 // src/SubjectDetails/api/subjectDetailsApi.js
-import { config } from '../../config/api';
+import { config } from '../../../config/api';
 
 const API_BASE_URL = config.subjectDetails;
 

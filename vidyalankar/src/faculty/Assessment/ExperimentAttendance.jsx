@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-import { showSuccessAlert, showErrorAlert } from '../utils/alertUtils.jsx';
+import { showSuccessAlert, showErrorAlert } from '../../utils/alertUtils.jsx';
 import './ExperimentAttendance.css';
 
 // Dummy student data

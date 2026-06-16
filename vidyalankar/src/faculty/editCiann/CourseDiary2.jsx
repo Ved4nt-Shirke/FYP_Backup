@@ -4,7 +4,7 @@ import SecondarySidebar from "./SecondarySidebar";
 import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
-} from "../utils/institutionBranding";
+} from "../../utils/institutionBranding";
 import "./EditCiannModern.css";
 
 const CourseDiary2 = () => {

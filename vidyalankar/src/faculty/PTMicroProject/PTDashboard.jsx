@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../basic/Header";
+import Header from "../../basic/Header";
 
 export default function PTDashboard() {
   const [ciannList, setCiannList] = useState([]);

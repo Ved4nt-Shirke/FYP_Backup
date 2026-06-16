@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
-} from "../utils/institutionBranding";
-import { config } from "../config/api";
+} from "../../utils/institutionBranding";
+import { config } from "../../config/api";
 import "./PrintCiann.css";
 
 const days = [

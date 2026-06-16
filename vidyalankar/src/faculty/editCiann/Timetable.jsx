@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SecondarySidebar from "./SecondarySidebar";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./Timetable.css";
 import "./EditCiannModern.css";
 

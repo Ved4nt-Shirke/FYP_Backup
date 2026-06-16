@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import { showErrorAlert } from "../utils/alertUtils.jsx";
+import { showErrorAlert } from "../../utils/alertUtils.jsx";
 import "./edit/EditIndividualAttendance.css";
 
 const StudentAttendancePage = () => {

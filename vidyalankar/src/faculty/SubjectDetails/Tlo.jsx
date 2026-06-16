@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import SecondarySidebar from "../faculty/editCiann/SecondarySidebar";
-import { config, getApiUrl } from "../config/api";
-import "../faculty/editCiann/EditCiannModern.css";
+import SecondarySidebar from "../editCiann/SecondarySidebar";
+import { config, getApiUrl } from "../../config/api";
+import "../editCiann/EditCiannModern.css";
 
 export default function Tlo() {
   const location = useLocation();

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import axios from "../utils/axiosConfig";
-import { config } from "../config/api";
+import axios from "../../utils/axiosConfig";
+import { config } from "../../config/api";
 
 export default function PastResult() {
   const [loading, setLoading] = useState(true);

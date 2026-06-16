@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Header from '../../basic/Header';
+import Header from '../../../basic/Header';
 
 export default function StudentAssessSetup() {
   const location = useLocation();

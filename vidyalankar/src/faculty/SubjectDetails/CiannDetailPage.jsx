@@ -1,10 +1,10 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Header from '../basic/Header';
+import Header from '../../basic/Header';
 import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
-} from '../utils/institutionBranding';
+} from '../../utils/institutionBranding';
 
 const CiannDetailPage = () => {
   const navigate = useNavigate();

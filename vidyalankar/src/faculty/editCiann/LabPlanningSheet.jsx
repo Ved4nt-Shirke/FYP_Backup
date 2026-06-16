@@ -3,8 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SecondarySidebar from "./SecondarySidebar";
 import WeekwisePlan from "./WeekwisePlan";
 import CiannSelector from "../components/CiannSelector";
-import { useCiann } from "../hooks/useCiann";
-import { config } from "../config/api";
+import { useCiann } from "../../hooks/useCiann";
+import { config } from "../../config/api";
 import "./LabPlanningSheet.css";
 import "./EditCiannModern.css";
 

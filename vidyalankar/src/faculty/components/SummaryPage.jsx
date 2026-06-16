@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { config } from '../config/api';
+import { config } from '../../config/api';
 import './SummaryPage.css';
 
 const SummaryPage = () => {

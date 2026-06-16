@@ -1,5 +1,5 @@
 import React from 'react';
-import Header from '../basic/Header';
+import Header from '../../basic/Header';
 
 const EditCiann = ({ ciannDataList, onBack, onEdit, isSidebarVisible, setIsSidebarVisible }) => {
   return (

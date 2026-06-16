@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "../utils/axiosConfig";
-import { config } from "../config/api";
+import axios from "../../utils/axiosConfig";
+import { config } from "../../config/api";
 
 function CourseOutcomes() {
   const [courseOutcomes, setCourseOutcomes] = useState([]);

@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Header from "../basic/Header";
+import Header from "../../basic/Header";
 import PracticalAttendanceForm from "./PracticalAttendanceForm";
 import "./PracticalAttendance.css";
 

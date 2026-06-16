@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Header from "../basic/Header";
+import Header from "../../basic/Header";
 import "./Tutorial.css";
 
 const TutorialAttendance = () => {

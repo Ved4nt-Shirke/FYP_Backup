@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { showSuccessAlert, showErrorAlert } from "../utils/alertUtils.jsx";
-import { config } from "../config/api";
-import { TokenManager, SessionManager } from "../utils/authUtils.js";
-import { buildInstitutionLogoUrl } from "../utils/institutionBranding";
-import { applyPalette } from "../utils/theme";
+import { showSuccessAlert, showErrorAlert } from "../../utils/alertUtils.jsx";
+import { config } from "../../config/api";
+import { TokenManager, SessionManager } from "../../utils/authUtils.js";
+import { buildInstitutionLogoUrl } from "../../utils/institutionBranding";
+import { applyPalette } from "../../utils/theme";
 import "./Login.css";
-import loginImage from "../assets/login.png";
+import loginImage from "../../assets/login.svg";
 
 // Function to apply theme based on college
 const applyTheme = (college, palette = null) => {

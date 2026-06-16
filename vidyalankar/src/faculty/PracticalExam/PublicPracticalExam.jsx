@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./PublicPracticalExam.css";
 
 const PublicPracticalExam = () => {

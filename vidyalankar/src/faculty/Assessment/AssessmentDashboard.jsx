@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../basic/Header";
+import Header from "../../basic/Header";
 import "./AssessmentDashboard.css";
 
 export default function AssessmentDashboard() {

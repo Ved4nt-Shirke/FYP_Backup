@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SecondarySidebar from "../editCiann/SecondarySidebar";
-import { config, getApiUrl } from "../config/api";
+import { config, getApiUrl } from "../../config/api";
 import "../editCiann/EditCiannModern.css";
 
 export default function TloLlo() {

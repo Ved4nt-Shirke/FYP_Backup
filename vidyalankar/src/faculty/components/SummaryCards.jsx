@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import Header from "../basic/Header";
-import { config } from "../config/api";
-import { TokenManager } from "../utils/authUtils.js";
+import Header from "../../basic/Header";
+import { config } from "../../config/api";
+import { TokenManager } from "../../utils/authUtils.js";
 import "../components/EditCiann.css";
 
 const SummaryCards = () => {

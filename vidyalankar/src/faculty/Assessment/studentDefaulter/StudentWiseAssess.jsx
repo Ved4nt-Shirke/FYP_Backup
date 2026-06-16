@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Header from '../../basic/Header';
+import Header from '../../../basic/Header';
 
 
 // Renders a single-student assessment page listing all experiments (both unassessed and already assessed)

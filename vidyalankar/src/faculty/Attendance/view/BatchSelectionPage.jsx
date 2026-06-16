@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../basic/Header";
+import Header from "../../basic/Header";
 
 import "../components/EditCiann.css"; // using same CSS as Viewp
 

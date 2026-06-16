@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { config } from "../../config/api";
-import "../../components/EditCiann.css";
+import "../../faculty/components/EditCiann.css";
 import "./K3Pages.css";
 
 const modeToPath = {

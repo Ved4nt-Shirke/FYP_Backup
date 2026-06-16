@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import AddPracticalModal from "./Course3";
 import SecondarySidebar from "../editCiann/SecondarySidebar";
 import "../editCiann/EditCiannModern.css";

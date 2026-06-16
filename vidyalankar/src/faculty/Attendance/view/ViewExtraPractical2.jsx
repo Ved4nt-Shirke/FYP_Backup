@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import Header from "../../basic/Header";
+import Header from "../../../basic/Header";
 import "./ViewBatchSelect.css";
 
 const ViewExtraPractical2 = () => {

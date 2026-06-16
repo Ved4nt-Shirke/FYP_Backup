@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
-import SecondarySidebar from "../faculty/editCiann/SecondarySidebar";
-import "../faculty/editCiann/EditCiannModern.css";
+import SecondarySidebar from "../editCiann/SecondarySidebar";
+import "../editCiann/EditCiannModern.css";
 import "./SubjectDetails.css";
 
 const SubjectDetails = () => {

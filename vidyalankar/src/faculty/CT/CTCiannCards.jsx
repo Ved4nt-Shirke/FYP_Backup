@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./CTCiannCards.css";
 
 export default function CTCiannCards() {

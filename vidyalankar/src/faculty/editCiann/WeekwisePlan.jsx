@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "../utils/axiosConfig";
-import { config, getApiUrl } from "../config/api";
+import axios from "../../utils/axiosConfig";
+import { config, getApiUrl } from "../../config/api";
 
 const modalStyles = {
   overlay: {

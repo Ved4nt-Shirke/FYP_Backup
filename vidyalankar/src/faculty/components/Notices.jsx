@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import DOMPurify from "dompurify";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./Notices.css";
 
 const CKEDITOR_CDN = "https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js";

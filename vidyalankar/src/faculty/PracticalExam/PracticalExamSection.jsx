@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./PracticalExamSection.css";
 
 const PracticalExamSection = () => {

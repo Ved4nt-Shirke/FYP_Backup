@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import ErrorBoundary from "../components/ErrorBoundary";
+import ErrorBoundary from "../faculty/components/ErrorBoundary";
 import "./NoticesPage.css";
 
 const NoticesPage = () => {

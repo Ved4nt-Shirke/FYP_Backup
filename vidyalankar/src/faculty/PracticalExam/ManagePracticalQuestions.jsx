@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./ManagePracticalQuestions.css";
 
 const ManagePracticalQuestions = () => {

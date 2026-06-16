@@ -11,9 +11,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../basic/Header";
-import { fetchCiannsWithAuth } from "../utils/ciannFetch";
-import { config } from "../config/api";
+import Header from "../../basic/Header";
+import { fetchCiannsWithAuth } from "../../utils/ciannFetch";
+import { config } from "../../config/api";
 import "./SmartAttendanceHub.css";
 
 const TEACHING_METHODS = [

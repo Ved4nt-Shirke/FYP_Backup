@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import ActivityCard from "./ActivityCard";
 import MaxMarksSelector from "./MaxMarksSelector";
 import StudentMarksGrid from "./StudentMarksGrid";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./Microproject.css";
 
 const Microproject = () => {

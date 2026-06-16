@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "../utils/axiosConfig";
-import { config } from "../config/api";
+import axios from "../../utils/axiosConfig";
+import { config } from "../../config/api";
 
 export default function COsWithPOs() {
   const [loading, setLoading] = useState(true);

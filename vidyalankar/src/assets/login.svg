@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <!-- Definitions for gradients and shadows -->
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+
+    <!-- Gold Accent Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#b45309" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fbbf24" />
+    </linearGradient>
+
+    <!-- Blue Theme Gradient -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e40af" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+
+    <!-- White Glow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Drop Shadow for Logo Emblem -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Stylized Emblem -->
+  <g transform="translate(400, 200)" filter="url(#shadow)">
+    <!-- Shield Outline -->
+    <path d="M-80,-90 L80,-90 C80,-90 90,20 0,100 C-90,20 -80,-90 -80,-90 Z" fill="url(#blueGrad)" opacity="0.95" />
+    
+    <!-- Shield Gold Border -->
+    <path d="M-80,-90 L80,-90 C80,-90 90,20 0,100 C-90,20 -80,-90 -80,-90 Z" fill="none" stroke="url(#goldGrad)" stroke-width="6" />
+
+    <!-- Stylized Book (Knowledge) -->
+    <path d="M-50,-30 Q-25,-40 0,-30 Q25,-40 50,-30 L50,20 Q25,10 0,20 Q-25,10 -50,20 Z" fill="#ffffff" />
+    <path d="M0,-30 L0,20" stroke="#cbd5e1" stroke-width="3" />
+
+    <!-- Stylized Tech Rays (Growth & Learning) -->
+    <path d="M0,-30 L0,-70" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" />
+    <path d="M-25,-35 L-45,-55" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" />
+    <path d="M25,-35 L45,-55" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" />
+
+    <!-- Elegant Inner Stylized 'V' -->
+    <path d="M-35,30 L0,70 L35,30" fill="none" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+
+  <!-- Typography -->
+  <!-- Institution Title -->
+  <text x="400" y="380" font-family="'Inter', 'Montserrat', 'Segoe UI', sans-serif" font-size="36" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="4">
+    VIDYALANKAR
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="400" y="420" font-family="'Inter', 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#f59e0b" text-anchor="middle" letter-spacing="8">
+    POLYTECHNIC
+  </text>
+
+  <!-- Decorative Divider -->
+  <line x1="300" y1="450" x2="500" y2="450" stroke="#334155" stroke-width="2" />
+
+  <!-- Supporting Text -->
+  <text x="400" y="480" font-family="'Inter', 'Segoe UI', sans-serif" font-size="14" font-weight="500" fill="#64748b" text-anchor="middle" letter-spacing="2">
+    Estd. 2002
+  </text>
+</svg>

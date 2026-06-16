@@ -1,6 +1,6 @@
 // src/Attendance/AssismentCiaanCards.jsx
 import React, { useEffect, useState } from "react";
-import Header from "../../basic/Header";
+import Header from "../../../basic/Header";
 import { useNavigate } from "react-router-dom"; // 👈 import navigate
 import "../../components/EditCiann.css";
 

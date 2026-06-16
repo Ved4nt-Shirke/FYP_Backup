@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import SecondarySidebar from "./SecondarySidebar"; // Added import
 import "./studentlist.css";
 import "./EditCiannModern.css";

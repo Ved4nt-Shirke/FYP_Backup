@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { showSuccessAlert, showErrorAlert } from "../../utils/alertUtils.jsx";
+import { showSuccessAlert, showErrorAlert } from "../../../utils/alertUtils.jsx";
 import "./EditIndividualAttendance.css";
 
 const EditIndividualTutorialAttendance = () => {

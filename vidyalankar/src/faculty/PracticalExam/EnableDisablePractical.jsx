@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./EnableDisablePractical.css";
 
 const EnableDisablePractical = () => {

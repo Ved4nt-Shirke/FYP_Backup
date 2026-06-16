@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { showSuccessAlert, showErrorAlert } from "../../utils/alertUtils.jsx";
+import { showSuccessAlert, showErrorAlert } from "../../../utils/alertUtils.jsx";
 import "./EditAttendance2.css";
 
 const EditPracticalAttendance2 = ({ onAttendanceUpdated }) => {

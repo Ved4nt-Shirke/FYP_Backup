@@ -11,8 +11,8 @@ import {
 // Layout & Basic Components
 import Header from "./basic/Header";
 import Sidebar from "./basic/Sidebar";
-import Login from "./components/Login";
-import Dashboard from "./components/Dashboard";
+import Login from "./faculty/components/Login";
+import Dashboard from "./faculty/components/Dashboard";
 
 // Student Components
 import StudentLayout from "./student/StudentLayout";
@@ -29,8 +29,8 @@ import StudentTimetable from "./student/StudentTimetable";
 import ChatPage from "./faculty/chat/ChatPage";
 
 // CIANN / Edit CIANN Components
-import CreateCiann from "./components/CreateCiann";
-import EditCiann from "./components/EditCiann";
+import CreateCiann from "./faculty/components/CreateCiann";
+import EditCiann from "./faculty/components/EditCiann";
 import CourseDiary from "./faculty/editCiann/CourseDiary";
 import CourseDiary2 from "./faculty/editCiann/CourseDiary2";
 import TimeTable from "./faculty/editCiann/Timetable";
@@ -42,25 +42,25 @@ import Studentlist from "./faculty/editCiann/studentlist";
 import PrintCiann from "./faculty/editCiann/PrintCiann";
 
 // Subject Details
-import SubjectDetails from "./SubjectDetails/SubjectDetails";
-import LectureSchedule from "./SubjectDetails/LectureSchedule";
-import OfficeHours from "./SubjectDetails/OfficeHours";
-import COsWithPOs from "./SubjectDetails/COsWithPOs";
-import COsWithPSOs from "./SubjectDetails/COsWithPSOs";
-import PastResult from "./SubjectDetails/PastResult";
-import KnowledgeMap from "./SubjectDetails/KnowledgeMap";
-import Objectives from "./SubjectDetails/Objectives";
-import CourseOutcomes from "./SubjectDetails/CourseOutcomes";
-import Recommendations from "./SubjectDetails/Recommendations";
-import Resources from "./SubjectDetails/Resources";
-import Rubric from "./SubjectDetails/Rubric";
-import Tlo from "./SubjectDetails/Tlo";
-import Llo from "./SubjectDetails/Llo";
+import SubjectDetails from "./faculty/SubjectDetails/SubjectDetails";
+import LectureSchedule from "./faculty/SubjectDetails/LectureSchedule";
+import OfficeHours from "./faculty/SubjectDetails/OfficeHours";
+import COsWithPOs from "./faculty/SubjectDetails/COsWithPOs";
+import COsWithPSOs from "./faculty/SubjectDetails/COsWithPSOs";
+import PastResult from "./faculty/SubjectDetails/PastResult";
+import KnowledgeMap from "./faculty/SubjectDetails/KnowledgeMap";
+import Objectives from "./faculty/SubjectDetails/Objectives";
+import CourseOutcomes from "./faculty/SubjectDetails/CourseOutcomes";
+import Recommendations from "./faculty/SubjectDetails/Recommendations";
+import Resources from "./faculty/SubjectDetails/Resources";
+import Rubric from "./faculty/SubjectDetails/Rubric";
+import Tlo from "./faculty/SubjectDetails/Tlo";
+import Llo from "./faculty/SubjectDetails/Llo";
 
 // Attendance Components
-import MarkAttendance from "./components/MarkAttendance";
-import ViewAttendance from "./components/ViewAttendance";
-import EditAttendance from "./components/EditAttendance";
+import MarkAttendance from "./faculty/components/MarkAttendance";
+import ViewAttendance from "./faculty/components/ViewAttendance";
+import EditAttendance from "./faculty/components/EditAttendance";
 import TheoryCiannCards from "./faculty/Attendance/TheoryAttend";
 import SmartAttendanceHub from "./faculty/Attendance/SmartAttendanceHub";
 import ExtraTheoryCiannCards from "./faculty/Attendance/EtheoryCard";
@@ -138,43 +138,43 @@ import OfficeSidebar from "./office/OfficeSidebar";
 import OfficeHeader from "./office/OfficeHeader";
 
 // Assessment Components
-import SummaryCards from "./components/SummaryCards";
-import AttendanceSummaryCards from "./components/AttendanceSummaryCards";
-import SummaryPage from "./components/SummaryPage";
-import AssismentCiaanCards from "./Assessment/assess/assismentCiaan";
-import AssessBatchSelect from "./Assessment/assess/assessBatchselect";
-import AssessPA from "./Assessment/assess/AssessPA";
-import AssessPA2 from "./Assessment/assess/AssessPA2";
-import AssessPA3 from "./Assessment/assess/AssessPA3";
-import AssessPAStudentlist from "./Assessment/assess/AssessPAStudentlist";
-import AssessmentStudentSelectForm from "./Assessment/assess/AssessmentStudentSelectForm";
-import AssessmentDashboard from "./Assessment/AssessmentDashboard";
-import ProgressiveAssessment from "./Assessment/ProgressiveAssessment";
-import ExperimentAttendance from "./Assessment/ExperimentAttendance";
-import EditAssess from "./Assessment/EditAssess";
-import EditProgAssess from "./Assessment/EditProgAssess";
-import EditBatchSelect from "./Assessment/edit/EditBatchSelect";
-import EditCard from "./Assessment/edit/EditCard";
-import EditAssessedStudentList from "./Assessment/edit/EditAssessedStudentList";
-import EditAssessmentOverview from "./Assessment/edit/EditAssessmentOverview";
-import ViewAssessmentCard from "./Assessment/view/ViewAssessmentCard";
-import ViewAssessmentBatchSelect from "./Assessment/view/ViewAssessmentBatchSelect";
-import ViewAssessmentOverview from "./Assessment/view/ViewAssessmentOverview";
-import ViewAssessedStudentList from "./Assessment/view/ViewAssessedStudentList";
-import ViewPA1 from "./Assessment/view/ViewPA1";
-import ViewPA2 from "./Assessment/view/ViewPA2";
-import ViewPA3 from "./Assessment/view/ViewPA3";
+import SummaryCards from "./faculty/components/SummaryCards";
+import AttendanceSummaryCards from "./faculty/components/AttendanceSummaryCards";
+import SummaryPage from "./faculty/components/SummaryPage";
+import AssismentCiaanCards from "./faculty/Assessment/assess/assismentCiaan";
+import AssessBatchSelect from "./faculty/Assessment/assess/assessBatchselect";
+import AssessPA from "./faculty/Assessment/assess/AssessPA";
+import AssessPA2 from "./faculty/Assessment/assess/AssessPA2";
+import AssessPA3 from "./faculty/Assessment/assess/AssessPA3";
+import AssessPAStudentlist from "./faculty/Assessment/assess/AssessPAStudentlist";
+import AssessmentStudentSelectForm from "./faculty/Assessment/assess/AssessmentStudentSelectForm";
+import AssessmentDashboard from "./faculty/Assessment/AssessmentDashboard";
+import ProgressiveAssessment from "./faculty/Assessment/ProgressiveAssessment";
+import ExperimentAttendance from "./faculty/Assessment/ExperimentAttendance";
+import EditAssess from "./faculty/Assessment/EditAssess";
+import EditProgAssess from "./faculty/Assessment/EditProgAssess";
+import EditBatchSelect from "./faculty/Assessment/edit/EditBatchSelect";
+import EditCard from "./faculty/Assessment/edit/EditCard";
+import EditAssessedStudentList from "./faculty/Assessment/edit/EditAssessedStudentList";
+import EditAssessmentOverview from "./faculty/Assessment/edit/EditAssessmentOverview";
+import ViewAssessmentCard from "./faculty/Assessment/view/ViewAssessmentCard";
+import ViewAssessmentBatchSelect from "./faculty/Assessment/view/ViewAssessmentBatchSelect";
+import ViewAssessmentOverview from "./faculty/Assessment/view/ViewAssessmentOverview";
+import ViewAssessedStudentList from "./faculty/Assessment/view/ViewAssessedStudentList";
+import ViewPA1 from "./faculty/Assessment/view/ViewPA1";
+import ViewPA2 from "./faculty/Assessment/view/ViewPA2";
+import ViewPA3 from "./faculty/Assessment/view/ViewPA3";
 
 // Practical Exam Components
-import PracticalExamSection from "./PracticalExam/PracticalExamSection";
-import PracticalExamDashboard from "./PracticalExam/PracticalExamDashboard";
-import AddPractical from "./PracticalExam/AddPractical";
-import ManagePractical from "./PracticalExam/ManagePractical";
-import EnableDisablePractical from "./PracticalExam/EnableDisablePractical";
-import ManagePracticalQuestions from "./PracticalExam/ManagePracticalQuestions";
-import ViewStudentResponses from "./PracticalExam/ViewStudentResponses";
-import EditPractical from "./PracticalExam/EditPractical";
-import PublicPracticalExam from "./PracticalExam/PublicPracticalExam";
+import PracticalExamSection from "./faculty/PracticalExam/PracticalExamSection";
+import PracticalExamDashboard from "./faculty/PracticalExam/PracticalExamDashboard";
+import AddPractical from "./faculty/PracticalExam/AddPractical";
+import ManagePractical from "./faculty/PracticalExam/ManagePractical";
+import EnableDisablePractical from "./faculty/PracticalExam/EnableDisablePractical";
+import ManagePracticalQuestions from "./faculty/PracticalExam/ManagePracticalQuestions";
+import ViewStudentResponses from "./faculty/PracticalExam/ViewStudentResponses";
+import EditPractical from "./faculty/PracticalExam/EditPractical";
+import PublicPracticalExam from "./faculty/PracticalExam/PublicPracticalExam";
 
 // MSBTE Formats Pages
 import FAPRK3CiannCards from "./pages/msbte/FAPRK3CiannCards";
@@ -219,17 +219,17 @@ import Course4 from "./faculty/Course/Course4";
 import ManageChapters1 from "./faculty/Course/managechp1";
 import ManageChapters2 from "./faculty/Course/managechp2";
 import UpdateChapter from "./faculty/Course/managechp3";
-import Microproject from "./PTMicroProject/Microproject";
-import PTDashboard from "./PTMicroProject/PTDashboard";
-import PTConfiguration from "./PTMicroProject/PTConfiguration";
-import PTMarksEntry from "./PTMicroProject/PTMarksEntry";
+import Microproject from "./faculty/PTMicroProject/Microproject";
+import PTDashboard from "./faculty/PTMicroProject/PTDashboard";
+import PTConfiguration from "./faculty/PTMicroProject/PTConfiguration";
+import PTMarksEntry from "./faculty/PTMicroProject/PTMarksEntry";
 
 // Defaulters
-import Defaulter from "./components/defaulter";
-import DefaulterCard from "./Assessment/studentDefaulter/DefaulterCard";
-import StudentWiseSelect from "./Assessment/studentDefaulter/StudentWiseSelect";
-import StudentWiseAssess from "./Assessment/studentDefaulter/StudentWiseAssess";
-import StudentAssessSetup from "./Assessment/studentDefaulter/StudentAssessSetup";
+import Defaulter from "./faculty/components/defaulter";
+import DefaulterCard from "./faculty/Assessment/studentDefaulter/DefaulterCard";
+import StudentWiseSelect from "./faculty/Assessment/studentDefaulter/StudentWiseSelect";
+import StudentWiseAssess from "./faculty/Assessment/studentDefaulter/StudentWiseAssess";
+import StudentAssessSetup from "./faculty/Assessment/studentDefaulter/StudentAssessSetup";
 
 // Super Admin
 import SuperAdminDashboard from "./superadmin/SuperAdminDashboard";

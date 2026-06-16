@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { performSearch, handleSearchResultClick } from '../utils/searchUtils';
+import { performSearch, handleSearchResultClick } from '../../utils/searchUtils';
 import './SearchResults.css';
 
 const SearchResults = () => {

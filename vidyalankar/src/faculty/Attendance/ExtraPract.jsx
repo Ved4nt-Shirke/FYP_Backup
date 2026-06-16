@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { showErrorAlert } from "../utils/alertUtils.jsx";
-import Header from "../basic/Header";
+import { showErrorAlert } from "../../utils/alertUtils.jsx";
+import Header from "../../basic/Header";
 import "./ExtraPract.css";
 
 const ExtraAttendanceForm = () => {

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Header from "../basic/Header";
-import { config } from "../config/api";
-import { TokenManager } from "../utils/authUtils.js";
+import Header from "../../basic/Header";
+import { config } from "../../config/api";
+import { TokenManager } from "../../utils/authUtils.js";
 import "./defaulter.css";
 
 const Defaulter = () => {

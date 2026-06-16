@@ -1,7 +1,7 @@
 // src/Attendance/ViewAttendance.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../basic/Header";
+import Header from "../../basic/Header";
 import "./Dashboard.css";
 
 export default function ViewAttendance() {

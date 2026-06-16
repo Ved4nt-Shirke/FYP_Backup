@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { config } from "../config/api";
-import Header from "../basic/Header";
+import { config } from "../../config/api";
+import Header from "../../basic/Header";
 import "./PracticalBatchDistribution.css";
 
 const PracticalBatchDistribution = () => {

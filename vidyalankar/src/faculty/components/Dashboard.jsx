@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { config } from "../config/api";
+import { config } from "../../config/api";
 import "./Dashboard.css";
 
 const cardsData = [
