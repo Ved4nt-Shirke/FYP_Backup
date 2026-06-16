@@ -136,6 +136,45 @@ const PrintCiann = () => {
   const [loading, setLoading] = useState(true);
   const [institutionBranding] = useState(getInstitutionBranding);
 
+  const getTeacherNames = () => {
+    if (!ciannData) return localStorage.getItem("username") || "-";
+
+    const primaryOwner = ciannData.ownerUsername || ciannData.owner?.username || ciannData.owner || "N/A";
+    const coFaculty = [];
+    const contributors = [];
+
+    if (Array.isArray(ciannData.sharedWith)) {
+      ciannData.sharedWith.forEach((share) => {
+        const name = share.user?.username || share.username || (typeof share.user === 'string' ? share.user : null);
+        if (name) {
+          if (share.permission === "edit") {
+            coFaculty.push(name);
+          } else {
+            contributors.push(name);
+          }
+        }
+      });
+    }
+
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+        <div>
+          <strong>{primaryOwner}</strong> <span style={{ fontSize: "0.85em", color: "#16a34a", marginLeft: "4px" }}>(Primary Owner)</span>
+        </div>
+        {coFaculty.map((name, i) => (
+          <div key={`co-${i}`} style={{ fontSize: "0.95em" }}>
+            {name} <span style={{ fontSize: "0.8em", color: "#2563eb", marginLeft: "4px" }}>(Co-Faculty)</span>
+          </div>
+        ))}
+        {contributors.map((name, i) => (
+          <div key={`cont-${i}`} style={{ fontSize: "0.95em" }}>
+            {name} <span style={{ fontSize: "0.8em", color: "#475569", marginLeft: "4px" }}>(Contributor)</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const [teachingPlans, setTeachingPlans] = useState([]);
   const [labPlans, setLabPlans] = useState([]);
   const [slots, setSlots] = useState({});
@@ -795,7 +834,7 @@ const PrintCiann = () => {
             <div className="diary-info-table">
               <div className="diary-row">
                 <span className="label">Name of Subject Teacher</span>
-                <span className="value">{localStorage.getItem("username") || "-"}</span>
+                <span className="value">{getTeacherNames()}</span>
               </div>
               <div className="diary-row">
                 <span className="label">Class & Div.</span>

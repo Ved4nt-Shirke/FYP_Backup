@@ -116,6 +116,19 @@ export const ciannUtils = {
     }
   },
 
+  // Get outgoing share requests sent by current user
+  getOutgoingShareRequests: async () => {
+    try {
+      const response = await axios.get(`${CIANN_URL}/share-requests/outgoing`, {
+        headers: authHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching outgoing share requests:", error);
+      throw error;
+    }
+  },
+
   // Respond to a share request (owner action)
   respondToShareRequest: async (ciannId, requestId, action) => {
     try {
@@ -226,6 +239,126 @@ export const ciannUtils = {
     }
 
     return { isValid: true };
+  },
+
+  // Fetch faculty directory
+  fetchFacultyDirectory: async (search = "", department = "") => {
+    try {
+      const params = new URLSearchParams();
+      if (search) params.append("search", search);
+      if (department) params.append("department", department);
+      
+      const response = await axios.get(
+        `${config.apiBaseUrl}/faculty/directory?${params.toString()}`,
+        { headers: authHeaders() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching faculty directory:", error);
+      throw error;
+    }
+  },
+
+  // Fetch CIANNs owned by a user
+  fetchCiannsByUsername: async (username) => {
+    try {
+      const response = await axios.get(
+        `${CIANN_URL}/user/${username}`,
+        { headers: authHeaders() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching CIANNs for user ${username}:`, error);
+      throw error;
+    }
+  },
+
+  // Sync CIANN workspace edits
+  syncCiann: async (ciannId, ciannData, lastSyncedAt, section, details) => {
+    try {
+      const response = await axios.post(
+        `${CIANN_URL}/${ciannId}/sync`,
+        { ciannData, lastSyncedAt, section, details },
+        { headers: authHeaders() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error syncing CIANN ${ciannId}:`, error);
+      throw error;
+    }
+  },
+
+  // Fetch notifications
+  fetchNotifications: async () => {
+    try {
+      const response = await axios.get(
+        `${config.apiBaseUrl}/notifications`,
+        { headers: authHeaders() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      throw error;
+    }
+  },
+
+  // Mark notification as read
+  markNotificationRead: async (notificationId) => {
+    try {
+      const response = await axios.post(
+        `${config.apiBaseUrl}/notifications/${notificationId}/read`,
+        {},
+        { headers: authHeaders() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error marking notification ${notificationId} as read:`, error);
+      throw error;
+    }
+  },
+
+  // Mark all notifications as read
+  markAllNotificationsRead: async () => {
+    try {
+      const response = await axios.post(
+        `${config.apiBaseUrl}/notifications/read-all`,
+        {},
+        { headers: authHeaders() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      throw error;
+    }
+  },
+
+  // Add comment to CIANN
+  addComment: async (ciannId, comment) => {
+    try {
+      const response = await axios.post(
+        `${CIANN_URL}/${ciannId}/comments`,
+        { comment },
+        { headers: authHeaders() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error adding comment to CIANN ${ciannId}:`, error);
+      throw error;
+    }
+  },
+
+  // Fetch collaboration logs
+  fetchCollaborationLogs: async (ciannId) => {
+    try {
+      const response = await axios.get(
+        `${CIANN_URL}/${ciannId}/collaboration-logs`,
+        { headers: authHeaders() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching collaboration logs for CIANN ${ciannId}:`, error);
+      throw error;
+    }
   },
 };
 

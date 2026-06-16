@@ -258,6 +258,45 @@ const CourseDiary = () => {
     return "N/A";
   };
 
+  const getTeacherNames = () => {
+    if (!ciannData) return username;
+
+    const primaryOwner = ciannData.ownerUsername || ciannData.owner?.username || ciannData.owner || "N/A";
+    const coFaculty = [];
+    const contributors = [];
+
+    if (Array.isArray(ciannData.sharedWith)) {
+      ciannData.sharedWith.forEach((share) => {
+        const name = share.user?.username || share.username || (typeof share.user === 'string' ? share.user : null);
+        if (name) {
+          if (share.permission === "edit") {
+            coFaculty.push(name);
+          } else {
+            contributors.push(name);
+          }
+        }
+      });
+    }
+
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div>
+          <strong>{primaryOwner}</strong> <span style={{ fontSize: "0.8rem", color: "#22c55e", marginLeft: "6px" }}>(Primary Owner)</span>
+        </div>
+        {coFaculty.map((name, i) => (
+          <div key={`co-${i}`} style={{ fontSize: "0.9rem" }}>
+            {name} <span style={{ fontSize: "0.75rem", color: "#3b82f6", marginLeft: "6px" }}>(Co-Faculty)</span>
+          </div>
+        ))}
+        {contributors.map((name, i) => (
+          <div key={`cont-${i}`} style={{ fontSize: "0.9rem" }}>
+            {name} <span style={{ fontSize: "0.75rem", color: "#64748b", marginLeft: "6px" }}>(Contributor)</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   // This hook handles mobile responsiveness for our styles
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -529,7 +568,7 @@ const CourseDiary = () => {
             <div style={styles.infoBlock}>
               <div style={styles.infoRow}>
                 <span style={styles.infoLabel}>Name of Subject Teacher</span>
-                <span style={styles.infoValue}>{username}</span>
+                <span style={styles.infoValue}>{getTeacherNames()}</span>
               </div>
               <div style={styles.infoRow}>
                 <span style={styles.infoLabel}>Class & Div.</span>

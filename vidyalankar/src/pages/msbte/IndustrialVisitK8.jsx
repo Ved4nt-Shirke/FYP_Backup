@@ -131,12 +131,12 @@ const IndustrialVisitK8 = () => {
               >
                 <thead>
                   <tr style={{ background: "#f8fafc" }}>
-                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", width: "12%" }}>Academic Year</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", width: "20%" }}>Programme</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", width: "15%" }}>Division / Class</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", textAlign: "center", whiteSpace: "nowrap", width: "10%" }}>Entries</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", width: "18%" }}>Last Updated</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", textAlign: "center", whiteSpace: "nowrap", width: "250px" }}>Actions</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", width: "140px" }}>Academic Year</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap" }}>Programme</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", width: "140px" }}>Division / Class</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", textAlign: "center", whiteSpace: "nowrap", width: "100px" }}>Entries</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", width: "180px" }}>Last Updated</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", textAlign: "center", whiteSpace: "nowrap", width: "270px" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -151,26 +151,26 @@ const IndustrialVisitK8 = () => {
                       <td style={{ border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", color: "#64748b" }}>
                         {new Date(rec.updatedAt).toLocaleDateString()} {new Date(rec.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </td>
-                      <td style={{ border: "1px solid #e2e8f0", padding: "8px 16px", textAlign: "center" }}>
+                      <td style={{ border: "1px solid #e2e8f0", padding: "8px 12px", textAlign: "center" }}>
                         <div className="d-flex justify-content-center align-items-center gap-2" style={{ flexWrap: "nowrap" }}>
                           <button
                             className="btn btn-sm"
                             onClick={() => navigate(`/msbte/industrial-visit/k8/generate?id=${rec._id}`)}
-                            style={{ background: "#0ea5e9", color: "#fff", padding: "6px 12px", borderRadius: "6px", border: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            style={{ background: "#0ea5e9", color: "#fff", padding: "5px 10px", borderRadius: "6px", border: "none", display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.85rem", fontWeight: "500" }}
                           >
                             <i className="bi bi-eye"></i> Preview
                           </button>
                           <button
                             className="btn btn-sm"
                             onClick={() => navigate(`/msbte/industrial-visit/k8/edit?id=${rec._id}`)}
-                            style={{ background: "#f59e0b", color: "#fff", padding: "6px 12px", borderRadius: "6px", border: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            style={{ background: "#f59e0b", color: "#fff", padding: "5px 10px", borderRadius: "6px", border: "none", display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.85rem", fontWeight: "500" }}
                           >
                             <i className="bi bi-pencil"></i> Edit
                           </button>
                           <button
                             className="btn btn-sm"
                             onClick={() => handleDelete(rec._id)}
-                            style={{ background: "#ef4444", color: "#fff", padding: "6px 12px", borderRadius: "6px", border: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            style={{ background: "#ef4444", color: "#fff", padding: "5px 10px", borderRadius: "6px", border: "none", display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.85rem", fontWeight: "500" }}
                           >
                             <i className="bi bi-trash"></i> Delete
                           </button>

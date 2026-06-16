@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import CiannSelector from "../components/CiannSelector";
+import CiannCommentsSection from "../components/CiannCommentsSection";
+import { ciannUtils } from "../../utils/ciannUtils";
 import "./Sidebar1.css";
 
 const extractValue = (data, ...possibleKeys) => {
@@ -23,7 +25,7 @@ const extractValue = (data, ...possibleKeys) => {
 
 const getCiannParams = (data) => {
   if (!data) return { program: "N/A", className: "N/A", course: "N/A" };
-  
+
   // 1. Get program/department name
   let program = extractValue(data, "department", "dept", "departmentName", "Department", "DEPARTMENT", "branch", "Branch", "stream", "Stream") || "N/A";
   if (program === "N/A" || typeof program !== "string") {
@@ -70,6 +72,13 @@ const SecondarySidebar = ({
   const [isMobile, setIsMobile] = useState(false);
   const [openSubMenus, setOpenSubMenus] = useState({});
 
+  // Collaboration and notifications states
+  const [notifications, setNotifications] = useState([]);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const notifDropdownRef = useRef(null);
+
   const toggleSubMenu = (label) => {
     setOpenSubMenus((prev) => ({ ...prev, [label]: !prev[label] }));
   };
@@ -80,8 +89,8 @@ const SecondarySidebar = ({
       label: "Course",
       icon: "bi-book",
       subItems: [
-        { label: "Manage Chapters", path: "/chapters" },
-        { label: "Manage Practical", path: "/experiment" },
+        { label: "Manage Chapters", path: "/add-chapters" },
+        { label: "Manage Practical", path: "/course2" },
       ],
     },
     {
@@ -125,16 +134,6 @@ const SecondarySidebar = ({
       path: "/tutorial-plan",
       icon: "bi-book-half",
     },
-    {
-      label: "Manage Chapters",
-      path: "/add-chapters",
-      icon: "bi-list-ol",
-    },
-    {
-      label: "Manage Practical",
-      path: "/course2",
-      icon: "bi-journal-check",
-    },
   ];
 
   useEffect(() => {
@@ -174,6 +173,83 @@ const SecondarySidebar = ({
       }
     }
     return null;
+  };
+
+  const currentCiann = getCiannData();
+  const isReadOnly = currentCiann?.accessLevel === "read";
+
+  // Enforce read-only state by styling & class names
+  useEffect(() => {
+    if (isReadOnly) {
+      document.body.classList.add("ciann-view-only");
+    } else {
+      document.body.classList.remove("ciann-view-only");
+    }
+    return () => {
+      document.body.classList.remove("ciann-view-only");
+    };
+  }, [ciannData, location.pathname, isReadOnly]);
+
+  // Notifications fetching logic
+  const fetchNotifications = async () => {
+    try {
+      const data = await ciannUtils.fetchNotifications();
+      const list = data?.notifications || [];
+      setNotifications(list);
+      setUnreadNotifCount(list.filter((n) => !n.isRead).length);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle click outside for notification dropdown
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (notifDropdownRef.current && !notifDropdownRef.current.contains(event.target)) {
+        setShowNotifDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleNotificationClick = async (notif) => {
+    if (!notif.isRead) {
+      try {
+        await ciannUtils.markNotificationRead(notif._id);
+        fetchNotifications();
+      } catch (err) {
+        console.error("Failed to mark notification read:", err);
+      }
+    }
+    setShowNotifDropdown(false);
+    if (notif.ciannId) {
+      try {
+        const ciann = await ciannUtils.fetchCiannById(notif.ciannId);
+        if (ciann) {
+          sessionStorage.setItem("currentCiannData", JSON.stringify(ciann));
+          localStorage.setItem("ciannData", JSON.stringify(ciann));
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error("Failed to fetch notification's ciann:", err);
+      }
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await ciannUtils.markAllNotificationsRead();
+      fetchNotifications();
+    } catch (err) {
+      console.error("Failed to mark all notifications read:", err);
+    }
   };
 
   const handleClick = (label) => {
@@ -278,9 +354,8 @@ const SecondarySidebar = ({
     setPendingNavigation(null);
   };
 
-  const sidebarClasses = `secondary-sidebar ${
-    isMobile ? (isSecondarySidebarVisible ? "visible" : "") : "visible"
-  } ${isMobile ? "mobile" : ""}`;
+  const sidebarClasses = `secondary-sidebar ${isMobile ? (isSecondarySidebarVisible ? "visible" : "") : "visible"
+    } ${isMobile ? "mobile" : ""}`;
 
   const sidebarContent = (
     <>
@@ -291,9 +366,8 @@ const SecondarySidebar = ({
         ></div>
       )}
       <div
-        className={`secondary-sidebar-wrapper ciann-secondary-sidebar-wrapper ${
-          isMobile && isSecondarySidebarVisible ? "visible" : ""
-        }`}
+        className={`secondary-sidebar-wrapper ciann-secondary-sidebar-wrapper ${isMobile && isSecondarySidebarVisible ? "visible" : ""
+          }`}
       >
         <div className={sidebarClasses}>
           <div className="secondary-sidebar-header">
@@ -301,26 +375,78 @@ const SecondarySidebar = ({
               <span className="secondary-sidebar-eyebrow">CIANN Workspace</span>
               <span className="secondary-sidebar-title">CIAAN</span>
             </div>
-            {isMobile && (
-              <button
-                className="secondary-sidebar-close-btn"
-                onClick={() => setIsSecondarySidebarVisible(false)}
-              >
-                <i className="bi bi-x-lg"></i>
-              </button>
-            )}
+
+            {/* Notification Bell Dropdown */}
+            <div className="d-flex align-items-center">
+              <div className="ciann-notif-container" ref={notifDropdownRef}>
+                <button
+                  type="button"
+                  className="ciann-notif-bell-btn"
+                  onClick={() => setShowNotifDropdown(!showNotifDropdown)}
+                  title="Notifications"
+                >
+                  <i className="bi bi-bell-fill"></i>
+                  {unreadNotifCount > 0 && (
+                    <span className="ciann-notif-badge">{unreadNotifCount}</span>
+                  )}
+                </button>
+
+                {showNotifDropdown && (
+                  <div className="ciann-notif-dropdown">
+                    <div className="ciann-notif-header">
+                      <span className="ciann-notif-title">Notifications</span>
+                      {unreadNotifCount > 0 && (
+                        <button
+                          type="button"
+                          className="ciann-notif-markall-btn"
+                          onClick={handleMarkAllAsRead}
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+                    <ul className="ciann-notif-list">
+                      {notifications.length > 0 ? (
+                        notifications.map((notif) => (
+                          <li
+                            key={notif._id}
+                            className={`ciann-notif-item ${notif.isRead ? "" : "unread"}`}
+                            onClick={() => handleNotificationClick(notif)}
+                          >
+                            <span className="ciann-notif-message">{notif.message}</span>
+                            <span className="ciann-notif-time">
+                              {new Date(notif.createdAt).toLocaleDateString()} at {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="ciann-notif-empty">No notifications yet.</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {isMobile && (
+                <button
+                  className="secondary-sidebar-close-btn ms-2"
+                  onClick={() => setIsSecondarySidebarVisible(false)}
+                >
+                  <i className="bi bi-x-lg"></i>
+                </button>
+              )}
+            </div>
           </div>
           <ul className="secondary-nav-list">
             {menuItems.map((item, index) => (
               <React.Fragment key={item.label}>
                 <li
-                  className={`secondary-nav-item ${
-                    !item.subItems &&
-                    (location.pathname === item.path ||
-                      location.pathname.startsWith(`${item.path}/`))
+                  className={`secondary-nav-item ${!item.subItems &&
+                      (location.pathname === item.path ||
+                        location.pathname.startsWith(`${item.path}/`))
                       ? "active"
                       : ""
-                  }`}
+                    }`}
                   onClick={() => {
                     if (item.subItems) {
                       toggleSubMenu(item.label);
@@ -335,9 +461,8 @@ const SecondarySidebar = ({
                   <span className="secondary-nav-label">{item.label}</span>
                   {item.subItems && (
                     <i
-                      className={`bi ${
-                        openSubMenus[item.label] ? "bi-chevron-down" : "bi-chevron-right"
-                      } ms-auto`}
+                      className={`bi ${openSubMenus[item.label] ? "bi-chevron-down" : "bi-chevron-right"
+                        } ms-auto`}
                       style={{ fontSize: "0.8rem", color: "#64748b" }}
                     ></i>
                   )}
@@ -350,12 +475,11 @@ const SecondarySidebar = ({
                     {item.subItems.map((subItem) => (
                       <li
                         key={subItem.label}
-                        className={`secondary-nav-subitem ${
-                          location.pathname === subItem.path ||
-                          location.pathname.startsWith(`${subItem.path}/`)
+                        className={`secondary-nav-subitem ${location.pathname === subItem.path ||
+                            location.pathname.startsWith(`${subItem.path}/`)
                             ? "active"
                             : ""
-                        }`}
+                          }`}
                         onClick={() => handleClick(subItem.label)}
                         style={{
                           padding: "8px 0",
@@ -365,12 +489,12 @@ const SecondarySidebar = ({
                           gap: "8px",
                           color:
                             location.pathname === subItem.path ||
-                            location.pathname.startsWith(`${subItem.path}/`)
+                              location.pathname.startsWith(`${subItem.path}/`)
                               ? "#4f46e5"
                               : "#475569",
                           fontWeight:
                             location.pathname === subItem.path ||
-                            location.pathname.startsWith(`${subItem.path}/`)
+                              location.pathname.startsWith(`${subItem.path}/`)
                               ? "600"
                               : "500",
                           fontSize: "0.9rem",
@@ -393,11 +517,41 @@ const SecondarySidebar = ({
   return (
     <>
       {isMobile ? createPortal(sidebarContent, document.body) : sidebarContent}
+
       {showCiannSelector && (
         <CiannSelector
           onSelect={handleCiannSelect}
           onCancel={handleCiannCancel}
         />
+      )}
+
+      {/* View-Only Banner */}
+      {isReadOnly && createPortal(
+        <div className="ciann-view-only-banner" style={{ zIndex: 999999, position: "fixed", top: 0, left: 0, right: 0 }}>
+          <i className="bi bi-lock-fill me-2"></i>
+          <strong>View-Only Access Mode:</strong> You have read-only access to this CIANN. Editing is disabled.
+        </div>,
+        document.body
+      )}
+
+      {/* Floating Comments Section */}
+      {currentCiann?.ciannId && (
+        <>
+          <button
+            type="button"
+            className="ciann-comments-toggle-btn"
+            onClick={() => setShowComments(true)}
+          >
+            <i className="bi bi-chat-left-text-fill"></i>
+            <span>Discussion</span>
+          </button>
+
+          <CiannCommentsSection
+            isOpen={showComments}
+            onClose={() => setShowComments(false)}
+            ciannId={currentCiann.ciannId}
+          />
+        </>
       )}
     </>
   );
