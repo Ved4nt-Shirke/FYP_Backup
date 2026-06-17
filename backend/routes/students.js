@@ -31,7 +31,33 @@ router.get("/", authenticate, async (req, res) => {
     if (divisionId) {
       query.divisionId = divisionId;
     } else if (division) {
-      query.division = division;
+      const Division = require("../models/Division");
+      const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const escapedDiv = escapeRegex(division);
+      
+      const matchedDivs = await Division.find({
+        $or: [
+          { name: { $regex: new RegExp(`^${escapedDiv}$`, "i") } },
+          { name: { $regex: new RegExp(`${escapedDiv}$`, "i") } }
+        ]
+      }).select("_id name");
+      
+      const divIds = matchedDivs.map(d => d._id);
+      const divNames = matchedDivs.map(d => d.name);
+      
+      const divisionOrQueries = [
+        { division: { $regex: new RegExp(`^${escapedDiv}$`, "i") } },
+        { division: { $regex: new RegExp(`${escapedDiv}$`, "i") } }
+      ];
+      
+      if (divIds.length > 0) {
+        divisionOrQueries.push({ divisionId: { $in: divIds } });
+      }
+      if (divNames.length > 0) {
+        divisionOrQueries.push({ division: { $in: divNames } });
+      }
+      
+      query.$or = divisionOrQueries;
     }
     if (courseId) {
       query.courseId = courseId;

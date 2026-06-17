@@ -127,9 +127,7 @@ const CourseDetailsModal = ({ isOpen, onClose, subject, onSaveSuccess }) => {
               sla: { max: "-", min: "-" },
               totalMarks: "-",
             },
-            courseOutcomes: [
-              { coNumber: "CO1", description: "" },
-            ],
+            courseOutcomes: [],
           });
         } else {
           showErrorAlert("Failed to load course details structure");
@@ -211,35 +209,7 @@ const CourseDetailsModal = ({ isOpen, onClose, subject, onSaveSuccess }) => {
     });
   };
 
-  // CO outcomes management
-  const handleCOChange = (index, value) => {
-    setFormData((prev) => {
-      const nextCOs = [...prev.courseOutcomes];
-      nextCOs[index].description = value;
-      return { ...prev, courseOutcomes: nextCOs };
-    });
-  };
 
-  const addCO = () => {
-    setFormData((prev) => {
-      const nextCOs = [...prev.courseOutcomes];
-      const nextNum = nextCOs.length + 1;
-      nextCOs.push({ coNumber: `CO${nextNum}`, description: "" });
-      return { ...prev, courseOutcomes: nextCOs };
-    });
-  };
-
-  const removeCO = (index) => {
-    setFormData((prev) => {
-      const nextCOs = prev.courseOutcomes.filter((_, i) => i !== index);
-      // Re-number COs
-      const renumbered = nextCOs.map((co, i) => ({
-        ...co,
-        coNumber: `CO${i + 1}`,
-      }));
-      return { ...prev, courseOutcomes: renumbered };
-    });
-  };
 
   // Copy structure from another course details configuration
   const handleCopyStructure = async (e) => {

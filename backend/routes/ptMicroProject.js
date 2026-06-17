@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const PTMicroProject = require('../models/PTMicroProject');
 const Student = require('../models/Student');
@@ -9,6 +10,7 @@ const Ciann = require('../models/Ciann');
 const CourseDetails = require('../models/CourseDetails');
 const Division = require('../models/Division');
 const Subject = require('../models/Subject');
+const Course = require('../models/Course');
 
 // Middleware: authenticate all routes
 router.use(authenticate);
@@ -476,14 +478,77 @@ router.get('/new/students/:ciannId', async (req, res) => {
       });
     }
 
+    // Resolve courseId from CIANN (dynamically resolve if not present directly)
+    let courseId = ciann.courseId;
+    if (!courseId) {
+      let deptId = null;
+      if (ciann.department) {
+        if (mongoose.Types.ObjectId.isValid(ciann.department.toString())) {
+          deptId = ciann.department;
+        } else if (ciann.department._id && mongoose.Types.ObjectId.isValid(ciann.department._id.toString())) {
+          deptId = ciann.department._id;
+        } else if (typeof ciann.department === 'object') {
+          const Department = require('../models/Department');
+          const deptName = ciann.department.label || ciann.department.name;
+          const deptCode = ciann.department.code || ciann.department.value;
+
+          const nameMapping = {
+            "computer engineering": "CO",
+            "computer-engineering": "CO",
+            "computer science": "CO",
+            "cse": "CO",
+            "co": "CO",
+            "electronics": "ET",
+            "electronics engineering": "ET",
+            "et": "ET",
+            "automation and robotics": "AI",
+            "automation and robitics": "AI",
+            "automation & robotics": "AI",
+            "ai": "AI"
+          };
+
+          const searchTerms = [deptName, deptCode].filter(Boolean);
+          const searchCodes = searchTerms.map(term => nameMapping[term.toLowerCase()]).filter(Boolean);
+
+          const queryOr = [];
+          searchTerms.forEach(term => {
+            queryOr.push({ name: new RegExp(`^${term}$`, "i") });
+            queryOr.push({ code: new RegExp(`^${term}$`, "i") });
+          });
+          searchCodes.forEach(c => {
+            queryOr.push({ code: new RegExp(`^${c}$`, "i") });
+          });
+
+          if (queryOr.length > 0) {
+            const deptDoc = await Department.findOne({ $or: queryOr });
+            if (deptDoc) {
+              deptId = deptDoc._id;
+            }
+          }
+        }
+      }
+
+      if (deptId && ciann.semester) {
+        const courseDoc = await Course.findOne({
+          semester: parseInt(ciann.semester),
+          departmentId: deptId
+        });
+        if (courseDoc) {
+          courseId = courseDoc._id;
+        }
+      }
+    }
+
+    console.log(`[PTMicroProject students] ciannId: ${ciannId}, resolved courseId: ${courseId}`);
+
     // Resolve Division ID using CIANN's division name (e.g. "A") and courseId
     const divisionDoc = await Division.findOne({
-      courseId: ciann.courseId,
+      courseId: courseId,
       name: ciann.division
     });
 
     const query = {
-      courseId: ciann.courseId
+      courseId: courseId
     };
 
     if (divisionDoc) {
@@ -493,10 +558,6 @@ router.get('/new/students/:ciannId', async (req, res) => {
       ];
     } else {
       query.division = ciann.division;
-    }
-
-    if (ciann.academicYear) {
-      query.academicYear = ciann.academicYear;
     }
 
     const students = await Student.find(query)

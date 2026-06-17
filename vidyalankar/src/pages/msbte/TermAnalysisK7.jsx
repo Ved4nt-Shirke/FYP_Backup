@@ -101,7 +101,98 @@ const TermAnalysisK7 = () => {
     fetchCianns();
   }, []);
 
-  const handleCiannChangeInForm = (e) => {
+  const getDivisionId = async (deptId, sem, divName) => {
+    try {
+      const courseRes = await axios.get(`/catalog/courses/${deptId}`);
+      if (courseRes.data?.success && Array.isArray(courseRes.data.courses)) {
+        const semNum = Number(sem);
+        for (const c of courseRes.data.courses) {
+          if (Number(c.semester) !== semNum) continue;
+          const divRes = await axios.get(`/catalog/divisions/${c._id}`);
+          if (divRes.data?.success && Array.isArray(divRes.data.divisions)) {
+            const dv = divRes.data.divisions.find(d => d.name.toLowerCase() === divName.toLowerCase());
+            if (dv) return dv._id;
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error looking up division ID:", err);
+    }
+    return null;
+  };
+
+  const calculateHeadsFromMarks = (studentMarks, courseCode) => {
+    const passingMarks = {
+      CT1: 12,
+      CT2: 12,
+      "FA-TH": 12,
+      "SA-TH": 28,
+      "FA-PR": 10,
+      "SA-PR": 10,
+      SLA: 10
+    };
+
+    const maxMarks = {
+      CT1: 30,
+      CT2: 30,
+      "FA-TH": 30,
+      "SA-TH": 70,
+      "FA-PR": 25,
+      "SA-PR": 25,
+      SLA: 25
+    };
+
+    const keys = ["CT1", "CT2", "FA-TH", "SA-TH", "FA-PR", "SA-PR", "SLA"];
+    const fieldMapping = {
+      CT1: "ct1",
+      CT2: "ct2",
+      "FA-TH": "faTh",
+      "SA-TH": "saTh",
+      "FA-PR": "faPr",
+      "SA-PR": "saPr",
+      SLA: "sla"
+    };
+
+    return keys.map(headName => {
+      const field = fieldMapping[headName];
+      const passing = passingMarks[headName];
+      const max = maxMarks[headName];
+
+      const values = studentMarks.map(s => {
+        const course = s.courses?.find(c => c.courseCode === courseCode);
+        return course ? course[field] : null;
+      }).filter(v => v !== null && v !== undefined && v !== "");
+
+      if (values.length === 0) {
+        return {
+          passingHead: headName,
+          enabled: true,
+          lowestMarks: 0,
+          highestMarks: 0,
+          appearedStudents: 0,
+          passedStudents: 0,
+          above60Percentage: 0
+        };
+      }
+
+      const nums = values.map(Number);
+      const appeared = nums.length;
+      const passed = nums.filter(n => n >= passing).length;
+      const above60 = nums.filter(n => n >= max * 0.6).length;
+
+      return {
+        passingHead: headName,
+        enabled: true,
+        lowestMarks: Math.min(...nums),
+        highestMarks: Math.max(...nums),
+        appearedStudents: appeared,
+        passedStudents: passed,
+        above60Percentage: Number(((above60 / appeared) * 100).toFixed(1))
+      };
+    });
+  };
+
+  const handleCiannChangeInForm = async (e) => {
     const cid = e.target.value;
     setSelectedCiannId(cid);
     if (!cid) return;
@@ -114,6 +205,27 @@ const TermAnalysisK7 = () => {
       setSemester(ciannObj.semester || "");
       setCourseCode(ciannObj.subject?.code || "");
       setCourseName(ciannObj.subject?.name || "");
+
+      // Fetch and auto-calculate stats
+      const deptId = ciannObj.department?._id || ciannObj.department;
+      const sem = ciannObj.semester;
+      const divisionName = ciannObj.division;
+      const courseCode = ciannObj.subject?.code;
+
+      try {
+        const divId = await getDivisionId(deptId, sem, divisionName);
+        if (divId) {
+          const res = await axios.get(
+            `/msbte/k7/populate?academicYear=${ciannObj.academicYear}&semester=${sem}&departmentId=${deptId}&divisionId=${divId}&ciannId=${cid}`
+          );
+          if (res.data?.success && Array.isArray(res.data.studentMarks)) {
+            const calculatedHeads = calculateHeadsFromMarks(res.data.studentMarks, courseCode);
+            setHeads(calculatedHeads);
+          }
+        }
+      } catch (error) {
+        console.error("Error populating K7 modal statistics:", error);
+      }
     }
   };
 
@@ -132,7 +244,7 @@ const TermAnalysisK7 = () => {
     setShowModal(true);
   };
 
-  const openEditModal = (rec) => {
+  const openEditModal = async (rec) => {
     setRecordId(rec._id);
     setSelectedCiannId(rec.ciannId);
     setInstituteName(rec.instituteName || "");
@@ -158,6 +270,34 @@ const TermAnalysisK7 = () => {
     calculateFaThAverage(mappedHeads);
     setHeads(mappedHeads);
     setShowModal(true);
+
+    // Now fetch the latest marks to overwrite and keep it fully updated automatically
+    try {
+      const ciannObj = cianns.find((c) => String(c.ciannId) === String(rec.ciannId));
+      if (ciannObj) {
+        const deptId = ciannObj.department?._id || ciannObj.department;
+        const sem = ciannObj.semester;
+        const divisionName = ciannObj.division;
+        const courseCode = ciannObj.subject?.code;
+        const divId = await getDivisionId(deptId, sem, divisionName);
+        if (divId) {
+          const res = await axios.get(
+            `/msbte/k7/populate?academicYear=${ciannObj.academicYear}&semester=${sem}&departmentId=${deptId}&divisionId=${divId}&ciannId=${rec.ciannId}`
+          );
+          if (res.data?.success && Array.isArray(res.data.studentMarks)) {
+            const calculatedHeads = calculateHeadsFromMarks(res.data.studentMarks, courseCode);
+            // Merge with enabled states from saved record
+            const mergedHeads = calculatedHeads.map((ch) => {
+              const saved = rec.heads?.find((h) => h.passingHead === ch.passingHead);
+              return { ...ch, enabled: saved ? true : (ch.passingHead === "CT1" || ch.passingHead === "CT2" || ch.passingHead === "FA-TH") };
+            });
+            setHeads(mergedHeads);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing K7 modal stats in edit:", error);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -728,7 +868,7 @@ const TermAnalysisK7 = () => {
                               className="form-control form-control-sm"
                               value={h.lowestMarks}
                               onChange={(e) => handleHeadFieldChange(idx, "lowestMarks", e.target.value)}
-                              disabled={!h.enabled || isFath}
+                              disabled={true}
                               min="0"
                             />
                           </td>
@@ -738,7 +878,7 @@ const TermAnalysisK7 = () => {
                               className="form-control form-control-sm"
                               value={h.highestMarks}
                               onChange={(e) => handleHeadFieldChange(idx, "highestMarks", e.target.value)}
-                              disabled={!h.enabled || isFath}
+                              disabled={true}
                               min="0"
                             />
                           </td>
@@ -748,7 +888,7 @@ const TermAnalysisK7 = () => {
                               className="form-control form-control-sm"
                               value={h.appearedStudents}
                               onChange={(e) => handleHeadFieldChange(idx, "appearedStudents", e.target.value)}
-                              disabled={!h.enabled || isFath}
+                              disabled={true}
                               min="0"
                             />
                           </td>
@@ -758,7 +898,7 @@ const TermAnalysisK7 = () => {
                               className="form-control form-control-sm"
                               value={h.passedStudents}
                               onChange={(e) => handleHeadFieldChange(idx, "passedStudents", e.target.value)}
-                              disabled={!h.enabled || isFath}
+                              disabled={true}
                               min="0"
                             />
                           </td>
@@ -773,7 +913,7 @@ const TermAnalysisK7 = () => {
                               placeholder="%"
                               value={h.above60Percentage}
                               onChange={(e) => handleHeadFieldChange(idx, "above60Percentage", e.target.value)}
-                              disabled={!h.enabled || isFath}
+                              disabled={true}
                               min="0"
                               max="100"
                             />

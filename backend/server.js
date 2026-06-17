@@ -1,4 +1,25 @@
 // server.js
+process.env.UV_THREADPOOL_SIZE = 64;
+
+// Silence standard console logs (except errors/warnings and startup logs) to prevent information exposure and log-based vulnerability exploits
+if (process.env.DEBUG !== "true") {
+  const util = require("util");
+  const allowedStartupMessages = [
+    "Server is running on port",
+    "MongoDB Connected Successfully",
+    "Superadmin user already exists in database",
+    "Superadmin user created successfully",
+    "Starting Conversational WhatsApp Attendance Bot"
+  ];
+  const originalLog = console.log;
+  console.log = (...args) => {
+    const msg = util.format(...args);
+    if (allowedStartupMessages.some(pattern => msg.includes(pattern))) {
+      originalLog(...args);
+    }
+  };
+  console.info = () => {};
+}
 
 // Global error handlers to prevent crashes from async/third-party library unhandled exceptions (e.g., whatsapp-web.js EBUSY locking errors on Windows)
 process.on("uncaughtException", (err) => {
@@ -41,6 +62,7 @@ const isDummyInstitutionRecord = (institution) => {
 };
 
 // --- Middleware ---
+const { apiRateLimiter } = require("./middleware/rateLimiter");
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173", // Your frontend
@@ -50,6 +72,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api", apiRateLimiter);
 
 // --- Database Connection ---
 mongoose

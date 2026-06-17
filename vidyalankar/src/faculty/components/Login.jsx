@@ -26,62 +26,9 @@ const applyTheme = (college, palette = null) => {
   root.style.setProperty("--primary-accent-dark", theme.accentDark);
 };
 
-const isDummyInstitution = (institution) => {
-  const matcher = /dummy|test|demo|sample/i;
-  return (
-    matcher.test(String(institution?.name || "")) ||
-    matcher.test(String(institution?.code || ""))
-  );
-};
-
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [college, setCollege] = useState("");
-  const [role, setRole] = useState("faculty");
-  const [institutions, setInstitutions] = useState([]);
-  const [loadingInstitutions, setLoadingInstitutions] = useState(false);
-
-  useEffect(() => {
-    fetchInstitutions();
-  }, []);
-
-  const fetchInstitutions = async () => {
-    setLoadingInstitutions(true);
-    try {
-      const response = await fetch(`${config.apiBaseUrl}/institutions`);
-      const data = await response.json();
-
-      if (data.success) {
-        const normalized = (data.institutions || []).map((inst) => ({
-          ...inst,
-          isActive: inst.isActive !== false,
-        })).filter((inst) => !isDummyInstitution(inst));
-
-        setInstitutions(normalized);
-
-        if (
-          normalized.length > 0 &&
-          !normalized.find((inst) => inst.code === college) &&
-          college !== "ALL"
-        ) {
-          const firstActive = normalized.find((inst) => inst.isActive);
-          setCollege((firstActive || normalized[0]).code);
-        } else if (normalized.length === 0) {
-          setCollege("");
-        }
-      } else {
-        setInstitutions([]);
-        setCollege("");
-      }
-    } catch (error) {
-      console.error("Error fetching institutions:", error);
-      setInstitutions([]);
-      setCollege("");
-    } finally {
-      setLoadingInstitutions(false);
-    }
-  };
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -89,29 +36,10 @@ const Login = () => {
       return;
     }
 
-    if (role !== "superadmin" && (!college || college === "ALL")) {
-      showErrorAlert("Please select a valid institution");
-      return;
-    }
-
-    if (role !== "superadmin") {
-      const selectedInstitution = institutions.find(
-        (inst) => inst.code === college,
-      );
-      if (selectedInstitution && selectedInstitution.isActive === false) {
-        showErrorAlert(
-          "This institute is currently inactive. Please contact the administrator.",
-        );
-        return;
-      }
-    }
-
     try {
       const requestData = {
         username,
         password,
-        college: role === "superadmin" ? "ALL" : college,
-        role,
       };
 
       const res = await fetch(config.auth.login, {
@@ -132,21 +60,15 @@ const Login = () => {
 
         SessionManager.setSession({
           user: data.userName || formattedName,
-          role: data.role || role,
-          college: data.college || requestData.college,
+          role: data.role,
+          college: data.college,
         });
 
-        const resolvedInstitutionCode =
-          (data.institutionCode || data.college || requestData.college || "VP")
-            .toString()
-            .toUpperCase();
-        const selectedInstitution = institutions.find(
-          (inst) => inst.code === resolvedInstitutionCode,
-        );
-        const resolvedInstitutionName =
-          data.institutionName || selectedInstitution?.name || resolvedInstitutionCode;
-        const resolvedInstitutionLogo =
-          data.institutionLogoUrl || selectedInstitution?.logoUrl || "";
+        const resolvedInstitutionCode = (data.institutionCode || data.college || "VP")
+          .toString()
+          .toUpperCase();
+        const resolvedInstitutionName = data.institutionName || resolvedInstitutionCode;
+        const resolvedInstitutionLogo = data.institutionLogoUrl || "";
 
         localStorage.setItem("institutionCode", resolvedInstitutionCode);
         localStorage.setItem("institutionName", resolvedInstitutionName);
@@ -163,7 +85,7 @@ const Login = () => {
           localStorage.removeItem("institutionPalette");
         }
 
-        if ((data.role || role) === "student") {
+        if (data.role === "student") {
           localStorage.setItem("studentName", data.studentName || data.userName || formattedName);
           localStorage.setItem("enrollmentNo", data.enrollmentNo || "");
           localStorage.setItem("studentRollNo", data.rollNo || "");
@@ -176,9 +98,9 @@ const Login = () => {
         showSuccessAlert("Login successful");
 
         let redirectPath;
-        if ((data.role || role) === "admin") {
+        if (data.role === "admin") {
           redirectPath = "/admin-dashboard";
-        } else if ((data.role || role) === "superadmin") {
+        } else if (data.role === "superadmin") {
           redirectPath = "/superadmin-dashboard";
         } else {
           redirectPath = "/dashboard";
@@ -199,8 +121,8 @@ const Login = () => {
         {/* Left Branding Section */}
         <div className="login-brand">
           <img src={loginImage} alt="Vidyalankar Logo" className="logo" />
-          <h1 className="login-title">Management Information System</h1>
-          <p className="subheading">Secure access to your account</p>
+          <h1 className="login-title">CIANN</h1>
+          <p className="subheading">Curriculum Implementation Assessment Norms</p>
         </div>
 
         {/* Right Form Section */}
@@ -230,56 +152,6 @@ const Login = () => {
                 className="form-input"
               />
               <p className="hint">Enter your password</p>
-            </div>
-
-            {role !== "superadmin" && (
-              <div className="form-group">
-                <label htmlFor="college">Select College</label>
-                <select
-                  id="college"
-                  value={college}
-                  onChange={(e) => setCollege(e.target.value)}
-                  className="form-input"
-                  disabled={loadingInstitutions}
-                >
-                  {loadingInstitutions ? (
-                    <option value="">Loading institutions...</option>
-                  ) : institutions.length === 0 ? (
-                    <option value="">No institutions available</option>
-                  ) : (
-                    <>
-                      {institutions.map((inst) => (
-                        <option
-                          key={inst.code}
-                          value={inst.code}
-                          disabled={inst.isActive === false}
-                        >
-                          {inst.code} - {inst.name}
-                          {inst.isActive === false ? " (inactive)" : ""}
-                        </option>
-                      ))}
-                    </>
-                  )}
-                </select>
-              </div>
-            )}
-
-            <div className="form-group">
-              <label htmlFor="role">Select Role</label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="form-input"
-              >
-                <option value="faculty">Faculty</option>
-                <option value="hod">HOD</option>
-                <option value="academic_coordinator">Academic Coordinator</option>
-                <option value="student">Student</option>
-                <option value="office">Office Staff</option>
-                <option value="admin">Admin</option>
-                <option value="superadmin">Super Admin</option>
-              </select>
             </div>
 
             <div className="form-group remember-section">

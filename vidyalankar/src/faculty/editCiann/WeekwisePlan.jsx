@@ -56,6 +56,8 @@ const WeekwisePlan = ({
   const [experiments, setExperiments] = useState([]);
   const [loadingExperiments, setLoadingExperiments] = useState(false);
   const [coData, setCoData] = useState([]);
+  const [openLloDropdownIndex, setOpenLloDropdownIndex] = useState(null);
+  const dropdownRefs = React.useRef([]);
 
   // Fetch TloLlo details for CO and LLO dropdowns
   useEffect(() => {
@@ -143,15 +145,16 @@ const WeekwisePlan = ({
       const weekNo = parseInt(week.replace("Week ", ""));
       const filtered = existingData.filter((p) => p.weekNo === weekNo);
       if (filtered.length > 0) {
-        const updatedPlans = plans.map((plan, i) => ({
-          batch: plan.batch,
-          co: filtered[i]?.co || "",
-          llo: filtered[i]?.llo || "",
-          exptNo: filtered[i]?.exptNo || "",
-          exptName: filtered[i]?.exptName || "",
-          date: filtered[i]?.date || "",
-        }));
-        setPlans(updatedPlans);
+        setPlans(
+          filtered.map((item) => ({
+            batch: item.batch || "B1",
+            co: item.co || "",
+            llo: item.llo || "",
+            exptNo: item.exptNo || "",
+            exptName: item.exptName || "",
+            date: item.date || "",
+          }))
+        );
       } else {
         setPlans([
           { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
@@ -160,7 +163,22 @@ const WeekwisePlan = ({
         ]);
       }
     }
-  }, [week, initialWeek, existingData]); // Added plans to dependencies to prevent stale closure issues if plans were updated elsewhere.
+  }, [week, initialWeek, existingData]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openLloDropdownIndex !== null) {
+        const ref = dropdownRefs.current[openLloDropdownIndex];
+        if (ref && !ref.contains(event.target)) {
+          setOpenLloDropdownIndex(null);
+        }
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openLloDropdownIndex]);
 
   const handleChange = (index, field, value) => {
     const updatedPlans = [...plans];
@@ -201,6 +219,176 @@ const WeekwisePlan = ({
         /* Global font-family for consistent look */
         body {
           font-family: 'Inter', sans-serif;
+        }
+
+        .co-badges-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+          justify-content: center;
+        }
+        .co-badge-btn {
+          background-color: #f3f4f6;
+          color: #4b5563;
+          border: 1px solid #d1d5db;
+          border-radius: 4px;
+          padding: 3px 6px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          user-select: none;
+        }
+        .co-badge-btn:hover:not(:disabled) {
+          background-color: #e5e7eb;
+          color: #1f2937;
+        }
+        .co-badge-btn.active {
+          background-color: #e3f2fd;
+          color: #1565c0;
+          border-color: #90caf9;
+        }
+        .co-badge-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        .llo-dropdown-container {
+          position: relative;
+          width: 100%;
+        }
+        .llo-dropdown-trigger {
+          width: 100%;
+          padding: 8px 10px;
+          background-color: white;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          text-align: left;
+          font-size: 13px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          cursor: pointer;
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .llo-dropdown-trigger:disabled {
+          background-color: #f5f5f5;
+          cursor: not-allowed;
+          opacity: 0.7;
+        }
+        .llo-trigger-text {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .llo-trigger-arrow {
+          font-size: 10px;
+          color: #888;
+          margin-left: 5px;
+        }
+        .llo-dropdown-menu {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background-color: white;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          max-height: 200px;
+          overflow-y: auto;
+          z-index: 100;
+          text-align: left;
+          margin-top: 4px;
+        }
+        .llo-dropdown-item {
+          display: flex;
+          align-items: flex-start;
+          padding: 8px 12px;
+          cursor: pointer;
+          font-size: 12px;
+          transition: background-color 0.2s ease;
+          user-select: none;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        .llo-dropdown-item:last-child {
+          border-bottom: none;
+        }
+        .llo-dropdown-item:hover {
+          background-color: #f5f7fa;
+        }
+        .llo-dropdown-item input[type="checkbox"] {
+          margin-right: 8px;
+          margin-top: 3px;
+          width: 14px;
+          height: 14px;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+        .llo-item-text {
+          line-height: 1.4;
+          color: #333;
+        }
+        .llo-dropdown-empty {
+          padding: 12px;
+          color: #888;
+          font-size: 12px;
+          text-align: center;
+        }
+        
+        .add-row-btn {
+          background-color: #28a745 !important;
+          color: white !important;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 13px;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .add-row-btn:hover:not(:disabled) {
+          background-color: #218838 !important;
+        }
+        .add-row-btn:disabled {
+          background-color: #e9ecef !important;
+          color: #6c757d !important;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+        
+        .delete-row-btn {
+          background-color: #f8d7da !important;
+          color: #842029 !important;
+          border: 1px solid #f5c2c7;
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .delete-row-btn:hover:not(:disabled) {
+          background-color: #ea868f !important;
+          color: white !important;
+          border-color: #ea868f;
+        }
+        .delete-row-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        .batch-select {
+          width: 100%;
+          padding: 8px 10px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          font-size: 14px;
         }
 
         @keyframes fadeIn {
@@ -272,13 +460,14 @@ const WeekwisePlan = ({
         }
         
         /* Column widths */
-        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 14%; } /* Week No */
-        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 8%; } /* Batch No */
-        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 12%; } /* CO */
-        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 22%; } /* LLO */
-        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 14%; } /* Experiment No */
-        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 18%; } /* Experiment Name */
-        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 12%; } /* Planned Date */
+        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 12%; } /* Week No */
+        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 10%; } /* Batch No */
+        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 14%; } /* CO */
+        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 20%; } /* LLO */
+        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 12%; } /* Experiment No */
+        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 16%; } /* Experiment Name */
+        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 10%; } /* Planned Date */
+        .plan-table th:nth-child(8), .plan-table td:nth-child(8) { width: 6%; }  /* Action */
 
         .plan-table input,
         .plan-table select,
@@ -436,8 +625,6 @@ const WeekwisePlan = ({
           <div className="plan-table-wrapper">
             <table className="plan-table">
               <thead>
-                {/* <col> tags are better used outside <thead> if you want to define column properties for the whole table.
-                    For consistent column sizing, table-layout: fixed combined with direct th/td widths is more robust. */}
                 <tr>
                   <th>Week No</th>
                   <th>Batch No</th>
@@ -446,13 +633,14 @@ const WeekwisePlan = ({
                   <th>Experiment No</th>
                   <th>Experiment Name</th>
                   <th>Planned Date</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {plans.map((plan, i) => (
                   <tr key={i}>
                     {i === 0 && (
-                      <td rowSpan="3">
+                      <td rowSpan={plans.length}>
                         <select
                           value={week}
                           onChange={(e) => setWeek(e.target.value)}
@@ -467,45 +655,128 @@ const WeekwisePlan = ({
                         </select>
                       </td>
                     )}
-                    <td>{plan.batch}</td>
                     <td>
                       <select
-                        value={plan.co || ""}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const updated = [...plans];
-                          updated[i].co = val;
-                          updated[i].llo = ""; // reset llo when co changes
-                          setPlans(updated);
-                        }}
+                        value={plan.batch}
+                        onChange={(e) => handleChange(i, "batch", e.target.value)}
                         disabled={!week}
+                        className="batch-select"
                       >
-                        <option value="">Select CO</option>
-                        {coData.map((co) => (
-                          <option key={co.coNumber} value={co.coNumber}>
-                            {co.coNumber}
-                          </option>
-                        ))}
+                        <option value="B1">B1</option>
+                        <option value="B2">B2</option>
+                        <option value="B3">B3</option>
+                        <option value="B4">B4</option>
+                        <option value="B5">B5</option>
+                        <option value="B6">B6</option>
                       </select>
                     </td>
                     <td>
-                      <select
-                        value={plan.llo || ""}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const updated = [...plans];
-                          updated[i].llo = val;
-                          setPlans(updated);
-                        }}
-                        disabled={!week || !plan.co}
+                      <div className="co-badges-container">
+                        {coData.map((co) => {
+                          const selectedCOs = plan.co ? plan.co.split(",").map(c => c.trim()) : [];
+                          const isSelected = selectedCOs.includes(co.coNumber);
+                          return (
+                            <button
+                              key={co.coNumber}
+                              type="button"
+                              className={`co-badge-btn ${isSelected ? "active" : ""}`}
+                              onClick={() => {
+                                let nextCOs;
+                                if (isSelected) {
+                                  nextCOs = selectedCOs.filter((c) => c !== co.coNumber);
+                                } else {
+                                  nextCOs = [...selectedCOs, co.coNumber];
+                                }
+                                nextCOs.sort();
+                                
+                                const updated = [...plans];
+                                updated[i].co = nextCOs.join(", ");
+                                
+                                // Also clear LLOs that do not belong to any of the remaining selected COs
+                                const remainingCOsLlos = coData
+                                  .filter((c) => nextCOs.includes(c.coNumber))
+                                  .flatMap((c) => [...(c.llos || []), ...(c.tlos || [])])
+                                  .map(item => item.trim())
+                                  .filter(Boolean);
+                                const currentLlos = plan.llo ? plan.llo.split(",").map(l => l.trim()) : [];
+                                const validLlos = currentLlos.filter(lloVal => remainingCOsLlos.includes(lloVal));
+                                updated[i].llo = validLlos.join(", ");
+                                
+                                setPlans(updated);
+                              }}
+                              disabled={!week}
+                              title={co.coDescription}
+                            >
+                              {co.coNumber}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </td>
+                    <td>
+                      <div 
+                        className="llo-dropdown-container" 
+                        ref={(el) => (dropdownRefs.current[i] = el)}
                       >
-                        <option value="">Select LLO</option>
-                        {(coData.find((c) => c.coNumber === plan.co)?.llos || []).map((lloText, lloIdx) => (
-                          <option key={lloIdx} value={lloText}>
-                            {lloText}
-                          </option>
-                        ))}
-                      </select>
+                        <button
+                          type="button"
+                          className="llo-dropdown-trigger"
+                          onClick={() => setOpenLloDropdownIndex(openLloDropdownIndex === i ? null : i)}
+                          disabled={!week || !plan.co}
+                        >
+                          <span className="llo-trigger-text">
+                            {plan.llo && plan.llo.split(",").map(l => l.trim()).filter(Boolean).length > 0
+                              ? `${plan.llo.split(",").map(l => l.trim()).filter(Boolean).length} selected`
+                              : "Select LLOs"}
+                          </span>
+                          <span className="llo-trigger-arrow">▼</span>
+                        </button>
+                        
+                        {openLloDropdownIndex === i && (
+                          <div className="llo-dropdown-menu">
+                            {(() => {
+                              const selectedCOs = plan.co ? plan.co.split(",").map(c => c.trim()) : [];
+                              const availableLlos = [...new Set(coData
+                                .filter(c => selectedCOs.includes(c.coNumber))
+                                .flatMap(c => [...(c.llos || []), ...(c.tlos || [])]))]
+                                .map(item => item.trim())
+                                .filter(Boolean);
+                              
+                              if (availableLlos.length === 0) {
+                                return <div className="llo-dropdown-empty">No LLOs available for selected COs</div>;
+                              }
+                              
+                              const selectedLlos = plan.llo ? plan.llo.split(",").map(l => l.trim()) : [];
+                              
+                              return availableLlos.map((lloText, lloIdx) => {
+                                const isLloSelected = selectedLlos.includes(lloText);
+                                return (
+                                  <label key={lloIdx} className="llo-dropdown-item">
+                                    <input
+                                      type="checkbox"
+                                      checked={isLloSelected}
+                                      onChange={() => {
+                                        let nextLlos;
+                                        if (isLloSelected) {
+                                          nextLlos = selectedLlos.filter((l) => l !== lloText);
+                                        } else {
+                                          nextLlos = [...selectedLlos, lloText];
+                                        }
+                                        const updated = [...plans];
+                                        updated[i].llo = nextLlos.join(", ");
+                                        setPlans(updated);
+                                      }}
+                                    />
+                                    <span className="llo-item-text" title={lloText}>
+                                      {lloText}
+                                    </span>
+                                  </label>
+                                );
+                              });
+                            })()}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <select
@@ -544,10 +815,39 @@ const WeekwisePlan = ({
                         disabled={!week}
                       />
                     </td>
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = plans.filter((_, idx) => idx !== i);
+                          setPlans(updated);
+                        }}
+                        className="delete-row-btn"
+                        title="Delete Row"
+                        disabled={!week}
+                      >
+                        ✕
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "12px" }}>
+            <button
+              type="button"
+              className="add-row-btn"
+              onClick={() => {
+                setPlans([
+                  ...plans,
+                  { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" }
+                ]);
+              }}
+              disabled={!week}
+            >
+              + Add Row
+            </button>
           </div>
           {message && <div className="submission-message">{message}</div>}
         </div>

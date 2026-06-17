@@ -8,13 +8,27 @@ import "./EditProgAssess.css";
 function EditProgAssess() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { batch, ciannData, assessedExperiments } = location.state || {
-    batch: "Unknown",
-  };
+  const stateData = location.state || {};
+  const batch = stateData.batch || "Unknown";
+  const assessedExperiments = stateData.assessedExperiments;
 
+  const [ciannData, setCiannData] = useState(stateData.ciannData || null);
   const [experiments, setExperiments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!ciannData) {
+      try {
+        const stored = localStorage.getItem("ciannData");
+        if (stored) {
+          setCiannData(JSON.parse(stored));
+        }
+      } catch (e) {
+        console.error("Error reading ciannData in EditProgAssess:", e);
+      }
+    }
+  }, [ciannData]);
 
   useEffect(() => {
     if (assessedExperiments && assessedExperiments.length > 0) {
@@ -57,7 +71,7 @@ function EditProgAssess() {
 
   const handleEditClick = (expId, expName) => {
     // Navigate to edit assessment page with experiment data
-    navigate("/assesspastudentlist", {
+    navigate("/assess-pa-studentlist", {
       state: {
         experiment: { id: expId, name: expName },
         batch: batch,

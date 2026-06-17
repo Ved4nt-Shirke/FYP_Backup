@@ -341,10 +341,9 @@ const TloLlo = require("../models/TloLlo");
 router.get("/tlo-llo/:ciannId/:subjectId", authenticate, async (req, res) => {
   try {
     const { ciannId, subjectId } = req.params;
-    const facultyId = req.user._id;
 
+    // Find record by ciannId and subjectId so anyone with access can view the TLOs/LLOs
     const record = await TloLlo.findOne({
-      facultyId,
       ciannId: parseInt(ciannId),
       subjectId
     });
@@ -369,9 +368,10 @@ router.post("/tlo-llo", authenticate, async (req, res) => {
       return res.status(400).json({ success: false, error: "Missing required fields" });
     }
 
+    // Find and update based on ciannId and subjectId so we keep one master record per CIANN/Subject
     const updatedRecord = await TloLlo.findOneAndUpdate(
-      { facultyId, ciannId: parseInt(ciannId), subjectId },
-      { coData },
+      { ciannId: parseInt(ciannId), subjectId },
+      { coData, facultyId }, // Save/update the facultyId of the user who last edited
       { new: true, upsert: true, runValidators: true }
     );
 

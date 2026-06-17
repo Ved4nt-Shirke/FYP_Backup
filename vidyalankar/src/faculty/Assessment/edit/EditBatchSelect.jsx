@@ -71,7 +71,7 @@ export default function EditBatchSelect() {
       
       if (data.success && data.experiments.length > 0) {
         // Navigate to edit experiment list page with assessed experiments
-        navigate("/edit-experiment-list", {
+        navigate("/assessment/edit-prog", {
           state: { 
             batch: selectedBatch, 
             ciannData,

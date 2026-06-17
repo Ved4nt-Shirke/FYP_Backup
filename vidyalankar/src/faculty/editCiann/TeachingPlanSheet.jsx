@@ -110,6 +110,55 @@ const TeachingPlan = () => {
   const [message, setMessage] = useState(""); // For submission messages
   const [modalWeek, setModalWeek] = useState("");
   const [coData, setCoData] = useState([]);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+
+  // Fetch theory attendance records for the selected ciannId
+  useEffect(() => {
+    if (!ciannId) return;
+    const fetchAttendance = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(
+          getApiUrl(`/theory-attendance?ciannId=${ciannId}`),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setAttendanceRecords(Array.isArray(data) ? data : []);
+        } else {
+          setAttendanceRecords([]);
+        }
+      } catch (err) {
+        console.error("Error fetching attendance records:", err);
+        setAttendanceRecords([]);
+      }
+    };
+    fetchAttendance();
+  }, [ciannId]);
+
+  // Synchronize plans with loaded attendance records
+  useEffect(() => {
+    if (plans.length > 0 && attendanceRecords.length > 0) {
+      let changed = false;
+      const updated = plans.map((p) => {
+        if (!p.subTopic) return p;
+        const att = attendanceRecords.find((a) => a.topic === p.subTopic);
+        if (att && att.date && p.endDate !== att.date) {
+          changed = true;
+          return { ...p, endDate: att.date };
+        }
+        return p;
+      });
+      if (changed) {
+        setPlans(updated);
+      }
+    }
+  }, [attendanceRecords]);
 
   // Chapter dropdown options fetched from DB
   const [chapterOptions, setChapterOptions] = useState([
@@ -265,15 +314,18 @@ const TeachingPlan = () => {
       const found = teachingPlans.find((p) => p.weekNo === numericWeek);
       if (found && found.plans && found.plans.length > 0) {
         setPlans(
-          found.plans.map((p) => ({
-            co: p.co || "",
-            tlo: p.tlo || "",
-            chapter: p.chapter || "",
-            subTopic: p.subTopic || "",
-            startDate: p.startDate || "",
-            endDate: p.endDate || "",
-            teachingMethod: p.teachingMethod || "",
-          }))
+          found.plans.map((p) => {
+            const att = attendanceRecords.find((a) => a.topic === p.subTopic);
+            return {
+              co: p.co || "",
+              tlo: p.tlo || "",
+              chapter: p.chapter || "",
+              subTopic: p.subTopic || "",
+              startDate: p.startDate || "",
+              endDate: att && att.date ? att.date : (p.endDate || ""),
+              teachingMethod: p.teachingMethod || "",
+            };
+          })
         );
       } else {
         setPlans([
@@ -314,6 +366,14 @@ const TeachingPlan = () => {
     }
 
     updated[index][field] = value;
+
+    if (field === "subTopic") {
+      const att = attendanceRecords.find((a) => a.topic === value);
+      if (att && att.date) {
+        updated[index].endDate = att.date;
+      }
+    }
+
     setPlans(updated);
   };
 
@@ -416,7 +476,12 @@ const TeachingPlan = () => {
           <td data-label="TLO">{p.tlo || ""}</td>
           <td data-label="Sub-Topic">{p.subTopic || ""}</td>
           <td data-label="Start Date">{p.startDate || ""}</td>
-          <td data-label="End Date">{p.endDate || ""}</td>
+          <td data-label="End Date">
+            {(() => {
+              const att = attendanceRecords.find((a) => a.topic === p.subTopic);
+              return att && att.date ? att.date : (p.endDate || "");
+            })()}
+          </td>
           <td data-label="Teaching Method">{p.teachingMethod || ""}</td>
         </tr>
       ));
@@ -525,12 +590,12 @@ const TeachingPlan = () => {
               <thead>
                 <tr>
                   <th style={{ width: "8%" }}>CO</th>
-                  <th style={{ width: "16%" }}>Chapter</th>
-                  <th style={{ width: "20%" }}>TLO</th>
-                  <th style={{ width: "16%" }}>Sub-Topic</th>
-                  <th style={{ width: "13%" }}>Start Date</th>
-                  <th style={{ width: "13%" }}>End Date</th>
-                  <th style={{ width: "14%" }}>Teaching Method</th>
+                  <th style={{ width: "14%" }}>Chapter</th>
+                  <th style={{ width: "12%" }}>TLO</th>
+                  <th style={{ width: "14%" }}>Sub-Topic</th>
+                  <th style={{ width: "18%" }}>Start Date</th>
+                  <th style={{ width: "18%" }}>End Date</th>
+                  <th style={{ width: "11%" }}>Teaching Method</th>
                   <th style={{ width: "5%" }}>Action</th>
                 </tr>
               </thead>
@@ -622,10 +687,11 @@ const TeachingPlan = () => {
                       <input
                         type="date"
                         value={plan.endDate || ""}
-                        onChange={(e) => handleChange(index, "endDate", e.target.value)}
-                        onFocus={(e) => e.target.showPicker()}
-                        disabled={!modalWeek}
+                        readOnly={true}
+                        disabled={true}
                         className="form-input"
+                        title="End Date is automatically loaded after attendance is successfully recorded"
+                        style={{ backgroundColor: "#f1f3f5", cursor: "not-allowed", border: "1px dashed #ccc" }}
                       />
                     </td>
                     <td>
