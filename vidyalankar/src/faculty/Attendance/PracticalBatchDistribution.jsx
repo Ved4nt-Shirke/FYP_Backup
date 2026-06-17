@@ -230,6 +230,7 @@ const PracticalBatchDistribution = () => {
         params.append("courseId", selectedCourse);
         if (selectedBatch) {
           params.append("batch", selectedBatch);
+          params.append("academicYear", selectedBatch);
         }
 
         const token = localStorage.getItem("token");

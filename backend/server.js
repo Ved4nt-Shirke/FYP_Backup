@@ -58,6 +58,13 @@ mongoose
     console.log("MongoDB Connected Successfully");
     // Initialize superadmin user
     initializeSuperAdmin();
+    // Run student history backfill
+    try {
+      const { backfillAllStudentsHistory } = require("./utils/studentHistoryHelper");
+      backfillAllStudentsHistory();
+    } catch (bfErr) {
+      console.error("Failed to run student history backfill:", bfErr);
+    }
     // Start WhatsApp Attendance Bot
     if (startWhatsAppBot) {
       startWhatsAppBot();

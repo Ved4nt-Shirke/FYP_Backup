@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const LabPlanning = require('../models/LabPlanning');
 const PracticalAttendance = require('../models/PracticalAttendance');
+const checkCiannFreeze = require('../middleware/checkFreeze');
 const Student = require('../models/Student');
+const { resolveStudents } = require('../utils/studentHistoryHelper');
 const Ciann = require('../models/Ciann');
 
 // GET all lab plans
@@ -34,7 +36,7 @@ router.get('/:ciannId', async (req, res) => {
 });
 
 // POST a new lab plan (with upsert functionality)
-router.post('/', async (req, res) => {
+router.post('/', checkCiannFreeze, async (req, res) => {
   let sanitizedPlans = []; // Declare outside try block for access in catch
   let ciannId, weekNo; // Declare at function level for access in nested catch
   
@@ -189,7 +191,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT to update a lab plan by ciannId and weekNo
-router.put('/:ciannId/:weekNo', async (req, res) => {
+router.put('/:ciannId/:weekNo', checkCiannFreeze, async (req, res) => {
   try {
     const { ciannId, weekNo } = req.params;
     const { plans } = req.body;
@@ -213,7 +215,7 @@ router.put('/:ciannId/:weekNo', async (req, res) => {
 });
 
 // PUT to update a specific plan entry within a lab plan
-router.put('/:ciannId/:weekNo/:batch/:exptNo', async (req, res) => {
+router.put('/:ciannId/:weekNo/:batch/:exptNo', checkCiannFreeze, async (req, res) => {
   try {
     const { ciannId, weekNo, batch, exptNo } = req.params;
     const { actualDate, remark } = req.body;
@@ -260,7 +262,7 @@ router.put('/:ciannId/:weekNo/:batch/:exptNo', async (req, res) => {
 });
 
 // DELETE all lab plans for a specific ciannId (for cleanup/reset)
-router.delete('/ciann/:ciannId', async (req, res) => {
+router.delete('/ciann/:ciannId', checkCiannFreeze, async (req, res) => {
   try {
     const { ciannId } = req.params;
     const numericCiannId = parseInt(ciannId);
@@ -297,8 +299,12 @@ async function syncLabPlanToPracticalAttendance(ciannId, weekNo, plans) {
       return;
     }
     
-    // Get all students in this division/batch
-    const students = await Student.find({ divisionId: divisionId }).select('rollNo studentName');
+    // Get all students in this division/batch historically
+    const students = await resolveStudents({
+      divisionId: ciann.divisionId,
+      division: ciann.division,
+      academicYear: ciann.academicYear
+    }, ciann.college);
     
     if (students.length === 0) {
       console.log(`No students found for CIANN ${ciannId}`);

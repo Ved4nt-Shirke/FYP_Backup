@@ -322,6 +322,7 @@ const PrintCiann = () => {
         const query = new URLSearchParams();
         if (resolvedDivName) query.set("division", resolvedDivName);
         if (deptId) query.set("departmentId", deptId);
+        if (data?.academicYear) query.set("academicYear", data.academicYear);
 
         const studentsRes = await fetch(
           `${config.students}?${query.toString()}`,

@@ -170,11 +170,27 @@ const CreateCiann = ({
     }
   };
 
-  const academicYears = [
-    { value: "2023-24", label: "2023-24" },
-    { value: "2024-25", label: "2024-25" },
-    { value: "2025-26", label: "2025-26" },
-  ];
+  const generateAcademicYears = () => {
+    const d = new Date();
+    const currentYear = d.getFullYear();
+    const currentMonth = d.getMonth() + 1;
+    const activeStartYear = currentMonth >= 6 ? currentYear : currentYear - 1;
+
+    const years = [];
+    const endYearLimit = Math.max(currentYear + 8, 2035);
+
+    for (let year = 2023; year <= endYearLimit; year++) {
+      const endYearStr = String(year + 1).slice(-2);
+      const labelSuffix = year < activeStartYear ? " (Already Done)" : "";
+      years.push({
+        value: `${year}-${endYearStr}`,
+        label: `${year}-${endYearStr}${labelSuffix}`,
+      });
+    }
+    return years;
+  };
+
+  const academicYears = generateAcademicYears();
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({

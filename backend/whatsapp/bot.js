@@ -508,8 +508,11 @@ async function handleAbsentRolls(message, raw, faculty, phone, session) {
     const ciannId = selectedCiann.ciannId;
     const date = selectedPlanDetails.date;
 
-    const Student = getModel("Student");
-    const students = await Student.find({ division: selectedCiann.division }).select("rollNo studentName").lean();
+    const { resolveStudents } = require("../utils/studentHistoryHelper");
+    const students = await resolveStudents({
+        division: selectedCiann.division,
+        academicYear: selectedCiann.academicYear
+    }, selectedCiann.college || (faculty && faculty.institution));
     
     if (students.length === 0) {
         await message.reply(`⚠️ No students found in Division ${selectedCiann.division}. Add students from the admin panel first.`);
@@ -761,9 +764,11 @@ async function handleDirectAttendance(message, body, faculty, phone) {
             return;
         }
 
-        const Student = getModel("Student");
-        // Remove college check since Student model does not have an institution/college field
-        const students = await Student.find({ division: ciann.division }).select("rollNo studentName").lean();
+        const { resolveStudents } = require("../utils/studentHistoryHelper");
+        const students = await resolveStudents({
+            division: ciann.division,
+            academicYear: ciann.academicYear
+        }, ciann.college);
 
         if (students.length === 0) {
             await message.reply(`⚠️ No students found in Division ${ciann.division}. Add students from the admin panel first.`);

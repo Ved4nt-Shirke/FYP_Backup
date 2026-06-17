@@ -1,11 +1,11 @@
 // routes/practicalAttendance.js
-
 const express = require("express");
 const router = express.Router();
 const PracticalAttendance = require("../models/PracticalAttendance");
+const checkCiannFreeze = require("../middleware/checkFreeze");
 
 // POST: Create or update practical attendance record
-router.post("/", async (req, res) => {
+router.post("/", checkCiannFreeze, async (req, res) => {
   const {
     ciannId,
     weekNo,
@@ -51,7 +51,7 @@ router.get("/", async (req, res) => {
 });
 
 // PUT: Update existing practical attendance record
-router.put("/:id", async (req, res) => {
+router.put("/:id", checkCiannFreeze, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;

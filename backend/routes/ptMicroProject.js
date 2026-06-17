@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const PTMicroProject = require('../models/PTMicroProject');
 const Student = require('../models/Student');
+const { resolveStudents } = require('../utils/studentHistoryHelper');
 const { authenticate } = require('../middleware/auth');
 const PTConfiguration = require('../models/PTConfiguration');
 const StudentPTMarks = require('../models/StudentPTMarks');
@@ -16,57 +17,10 @@ router.use(authenticate);
 // GET: Fetch all students for a particular division/course
 router.get('/students', async (req, res) => {
   try {
-    const { divisionId, courseId, departmentId, batch /* institution intentionally ignored */ } = req.query;
-
-    // Debug log to help trace issues when students are unexpectedly empty
     console.log('=== PTMicroProject /students Request ===');
     console.log('Query params:', req.query);
 
-    // Build filter with fallback logic
-    let filter = {};
-    
-    // Priority 1: If divisionId is provided, use it (most specific)
-    if (divisionId) {
-      filter.divisionId = divisionId;
-      console.log('Filter by divisionId:', divisionId);
-    }
-    // Priority 2: If courseId is provided, try using it
-    else if (courseId) {
-      filter.courseId = courseId;
-      console.log('Filter by courseId:', courseId);
-    }
-    // Priority 3: If departmentId is provided, use it
-    else if (departmentId) {
-      filter.departmentId = departmentId;
-      console.log('Filter by departmentId:', departmentId);
-    }
-    // Priority 4: If batch is provided, use it
-    else if (batch) {
-      filter.batch = batch;
-      console.log('Filter by batch:', batch);
-    }
-    // Priority 5: If nothing provided, return ALL students (for testing)
-    else {
-      console.log('No filter criteria provided - returning ALL students');
-    }
-
-    console.log('Built filter:', filter);
-
-    let students = await Student.find(filter).select('_id studentName rollNo enrollmentNo batch departmentId courseId divisionId');
-    
-    console.log(`Found ${students.length} students with filter:`, filter);
-
-    // If no students found with specific filter, try broader fallback
-    if (students.length === 0 && (courseId || divisionId || departmentId)) {
-      console.log('No students found with specific filter - trying batch fallback...');
-      
-      // If batch was specified, already tried it above
-      if (!batch) {
-        // Try to find ANY students if nothing worked
-        students = await Student.find({}).select('_id studentName rollNo enrollmentNo batch departmentId courseId divisionId').limit(50);
-        console.log(`Fallback: Found ${students.length} total students in database`);
-      }
-    }
+    const students = await resolveStudents(req.query, req.user.college);
 
     res.json({
       success: true,
@@ -476,32 +430,12 @@ router.get('/new/students/:ciannId', async (req, res) => {
       });
     }
 
-    // Resolve Division ID using CIANN's division name (e.g. "A") and courseId
-    const divisionDoc = await Division.findOne({
+    const students = await resolveStudents({
       courseId: ciann.courseId,
-      name: ciann.division
-    });
-
-    const query = {
-      courseId: ciann.courseId
-    };
-
-    if (divisionDoc) {
-      query.$or = [
-        { divisionId: divisionDoc._id },
-        { division: ciann.division }
-      ];
-    } else {
-      query.division = ciann.division;
-    }
-
-    if (ciann.academicYear) {
-      query.academicYear = ciann.academicYear;
-    }
-
-    const students = await Student.find(query)
-      .select('_id studentName rollNo enrollmentNo batch departmentId courseId divisionId')
-      .sort({ rollNo: 1 });
+      divisionId: divisionDoc?._id,
+      division: ciann.division,
+      academicYear: ciann.academicYear
+    }, req.user.college);
 
     res.json({
       success: true,

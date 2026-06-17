@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const TutorialAttendance = require('../models/TutorialAttendance');
+const checkCiannFreeze = require('../middleware/checkFreeze');
 
-router.post('/', async (req, res) => {
+router.post('/', checkCiannFreeze, async (req, res) => {
   try {
     const { Topic, actualDate, ciannId, subject, division, students } = req.body;
     
@@ -56,7 +57,7 @@ router.get('/', async (req, res) => {
 });
 
 // PUT route to update tutorial attendance
-router.put('/:id', async (req, res) => {
+router.put('/:id', checkCiannFreeze, async (req, res) => {
   try {
     const { id } = req.params;
     const { Topic, actualDate, ciannId, subject, division, students } = req.body;

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const TeachingPlan = require('../models/TeachingPlan');
+const checkCiannFreeze = require('../middleware/checkFreeze');
 
 // GET teaching plans for a specific ciannId
 router.get('/:ciannId', async (req, res) => {
@@ -24,7 +25,7 @@ router.get('/:ciannId', async (req, res) => {
 });
 
 // POST a new teaching plan
-router.post('/', async (req, res) => {
+router.post('/', checkCiannFreeze, async (req, res) => {
   try {
     const { ciannId, weekNo, plans } = req.body;
     if (typeof weekNo !== 'number') {
@@ -39,7 +40,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT to update or create a teaching plan by ciannId and weekNo
-router.put('/:ciannId/:weekNo', async (req, res) => {
+router.put('/:ciannId/:weekNo', checkCiannFreeze, async (req, res) => {
   try {
     const { ciannId } = req.params;
     const weekNo = parseInt(req.params.weekNo, 10);

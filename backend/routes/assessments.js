@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Assessment = require('../models/Assessment');
 const Student = require('../models/Student');
+const { resolveStudents } = require('../utils/studentHistoryHelper');
 const Experiment = require('../models/Experiment');
 const Ciann = require('../models/Ciann');
 
@@ -183,7 +184,19 @@ router.post('/save-marks', async (req, res) => {
     // If batch is provided, validate that all students belong to that batch
     if (batch) {
       console.log('Validating batch:', batch);
-      const batchStudents = await Student.find({ batch: batch }).select('studentName rollNo');
+      let batchStudents = [];
+      if (ciannId) {
+        const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
+        if (ciann) {
+          batchStudents = await resolveStudents({
+            batch: batch,
+            academicYear: ciann.academicYear
+          }, ciann.college);
+        }
+      }
+      if (batchStudents.length === 0) {
+        batchStudents = await Student.find({ batch: batch }).select('studentName rollNo');
+      }
       console.log('Found batch students:', batchStudents.length);
       console.log('Batch student names:', batchStudents.map(s => s.studentName));
       

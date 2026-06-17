@@ -18,8 +18,13 @@ const StudentAttendance = () => {
     if (ciannDataStr) {
       try {
         const ciannData = JSON.parse(ciannDataStr);
-        if (ciannData.division) {
+        if (ciannData.divisionId?._id || ciannData.divisionId) {
+          params.divisionId = ciannData.divisionId?._id || ciannData.divisionId;
+        } else if (ciannData.division) {
           params.division = ciannData.division;
+        }
+        if (ciannData.academicYear) {
+          params.academicYear = ciannData.academicYear;
         }
       } catch (err) {
         console.error("Error parsing ciannData:", err);

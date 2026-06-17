@@ -375,3 +375,53 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border: 2px dashed #dee2e6;
 }
+
+/* Archived Card and Section styling */
+.ciann-dashboard-card.archived-card {
+  background-color: #f8fafc;
+  border-color: rgba(203, 213, 225, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  opacity: 0.85;
+}
+
+.ciann-dashboard-card.archived-card::before {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+}
+
+.ciann-dashboard-card.archived-card .ciann-id {
+  color: #64748b;
+  background-color: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+.ciann-dashboard-card.archived-card .ciann-icon {
+  color: #64748b;
+}
+
+.ciann-dashboard-card.archived-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(100, 116, 139, 0.1);
+  opacity: 1;
+}
+
+.workspace-section-group {
+  margin-bottom: 3.5rem;
+}
+
+.workspace-section-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+.no-workspaces-alert {
+  padding: 2.5rem;
+  border-radius: 16px;
+  background-color: #f8fafc;
+  text-align: center;
+  color: #64748b;
+  font-weight: 600;
+  border: 1px dashed #cbd5e1;
+  margin: 10px 0;
+}

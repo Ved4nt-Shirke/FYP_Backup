@@ -59,6 +59,7 @@ export default function CTDashboard() {
         const query = new URLSearchParams();
         if (ciannData?.batch) query.set("batch", ciannData.batch);
         if (ciannData?.division) query.set("division", ciannData.division);
+        if (ciannData?.academicYear) query.set("academicYear", ciannData.academicYear);
 
         const studentsUrl = query.toString()
           ? `${config.students}?${query.toString()}`
