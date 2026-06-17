@@ -106,6 +106,12 @@ const CiannSchema = new mongoose.Schema(
         },
       },
     ],
+    status: {
+      type: String,
+      enum: ["active", "completed", "archived"],
+      default: "active",
+      required: true,
+    },
   },
   {
     timestamps: true,

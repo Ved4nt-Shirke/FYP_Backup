@@ -3,6 +3,7 @@ const router = express.Router();
 const CTMarks = require('../models/CTMarks');
 const Ciann = require('../models/Ciann');
 const Student = require('../models/Student');
+const checkCiannFreeze = require('../middleware/checkFreeze');
 
 // @route   GET /api/ct-marks/:ciannId
 // @desc    Get all CT marks for a specific CIANN ID
@@ -57,7 +58,7 @@ router.get('/:ciannId/ct/:ctNumber', async (req, res) => {
 // @route   POST /api/ct-marks
 // @desc    Create new CT marks entry
 // @access  Public
-router.post('/', async (req, res) => {
+router.post('/', checkCiannFreeze, async (req, res) => {
   try {
     const {
       ctName,
@@ -143,7 +144,7 @@ router.post('/', async (req, res) => {
 // @route   PUT /api/ct-marks/:id
 // @desc    Update CT marks entry
 // @access  Public
-router.put('/:id', async (req, res) => {
+router.put('/:id', checkCiannFreeze, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -182,7 +183,7 @@ router.put('/:id', async (req, res) => {
 // @route   DELETE /api/ct-marks/:id
 // @desc    Delete CT marks entry
 // @access  Public
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', checkCiannFreeze, async (req, res) => {
   try {
     const { id } = req.params;
 

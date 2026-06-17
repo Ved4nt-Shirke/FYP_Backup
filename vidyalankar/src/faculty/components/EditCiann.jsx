@@ -164,6 +164,125 @@ const EditCiann = () => {
     }
   };
 
+  const renderCiannCard = (ciannData) => {
+    const ownerUsername = (ciannData?.ownerUsername || '').trim().toLowerCase();
+    const accessLevel = ciannData?.accessLevel;
+    const isOwner =
+      accessLevel === 'owner' ||
+      (!!currentUsername && ownerUsername === currentUsername);
+    const isArchived = ciannData.status === 'completed' || ciannData.status === 'archived';
+
+    return (
+      <div key={ciannData._id} className="position-relative">
+        {/* Share/Manage Button */}
+        {isOwner && !isArchived && (
+          <button
+            type="button"
+            className="ciann-manage-btn"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setSelectedCiannData(ciannData);
+              setShowCollaboratorsModal(true);
+            }}
+          >
+            <i className="bi bi-people-fill me-1"></i> Manage
+          </button>
+        )}
+
+        <Link
+          to="/course-diary"
+          state={{ ciannData: ciannData }}
+          className="ciann-dashboard-card-link"
+          onClick={() => {
+            console.log('Selected CIAAN:', ciannData);
+            setSelectedCiannData(ciannData);
+            // Store CIAAN data in both sessionStorage and localStorage
+            sessionStorage.setItem('currentCiannData', JSON.stringify(ciannData));
+            localStorage.setItem('ciannData', JSON.stringify(ciannData));
+          }}
+        >
+          <div className={`ciann-dashboard-card ${isArchived ? 'archived-card' : ''}`}>
+            <div className="card-content">
+              <i className="bi bi-journal-text ciann-icon"></i>
+              <div className="ciann-id">
+                CIAAN ID: {ciannData.ciannId}
+                {isArchived && (
+                  <span className="badge bg-secondary ms-2" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
+                    {ciannData.status === 'completed' ? 'Completed' : 'Archived'}
+                  </span>
+                )}
+              </div>
+              <div className="card-text">
+                <strong>{ciannData.subject?.name}</strong>
+                <span className="subject-code">({ciannData.subject?.code})</span>
+              </div>
+              <div className="card-text">
+                <span className="division-label">Division:</span> <strong>{ciannData.division}</strong>
+              </div>
+              <div className="card-text text-muted small">
+                Academic Year: <strong>{ciannData.academicYear}</strong>
+              </div>
+              {ciannData.sharedWith && ciannData.sharedWith.length > 0 && !isArchived && (
+                <div className="ciann-card-collab-stack">
+                  {ciannData.sharedWith.slice(0, 3).map((share, idx) => {
+                    const username = share.user?.username || share.username || (typeof share.user === 'string' ? share.user : "?");
+                    const initial = username.substring(0, 2).toUpperCase();
+                    return (
+                      <div
+                        key={idx}
+                        className="ciann-card-avatar text-white fw-bold d-flex align-items-center justify-content-center"
+                        title={`${username} (${share.permission || 'read'})`}
+                        style={{
+                          backgroundColor: share.permission === 'edit' ? '#f59e0b' : '#3b82f6',
+                          width: '24px',
+                          height: '24px',
+                          fontSize: '0.65rem',
+                          borderRadius: '50%',
+                          border: '2px solid white',
+                          marginLeft: idx > 0 ? '-6px' : '0',
+                          zIndex: 10 - idx
+                        }}
+                      >
+                        {initial}
+                      </div>
+                    );
+                  })}
+                  {ciannData.sharedWith.length > 3 && (
+                    <div
+                      className="ciann-card-avatar text-white fw-bold d-flex align-items-center justify-content-center"
+                      style={{
+                        backgroundColor: '#64748b',
+                        width: '24px',
+                        height: '24px',
+                        fontSize: '0.65rem',
+                        borderRadius: '50%',
+                        border: '2px solid white',
+                        marginLeft: '-6px',
+                        zIndex: 5
+                      }}
+                    >
+                      +{ciannData.sharedWith.length - 3}
+                    </div>
+                  )}
+                </div>
+              )}
+              {accessLevel && accessLevel !== 'owner' && (
+                <div className="ciann-access-pill text-capitalize">
+                  <i className="bi bi-shield-lock me-1"></i>
+                  Access: {accessLevel}
+                </div>
+              )}
+            </div>
+            <div className="card-hover-text">
+              {isArchived ? 'Click to View / Print' : 'Click to Edit'}
+            </div>
+          </div>
+        </Link>
+      </div>
+    );
+  };
+
   // Group CIANNs
   const myCianns = ciannDataList.filter(
     (c) => c.accessLevel === 'owner' || (c.ownerUsername && c.ownerUsername.trim().toLowerCase() === currentUsername)
@@ -268,116 +387,42 @@ const EditCiann = () => {
             <p>Loading CIAANs...</p>
           </div>
         ) : activeTab !== 'requests' ? (
-          <div className="ciann-card-container">
-            {activeCianns.length > 0 ? (
-              activeCianns.map((ciannData) => {
-                const ownerUsername = (ciannData?.ownerUsername || '').trim().toLowerCase();
-                const accessLevel = ciannData?.accessLevel;
-                const isOwner =
-                  accessLevel === 'owner' ||
-                  (!!currentUsername && ownerUsername === currentUsername);
+          <div>
+            {/* Active Workspaces Section */}
+            <div className="workspace-section-group">
+              <h4 className="workspace-section-title text-primary mb-4">
+                <i className="bi bi-activity me-2"></i>Active Semesters
+              </h4>
+              {activeCianns.filter(c => c.status !== 'completed' && c.status !== 'archived').length > 0 ? (
+                <div className="ciann-card-container">
+                  {activeCianns
+                    .filter(c => c.status !== 'completed' && c.status !== 'archived')
+                    .map(ciannData => renderCiannCard(ciannData))}
+                </div>
+              ) : (
+                <div className="no-workspaces-alert">
+                  <i className="bi bi-info-circle me-2"></i>No active CIANN workspaces in this section.
+                </div>
+              )}
+            </div>
 
-                return (
-                  <div key={ciannData._id} className="position-relative">
-                    {/* Share/Manage Button */}
-                    {isOwner && (
-                      <button
-                        type="button"
-                        className="ciann-manage-btn"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          setSelectedCiannData(ciannData);
-                          setShowCollaboratorsModal(true);
-                        }}
-                      >
-                        <i className="bi bi-people-fill me-1"></i> Manage
-                      </button>
-                    )}
-
-                    <Link
-                      to="/course-diary"
-                      state={{ ciannData: ciannData }}
-                      className="ciann-dashboard-card-link"
-                      onClick={() => {
-                        console.log('Selected CIAAN:', ciannData);
-                        setSelectedCiannData(ciannData);
-                        // Store CIAAN data in both sessionStorage and localStorage
-                        sessionStorage.setItem('currentCiannData', JSON.stringify(ciannData));
-                        localStorage.setItem('ciannData', JSON.stringify(ciannData));
-                      }}
-                    >
-                      <div className="ciann-dashboard-card">
-                        <div className="card-content">
-                          <i className="bi bi-journal-text ciann-icon"></i>
-                          <div className="ciann-id">CIAAN ID: {ciannData.ciannId}</div>
-                          <div className="card-text">
-                            <strong>{ciannData.subject?.name}</strong>
-                            <span className="subject-code">({ciannData.subject?.code})</span>
-                          </div>
-                          <div className="card-text">
-                            <span className="division-label">Division:</span> <strong>{ciannData.division}</strong>
-                          </div>
-                          {ciannData.sharedWith && ciannData.sharedWith.length > 0 && (
-                            <div className="ciann-card-collab-stack">
-                              {ciannData.sharedWith.slice(0, 3).map((share, idx) => {
-                                const username = share.user?.username || share.username || (typeof share.user === 'string' ? share.user : "?");
-                                const initial = username.substring(0, 2).toUpperCase();
-                                return (
-                                  <div
-                                    key={idx}
-                                    className="ciann-card-avatar text-white fw-bold d-flex align-items-center justify-content-center"
-                                    title={`${username} (${share.permission || 'read'})`}
-                                    style={{
-                                      backgroundColor: share.permission === 'edit' ? '#f59e0b' : '#3b82f6',
-                                      width: '24px',
-                                      height: '24px',
-                                      fontSize: '0.65rem',
-                                      borderRadius: '50%',
-                                      border: '2px solid white',
-                                      marginLeft: idx > 0 ? '-6px' : '0',
-                                      zIndex: 10 - idx
-                                    }}
-                                  >
-                                    {initial}
-                                  </div>
-                                );
-                              })}
-                              {ciannData.sharedWith.length > 3 && (
-                                <div
-                                  className="ciann-card-avatar text-white fw-bold d-flex align-items-center justify-content-center"
-                                  style={{
-                                    backgroundColor: '#64748b',
-                                    width: '24px',
-                                    height: '24px',
-                                    fontSize: '0.65rem',
-                                    borderRadius: '50%',
-                                    border: '2px solid white',
-                                    marginLeft: '-6px',
-                                    zIndex: 5
-                                  }}
-                                >
-                                  +{ciannData.sharedWith.length - 3}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          {accessLevel && accessLevel !== 'owner' && (
-                            <div className="ciann-access-pill text-capitalize">
-                              <i className="bi bi-shield-lock me-1"></i>
-                              Access: {accessLevel}
-                            </div>
-                          )}
-                        </div>
-                        <div className="card-hover-text">Click to Edit</div>
-                      </div>
-                    </Link>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="text-center">No CIAAN data available in this tab.</p>
-            )}
+            {/* Archived / Completed Workspaces Section */}
+            <div className="workspace-section-group">
+              <h4 className="workspace-section-title text-secondary mb-4">
+                <i className="bi bi-archive-fill me-2"></i>Previous Semesters / Archived (Read-Only)
+              </h4>
+              {activeCianns.filter(c => c.status === 'completed' || c.status === 'archived').length > 0 ? (
+                <div className="ciann-card-container">
+                  {activeCianns
+                    .filter(c => c.status === 'completed' || c.status === 'archived')
+                    .map(ciannData => renderCiannCard(ciannData))}
+                </div>
+              ) : (
+                <div className="no-workspaces-alert">
+                  <i className="bi bi-info-circle me-2"></i>No archived or completed CIANN workspaces in this section.
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           /* Pending Requests Tab */

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Student = require("../models/Student");
+const { ensureStudentHistory, resolveStudents } = require("../utils/studentHistoryHelper");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -20,82 +21,12 @@ const generateSafePassword = (length = 8) => {
 router.get("/", authenticate, async (req, res) => {
   try {
     console.log("GET /api/students - Request received");
-    const { batch, division, divisionId, courseId, departmentId, academicYear } = req.query;
     console.log("Query params:", req.query);
 
-    // Build query object
-    let query = { institution: req.user.college };
-    if (batch) {
-      query.batch = batch;
-    }
-    if (divisionId) {
-      query.divisionId = divisionId;
-    } else if (division) {
-      const Division = require("../models/Division");
-      const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const escapedDiv = escapeRegex(division);
-      
-      const matchedDivs = await Division.find({
-        $or: [
-          { name: { $regex: new RegExp(`^${escapedDiv}$`, "i") } },
-          { name: { $regex: new RegExp(`${escapedDiv}$`, "i") } }
-        ]
-      }).select("_id name");
-      
-      const divIds = matchedDivs.map(d => d._id);
-      const divNames = matchedDivs.map(d => d.name);
-      
-      const divisionOrQueries = [
-        { division: { $regex: new RegExp(`^${escapedDiv}$`, "i") } },
-        { division: { $regex: new RegExp(`${escapedDiv}$`, "i") } }
-      ];
-      
-      if (divIds.length > 0) {
-        divisionOrQueries.push({ divisionId: { $in: divIds } });
-      }
-      if (divNames.length > 0) {
-        divisionOrQueries.push({ division: { $in: divNames } });
-      }
-      
-      query.$or = divisionOrQueries;
-    }
-    if (courseId) {
-      query.courseId = courseId;
-    }
-    if (departmentId) {
-      query.departmentId = departmentId;
-    }
-    if (academicYear) {
-      query.academicYear = academicYear;
-    }
-
-    console.log("Database query:", query);
-
-    // Fetch students with populated related data
-    const students = await Student.find(query)
-      .populate("departmentId", "name code")
-      .populate("courseId", "name semester class")
-      .populate("divisionId", "name")
-      .select(
-        "rollNo studentName enrollmentNo batch academicYear division departmentId courseId divisionId seatNo plainPassword",
-      )
-      .lean()
-      .exec();
-
+    const students = await resolveStudents(req.query, req.user.college);
     console.log("Students found:", students.length);
 
-    // Enrich response with flattened data for easier frontend consumption
-    const enrichedStudents = students.map((student) => ({
-      ...student,
-      departmentName: student.departmentId?.name || "",
-      departmentCode: student.departmentId?.code || "",
-      courseName: student.courseId?.name || "",
-      semester: student.courseId?.semester || "",
-      className: student.courseId?.class || "",
-      divisionName: student.divisionId?.name || student.division,
-    }));
-
-    res.json(enrichedStudents);
+    res.json(students);
   } catch (err) {
     console.error("Error fetching students:", err);
     res.status(500).json({ message: err.message });
@@ -215,6 +146,13 @@ router.post("/", authenticate, authorizeOffice, async (req, res) => {
 
     await newStudent.save();
 
+    // Ensure StudentAcademicHistory record is created
+    try {
+      await ensureStudentHistory(newStudent);
+    } catch (historyErr) {
+      console.error("Error creating student history record:", historyErr);
+    }
+
     // Create user account for student (if not existing)
     if (!existingUser) {
       const newUser = new User({
@@ -280,6 +218,13 @@ router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
       });
 
       await newStudent.save();
+
+      // Ensure StudentAcademicHistory record is created
+      try {
+        await ensureStudentHistory(newStudent);
+      } catch (historyErr) {
+        console.error(`Error creating bulk student history record for ${enrollmentNo}:`, historyErr);
+      }
 
       // Create user account for student
       const existingUser = await User.findOne({ username });
@@ -353,6 +298,15 @@ router.put("/:id", authenticate, authorizeOffice, async (req, res) => {
       },
       { new: true },
     );
+
+    // Ensure StudentAcademicHistory record is updated
+    if (updatedStudent) {
+      try {
+        await ensureStudentHistory(updatedStudent);
+      } catch (historyErr) {
+        console.error("Error updating student history record:", historyErr);
+      }
+    }
 
     res.json({ student: updatedStudent });
   } catch (error) {

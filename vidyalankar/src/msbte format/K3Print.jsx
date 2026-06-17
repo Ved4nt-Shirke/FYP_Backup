@@ -71,6 +71,7 @@ const K3Print = () => {
           params: {
             batch,
             division: ciannData.division || undefined,
+            academicYear: ciannData.academicYear || undefined,
           },
         });
         studentList = Array.isArray(studentsResult.data)

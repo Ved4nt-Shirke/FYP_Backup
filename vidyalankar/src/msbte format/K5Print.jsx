@@ -72,6 +72,7 @@ const K5Print = () => {
         const studentPromise = axios.get(config.students, {
           params: {
             division: ciannData.division || undefined,
+            academicYear: ciannData.academicYear || undefined,
           },
         });
 

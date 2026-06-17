@@ -135,6 +135,7 @@ import SubjectsView from "./admin/subjects/SubjectsView";
 import CourseDetailsView from "./admin/subjects/CourseDetailsView";
 import VisionMissionManager from "./admin/VisionMissionManager";
 import ManageRooms from "./admin/ManageRooms";
+import StudentPromotions from "./admin/StudentPromotions";
 
 import OfficeDashboard from "./office/OfficeDashboard";
 import OfficeSidebar from "./office/OfficeSidebar";
@@ -997,6 +998,10 @@ const AppContent = () => {
             <Route
               path="/admin/rooms"
               element={<ManageRooms />}
+            />
+            <Route
+              path="/admin/promotions"
+              element={<StudentPromotions />}
             />
             {/* SuperAdmin Routes */}
             <Route

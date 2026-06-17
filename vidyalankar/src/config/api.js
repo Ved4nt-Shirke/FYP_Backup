@@ -127,6 +127,10 @@ export const config = {
     classroomById: (id) => `${API_BASE_URL}/admin/classrooms/${id}`,
     labs: `${API_BASE_URL}/admin/labs`,
     labById: (id) => `${API_BASE_URL}/admin/labs/${id}`,
+    promotionsEligible: `${API_BASE_URL}/admin/promotions/eligible-students`,
+    promoteStudents: `${API_BASE_URL}/admin/promotions/promote`,
+    archiveSemesters: `${API_BASE_URL}/admin/archive/semesters`,
+    freezeSemester: `${API_BASE_URL}/admin/archive/freeze`,
   },
 
   // Courses, divisions, subjects (Admin)

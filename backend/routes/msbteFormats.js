@@ -3,6 +3,7 @@ const router = express.Router();
 const SaPrK4 = require("../models/SaPrK4");
 const SaTh = require("../models/SaTh");
 const Student = require("../models/Student");
+const { resolveStudents } = require("../utils/studentHistoryHelper");
 const Division = require("../models/Division");
 const Course = require("../models/Course");
 const Subject = require("../models/Subject");
@@ -806,8 +807,12 @@ router.get("/k7/populate", async (req, res) => {
     }
     const divisionName = divisionObj.name;
 
-    // 2. Fetch all students in this division
-    const students = await Student.find({ departmentId, divisionId }).sort({ rollNo: 1 });
+    // 2. Fetch all students in this division for the specific academic year
+    const students = await resolveStudents({
+      departmentId,
+      divisionId,
+      academicYear
+    }, req.user.college);
     if (students.length === 0) {
       return res.json({ success: true, courseConfigs: [], studentMarks: [], message: "No students found in this division" });
     }

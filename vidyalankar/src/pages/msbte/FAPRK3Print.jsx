@@ -54,6 +54,9 @@ const FAPRK3Print = () => {
         if (ciannData?.department?._id) {
           query.set("departmentId", ciannData.department._id);
         }
+        if (ciannData?.academicYear) {
+          query.set("academicYear", ciannData.academicYear);
+        }
 
         const studentsResponse = await fetch(
           query.toString() ? `${config.students}?${query.toString()}` : config.students,

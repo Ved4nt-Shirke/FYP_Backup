@@ -6,6 +6,7 @@ const User = require("../models/user");
 const CiannCollaborationLog = require("../models/CiannCollaborationLog");
 const Notification = require("../models/Notification");
 const { authenticate } = require("../middleware/auth");
+const checkCiannFreeze = require("../middleware/checkFreeze");
 
 // All CIANN routes require authentication to scope data per faculty
 router.use(authenticate);
@@ -345,7 +346,7 @@ router.get("/:ciannId/shares", async (req, res) => {
 });
 
 // Share a CIANN with another user by username
-router.post("/:ciannId/share", async (req, res) => {
+router.post("/:ciannId/share", checkCiannFreeze, async (req, res) => {
   try {
     const numericCiannId = parseInt(req.params.ciannId);
     const { username, permission } = req.body;
@@ -434,7 +435,7 @@ router.post("/:ciannId/share", async (req, res) => {
 });
 
 // Remove CIANN share from a user
-router.delete("/:ciannId/share/:sharedUserId", async (req, res) => {
+router.delete("/:ciannId/share/:sharedUserId", checkCiannFreeze, async (req, res) => {
   try {
     const numericCiannId = parseInt(req.params.ciannId);
     const { sharedUserId } = req.params;
@@ -509,6 +510,23 @@ function ensureAccess(ciann, user, requiredPermission = "read") {
 // Create CIANN
 router.post("/", async (req, res) => {
   try {
+    // Check if CIANN with same subject, division, semester, academicYear, and college already exists
+    const exists = await Ciann.findOne({
+      college: req.user.college,
+      division: req.body.division,
+      semester: req.body.semester?.toString(),
+      academicYear: req.body.academicYear,
+      $or: [
+        { "subject._id": req.body.subject?._id },
+        { "subject.code": req.body.subject?.code }
+      ]
+    });
+    if (exists) {
+      return res.status(400).json({
+        message: `A CIANN for subject ${req.body.subject?.name || ""} (${req.body.subject?.code || ""}), Division ${req.body.division}, Semester ${req.body.semester} for Academic Year ${req.body.academicYear} already exists in your institution.`
+      });
+    }
+
     const ciannId = await generateUniqueCiannId();
 
     // Link to faculty document if available (by email/username match)
@@ -673,7 +691,7 @@ router.get("/:ciannId", async (req, res) => {
 });
 
 // Update CIANN
-router.put("/:ciannId", async (req, res) => {
+router.put("/:ciannId", checkCiannFreeze, async (req, res) => {
   try {
     const { ciannId } = req.params;
     const numericCiannId = parseInt(ciannId);
@@ -713,7 +731,7 @@ router.put("/:ciannId", async (req, res) => {
 });
 
 // Delete CIANN with password authentication and cascade delete all related data
-router.delete("/:ciannId", async (req, res) => {
+router.delete("/:ciannId", checkCiannFreeze, async (req, res) => {
   try {
     const { ciannId } = req.params;
     const { password } = req.body;
@@ -868,7 +886,7 @@ router.get("/user/:username", async (req, res) => {
 });
 
 // Sync CIANN workspace edits and check for conflicts
-router.post("/:ciannId/sync", async (req, res) => {
+router.post("/:ciannId/sync", checkCiannFreeze, async (req, res) => {
   try {
     const numericCiannId = parseInt(req.params.ciannId);
     const { ciannData, lastSyncedAt, section, details } = req.body;
@@ -965,7 +983,7 @@ router.post("/:ciannId/sync", async (req, res) => {
 });
 
 // Add a comment to CIANN
-router.post("/:ciannId/comments", async (req, res) => {
+router.post("/:ciannId/comments", checkCiannFreeze, async (req, res) => {
   try {
     const numericCiannId = parseInt(req.params.ciannId);
     const { comment } = req.body;

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Student = require("../models/Student");
+const { ensureStudentHistory, resolveStudents } = require("../utils/studentHistoryHelper");
 const User = require("../models/user");
 const OfficeStaff = require("../models/OfficeStaff");
 const Notice = require("../models/Notice");
@@ -104,67 +105,9 @@ router.get(
  */
 router.get("/students", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const { batch, division, departmentId, courseId, divisionId, academicYear } = req.query;
-    const normalizedBatch = (batch || "").toString().trim();
-    const normalizedDivision = (division || "").toString().trim();
-    const normalizedDepartmentId = (departmentId || "").toString().trim();
-    const normalizedCourseId = (courseId || "").toString().trim();
-    const normalizedDivisionId = (divisionId || "").toString().trim();
-    const normalizedAcademicYear = (academicYear || "").toString().trim();
-
-    const baseQuery = { institution: req.user.college };
-
-    if (normalizedDivision) {
-      baseQuery.division = {
-        $regex: new RegExp(`^${escapeRegex(normalizedDivision)}$`, "i"),
-      };
-    }
-    if (normalizedDepartmentId) {
-      baseQuery.departmentId = normalizedDepartmentId;
-    }
-    if (normalizedCourseId) {
-      baseQuery.courseId = normalizedCourseId;
-    }
-    if (normalizedDivisionId) {
-      baseQuery.divisionId = normalizedDivisionId;
-    }
-
-    const query = { ...baseQuery };
-
-    if (normalizedBatch) {
-      query.batch = {
-        $regex: new RegExp(`^${escapeRegex(normalizedBatch)}$`, "i"),
-      };
-    }
-    if (normalizedAcademicYear) {
-      query.academicYear = {
-        $regex: new RegExp(`^${escapeRegex(normalizedAcademicYear)}$`, "i"),
-      };
-    }
-
-    const students = await Student.find(query)
-      .populate("departmentId", "name code")
-      .populate("courseId", "semester scheme courseCode")
-      .populate("divisionId", "name");
-
-    let filterHint = null;
-    if (
-      students.length === 0 &&
-      (normalizedBatch || normalizedAcademicYear) &&
-      (normalizedDepartmentId || normalizedCourseId || normalizedDivisionId)
-    ) {
-      const coreCount = await Student.countDocuments(baseQuery);
-      if (coreCount > 0) {
-        filterHint = {
-          code: "FILTER_MISMATCH",
-          message:
-            "Students exist for selected Department/Course/Division, but Batch or Academic Year did not match.",
-          coreMatchCount: coreCount,
-        };
-      }
-    }
-
-    res.json({ success: true, students, filterHint });
+    console.log("GET /api/office/students - Request received with query:", req.query);
+    const students = await resolveStudents(req.query, req.user.college);
+    res.json({ success: true, students, filterHint: null });
   } catch (err) {
     console.error("Error fetching office students:", err);
     res.status(500).json({ success: false, message: err.message });
@@ -700,6 +643,13 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
 
         await newStudent.save();
 
+        // Ensure StudentAcademicHistory record is created
+        try {
+          await ensureStudentHistory(newStudent);
+        } catch (historyErr) {
+          console.error(`[Office Bulk Import] Error creating student history record for ${enrollmentNo}:`, historyErr);
+        }
+
         // Create user account for student (if not existing)
         if (!existingUser) {
           const newUser = new User({
@@ -843,6 +793,13 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Student not found" });
+    }
+
+    // Ensure StudentAcademicHistory record is updated
+    try {
+      await ensureStudentHistory(updatedStudent);
+    } catch (historyErr) {
+      console.error("[Office Student Edit] Error updating student history record:", historyErr);
     }
 
     res.json({ success: true, student: updatedStudent });

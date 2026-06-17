@@ -4,9 +4,10 @@ const router = express.Router();
 const mongoose = require('mongoose'); // Make sure mongoose is required
 const TheoryAttendance = require('../models/TheoryAttendance');
 const Ciann = require('../models/Ciann');
+const checkCiannFreeze = require('../middleware/checkFreeze');
 
 // Your existing POST route for creating new attendance
-router.post('/', async (req, res) => {
+router.post('/', checkCiannFreeze, async (req, res) => {
   try {
     const { ciannId } = req.body;
     const ciann = await Ciann.findOne({ ciannId });
@@ -46,7 +47,7 @@ router.get('/', async (req, res) => {
 
 
 // ✅ ADD THIS NEW ROUTE for updating an existing attendance record
-router.put('/:id', async (req, res) => {
+router.put('/:id', checkCiannFreeze, async (req, res) => {
   try {
     const { id } = req.params;
     const { date, remark, students, topic } = req.body;

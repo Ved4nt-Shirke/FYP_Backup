@@ -95,6 +95,12 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
       available: true,
     },
     {
+      path: "/admin/promotions",
+      icon: "bi-arrow-up-right-circle-fill",
+      label: "Promotions & Archive",
+      available: true,
+    },
+    {
       path: "/admin-departments",
       icon: "bi-building",
       label: "Manage Departments",

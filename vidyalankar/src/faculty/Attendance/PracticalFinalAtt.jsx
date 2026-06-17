@@ -54,6 +54,9 @@ const PracticalFinalAtt = () => {
     } else if (ciannData?.division) {
       params.division = ciannData.division;
     }
+    if (ciannData?.academicYear) {
+      params.academicYear = ciannData.academicYear;
+    }
     // Use selectedBatch (academic year like 2025-26) for filtering students
     if (selectedBatch) {
       params.batch = selectedBatch;

@@ -50,6 +50,9 @@ const FATHK5Print = () => {
           query.set("departmentId", ciannData.department._id);
         }
         if (ciannData?.batch) query.set("batch", ciannData.batch);
+        if (ciannData?.academicYear) {
+          query.set("academicYear", ciannData.academicYear);
+        }
 
         const studentsUrl = query.toString()
           ? `${config.students}?${query.toString()}`

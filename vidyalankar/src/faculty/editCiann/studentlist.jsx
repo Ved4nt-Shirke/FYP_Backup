@@ -45,6 +45,13 @@ function Studentlist() {
       if (ciannData?.division) {
         query.set("division", ciannData.division);
       }
+      if (ciannData?.academicYear) {
+        query.set("academicYear", ciannData.academicYear);
+      }
+      const deptId = ciannData?.department?._id || ciannData?.department;
+      if (deptId) {
+        query.set("departmentId", deptId);
+      }
 
       const endpoint = query.toString()
         ? `${config.students}?${query.toString()}`

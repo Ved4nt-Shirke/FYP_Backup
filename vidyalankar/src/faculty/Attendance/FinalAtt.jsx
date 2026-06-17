@@ -39,6 +39,10 @@ const FinalAttendance = () => {
       params.division = ciannData.division;
     }
 
+    if (ciannData?.academicYear) {
+      params.academicYear = ciannData.academicYear;
+    }
+
     axios
       .get("http://localhost:5000/api/students", { params })
       .then((res) => {
