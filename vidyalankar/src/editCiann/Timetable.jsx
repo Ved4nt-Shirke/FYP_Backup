@@ -25,7 +25,7 @@ const times = [
   "05:15 - 06:15",
   "06:15 - 07:15",
 ];
-const rooms = [
+const DEFAULT_ROOMS = [
   "V201",
   "V202",
   "V203",
@@ -49,7 +49,7 @@ const rooms = [
   "W007",
 ];
 const batches = ["Batch 1", "Batch 2", "Batch 3"];
-const labs = [
+const DEFAULT_LABS = [
   "Programming Lab (V118)",
   "Programming Lab (V119)",
   "C (V120)",
@@ -83,15 +83,17 @@ const TimeTable = () => {
   const [slots, setSlots] = useState({});
   const [showPopup, setShowPopup] = useState(false);
   const [showPracticalPopup, setShowPracticalPopup] = useState(false);
+  const [availableRooms, setAvailableRooms] = useState(DEFAULT_ROOMS);
+  const [availableLabs, setAvailableLabs] = useState(DEFAULT_LABS);
   const [selectedBatch, setSelectedBatch] = useState("Batch 1");
-  const [selectedLab, setSelectedLab] = useState("Programming Lab (V118)");
+  const [selectedLab, setSelectedLab] = useState(DEFAULT_LABS[0]);
   const [selectedPracticalIndex, setSelectedPracticalIndex] = useState(0);
   const [showTutorialPopup, setShowTutorialPopup] = useState(false);
-  const [selectedTutorialRoom, setSelectedTutorialRoom] = useState(rooms[0]);
+  const [selectedTutorialRoom, setSelectedTutorialRoom] = useState(DEFAULT_ROOMS[0]);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [selectedDay, setSelectedDay] = useState(days[0]);
   const [selectedTime, setSelectedTime] = useState(times[0]);
-  const [selectedRoom, setSelectedRoom] = useState(rooms[0]);
+  const [selectedRoom, setSelectedRoom] = useState(DEFAULT_ROOMS[0]);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
 
@@ -210,6 +212,43 @@ const TimeTable = () => {
       }
     };
     fetchSlots();
+  }, []);
+
+  useEffect(() => {
+    const fetchRoomsAndLabs = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const [roomsRes, labsRes] = await Promise.all([
+          fetch(config.catalog.classrooms, { headers }),
+          fetch(config.catalog.labs, { headers }),
+        ]);
+
+        if (roomsRes.ok) {
+          const roomsData = await roomsRes.json();
+          if (roomsData.success && roomsData.classrooms && roomsData.classrooms.length > 0) {
+            const roomNames = roomsData.classrooms.map((r) => r.name);
+            setAvailableRooms(roomNames);
+            setSelectedRoom(roomNames[0]);
+            setSelectedTutorialRoom(roomNames[0]);
+          }
+        }
+
+        if (labsRes.ok) {
+          const labsData = await labsRes.json();
+          if (labsData.success && labsData.labs && labsData.labs.length > 0) {
+            const labNames = labsData.labs.map((l) => l.name);
+            setAvailableLabs(labNames);
+            setSelectedLab(labNames[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching rooms/labs from catalog:", err);
+      }
+    };
+
+    fetchRoomsAndLabs();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -519,7 +558,7 @@ const TimeTable = () => {
                         value={selectedRoom}
                         onChange={(e) => setSelectedRoom(e.target.value)}
                       >
-                        {rooms.map((room) => (
+                        {availableRooms.map((room) => (
                           <option key={room} value={room}>
                             {room}
                           </option>
@@ -598,7 +637,7 @@ const TimeTable = () => {
                         value={selectedLab}
                         onChange={(e) => setSelectedLab(e.target.value)}
                       >
-                        {labs.map((lab) => (
+                        {availableLabs.map((lab) => (
                           <option key={lab} value={lab}>
                             {lab}
                           </option>
@@ -655,7 +694,7 @@ const TimeTable = () => {
                           setSelectedTutorialRoom(e.target.value)
                         }
                       >
-                        {rooms.map((room) => (
+                        {availableRooms.map((room) => (
                           <option key={room} value={room}>
                             {room}
                           </option>

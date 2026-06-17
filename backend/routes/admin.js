@@ -8,6 +8,8 @@ const OfficeStaff = require("../models/OfficeStaff");
 const { authenticate, authorizeAdmin, authorizeOffice } = require("../middleware/auth");
 const Institution = require("../models/Institution");
 const VisionMission = require("../models/VisionMission");
+const Classroom = require("../models/Classroom");
+const Lab = require("../models/Lab");
 
 const generateSafePassword = (length = 8) => {
   const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -2388,6 +2390,108 @@ router.post("/vision-mission", authenticate, authorizeAdmin, async (req, res) =>
       message: "Error saving configuration",
       error: err.message
     });
+  }
+});
+
+// GET /admin/classrooms
+router.get("/classrooms", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const classrooms = await Classroom.find({ institution }).sort({ name: 1 });
+    res.json({ success: true, classrooms });
+  } catch (err) {
+    console.error("Error fetching classrooms:", err);
+    res.status(500).json({ success: false, message: "Error fetching classrooms", error: err.message });
+  }
+});
+
+// POST /admin/classrooms
+router.post("/classrooms", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const { name } = req.body;
+    if (!name || name.trim() === "") {
+      return res.status(400).json({ success: false, message: "Classroom name is required" });
+    }
+
+    const classroom = new Classroom({
+      name: name.trim(),
+      institution,
+    });
+    await classroom.save();
+    res.json({ success: true, message: "Classroom added successfully", classroom });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ success: false, message: "Classroom already exists" });
+    }
+    console.error("Error adding classroom:", err);
+    res.status(500).json({ success: false, message: "Error adding classroom", error: err.message });
+  }
+});
+
+// DELETE /admin/classrooms/:id
+router.delete("/classrooms/:id", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const result = await Classroom.findOneAndDelete({ _id: req.params.id, institution });
+    if (!result) {
+      return res.status(404).json({ success: false, message: "Classroom not found" });
+    }
+    res.json({ success: true, message: "Classroom deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting classroom:", err);
+    res.status(500).json({ success: false, message: "Error deleting classroom", error: err.message });
+  }
+});
+
+// GET /admin/labs
+router.get("/labs", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const labs = await Lab.find({ institution }).sort({ name: 1 });
+    res.json({ success: true, labs });
+  } catch (err) {
+    console.error("Error fetching labs:", err);
+    res.status(500).json({ success: false, message: "Error fetching labs", error: err.message });
+  }
+});
+
+// POST /admin/labs
+router.post("/labs", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const { name } = req.body;
+    if (!name || name.trim() === "") {
+      return res.status(400).json({ success: false, message: "Lab name is required" });
+    }
+
+    const lab = new Lab({
+      name: name.trim(),
+      institution,
+    });
+    await lab.save();
+    res.json({ success: true, message: "Lab added successfully", lab });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ success: false, message: "Lab already exists" });
+    }
+    console.error("Error adding lab:", err);
+    res.status(500).json({ success: false, message: "Error adding lab", error: err.message });
+  }
+});
+
+// DELETE /admin/labs/:id
+router.delete("/labs/:id", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const result = await Lab.findOneAndDelete({ _id: req.params.id, institution });
+    if (!result) {
+      return res.status(404).json({ success: false, message: "Lab not found" });
+    }
+    res.json({ success: true, message: "Lab deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting lab:", err);
+    res.status(500).json({ success: false, message: "Error deleting lab", error: err.message });
   }
 });
 
