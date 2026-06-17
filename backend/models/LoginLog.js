@@ -6,7 +6,7 @@ const LoginLogSchema = new mongoose.Schema(
     college: { type: String, required: true },
     role: {
       type: String,
-      enum: ["faculty", "student", "admin", "superadmin"],
+      enum: ["faculty", "student", "admin", "superadmin", "office", "hod", "academic_coordinator"],
       required: true,
     },
     ip: { type: String },
