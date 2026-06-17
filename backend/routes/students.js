@@ -16,16 +16,15 @@ const generateSafePassword = (length = 8) => {
 };
 
 
-// GET all students with optional filters - Public endpoint (for office panel)
-// Note: Office staff access is controlled via authorization in the frontend
-router.get("/", async (req, res) => {
+// GET all students with optional filters - Scoped by institution
+router.get("/", authenticate, async (req, res) => {
   try {
     console.log("GET /api/students - Request received");
     const { batch, division, divisionId, courseId, departmentId, academicYear } = req.query;
     console.log("Query params:", req.query);
 
     // Build query object
-    let query = {};
+    let query = { institution: req.user.college };
     if (batch) {
       query.batch = batch;
     }
@@ -78,9 +77,10 @@ router.get("/", async (req, res) => {
 });
 
 // GET divisions
-router.get("/divisions", async (req, res) => {
+router.get("/divisions", authenticate, async (req, res) => {
   try {
     const divisions = await Student.distinct("division", {
+      institution: req.user.college,
       division: { $ne: "", $exists: true },
     });
     res.json({ divisions: divisions.filter((d) => d) });
@@ -122,6 +122,7 @@ router.post("/", authenticate, authorizeOffice, async (req, res) => {
 
     // Check if student already exists in this class (same department, course, and division)
     const existingStudent = await Student.findOne({
+      institution: req.user.college,
       departmentId,
       courseId,
       divisionId,
@@ -149,6 +150,7 @@ router.post("/", authenticate, authorizeOffice, async (req, res) => {
 
       // Reuse credentials
       const existingCredentialStudent = await Student.findOne({
+        institution: req.user.college,
         username,
         plainPassword: { $exists: true, $ne: "" },
       }).sort({ updatedAt: -1, createdAt: -1 });
@@ -177,6 +179,7 @@ router.post("/", authenticate, authorizeOffice, async (req, res) => {
       departmentId,
       courseId,
       divisionId,
+      institution: req.user.college,
       username,
       plainPassword,
       passwordGeneratedAt: new Date(),
@@ -221,6 +224,7 @@ router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
 
       // Check if student already exists
       const existingStudent = await Student.findOne({
+        institution: req.user.college,
         $or: [{ rollNo: rollNo }, { enrollmentNo: enrollmentNo }],
       });
 
@@ -244,6 +248,7 @@ router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
         batch,
         academicYear: (academicYear || "").toString().trim(),
         division: division || "",
+        institution: req.user.college,
         username,
         plainPassword,
       });
@@ -283,7 +288,7 @@ router.put("/:id", authenticate, authorizeOffice, async (req, res) => {
   try {
     const { rollNo, enrollmentNo, studentName, batch, academicYear, division, aadhaarNo, seatNo } = req.body;
 
-    const currentStudent = await Student.findById(req.params.id);
+    const currentStudent = await Student.findOne({ _id: req.params.id, institution: req.user.college });
     if (!currentStudent) {
       return res.status(404).json({ message: "Student not found" });
     }
@@ -295,6 +300,7 @@ router.put("/:id", authenticate, authorizeOffice, async (req, res) => {
     // Check if another student has the same rollNo or enrollmentNo in the same class
     const duplicate = await Student.findOne({
       _id: { $ne: req.params.id },
+      institution: req.user.college,
       departmentId: deptId,
       courseId: crsId,
       divisionId: divId,
@@ -307,8 +313,8 @@ router.put("/:id", authenticate, authorizeOffice, async (req, res) => {
       });
     }
 
-    const updatedStudent = await Student.findByIdAndUpdate(
-      req.params.id,
+    const updatedStudent = await Student.findOneAndUpdate(
+      { _id: req.params.id, institution: req.user.college },
       {
         rollNo,
         enrollmentNo,
@@ -332,7 +338,7 @@ router.put("/:id", authenticate, authorizeOffice, async (req, res) => {
 // DELETE student
 router.delete("/:id", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const student = await Student.findOne({ _id: req.params.id, institution: req.user.college });
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
@@ -342,7 +348,7 @@ router.delete("/:id", authenticate, authorizeOffice, async (req, res) => {
       await User.findOneAndDelete({ username: student.username });
     }
 
-    await Student.findByIdAndDelete(req.params.id);
+    await Student.deleteOne({ _id: req.params.id, institution: req.user.college });
     res.json({ message: "Student deleted successfully" });
   } catch (error) {
     console.error("Delete student error:", error);

@@ -118,11 +118,15 @@ export const config = {
       `${API_BASE_URL}/admin/office-staff/${id}/username`,
     updateOfficeStaffPassword: (id) =>
       `${API_BASE_URL}/admin/office-staff/${id}/password`,
-    // Department-Office Staff management
     updateOfficeStaffDepartment: (id) =>
       `${API_BASE_URL}/admin/office-staff/${id}/department`,
     transferOfficeStaff: (id) =>
       `${API_BASE_URL}/admin/office-staff/${id}/transfer`,
+    visionMission: `${API_BASE_URL}/admin/vision-mission`,
+    classrooms: `${API_BASE_URL}/admin/classrooms`,
+    classroomById: (id) => `${API_BASE_URL}/admin/classrooms/${id}`,
+    labs: `${API_BASE_URL}/admin/labs`,
+    labById: (id) => `${API_BASE_URL}/admin/labs/${id}`,
   },
 
   // Courses, divisions, subjects (Admin)
@@ -189,6 +193,9 @@ export const config = {
       `${API_BASE_URL}/catalog/courses/${departmentId}`,
     divisions: (courseId) => `${API_BASE_URL}/catalog/divisions/${courseId}`,
     subjects: `${API_BASE_URL}/catalog/subjects`,
+    visionMission: `${API_BASE_URL}/catalog/vision-mission`,
+    classrooms: `${API_BASE_URL}/catalog/classrooms`,
+    labs: `${API_BASE_URL}/catalog/labs`,
   },
 
   mockExamsStudent: {

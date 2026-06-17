@@ -5,6 +5,9 @@ const Course = require("../models/Course");
 const Division = require("../models/Division");
 const Subject = require("../models/Subject");
 const { authenticate } = require("../middleware/auth");
+const VisionMission = require("../models/VisionMission");
+const Classroom = require("../models/Classroom");
+const Lab = require("../models/Lab");
 
 const router = express.Router();
 
@@ -104,6 +107,55 @@ router.get("/subjects", async (req, res) => {
     res.json({ success: true, subjects });
   } catch (err) {
     console.error("Error fetching catalog subjects:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /catalog/vision-mission
+router.get("/vision-mission", async (req, res) => {
+  try {
+    const institutionCode = req.user.college;
+    let departmentId = req.query.departmentId;
+    if (!departmentId || departmentId === "null" || departmentId === "undefined" || departmentId === "") {
+      departmentId = null;
+    }
+    if (departmentId && !isValidObjectId(departmentId)) {
+      departmentId = null;
+    }
+
+    console.log("[CATALOG VM] institutionCode:", institutionCode, "departmentId:", departmentId);
+    const config = await VisionMission.findOne({ institutionCode, departmentId });
+    console.log("[CATALOG VM] Found:", config ? "YES" : "NO");
+    res.json({
+      success: true,
+      data: config || null
+    });
+  } catch (err) {
+    console.error("Error fetching catalog vision-mission configuration:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /catalog/classrooms
+router.get("/classrooms", async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const classrooms = await Classroom.find({ institution }).sort({ name: 1 });
+    res.json({ success: true, classrooms });
+  } catch (err) {
+    console.error("Error fetching classrooms:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /catalog/labs
+router.get("/labs", async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const labs = await Lab.find({ institution }).sort({ name: 1 });
+    res.json({ success: true, labs });
+  } catch (err) {
+    console.error("Error fetching labs:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });

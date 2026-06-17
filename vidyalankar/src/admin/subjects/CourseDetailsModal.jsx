@@ -593,47 +593,6 @@ const CourseDetailsModal = ({ isOpen, onClose, subject, onSaveSuccess }) => {
               </div>
             </div>
 
-            {/* D. COURSE OUTCOMES (CO) */}
-            <div className="form-section-card">
-              <div className="section-title-row">
-                <h4 className="section-title"><i className="bi bi-list-stars"></i> Course Outcomes (CO)</h4>
-                <button type="button" className="btn-add-co" onClick={addCO}>
-                  <i className="bi bi-plus-circle"></i> Add CO
-                </button>
-              </div>
-
-              {formData.courseOutcomes.length === 0 ? (
-                <div className="no-cos-banner">
-                  <p>No Course Outcomes added yet. Click "+ Add CO" to define one.</p>
-                </div>
-              ) : (
-                <div className="co-list-container">
-                  {formData.courseOutcomes.map((co, index) => (
-                    <div className="co-row-item" key={index}>
-                      <span className="co-number-badge">{co.coNumber}</span>
-                      <div className="co-description-field">
-                        <input
-                          type="text"
-                          value={co.description}
-                          onChange={(e) => handleCOChange(index, e.target.value)}
-                          placeholder={`Enter outcome description for ${co.coNumber}...`}
-                          required
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        className="co-delete-btn"
-                        onClick={() => removeCO(index)}
-                        title="Delete this outcome"
-                      >
-                        <i className="bi bi-trash"></i>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Form Actions */}
             <div className="modal-footer-actions">
               <button

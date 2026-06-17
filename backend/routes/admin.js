@@ -7,6 +7,19 @@ const Faculty = require("../models/Faculty");
 const OfficeStaff = require("../models/OfficeStaff");
 const { authenticate, authorizeAdmin, authorizeOffice } = require("../middleware/auth");
 const Institution = require("../models/Institution");
+const VisionMission = require("../models/VisionMission");
+const Classroom = require("../models/Classroom");
+const Lab = require("../models/Lab");
+
+const generateSafePassword = (length = 8) => {
+  const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
 
 const generateSafePassword = (length = 8) => {
   const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -853,17 +866,20 @@ router.get("/faculty-stats", authenticate, authorizeAdmin, async (req, res) => {
       { $sort: { count: -1 } },
     ]);
 
+    const statsObj = stats[0] || {
+      totalFaculty: 0,
+      activeFaculty: 0,
+      professors: 0,
+      associateProfessors: 0,
+      assistantProfessors: 0,
+      lecturers: 0,
+      averageExperience: 0,
+    };
+    statsObj.departmentsWithFaculty = departmentStats.length;
+
     res.json({
       success: true,
-      stats: stats[0] || {
-        totalFaculty: 0,
-        activeFaculty: 0,
-        professors: 0,
-        associateProfessors: 0,
-        assistantProfessors: 0,
-        lecturers: 0,
-        averageExperience: 0,
-      },
+      stats: statsObj,
       departmentStats,
     });
   } catch (error) {
@@ -2242,5 +2258,251 @@ router.put(
     }
   },
 );
+
+const DEFAULT_POS = [
+  {
+    code: "PO 1",
+    name: "Basic and Discipline specific knowledge",
+    description: "Apply knowledge of basic mathematics, science and engineering fundamentals and engineering specialization to solve the engineering problems."
+  },
+  {
+    code: "PO 2",
+    name: "Problem analysis",
+    description: "Identify and analyse well-defined engineering problems using codified standard methods."
+  },
+  {
+    code: "PO 3",
+    name: "Design/ development of solutions",
+    description: "Design solutions for well-defined technical problems and assist with the design of systems components or processes to meet specified needs."
+  },
+  {
+    code: "PO 4",
+    name: "Engineering Tools, Experimentation and Testing",
+    description: "Apply modern engineering tools and appropriate technique to conduct standard tests and measurements."
+  },
+  {
+    code: "PO 5",
+    name: "Engineering practices for society, sustainability and environment",
+    description: "Apply appropriate technology in context of society, sustainability, environment and ethical practices."
+  },
+  {
+    code: "PO 6",
+    name: "Project Management",
+    description: "Use engineering management principles individually, as a team member or a leader to manage projects and effectively communicate about well-defined engineering activities."
+  },
+  {
+    code: "PO 7",
+    name: "Life-long learning",
+    description: "Ability to analyse individual needs and engage in updating in the context of technological changes."
+  }
+];
+
+const DEFAULT_PSOS = [
+  {
+    code: "PSO 1",
+    name: "Computer Software and Hardware Usage",
+    description: "Use state-of-the-art technologies for operation and application of computer software and hardware."
+  },
+  {
+    code: "PSO 2",
+    name: "Computer Engineering Maintenance",
+    description: "Maintain computer engineering related software and hardware systems."
+  }
+];
+
+const mongoose = require("mongoose");
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// GET /admin/vision-mission
+router.get("/vision-mission", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institutionCode = req.user.college;
+    let departmentId = req.query.departmentId;
+    if (!departmentId || departmentId === "null" || departmentId === "undefined" || departmentId === "") {
+      departmentId = null;
+    }
+    if (departmentId && !isValidObjectId(departmentId)) {
+      departmentId = null;
+    }
+
+    let config = await VisionMission.findOne({ institutionCode, departmentId });
+
+    if (!config) {
+      const isDept = departmentId !== null;
+      config = {
+        institutionCode,
+        departmentId,
+        vision: "",
+        mission: [],
+        peos: isDept ? ["", "", ""] : [],
+        pos: isDept ? DEFAULT_POS : [],
+        psos: isDept ? DEFAULT_PSOS : []
+      };
+    }
+
+    res.json({
+      success: true,
+      data: config
+    });
+  } catch (err) {
+    console.error("Error fetching vision-mission configuration:", err);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching configuration",
+      error: err.message
+    });
+  }
+});
+
+// POST /admin/vision-mission
+router.post("/vision-mission", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institutionCode = req.user.college;
+    let { departmentId, vision, mission, peos, pos, psos } = req.body;
+    if (!departmentId || departmentId === "null" || departmentId === "undefined" || departmentId === "") {
+      departmentId = null;
+    }
+    if (departmentId && !isValidObjectId(departmentId)) {
+      departmentId = null;
+    }
+
+    if (!vision) {
+      return res.status(400).json({
+        success: false,
+        message: "Vision is required"
+      });
+    }
+
+    const updatedConfig = await VisionMission.findOneAndUpdate(
+      { institutionCode, departmentId },
+      {
+        institutionCode,
+        departmentId,
+        vision,
+        mission: mission || [],
+        peos: peos || [],
+        pos: pos || [],
+        psos: psos || [],
+        createdBy: req.user._id
+      },
+      { new: true, upsert: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Configuration saved successfully",
+      data: updatedConfig
+    });
+  } catch (err) {
+    console.error("Error saving vision-mission configuration:", err);
+    res.status(500).json({
+      success: false,
+      message: "Error saving configuration",
+      error: err.message
+    });
+  }
+});
+
+// GET /admin/classrooms
+router.get("/classrooms", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const classrooms = await Classroom.find({ institution }).sort({ name: 1 });
+    res.json({ success: true, classrooms });
+  } catch (err) {
+    console.error("Error fetching classrooms:", err);
+    res.status(500).json({ success: false, message: "Error fetching classrooms", error: err.message });
+  }
+});
+
+// POST /admin/classrooms
+router.post("/classrooms", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const { name } = req.body;
+    if (!name || name.trim() === "") {
+      return res.status(400).json({ success: false, message: "Classroom name is required" });
+    }
+
+    const classroom = new Classroom({
+      name: name.trim(),
+      institution,
+    });
+    await classroom.save();
+    res.json({ success: true, message: "Classroom added successfully", classroom });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ success: false, message: "Classroom already exists" });
+    }
+    console.error("Error adding classroom:", err);
+    res.status(500).json({ success: false, message: "Error adding classroom", error: err.message });
+  }
+});
+
+// DELETE /admin/classrooms/:id
+router.delete("/classrooms/:id", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const result = await Classroom.findOneAndDelete({ _id: req.params.id, institution });
+    if (!result) {
+      return res.status(404).json({ success: false, message: "Classroom not found" });
+    }
+    res.json({ success: true, message: "Classroom deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting classroom:", err);
+    res.status(500).json({ success: false, message: "Error deleting classroom", error: err.message });
+  }
+});
+
+// GET /admin/labs
+router.get("/labs", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const labs = await Lab.find({ institution }).sort({ name: 1 });
+    res.json({ success: true, labs });
+  } catch (err) {
+    console.error("Error fetching labs:", err);
+    res.status(500).json({ success: false, message: "Error fetching labs", error: err.message });
+  }
+});
+
+// POST /admin/labs
+router.post("/labs", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const { name } = req.body;
+    if (!name || name.trim() === "") {
+      return res.status(400).json({ success: false, message: "Lab name is required" });
+    }
+
+    const lab = new Lab({
+      name: name.trim(),
+      institution,
+    });
+    await lab.save();
+    res.json({ success: true, message: "Lab added successfully", lab });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ success: false, message: "Lab already exists" });
+    }
+    console.error("Error adding lab:", err);
+    res.status(500).json({ success: false, message: "Error adding lab", error: err.message });
+  }
+});
+
+// DELETE /admin/labs/:id
+router.delete("/labs/:id", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const result = await Lab.findOneAndDelete({ _id: req.params.id, institution });
+    if (!result) {
+      return res.status(404).json({ success: false, message: "Lab not found" });
+    }
+    res.json({ success: true, message: "Lab deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting lab:", err);
+    res.status(500).json({ success: false, message: "Error deleting lab", error: err.message });
+  }
+});
 
 module.exports = router;

@@ -1,52 +1,38 @@
-/* ManageStudents.css - Modern & Premium Styles for Student Management */
+/* ManageStudents.css - Modern Premium styling for Student Administration */
 @import "./OfficeTheme.css";
 
 /* Main Page Layout */
 .manage-students-page {
-  animation: pageFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  font-family: var(--office-font-family, inherit);
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  padding: 32px;
   width: 100%;
   box-sizing: border-box;
+  background: var(--office-bg);
+  min-height: calc(100vh - 64px);
+  margin-top: 64px; /* Space below top header */
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
-@keyframes pageFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Header Design */
+/* Page Header */
 .manage-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--office-glass-bg);
-  backdrop-filter: var(--office-glass-blur);
-  border: 1px solid var(--office-glass-border);
-  padding: 12px 24px;
-  border-radius: var(--office-radius-lg);
-  box-shadow: var(--office-shadow-md);
-  flex-wrap: wrap;
-  gap: 16px;
+  gap: 24px;
 }
 
 .manage-header h1 {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 28px;
+  font-weight: 850;
   color: var(--office-text);
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
   letter-spacing: -0.5px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  background: var(--office-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .manage-header p {
@@ -56,289 +42,226 @@
   font-weight: 500;
 }
 
-.manage-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
+/* Add student header action button */
 .btn-add-student {
+  padding: 12px 24px;
   background: var(--office-gradient-primary);
   color: #ffffff;
   border: none;
-  padding: 12px 24px;
   border-radius: var(--office-radius-md);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 750;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
   transition: var(--office-transition);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .btn-add-student:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.35);
   background: var(--office-gradient-primary-hover);
 }
 
 .btn-add-student:disabled {
-  opacity: 0.5;
+  background: var(--office-border);
+  color: var(--office-muted);
   cursor: not-allowed;
-  transform: none;
   box-shadow: none;
+  transform: none;
+  opacity: 0.7;
 }
 
-/* Alert Boxes */
-.alert {
-  padding: 16px 24px;
-  border-radius: var(--office-radius-md);
-  font-size: 14.5px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: var(--office-shadow-sm);
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.alert-error {
-  background: var(--office-gradient-alert-error);
-  color: var(--office-danger-dark);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-}
-
-.alert-success {
-  background: var(--office-gradient-alert-success);
-  color: var(--office-success-dark);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-}
-
-/* Cascading Controls / Filter Panel */
+/* Filters & Search Control Card */
 .manage-controls {
   background: var(--office-surface);
   border: 1px solid var(--office-border);
   border-radius: var(--office-radius-lg);
-  padding: 16px 24px;
   box-shadow: var(--office-shadow-md);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  transition: var(--office-transition-fast);
+  overflow: hidden;
+  transition: var(--office-transition);
+}
+
+.manage-controls:hover {
+  box-shadow: var(--office-shadow-lg);
+  border-color: rgba(99, 102, 241, 0.15);
 }
 
 .controls-header {
+  padding: 20px 28px;
+  background: var(--office-gradient-card);
+  border-bottom: 1px solid var(--office-border);
+  cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: pointer;
   user-select: none;
 }
 
 .controls-header h3 {
   margin: 0;
-  font-size: 14.5px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: var(--office-text);
-  letter-spacing: -0.3px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  letter-spacing: -0.2px;
 }
 
 .controls-header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .filter-summary-pill {
   font-size: 12.5px;
-  font-weight: 600;
-  background: var(--office-primary-light);
+  font-weight: 700;
   color: var(--office-primary);
-  padding: 4px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(37, 99, 235, 0.15);
-  max-width: 380px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  background: var(--office-primary-light);
+  padding: 6px 12px;
+  border-radius: var(--office-radius-sm);
+  border: 1px solid rgba(99, 102, 241, 0.15);
 }
 
 .btn-toggle-filters {
   background: transparent;
   border: none;
-  color: var(--office-primary);
+  color: var(--office-text-secondary);
+  font-weight: 700;
   font-size: 13.5px;
-  font-weight: 700;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: var(--office-radius-sm);
-  transition: var(--office-transition-fast);
 }
 
-.btn-toggle-filters:hover {
-  background: var(--office-primary-light);
-}
-
+/* Multi-column Filter Group Grid */
 .filter-group {
+  padding: 28px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-top: 4px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  border-bottom: 1px solid var(--office-border);
+  animation: fadeIn 0.3s ease-out;
 }
 
-.filter-group .form-row {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  margin: 0;
-}
-
-.filter-group .form-row label {
-  font-size: 12px;
-  font-weight: 700;
+.filter-group .form-row-col label {
+  font-size: 11.5px;
+  font-weight: 800;
   color: var(--office-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.filter-group .form-row select,
-.filter-group .form-row input {
-  width: 100%;
-  padding: 12px 16px;
+.filter-group select,
+.filter-group input {
+  padding: 11px 16px;
   border: 1.5px solid var(--office-border);
   border-radius: var(--office-radius-md);
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 550;
-  background-color: var(--office-bg);
+  background: var(--office-bg);
   color: var(--office-text);
   transition: var(--office-transition-fast);
 }
 
-.filter-group .form-row select:focus,
-.filter-group .form-row input:focus {
+.filter-group select:focus,
+.filter-group input:focus {
   outline: none;
   border-color: var(--office-primary);
-  background-color: #ffffff;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  background: var(--office-surface);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
-.filter-group .form-row select:disabled,
-.filter-group .form-row input:disabled {
-  opacity: 0.6;
-  background-color: #f1f5f9;
+.filter-group select:disabled {
+  background: rgba(226, 232, 240, 0.3);
+  color: var(--office-muted);
   cursor: not-allowed;
+  border-color: var(--office-border);
 }
 
 .filter-buttons {
+  padding: 20px 28px;
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  border-top: 1px solid var(--office-border);
-  padding-top: 20px;
+  gap: 14px;
+  background: var(--office-bg);
 }
 
-.filter-buttons button {
-  padding: 12px 28px;
-  border-radius: var(--office-radius-md);
-  font-size: 14.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: var(--office-transition);
-}
-
-.filter-buttons .btn-primary {
+.btn-primary {
+  padding: 11px 24px;
   background: var(--office-gradient-primary);
   color: #ffffff;
   border: none;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  border-radius: var(--office-radius-md);
+  font-weight: 750;
+  cursor: pointer;
+  transition: var(--office-transition);
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
 }
 
-.filter-buttons .btn-primary:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
-  background: var(--office-gradient-primary-hover);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
 }
 
-.filter-buttons .btn-secondary {
+.btn-primary:disabled {
+  background: var(--office-border);
+  color: var(--office-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  opacity: 0.7;
+}
+
+.btn-secondary {
+  padding: 11px 24px;
   background: var(--office-surface);
-  color: var(--office-text-secondary);
   border: 1.5px solid var(--office-border);
-}
-
-.filter-buttons .btn-secondary:hover:not(:disabled) {
-  background: var(--office-bg);
-  border-color: var(--office-muted);
   color: var(--office-text);
+  border-radius: var(--office-radius-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--office-transition-fast);
 }
 
-/* Student Table Section */
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--office-muted);
+  background: var(--office-bg);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Table Card Layout */
 .manage-table-wrapper {
   background: var(--office-surface);
   border: 1px solid var(--office-border);
   border-radius: var(--office-radius-lg);
   box-shadow: var(--office-shadow-lg);
-  overflow: auto; /* Allow both horizontal and vertical scrolling */
-  max-height: 52vh; /* Make the table body scrollable and fit on screen */
-  padding: 0;
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Scrollbar customization */
-.manage-table-wrapper::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.manage-table-wrapper::-webkit-scrollbar-track {
-  background: transparent;
-}
-.manage-table-wrapper::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-.manage-table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  overflow: hidden;
 }
 
 .table-info {
+  padding: 20px 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  background: var(--office-bg);
   border-bottom: 1px solid var(--office-border);
-  flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
 }
 
 .table-info .pill {
   background: var(--office-primary-light);
   color: var(--office-primary);
-  font-weight: 700;
+  font-weight: 750;
   font-size: 13.5px;
   padding: 6px 14px;
-  border-radius: var(--office-radius-sm);
-  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-radius: 20px;
+  border: 1px solid rgba(99, 102, 241, 0.1);
 }
 
 .table-actions {
@@ -347,54 +270,30 @@
   gap: 12px;
 }
 
-/* Save Seat Numbers Button Styles */
 .btn-save-seats {
-  background: var(--office-gradient-accent);
-  color: #ffffff;
-  border: none;
-  padding: 10px 20px;
+  padding: 10px 18px;
+  background: var(--office-success-light);
+  border: 1.5px solid var(--office-success);
+  color: var(--office-success-dark);
   border-radius: var(--office-radius-md);
-  font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 750;
+  font-size: 13px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(129, 140, 248, 0.25);
   transition: var(--office-transition);
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .btn-save-seats:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(129, 140, 248, 0.35);
+  background: var(--office-success);
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
-.btn-save-seats:active {
-  transform: translateY(0);
+.btn-save-seats:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.btn-save-seats.bottom-btn {
-  padding: 12px 24px;
-  font-size: 14.5px;
-}
-
-.table-actions .btn-secondary {
-  background: var(--office-surface);
-  color: var(--office-primary);
-  border: 1.5px solid var(--office-primary);
-  padding: 8px 18px;
-  border-radius: var(--office-radius-md);
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: var(--office-transition);
-}
-
-.table-actions .btn-secondary:hover:not(:disabled) {
-  background: var(--office-primary-light);
-}
-
-/* Main Table Elements */
+/* Premium Table Styles */
 .manage-table {
   width: 100%;
   border-collapse: separate;
@@ -403,421 +302,418 @@
 }
 
 .manage-table th {
-  background-color: #f1f5f9;
+  background: var(--office-bg);
   color: var(--office-text-secondary);
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 12px 16px;
-  border-bottom: 2px solid var(--office-border);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-shadow: inset 0 -1px 0 var(--office-border);
+  letter-spacing: 0.8px;
+  padding: 16px 20px;
+  border-bottom: 1.5px solid var(--office-border);
 }
 
 .manage-table td {
-  padding: 10px 16px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--office-border);
   color: var(--office-text);
   font-size: 14px;
-  vertical-align: middle;
-  background-color: var(--office-surface);
-  transition: background-color 0.2s ease;
+  transition: var(--office-transition-fast);
 }
 
 .manage-table tbody tr:hover td {
-  background-color: #f8fafc;
+  background: rgba(99, 102, 241, 0.015);
 }
 
-.manage-table tbody tr.edit-row td {
-  background-color: var(--office-primary-light);
+.manage-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.manage-table tbody tr.edit-row input,
-.manage-table tbody tr.edit-row select {
-  padding: 8px 12px;
-  border: 1px solid var(--office-primary);
-  border-radius: var(--office-radius-sm);
-  background: #ffffff;
-  font-size: 14px;
-  width: 100%;
-  color: var(--office-text);
-}
-
-/* Seat Number Input Field Styling */
-.table-seat-input {
-  width: 105px;
-  padding: 8px 12px;
-  border: 1.5px solid var(--office-border);
-  border-radius: var(--office-radius-sm);
-  font-size: 14px;
+/* Bold Student Name */
+.student-name-bold {
   font-weight: 700;
-  text-align: center;
   color: var(--office-text);
-  background-color: var(--office-bg);
+}
+
+/* Credential Cell Details */
+.credential-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.credential-display {
+  font-family: monospace;
+  font-size: 13px;
+  background: var(--office-bg);
+  padding: 3px 6px;
+  border-radius: var(--office-radius-sm);
+  border: 1px solid var(--office-border);
+  color: var(--office-text);
+}
+
+.btn-regenerate {
+  background: var(--office-primary-light);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: var(--office-primary);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: var(--office-transition-fast);
+}
+
+.btn-regenerate:hover {
+  background: var(--office-primary);
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
+/* Seat Number Form Input in Table */
+.table-seat-input {
+  width: 75px;
+  padding: 8px 10px;
+  border: 1px solid var(--office-border);
+  border-radius: var(--office-radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  background: var(--office-bg);
+  color: var(--office-text);
   transition: var(--office-transition-fast);
 }
 
 .table-seat-input:focus {
   outline: none;
   border-color: var(--office-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-  background-color: #ffffff;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.table-seat-input:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Credentials Column */
-.credential-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.credential-display {
-  font-family: monospace;
-  font-size: 13.5px;
-  background: var(--office-bg);
-  padding: 4px 8px;
-  border-radius: var(--office-radius-sm);
-  color: var(--office-text-secondary);
-  border: 1px solid var(--office-border);
-}
-
-.btn-regenerate {
-  background: var(--office-bg);
-  border: 1px solid var(--office-border);
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--office-transition-fast);
-  font-size: 14px;
-}
-
-.btn-regenerate:hover {
-  background: var(--office-border);
-  transform: scale(1.05);
-}
-
-/* Action Buttons (Table Row Actions) */
+/* Action Trigger Buttons */
 .action-buttons {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
 }
 
-.action-buttons button {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
+.btn-edit,
+.btn-delete,
+.btn-save,
+.btn-cancel {
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 750;
+  border-radius: var(--office-radius-sm);
   cursor: pointer;
-  border: none;
   transition: var(--office-transition-fast);
 }
 
 .btn-edit {
-  background: #e0f2fe;
-  color: #0369a1;
+  background: var(--office-primary-light);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: var(--office-primary);
 }
 
 .btn-edit:hover {
-  background: #bae6fd;
+  background: var(--office-primary);
+  color: #ffffff;
 }
 
 .btn-delete {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--office-danger-light);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--office-danger-dark);
 }
 
 .btn-delete:hover {
-  background: #fecaca;
+  background: var(--office-danger);
+  color: #ffffff;
 }
 
 .btn-save {
-  background: #d1fae5;
-  color: #047857;
+  background: var(--office-success-light);
+  border: 1px solid var(--office-success);
+  color: var(--office-success-dark);
 }
 
 .btn-save:hover {
-  background: #bbf7d0;
+  background: var(--office-success);
+  color: white;
 }
 
 .btn-cancel {
-  background: #f3f4f6;
-  color: #4b5563;
+  background: var(--office-bg);
+  border: 1px solid var(--office-border);
+  color: var(--office-text-secondary);
 }
 
 .btn-cancel:hover {
-  background: #e5e7eb;
+  border-color: var(--office-muted);
 }
 
-/* Empty State */
-.empty-state {
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--office-text-secondary);
-  font-weight: 500;
-  font-size: 15px;
-}
-
-/* Bottom Actions and Pagination */
+/* Pagination & Table Bottom */
 .table-bottom-actions {
+  padding: 20px 28px;
+  background: var(--office-bg);
+  border-top: 1px solid var(--office-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px;
-  background: var(--office-bg);
-  border-top: 1px solid var(--office-border);
-  flex-wrap: wrap;
   gap: 20px;
+}
+
+.bottom-btn {
+  margin: 0;
 }
 
 .pagination {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  margin-left: auto;
 }
 
-.pagination .btn-nav {
+.btn-nav {
+  padding: 8px 16px;
   background: var(--office-surface);
-  color: var(--office-text);
   border: 1.5px solid var(--office-border);
-  padding: 10px 20px;
+  color: var(--office-text);
   border-radius: var(--office-radius-md);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
   transition: var(--office-transition-fast);
 }
 
-.pagination .btn-nav:hover:not(:disabled) {
-  background: var(--office-bg);
-  border-color: var(--office-muted);
+.btn-nav:hover:not(:disabled) {
+  border-color: var(--office-primary);
+  color: var(--office-primary);
+  background: var(--office-primary-light);
 }
 
-.pagination .btn-nav:disabled {
-  opacity: 0.5;
+.btn-nav:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
-.pagination .page-info {
-  font-size: 14px;
+.page-info {
+  font-size: 13px;
   font-weight: 600;
   color: var(--office-text-secondary);
 }
 
-/* Modal Designing */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal-content {
-  background: var(--office-surface);
-  border: 1px solid var(--office-border);
-  border-radius: var(--office-radius-lg);
-  box-shadow: var(--office-shadow-xl);
-  padding: 32px;
-  width: 100%;
-  max-width: 550px;
-  max-height: 88vh;
-  overflow-y: auto;
-  animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes modalScaleUp {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.modal-content h2 {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--office-text);
-  margin: 0 0 8px 0;
-}
-
-.modal-content p {
+/* Empty & Loading states */
+.empty-state {
+  padding: 48px;
+  text-align: center;
   color: var(--office-text-secondary);
+  font-weight: 600;
+}
+
+/* Add/Edit Modal customization overrides */
+.edit-student-modal {
+  width: 100%;
+  max-width: 650px;
+  background: var(--office-surface);
+  border-radius: var(--office-radius-lg);
+  padding: 36px;
+  box-shadow: var(--office-shadow-xl);
+  border: 1px solid var(--office-border);
+  animation: modalZoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.edit-student-modal h2 {
+  font-size: 24px;
+  font-weight: 850;
+  margin: 0 0 6px 0;
+  color: var(--office-text);
+  letter-spacing: -0.5px;
+}
+
+.edit-student-modal p {
+  margin: 0;
   font-size: 14.5px;
-  margin: 0 0 24px 0;
+  color: var(--office-text-secondary);
 }
 
-.modal-form {
-  display: flex;
-  flex-direction: column;
+.edit-student-modal .modal-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
+  margin: 28px 0;
 }
 
-.modal-form .form-row {
+.edit-student-modal .form-row-col {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin: 0;
 }
 
-.modal-form .form-row label {
-  font-size: 12px;
-  font-weight: 700;
+.edit-student-modal .form-row-col label {
+  font-size: 11.5px;
+  font-weight: 800;
   color: var(--office-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
 }
 
-.modal-form .form-row input,
-.modal-form .form-row select {
-  width: 100%;
+.edit-student-modal .form-row-col input,
+.edit-student-modal .form-row-col select {
   padding: 11px 14px;
   border: 1.5px solid var(--office-border);
   border-radius: var(--office-radius-md);
-  font-size: 14.5px;
-  color: var(--office-text);
-  background-color: var(--office-bg);
-  transition: var(--office-transition-fast);
-}
-
-.modal-form .form-row input:focus,
-.modal-form .form-row select:focus {
-  outline: none;
-  border-color: var(--office-primary);
-  background-color: #ffffff;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
-
-.modal-form-buttons,
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 28px;
-}
-
-.modal-btn {
-  padding: 12px 24px;
-  border-radius: var(--office-radius-md);
-  font-size: 14.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: var(--office-transition-fast);
-  background: var(--office-surface);
-  color: var(--office-text-secondary);
-  border: 1.5px solid var(--office-border);
-}
-
-.modal-btn:hover {
   background: var(--office-bg);
   color: var(--office-text);
+  font-weight: 550;
+  font-size: 14px;
+  transition: var(--office-transition-fast);
 }
 
-.modal-btn-primary {
-  background: var(--office-gradient-primary);
-  color: #ffffff;
-  border: none;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+.edit-student-modal .form-row-col input:focus,
+.edit-student-modal .form-row-col select:focus {
+  outline: none;
+  border-color: var(--office-primary);
+  background: var(--office-surface);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
-.modal-btn-primary:hover {
-  background: var(--office-gradient-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+.modal-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 10px;
 }
 
-/* Password & Delete Warning Custom Rules */
 .warning {
   color: var(--office-danger-dark);
-  background: var(--office-danger-light);
-  padding: 12px 16px;
-  border-radius: var(--office-radius-sm);
-  border-left: 4px solid var(--office-danger);
   font-size: 13.5px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
+/* Password Modal display settings */
 .password-display {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
   background: var(--office-bg);
-  padding: 14px 20px;
   border-radius: var(--office-radius-md);
-  border: 1px solid var(--office-border);
-  margin-bottom: 20px;
+  border: 1.5px solid var(--office-border);
+  margin: 20px 0;
 }
 
 .password-display code {
   font-family: monospace;
   font-size: 18px;
-  font-weight: 700;
-  color: var(--office-primary);
-  flex: 1;
+  font-weight: 800;
+  color: var(--office-primary-dark);
 }
 
 .btn-copy {
+  padding: 8px 14px;
   background: var(--office-surface);
   border: 1.5px solid var(--office-border);
-  padding: 6px 14px;
   border-radius: var(--office-radius-sm);
   cursor: pointer;
-  font-size: 13px;
   font-weight: 700;
+  font-size: 12.5px;
   transition: var(--office-transition-fast);
 }
 
 .btn-copy:hover {
-  background: var(--office-bg);
-  border-color: var(--office-muted);
+  border-color: var(--office-primary);
+  color: var(--office-primary);
 }
 
-/* Responsive Overrides */
-@media (max-width: 768px) {
-  .manage-header {
-    padding: 20px;
+/* Modal form controls */
+.modal-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-btn {
+  padding: 10px 20px;
+  border-radius: var(--office-radius-md);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid var(--office-border);
+  background: var(--office-surface);
+  color: var(--office-text);
+  transition: var(--office-transition-fast);
+}
+
+.modal-btn:hover {
+  background: var(--office-bg);
+}
+
+.modal-btn-primary {
+  background: var(--office-gradient-primary);
+  border: none;
+  color: white;
+  font-weight: 750;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+}
+
+.modal-btn-primary:hover {
+  background: var(--office-gradient-primary-hover);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .filter-group {
+    grid-template-columns: 1fr 1fr;
   }
-  .manage-controls {
-    padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .manage-students-page {
+    padding: 20px 16px;
+  }
+  .manage-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
   }
   .filter-group {
     grid-template-columns: 1fr;
+    padding: 20px;
   }
-  .table-info,
-  .table-bottom-actions {
+  .filter-buttons {
+    flex-direction: column;
+    padding: 20px;
+  }
+  .table-info {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px;
+  }
+  .table-actions {
     flex-direction: column;
     align-items: stretch;
   }
-  .table-actions,
-  .pagination {
-    justify-content: center;
+  .table-bottom-actions {
+    flex-direction: column;
+    padding: 20px;
   }
-  .btn-save-seats.bottom-btn {
-    width: 100%;
+  .pagination {
+    margin-left: 0;
     justify-content: center;
+    width: 100%;
+  }
+  .edit-student-modal .modal-form {
+    grid-template-columns: 1fr;
+  }
+  .modal-buttons {
+    grid-template-columns: 1fr;
   }
 }

@@ -28,6 +28,57 @@ const times = [
   "06:15 - 07:15",
 ];
 
+const DEFAULT_POS = [
+  {
+    code: "PO 1",
+    name: "Basic and Discipline specific knowledge",
+    description: "Apply knowledge of basic mathematics, science and engineering fundamentals and engineering specialization to solve the engineering problems."
+  },
+  {
+    code: "PO 2",
+    name: "Problem analysis",
+    description: "Identify and analyse well-defined engineering problems using codified standard methods."
+  },
+  {
+    code: "PO 3",
+    name: "Design/ development of solutions",
+    description: "Design solutions for well-defined technical problems and assist with the design of systems components or processes to meet specified needs."
+  },
+  {
+    code: "PO 4",
+    name: "Engineering Tools, Experimentation and Testing",
+    description: "Apply modern engineering tools and appropriate technique to conduct standard tests and measurements."
+  },
+  {
+    code: "PO 5",
+    name: "Engineering practices for society, sustainability and environment",
+    description: "Apply appropriate technology in context of society, sustainability, environment and ethical practices."
+  },
+  {
+    code: "PO 6",
+    name: "Project Management",
+    description: "Use engineering management principles individually, as a team member or a leader to manage projects and effectively communicate about well-defined engineering activities."
+  },
+  {
+    code: "PO 7",
+    name: "Life-long learning",
+    description: "Ability to analyse individual needs and engage in updating in the context of technological changes."
+  }
+];
+
+const DEFAULT_PSOS = [
+  {
+    code: "PSO 1",
+    name: "Computer Software and Hardware Usage",
+    description: "Use state-of-the-art technologies for operation and application of computer software and hardware."
+  },
+  {
+    code: "PSO 2",
+    name: "Computer Engineering Maintenance",
+    description: "Maintain computer engineering related software and hardware systems."
+  }
+];
+
 const getAcademicContext = (data) => {
   const program =
     data?.department?.label || data?.department?.name || data?.department || "";
@@ -187,6 +238,8 @@ const PrintCiann = () => {
   const [webResources, setWebResources] = useState([]);
   const [moocCourses, setMoocCourses] = useState([]);
   const [syllabusImages, setSyllabusImages] = useState([]);
+  const [instVisionMission, setInstVisionMission] = useState(null);
+  const [deptVisionMission, setDeptVisionMission] = useState(null);
 
   // MSBTE Formats states
   const [students, setStudents] = useState([]);
@@ -240,6 +293,7 @@ const PrintCiann = () => {
     };
 
     const ciannId = data?.ciannId;
+    const deptId = data?.department?._id || data?.department;
     const { program, className, course } = getAcademicContext(data);
 
     try {
@@ -351,16 +405,53 @@ const PrintCiann = () => {
       setWebResources(Array.isArray(web) ? web : []);
       setMoocCourses(Array.isArray(moocs) ? moocs : []);
 
+      // Fetch Vision & Mission separately to ensure it doesn't fail silently
+      try {
+        const instVMUrl = `${config.catalog.visionMission}`;
+        const instVMResponse = await fetch(instVMUrl, {
+          headers: requestHeaders,
+          credentials: "include",
+        });
+        if (instVMResponse.ok) {
+          const instVMData = await instVMResponse.json();
+          if (instVMData?.success && instVMData?.data) {
+            setInstVisionMission(instVMData.data);
+          }
+        } else {
+          console.warn("[PrintCiann] Institute Vision/Mission fetch failed:", instVMResponse.status);
+        }
+      } catch (err) {
+        console.error("[PrintCiann] Error fetching institute vision/mission:", err);
+      }
+
+      try {
+        const deptVMUrl = `${config.catalog.visionMission}?departmentId=${deptId}`;
+        const deptVMResponse = await fetch(deptVMUrl, {
+          headers: requestHeaders,
+          credentials: "include",
+        });
+        if (deptVMResponse.ok) {
+          const deptVMData = await deptVMResponse.json();
+          if (deptVMData?.success && deptVMData?.data) {
+            setDeptVisionMission(deptVMData.data);
+          }
+        } else {
+          console.warn("[PrintCiann] Department Vision/Mission fetch failed:", deptVMResponse.status);
+        }
+      } catch (err) {
+        console.error("[PrintCiann] Error fetching department vision/mission:", err);
+      }
+
       // ─── MSBTE Formats Loading Logic ───
       let resolvedDivName = data?.division || "";
-      const deptId = data?.department?._id || data?.department;
+      const resolvedDeptId = data?.department?._id || data?.department;
 
       // Fetch division students
       let studentList = [];
       try {
         const query = new URLSearchParams();
         if (resolvedDivName) query.set("division", resolvedDivName);
-        if (deptId) query.set("departmentId", deptId);
+        if (resolvedDeptId) query.set("departmentId", resolvedDeptId);
 
         const studentsRes = await fetch(
           `${config.students}?${query.toString()}`,
@@ -852,8 +943,156 @@ const PrintCiann = () => {
           </div>
         </section>
 
-        <section className="print-block">
-          <h2 className="section-title">2. Time Table &amp; Load</h2>
+        <section className="print-block page-break-before vision-mission-print-block">
+          <h2 className="section-title">2. Institute Vision &amp; Mission</h2>
+          <div className="vision-mission-print-container">
+            <div className="branding-header">
+              <div className="branding-logo-title">
+                {institutionBranding.logoUrl ? (
+                  <img src={institutionBranding.logoUrl} alt="Logo" className="branding-logo" />
+                ) : (
+                  <div className="branding-logo-fallback">{institutionBranding.fallback}</div>
+                )}
+                <div className="branding-title-text">
+                  <h3>{institutionBranding.name}</h3>
+                  <h4>COURSE DIARY</h4>
+                </div>
+              </div>
+            </div>
+            
+            <div className="vm-print-section-header">
+              <h3>Institute Vision</h3>
+            </div>
+            <div className="vm-print-content">
+              <p>{instVisionMission?.vision || "To achieve excellence in imparting technical education so as to meet the professional and societal needs."}</p>
+            </div>
+
+            <div className="vm-print-section-header">
+              <h3>Institute Mission</h3>
+            </div>
+            <div className="vm-print-content">
+              {instVisionMission?.mission && instVisionMission.mission.length > 0 ? (
+                <ul className="vm-print-list">
+                  {instVisionMission.mission.map((m, idx) => (
+                    <li key={`inst-m-${idx}`}>➢ {m}</li>
+                  ))}
+                </ul>
+              ) : (
+                <ul className="vm-print-list">
+                  <li>➢ Developing technical skills by imparting knowledge and providing hands on experience.</li>
+                  <li>➢ Creating an environment that nurtures ethics, leadership and team building.</li>
+                  <li>➢ Providing industrial exposure for minimizing the gap between academics &amp; industry.</li>
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="print-block page-break-before vision-mission-print-block">
+          <h2 className="section-title">3. Department Vision, Mission &amp; PEO</h2>
+          <div className="vision-mission-print-container">
+            <div className="branding-header">
+              <div className="branding-logo-title">
+                {institutionBranding.logoUrl ? (
+                  <img src={institutionBranding.logoUrl} alt="Logo" className="branding-logo" />
+                ) : (
+                  <div className="branding-logo-fallback">{institutionBranding.fallback}</div>
+                )}
+                <div className="branding-title-text">
+                  <h3>{institutionBranding.name}</h3>
+                  <h4>COURSE DIARY</h4>
+                </div>
+              </div>
+            </div>
+            
+            <div className="vm-print-section-header">
+              <h3>Department Vision, Mission, PEO</h3>
+            </div>
+            
+            <div className="vm-print-sub-section">
+              <h4>Vision</h4>
+              <p>{deptVisionMission?.vision || "To empower students with domain knowledge of Computer Engineering and interpersonal skills to cater to the industrial and societal needs."}</p>
+            </div>
+
+            <div className="vm-print-sub-section">
+              <h4>Mission</h4>
+              {deptVisionMission?.mission && deptVisionMission.mission.length > 0 ? (
+                <ul className="vm-print-list">
+                  {deptVisionMission.mission.map((m, idx) => (
+                    <li key={`dept-m-${idx}`}>➢ {m}</li>
+                  ))}
+                </ul>
+              ) : (
+                <ul className="vm-print-list">
+                  <li>➢ Developing technical skills by explaining the rationale behind learning.</li>
+                  <li>➢ Developing interpersonal skills to serve the society in the best possible manner.</li>
+                  <li>➢ Creating awareness about the ever changing professional practices to build industrial adaptability.</li>
+                </ul>
+              )}
+            </div>
+
+            <div className="vm-print-sub-section">
+              <h4>PEO</h4>
+              {deptVisionMission?.peos && deptVisionMission.peos.length > 0 ? (
+                <ul className="vm-print-list">
+                  {deptVisionMission.peos.map((peo, idx) => (
+                    <li key={`dept-peo-${idx}`}>➢ {peo}</li>
+                  ))}
+                </ul>
+              ) : (
+                <ul className="vm-print-list">
+                  <li>➢ Provide socially responsible, environment friendly solutions to Computer engineering related broad-based problems adapting professional ethics.</li>
+                  <li>➢ Adapt state-of-the-art Computer engineering broad-based technologies to work in multidisciplinary work environments.</li>
+                  <li>➢ Solve broad-based problems individually and as a team member communicating effectively in the world of work.</li>
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="print-block page-break-before vision-mission-print-block">
+          <h2 className="section-title">4. Department Program Specific Outcomes, Program Outcomes</h2>
+          <div className="vision-mission-print-container">
+            <div className="branding-header">
+              <div className="branding-logo-title">
+                {institutionBranding.logoUrl ? (
+                  <img src={institutionBranding.logoUrl} alt="Logo" className="branding-logo" />
+                ) : (
+                  <div className="branding-logo-fallback">{institutionBranding.fallback}</div>
+                )}
+                <div className="branding-title-text">
+                  <h3>{institutionBranding.name}</h3>
+                  <h4>COURSE DIARY</h4>
+                </div>
+              </div>
+            </div>
+            
+            <div className="vm-print-section-header">
+              <h3>Program Outcomes (PO)</h3>
+            </div>
+            <div className="vm-print-outcomes-list">
+              {(deptVisionMission?.pos && deptVisionMission.pos.length > 0 ? deptVisionMission.pos : DEFAULT_POS).map((po, idx) => (
+                <p key={`print-po-${idx}`} className="outcome-item">
+                  <strong>{po.code}. {po.name}:</strong> {po.description}
+                </p>
+              ))}
+            </div>
+
+            <div className="vm-print-section-header" style={{ marginTop: "20px" }}>
+              <h3>Program Specific Outcomes (PSO)</h3>
+            </div>
+            <div className="vm-print-outcomes-list">
+              {(deptVisionMission?.psos && deptVisionMission.psos.length > 0 ? deptVisionMission.psos : DEFAULT_PSOS).map((pso, idx) => (
+                <p key={`print-pso-${idx}`} className="outcome-item">
+                  <strong>{pso.code}. {pso.name}:</strong> {pso.description}
+                </p>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="print-block page-break-before">
+          <h2 className="section-title">5. Time Table &amp; Load</h2>
           <table className="print-grid timetable-print-table">
             <thead>
               <tr>
@@ -874,8 +1113,8 @@ const PrintCiann = () => {
           </table>
         </section>
 
-        <section className="print-block">
-          <h2 className="section-title">3. Syllabus Contents</h2>
+        <section className="print-block page-break-before">
+          <h2 className="section-title">6. Syllabus Contents</h2>
           {syllabusImages.length > 0 ? (
             <div className="syllabus-image-grid">
               {syllabusImages.map((image, index) => (
@@ -930,8 +1169,8 @@ const PrintCiann = () => {
           )}
         </section>
 
-        <section className="print-block">
-          <h2 className="section-title">4. Subject Details</h2>
+        <section className="print-block page-break-before">
+          <h2 className="section-title">7. Subject Details</h2>
           {subjectDetailSections.map((section) => (
             <div className="subject-section" key={section.title}>
               <h4>{section.title}</h4>
@@ -961,8 +1200,8 @@ const PrintCiann = () => {
           ))}
         </section>
 
-        <section className="print-block">
-          <h2 className="section-title">5. Teaching Plan (TP)</h2>
+        <section className="print-block page-break-before">
+          <h2 className="section-title">8. Teaching Plan (TP)</h2>
           {[1, 2, 3, 4].map((page) => (
             <div className="plan-page" key={`tp-page-${page}`}>
               <div className="plan-page-title">Page {page}</div>
@@ -1011,8 +1250,8 @@ const PrintCiann = () => {
           ))}
         </section>
 
-        <section className="print-block">
-          <h2 className="section-title">6. Laboratory Plan (LP)</h2>
+        <section className="print-block page-break-before">
+          <h2 className="section-title">9. Laboratory Plan (LP)</h2>
           {[1, 2, 3, 4].map((page) => (
             <div className="plan-page" key={`lp-page-${page}`}>
               <div className="plan-page-title">Page {page}</div>
@@ -1048,7 +1287,7 @@ const PrintCiann = () => {
           ))}
         </section>
 
-        {/* Section 7. Format K3 (FA-PA) */}
+        {/* Section 10. Format K3 (FA-PA) */}
         <section className="print-block page-break-before k3-format-section">
           <div className="k3-sheet-header">
             <div className="k3-sheet-title">
@@ -1140,7 +1379,7 @@ const PrintCiann = () => {
           </div>
         </section>
 
-        {/* Section 8. Format K4 (SA-PR) */}
+        {/* Section 11. Format K4 (SA-PR) */}
         <section className="print-block page-break-before k4-format-section">
           <div className="k4-print-sheet">
             <table className="k4-print-table k4-structure-table">
@@ -1240,7 +1479,7 @@ const PrintCiann = () => {
           </div>
         </section>
 
-        {/* Section 9. Format K5 (FA-TH) */}
+        {/* Section 12. Format K5 (FA-TH) */}
         <section className="print-block page-break-before k5-format-section">
           <div className="k5-sheet">
             <table className="k5-table">
@@ -1338,7 +1577,7 @@ const PrintCiann = () => {
           </div>
         </section>
 
-        {/* Section 10. Attendance Records */}
+        {/* Section 13. Attendance Records */}
         <section className="print-block page-break-before attendance-records-section">
           <div className="attendance-header-top">
             <div className="attendance-title-box">
@@ -1355,7 +1594,7 @@ const PrintCiann = () => {
             <div><strong>Subject Teacher:</strong> {formatUsername(localStorage.getItem("username") || "") || "Faculty"}</div>
           </div>
 
-          <h3 className="attendance-table-title">10.1 Attendance Sessions Log</h3>
+          <h3 className="attendance-table-title">13.1 Attendance Sessions Log</h3>
           <table className="attendance-log-table">
             <thead>
               <tr>
@@ -1387,7 +1626,7 @@ const PrintCiann = () => {
             </tbody>
           </table>
 
-          <h3 className="attendance-table-title page-break-before">10.2 Student Cumulative Attendance Summary</h3>
+          <h3 className="attendance-table-title page-break-before">13.2 Student Cumulative Attendance Summary</h3>
           <table className="attendance-summary-table">
             <thead>
               <tr>

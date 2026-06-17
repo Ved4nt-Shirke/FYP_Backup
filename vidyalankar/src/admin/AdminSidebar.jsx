@@ -83,6 +83,18 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
       available: true,
     },
     {
+      path: "/admin/vision-mission",
+      icon: "bi-info-circle-fill",
+      label: "Vision, Mission & PEO",
+      available: true,
+    },
+    {
+      path: "/admin/rooms",
+      icon: "bi-door-closed-fill",
+      label: "Manage Rooms & Labs",
+      available: true,
+    },
+    {
       path: "/admin-departments",
       icon: "bi-building",
       label: "Manage Departments",

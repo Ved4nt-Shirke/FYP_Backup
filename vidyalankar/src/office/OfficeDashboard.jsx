@@ -55,6 +55,7 @@ const mapRow = (row) => {
 const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
   const [fileName, setFileName] = useState("");
   const [parsedRows, setParsedRows] = useState([]);
+  const [copied, setCopied] = useState(false);
 
   // Cascading filter states
   const [selectedDepartment, setSelectedDepartment] = useState("");
@@ -447,103 +448,104 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
           <div className="card">
             <div className="card-header">
               <div>
-                <h2>Upload New Students</h2>
+                <h2>📤 Upload New Students</h2>
                 <p>Select assignment details and upload Excel/CSV file</p>
               </div>
             </div>
 
             {/* Step 1: Assignment */}
-            <div className="form-section">
+            <div className="form-section animate-fade-in">
               <h3>Step 1: Select Assignment</h3>
 
-              <div className="form-row">
-                <label>
-                  Department <span className="required">*</span>
-                </label>
-                <select
-                  value={selectedDepartment}
-                  onChange={handleDepartmentChange}
-                  disabled={uploading}
-                >
-                  <option value="">-- Select Department --</option>
-                  {departments.map((dept) => (
-                    <option key={dept._id} value={dept._id}>
-                      {dept.name} ({dept.code})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <div className="form-grid">
+                <div className="form-row-col">
+                  <label>
+                    Department <span className="required">*</span>
+                  </label>
+                  <select
+                    value={selectedDepartment}
+                    onChange={handleDepartmentChange}
+                    disabled={uploading}
+                  >
+                    <option value="">-- Select Department --</option>
+                    {departments.map((dept) => (
+                      <option key={dept._id} value={dept._id}>
+                        {dept.name} ({dept.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="form-row">
-                <label>
-                  Course <span className="required">*</span>
-                </label>
-                <select
-                  value={selectedCourse}
-                  onChange={handleCourseChange}
-                  disabled={!selectedDepartment || uploading}
-                >
-                  <option value="">-- Select Course --</option>
-                  {courses.map((course) => (
-                    <option key={course._id} value={course._id}>
-                      Semester {course.semester} - {course.courseCode} (
-                      {course.scheme})
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="form-row-col">
+                  <label>
+                    Course <span className="required">*</span>
+                  </label>
+                  <select
+                    value={selectedCourse}
+                    onChange={handleCourseChange}
+                    disabled={!selectedDepartment || uploading}
+                  >
+                    <option value="">-- Select Course --</option>
+                    {courses.map((course) => (
+                      <option key={course._id} value={course._id}>
+                        Semester {course.semester} - {course.courseCode} ({course.scheme})
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="form-row">
-                <label>
-                  Division <span className="required">*</span>
-                </label>
-                <select
-                  value={selectedDivision}
-                  onChange={handleDivisionChange}
-                  disabled={!selectedCourse || uploading}
-                >
-                  <option value="">-- Select Division --</option>
-                  {divisions.map((div) => (
-                    <option key={div._id} value={div._id}>
-                      {div.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="form-row-col">
+                  <label>
+                    Division <span className="required">*</span>
+                  </label>
+                  <select
+                    value={selectedDivision}
+                    onChange={handleDivisionChange}
+                    disabled={!selectedCourse || uploading}
+                  >
+                    <option value="">-- Select Division --</option>
+                    {divisions.map((div) => (
+                      <option key={div._id} value={div._id}>
+                        {div.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="form-row">
-                <label>
-                  Academic Year <span className="required">*</span>
-                </label>
-                <select
-                  value={selectedAcademicYear}
-                  onChange={handleAcademicYearChange}
-                  disabled={uploading}
-                >
-                  <option value="">-- Select Academic Year --</option>
-                  {generateAcademicYearOptions().map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="form-row-col">
+                  <label>
+                    Academic Year <span className="required">*</span>
+                  </label>
+                  <select
+                    value={selectedAcademicYear}
+                    onChange={handleAcademicYearChange}
+                    disabled={uploading}
+                  >
+                    <option value="">-- Select Academic Year --</option>
+                    {generateAcademicYearOptions().map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="form-row">
-                <label>
-                  Default Batch <span className="hint">(optional)</span>
-                </label>
-                <input
-                  type="text"
-                  value={batch}
-                  onChange={(e) => setBatch(e.target.value)}
-                  placeholder="Enter batch name (e.g. Batch 1)"
-                  disabled={uploading}
-                />
+                <div className="form-row-col full-width">
+                  <label>
+                    Default Batch <span className="hint">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={batch}
+                    onChange={(e) => setBatch(e.target.value)}
+                    placeholder="Enter batch name (e.g. Batch 1)"
+                    disabled={uploading}
+                  />
+                </div>
               </div>
 
               {isUploadDisabled && (
-                <div className="alert error" style={{ marginTop: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
+                <div className="alert error">
                   <span>⚠️</span>
                   <div>
                     <strong>Bulk upload is disabled:</strong> Students already exist in the database for the selected Department and Division.
@@ -553,14 +555,16 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
             </div>
 
             {/* Step 2: File Upload */}
-            <div className="form-section">
+            <div className="form-section animate-fade-in delay-1">
               <h3>Step 2: Upload Student Data</h3>
 
-              <div className="upload-row">
+              <div className="file-dropzone-wrapper">
                 <input
+                  id="student-file-input"
                   type="file"
                   accept=".xlsx,.xls,.csv"
                   onChange={handleFileChange}
+                  style={{ display: "none" }}
                   disabled={
                     !selectedDepartment ||
                     !selectedCourse ||
@@ -570,18 +574,37 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                     isUploadDisabled
                   }
                 />
-                {fileName && <span className="file-chip">✓ {fileName}</span>}
+                <label 
+                  htmlFor="student-file-input" 
+                  className={`dropzone-label ${(!selectedDepartment || !selectedCourse || !selectedDivision || !selectedAcademicYear || isUploadDisabled) ? 'disabled' : ''}`}
+                >
+                  <div className="dropzone-icon">📊</div>
+                  <div className="dropzone-info">
+                    {fileName ? (
+                      <>
+                        <span className="dropzone-filename">📁 {fileName}</span>
+                        <span className="dropzone-change">Click to change file</span>
+                      </>
+                    ) : (
+                      <>
+                        <strong>Choose an Excel or CSV file</strong>
+                        <span className="dropzone-subtext">Click here to browse student records sheet</span>
+                      </>
+                    )}
+                  </div>
+                </label>
               </div>
 
               {hasPreview && (
-                <div className="preview-info">
-                  <span>✓ {parsedRows.length} students ready to upload</span>
+                <div className="preview-info-badge">
+                  <span className="checkmark">✓</span>
+                  <span>{parsedRows.length} students loaded and validated</span>
                 </div>
               )}
             </div>
 
             <button
-              className="primary-btn"
+              className="primary-btn upload-submit-btn"
               onClick={handleUpload}
               disabled={uploading || !hasPreview || isUploadDisabled}
             >
@@ -601,13 +624,13 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="batch-modal-header">
-                    <h2>Batch Allocation</h2>
+                    <h2>⚖️ Batch Allocation</h2>
                     <p>
-                      Uploaded students: <strong>{parsedRows.length}</strong>
+                      Distribute <strong>{parsedRows.length}</strong> uploaded students into batches.
                     </p>
                   </div>
 
-                  <div className="form-row">
+                  <div className="form-row-col">
                     <label>How many batches to divide?</label>
                     <input
                       type="number"
@@ -621,12 +644,12 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                     />
                   </div>
 
-                  <div className="batch-allocation-grid">
+                  <div className="batch-allocation-grid office-scrollable">
                     {batchAllocations.map((allocation, index) => (
                       <div key={index} className="batch-allocation-row">
                         <div className="batch-name-display">Batch {index + 1}</div>
 
-                        <div className="form-row">
+                        <div className="form-row-col">
                           <label>Students in Batch</label>
                           <input
                             type="number"
@@ -646,8 +669,17 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                     ))}
                   </div>
 
-                  <div className="allocation-summary">
-                    Allocated: <strong>{totalAllocated}</strong> / {parsedRows.length}
+                  {/* Progress and allocation summary */}
+                  <div className="allocation-progress-wrapper">
+                    <div className="progress-bar-container">
+                      <div 
+                        className={`progress-bar-fill ${totalAllocated === parsedRows.length ? 'success' : 'pending'}`} 
+                        style={{ width: `${Math.min(100, (totalAllocated / parsedRows.length) * 100)}%` }}
+                      />
+                    </div>
+                    <div className={`allocation-summary-text ${totalAllocated === parsedRows.length ? 'success' : 'error'}`}>
+                      Allocated: <strong>{totalAllocated}</strong> / {parsedRows.length} students
+                    </div>
                   </div>
 
                   {batchAllocationError && (
@@ -677,12 +709,32 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
             {/* Generated Credentials */}
             {generatedCredentials.length > 0 && (
               <div className="credentials-section">
-                <h3>Generated Student Credentials</h3>
-                <p className="credentials-warning">
-                  Please save these credentials. They will not be shown again.
-                </p>
+                <div className="credentials-header-row">
+                  <div>
+                    <h3>🔐 Generated Student Credentials</h3>
+                    <p className="credentials-warning">
+                      ⚠️ Please save these credentials now. They will not be displayed again.
+                    </p>
+                  </div>
+                  <button
+                    className={`copy-all-btn ${copied ? 'copied' : ''}`}
+                    onClick={() => {
+                      const text = generatedCredentials
+                        .map(
+                          (c) =>
+                            `${c.enrollmentNo},${c.studentName},${c.username},${c.plainPassword}`,
+                        )
+                        .join("\n");
+                      navigator.clipboard.writeText(text);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                  >
+                    {copied ? "✓ Copied!" : "📋 Copy All (CSV format)"}
+                  </button>
+                </div>
 
-                <div className="credentials-table-wrapper">
+                <div className="credentials-table-wrapper office-scrollable">
                   <table className="credentials-table">
                     <thead>
                       <tr>
@@ -696,34 +748,18 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                       {generatedCredentials.map((cred, idx) => (
                         <tr key={idx}>
                           <td>{cred.enrollmentNo}</td>
-                          <td>{cred.studentName}</td>
+                          <td className="student-name-bold">{cred.studentName}</td>
                           <td>
-                            <code>{cred.username}</code>
+                            <code className="cred-code">{cred.username}</code>
                           </td>
                           <td>
-                            <code>{cred.plainPassword}</code>
+                            <code className="cred-code password">{cred.plainPassword}</code>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-
-                <button
-                  className="primary-btn"
-                  onClick={() => {
-                    const text = generatedCredentials
-                      .map(
-                        (c) =>
-                          `${c.enrollmentNo},${c.studentName},${c.username},${c.plainPassword}`,
-                      )
-                      .join("\n");
-                    navigator.clipboard.writeText(text);
-                    alert("Credentials copied to clipboard!");
-                  }}
-                >
-                  📋 Copy All to Clipboard
-                </button>
               </div>
             )}
           </div>

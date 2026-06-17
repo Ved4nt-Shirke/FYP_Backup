@@ -23,6 +23,11 @@ const studentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Division"
   },
+  institution: {
+    type: String,
+    required: true,
+    trim: true,
+  },
 
   username: { type: String },
   password: { type: String }, // Hashed password
@@ -35,5 +40,7 @@ const studentSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+studentSchema.index({ institution: 1, departmentId: 1, divisionId: 1 });
 
 module.exports = mongoose.model("Student", studentSchema);

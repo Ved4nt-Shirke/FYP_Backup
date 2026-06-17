@@ -133,6 +133,8 @@ import CreateOfficeStaff from "./admin/CreateOfficeStaff";
 import SubjectManagement from "./admin/subjects/SubjectManagement";
 import SubjectsView from "./admin/subjects/SubjectsView";
 import CourseDetailsView from "./admin/subjects/CourseDetailsView";
+import VisionMissionManager from "./admin/VisionMissionManager";
+import ManageRooms from "./admin/ManageRooms";
 
 import OfficeDashboard from "./office/OfficeDashboard";
 import OfficeSidebar from "./office/OfficeSidebar";
@@ -969,6 +971,14 @@ const AppContent = () => {
             <Route
               path="/admin/course-details-view/:subjectId"
               element={<CourseDetailsView />}
+            />
+            <Route
+              path="/admin/vision-mission"
+              element={<VisionMissionManager />}
+            />
+            <Route
+              path="/admin/rooms"
+              element={<ManageRooms />}
             />
             {/* SuperAdmin Routes */}
             <Route

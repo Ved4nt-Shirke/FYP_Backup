@@ -47,6 +47,7 @@ router.get("/sa-pr-k4", authenticate, async (req, res) => {
       const studentIds = data.students.map((s) => s.studentId).filter(Boolean);
       
       const dbStudents = await Student.find({
+        institution: req.user.college,
         $or: [
           { _id: { $in: studentIds } },
           { division: String(division) }

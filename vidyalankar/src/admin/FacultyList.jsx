@@ -42,7 +42,7 @@ const FacultyList = ({ filterRole = "faculty" }) => {
     fetchFaculty();
     fetchDepartments();
     fetchStats();
-  }, [navigate]);
+  }, [navigate, filterRole]);
 
   useEffect(() => {
     let filtered = faculty;
