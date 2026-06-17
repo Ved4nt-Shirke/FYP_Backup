@@ -1073,172 +1073,55 @@ const ManageStudents = () => {
               </thead>
               <tbody>
                 {currentStudents.map((student) => (
-                  <React.Fragment key={student._id}>
-                    {editingId === student._id ? (
-                      // Edit Row
-                      <tr className="edit-row">
-                        <td>
-                          <input
-                            value={editData.rollNo || ""}
-                            onChange={(e) =>
-                              handleEditChange("rollNo", e.target.value)
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            value={editData.enrollmentNo || ""}
-                            onChange={(e) =>
-                              handleEditChange("enrollmentNo", e.target.value)
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            value={editData.studentName || ""}
-                            onChange={(e) =>
-                              handleEditChange("studentName", e.target.value)
-                            }
-                          />
-                        </td>
-                        <td>
-                          <span className="credential-display">
-                            {editData.username || "—"}
-                          </span>
-                          {editData.username && (
-                            <button
-                              className="btn-regenerate"
-                              onClick={() => handleViewPassword(editData)}
-                            >
-                              👁️
-                            </button>
-                          )}
-                        </td>
-                        <td>
-                          <select
-                            value={editData.academicYear || ""}
-                            onChange={(e) =>
-                              handleEditChange("academicYear", e.target.value)
-                            }
-                          >
-                            <option value="">-- Select Year --</option>
-                            {generateAcademicYearOptions().map((year) => (
-                              <option key={year} value={year}>
-                                {year}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td>
-                          <select
-                            value={editData.batch || ""}
-                            onChange={(e) =>
-                              handleEditChange("batch", e.target.value)
-                            }
-                          >
-                            <option value="">-- Select Batch --</option>
-                            {generateBatchOptions().map((b) => (
-                              <option key={b} value={b}>
-                                {b}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td>
-                          <input
-                            value={editData.division || ""}
-                            onChange={(e) =>
-                              handleEditChange("division", e.target.value)
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="text"
-                            className="table-seat-input"
-                            value={seatNumbers[student._id] !== undefined ? seatNumbers[student._id] : ""}
-                            onChange={(e) => handleSeatNumberChange(student._id, e.target.value)}
-                            placeholder="Seat No"
-                            disabled={loading || savingSeats}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            value={editData.aadhaarNo || ""}
-                            onChange={(e) =>
-                              handleEditChange("aadhaarNo", e.target.value)
-                            }
-                          />
-                        </td>
-                        <td>
-                          <div className="action-buttons">
-                            <button
-                              className="btn-save"
-                              onClick={handleEditSave}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="btn-cancel"
-                              onClick={handleEditCancel}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      // View Row
-                      <tr>
-                        <td>{student.rollNo}</td>
-                        <td>{student.enrollmentNo}</td>
-                        <td>{student.studentName}</td>
-                        <td className="credential-cell">
-                          <span className="credential-display">
-                            {student.username || "—"}
-                          </span>
-                          {student.username && (
-                            <button
-                              className="btn-regenerate"
-                              onClick={() => handleViewPassword(student)}
-                            >
-                              👁️
-                            </button>
-                          )}
-                        </td>
-                        <td>{student.academicYear || "—"}</td>
-                        <td>{student.batch}</td>
-                        <td>{student.division || "—"}</td>
-                        <td>
-                          <input
-                            type="text"
-                            className="table-seat-input"
-                            value={seatNumbers[student._id] !== undefined ? seatNumbers[student._id] : ""}
-                            onChange={(e) => handleSeatNumberChange(student._id, e.target.value)}
-                            placeholder="Seat No"
-                            disabled={loading || savingSeats}
-                          />
-                        </td>
-                        <td>{student.aadhaarMasked || "—"}</td>
-                        <td>
-                          <div className="action-buttons">
-                            <button
-                              className="btn-edit"
-                              onClick={() => handleEditStart(student)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn-delete"
-                              onClick={() => handleDeleteConfirm(student)}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
+                  <tr key={student._id}>
+                    <td>{student.rollNo}</td>
+                    <td>{student.enrollmentNo}</td>
+                    <td className="student-name-bold">{student.studentName}</td>
+                    <td className="credential-cell">
+                      <span className="credential-display">
+                        {student.username || "—"}
+                      </span>
+                      {student.username && (
+                        <button
+                          className="btn-regenerate"
+                          onClick={() => handleViewPassword(student)}
+                          title="View Password"
+                        >
+                          👁️
+                        </button>
+                      )}
+                    </td>
+                    <td>{student.academicYear || "—"}</td>
+                    <td>{student.batch}</td>
+                    <td>{student.division || "—"}</td>
+                    <td>
+                      <input
+                        type="text"
+                        className="table-seat-input"
+                        value={seatNumbers[student._id] !== undefined ? seatNumbers[student._id] : ""}
+                        onChange={(e) => handleSeatNumberChange(student._id, e.target.value)}
+                        placeholder="Seat No"
+                        disabled={loading || savingSeats}
+                      />
+                    </td>
+                    <td>{student.aadhaarMasked || "—"}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          className="btn-edit"
+                          onClick={() => handleEditStart(student)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn-delete"
+                          onClick={() => handleDeleteConfirm(student)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -1280,6 +1163,124 @@ const ManageStudents = () => {
           </>
         )}
       </div>
+
+      {/* Edit Student Modal */}
+      {editingId && (
+        <div
+          className="modal-overlay"
+          onClick={handleEditCancel}
+        >
+          <div
+            className="modal-content edit-student-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>✏️ Edit Student</h2>
+            <p>Update student records</p>
+
+            <div className="modal-form">
+              <div className="form-row-col">
+                <label>Student Name <span className="required">*</span></label>
+                <input
+                  type="text"
+                  value={editData.studentName || ""}
+                  onChange={(e) => handleEditChange("studentName", e.target.value)}
+                />
+              </div>
+
+              <div className="form-row-col">
+                <label>Roll Number <span className="required">*</span></label>
+                <input
+                  type="text"
+                  value={editData.rollNo || ""}
+                  onChange={(e) => handleEditChange("rollNo", e.target.value)}
+                />
+              </div>
+
+              <div className="form-row-col">
+                <label>Enrollment Number <span className="required">*</span></label>
+                <input
+                  type="text"
+                  value={editData.enrollmentNo || ""}
+                  onChange={(e) => handleEditChange("enrollmentNo", e.target.value)}
+                />
+              </div>
+
+              <div className="form-row-col">
+                <label>Academic Year <span className="required">*</span></label>
+                <select
+                  value={editData.academicYear || ""}
+                  onChange={(e) => handleEditChange("academicYear", e.target.value)}
+                >
+                  <option value="">-- Select Academic Year --</option>
+                  {generateAcademicYearOptions().map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-row-col">
+                <label>Batch <span className="required">*</span></label>
+                <select
+                  value={editData.batch || ""}
+                  onChange={(e) => handleEditChange("batch", e.target.value)}
+                >
+                  <option value="">-- Select Batch --</option>
+                  {generateBatchOptions().map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-row-col">
+                <label>Division</label>
+                <input
+                  type="text"
+                  value={editData.division || ""}
+                  onChange={(e) => handleEditChange("division", e.target.value)}
+                />
+              </div>
+
+              <div className="form-row-col">
+                <label>Seat Number</label>
+                <input
+                  type="text"
+                  value={seatNumbers[editingId] !== undefined ? seatNumbers[editingId] : (editData.seatNo || "")}
+                  onChange={(e) => handleSeatNumberChange(editingId, e.target.value)}
+                  placeholder="Seat No"
+                />
+              </div>
+
+              <div className="form-row-col">
+                <label>Aadhaar Number</label>
+                <input
+                  type="text"
+                  value={editData.aadhaarNo || ""}
+                  onChange={(e) => handleEditChange("aadhaarNo", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="modal-buttons">
+              <button
+                className="btn-secondary"
+                onClick={handleEditCancel}
+              >
+                Cancel
+              </button>
+              <button
+                className="primary-btn"
+                onClick={handleEditSave}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Modal */}
       {deleteConfirmId && (

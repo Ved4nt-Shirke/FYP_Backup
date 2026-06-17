@@ -146,26 +146,6 @@ const CourseDetailsView = () => {
       }
     });
 
-    // Course Outcomes Section
-    doc.setFontSize(11);
-    doc.setFont("Helvetica", "bold");
-    doc.text("Course Outcomes (COs):", 40, doc.lastAutoTable.finalY + 30);
-
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(9);
-    let startY = doc.lastAutoTable.finalY + 45;
-
-    if (details.courseOutcomes && details.courseOutcomes.length > 0) {
-      details.courseOutcomes.forEach((co) => {
-        const text = `${co.coNumber}: ${co.description}`;
-        const splitText = doc.splitTextToSize(text, 750);
-        doc.text(splitText, 50, startY);
-        startY += (splitText.length * 12) + 4;
-      });
-    } else {
-      doc.text("No Course Outcomes mapped for this subject.", 50, startY);
-    }
-
     doc.save(`Course_Scheme_${details.courseCode || subjectId}.pdf`);
   };
 
@@ -280,22 +260,6 @@ const CourseDetailsView = () => {
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <div className="co-view-section">
-          <h4>Course Outcomes (COs) Mapping</h4>
-          {details.courseOutcomes && details.courseOutcomes.length > 0 ? (
-            <div className="co-grid-view">
-              {details.courseOutcomes.map((co) => (
-                <div key={co._id || co.coNumber} className="co-view-item">
-                  <span className="co-label">{co.coNumber}</span>
-                  <p className="co-desc">{co.description}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="no-cos-warning">No Course Outcomes mapped for this subject yet.</p>
-          )}
         </div>
       </div>
     </div>

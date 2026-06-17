@@ -123,6 +123,7 @@ export const config = {
       `${API_BASE_URL}/admin/office-staff/${id}/department`,
     transferOfficeStaff: (id) =>
       `${API_BASE_URL}/admin/office-staff/${id}/transfer`,
+    visionMission: `${API_BASE_URL}/admin/vision-mission`,
   },
 
   // Courses, divisions, subjects (Admin)
@@ -189,6 +190,7 @@ export const config = {
       `${API_BASE_URL}/catalog/courses/${departmentId}`,
     divisions: (courseId) => `${API_BASE_URL}/catalog/divisions/${courseId}`,
     subjects: `${API_BASE_URL}/catalog/subjects`,
+    visionMission: `${API_BASE_URL}/catalog/vision-mission`,
   },
 
   mockExamsStudent: {

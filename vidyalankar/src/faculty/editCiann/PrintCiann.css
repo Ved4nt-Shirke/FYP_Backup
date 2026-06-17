@@ -699,3 +699,131 @@
   }
 }
 
+/* Vision and Mission Print Pages */
+.vision-mission-print-block {
+  page-break-after: always;
+}
+
+.vision-mission-print-container {
+  padding: 40px;
+  font-family: 'Times New Roman', Times, serif;
+  color: #000;
+  min-height: 900px;
+}
+
+.branding-header {
+  border-bottom: 2px solid #000;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+}
+
+.branding-logo-title {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.branding-logo {
+  width: 90px;
+  height: auto;
+  max-height: 70px;
+  object-fit: contain;
+}
+
+.branding-logo-fallback {
+  width: 70px;
+  height: 70px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.branding-title-text h3 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.branding-title-text h4 {
+  margin: 5px 0 0 0;
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: #374151;
+}
+
+.vm-print-section-header {
+  border-bottom: 3px double #000;
+  padding-bottom: 5px;
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+.vm-print-section-header h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.vm-print-content p {
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  text-align: justify;
+}
+
+.vm-print-sub-section {
+  margin-bottom: 25px;
+}
+
+.vm-print-sub-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 19px;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.vm-print-sub-section p {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.vm-print-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.vm-print-list li {
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.vm-print-outcomes-list {
+  margin-top: 15px;
+}
+
+.outcome-item {
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  text-align: justify;
+}
+
+@media print {
+  .vision-mission-print-block {
+    page-break-before: always !important;
+    page-break-after: always !important;
+    margin: 0 !important;
+    padding: 20px !important;
+  }
+}
+

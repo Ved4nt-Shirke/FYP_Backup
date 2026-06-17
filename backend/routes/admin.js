@@ -7,6 +7,7 @@ const Faculty = require("../models/Faculty");
 const OfficeStaff = require("../models/OfficeStaff");
 const { authenticate, authorizeAdmin, authorizeOffice } = require("../middleware/auth");
 const Institution = require("../models/Institution");
+const VisionMission = require("../models/VisionMission");
 
 const generateSafePassword = (length = 8) => {
   const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -2245,5 +2246,149 @@ router.put(
     }
   },
 );
+
+const DEFAULT_POS = [
+  {
+    code: "PO 1",
+    name: "Basic and Discipline specific knowledge",
+    description: "Apply knowledge of basic mathematics, science and engineering fundamentals and engineering specialization to solve the engineering problems."
+  },
+  {
+    code: "PO 2",
+    name: "Problem analysis",
+    description: "Identify and analyse well-defined engineering problems using codified standard methods."
+  },
+  {
+    code: "PO 3",
+    name: "Design/ development of solutions",
+    description: "Design solutions for well-defined technical problems and assist with the design of systems components or processes to meet specified needs."
+  },
+  {
+    code: "PO 4",
+    name: "Engineering Tools, Experimentation and Testing",
+    description: "Apply modern engineering tools and appropriate technique to conduct standard tests and measurements."
+  },
+  {
+    code: "PO 5",
+    name: "Engineering practices for society, sustainability and environment",
+    description: "Apply appropriate technology in context of society, sustainability, environment and ethical practices."
+  },
+  {
+    code: "PO 6",
+    name: "Project Management",
+    description: "Use engineering management principles individually, as a team member or a leader to manage projects and effectively communicate about well-defined engineering activities."
+  },
+  {
+    code: "PO 7",
+    name: "Life-long learning",
+    description: "Ability to analyse individual needs and engage in updating in the context of technological changes."
+  }
+];
+
+const DEFAULT_PSOS = [
+  {
+    code: "PSO 1",
+    name: "Computer Software and Hardware Usage",
+    description: "Use state-of-the-art technologies for operation and application of computer software and hardware."
+  },
+  {
+    code: "PSO 2",
+    name: "Computer Engineering Maintenance",
+    description: "Maintain computer engineering related software and hardware systems."
+  }
+];
+
+const mongoose = require("mongoose");
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// GET /admin/vision-mission
+router.get("/vision-mission", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institutionCode = req.user.college;
+    let departmentId = req.query.departmentId;
+    if (!departmentId || departmentId === "null" || departmentId === "undefined" || departmentId === "") {
+      departmentId = null;
+    }
+    if (departmentId && !isValidObjectId(departmentId)) {
+      departmentId = null;
+    }
+
+    let config = await VisionMission.findOne({ institutionCode, departmentId });
+
+    if (!config) {
+      const isDept = departmentId !== null;
+      config = {
+        institutionCode,
+        departmentId,
+        vision: "",
+        mission: [],
+        peos: isDept ? ["", "", ""] : [],
+        pos: isDept ? DEFAULT_POS : [],
+        psos: isDept ? DEFAULT_PSOS : []
+      };
+    }
+
+    res.json({
+      success: true,
+      data: config
+    });
+  } catch (err) {
+    console.error("Error fetching vision-mission configuration:", err);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching configuration",
+      error: err.message
+    });
+  }
+});
+
+// POST /admin/vision-mission
+router.post("/vision-mission", authenticate, authorizeAdmin, async (req, res) => {
+  try {
+    const institutionCode = req.user.college;
+    let { departmentId, vision, mission, peos, pos, psos } = req.body;
+    if (!departmentId || departmentId === "null" || departmentId === "undefined" || departmentId === "") {
+      departmentId = null;
+    }
+    if (departmentId && !isValidObjectId(departmentId)) {
+      departmentId = null;
+    }
+
+    if (!vision) {
+      return res.status(400).json({
+        success: false,
+        message: "Vision is required"
+      });
+    }
+
+    const updatedConfig = await VisionMission.findOneAndUpdate(
+      { institutionCode, departmentId },
+      {
+        institutionCode,
+        departmentId,
+        vision,
+        mission: mission || [],
+        peos: peos || [],
+        pos: pos || [],
+        psos: psos || [],
+        createdBy: req.user._id
+      },
+      { new: true, upsert: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Configuration saved successfully",
+      data: updatedConfig
+    });
+  } catch (err) {
+    console.error("Error saving vision-mission configuration:", err);
+    res.status(500).json({
+      success: false,
+      message: "Error saving configuration",
+      error: err.message
+    });
+  }
+});
 
 module.exports = router;
