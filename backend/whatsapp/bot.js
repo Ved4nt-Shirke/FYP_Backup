@@ -941,6 +941,11 @@ function matchRollNoInList(input, studentRolls) {
 // ── Start ────────────────────────────────────────────────────────────────────
 function startWhatsAppBot() {
     console.log("🚀 Starting Conversational WhatsApp Attendance Bot...");
+    try {
+        resetLocalSessionData();
+    } catch (err) {
+        console.error("Warning: Failed to clear session locks:", err.message);
+    }
     initializeWithRecovery();
 }
 
