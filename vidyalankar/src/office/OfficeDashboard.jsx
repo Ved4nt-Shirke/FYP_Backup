@@ -85,13 +85,17 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
   const hasPreview = useMemo(() => parsedRows.length > 0, [parsedRows]);
 
   const isUploadDisabled = useMemo(() => {
-    if (!selectedDepartment || !selectedDivision) return false;
-    return students.some(
-      (s) =>
-        s.departmentId?._id === selectedDepartment &&
-        s.divisionId?._id === selectedDivision
-    );
-  }, [selectedDepartment, selectedDivision, students]);
+    if (!selectedDepartment || !selectedDivision || !selectedAcademicYear) return false;
+    return students.some((s) => {
+      const deptId = s.departmentId?._id || s.departmentId;
+      const divId = s.divisionId?._id || s.divisionId;
+      return (
+        deptId === selectedDepartment &&
+        divId === selectedDivision &&
+        s.academicYear === selectedAcademicYear
+      );
+    });
+  }, [selectedDepartment, selectedDivision, selectedAcademicYear, students]);
 
   useEffect(() => {
     fetchDepartments();
@@ -445,10 +449,53 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
       {/* Upload Tab */}
       {currentTab === "upload" ? (
         <div className="office-grid">
+
+          {/* Compact Page Header with inline stats */}
+          <div className="upload-page-header">
+            <div className="upload-page-header-left">
+              <div className="upload-page-icon">📤</div>
+              <div>
+                <h1 className="upload-page-title">Upload Students</h1>
+                <p className="upload-page-sub">Assign, upload and manage student records in one place</p>
+              </div>
+            </div>
+            <div className="upload-page-stats">
+              <div className="mini-stat">
+                <span className="mini-stat-icon" style={{background:"#EEF2FF"}}>👥</span>
+                <div>
+                  <p className="mini-stat-val">{students.length}</p>
+                  <p className="mini-stat-label">Students</p>
+                </div>
+              </div>
+              <div className="mini-stat">
+                <span className="mini-stat-icon" style={{background:"#DBEAFE"}}>🏫</span>
+                <div>
+                  <p className="mini-stat-val">{departments.length}</p>
+                  <p className="mini-stat-label">Departments</p>
+                </div>
+              </div>
+              <div className="mini-stat">
+                <span className="mini-stat-icon" style={{background:"#DCFCE7"}}>📋</span>
+                <div>
+                  <p className="mini-stat-val">{divisions.length || "—"}</p>
+                  <p className="mini-stat-label">Divisions</p>
+                </div>
+              </div>
+              <div className="mini-stat">
+                <span className="mini-stat-icon" style={{background:"#FEF3C7"}}>📁</span>
+                <div>
+                  <p className="mini-stat-val">{parsedRows.length > 0 ? parsedRows.length : "—"}</p>
+                  <p className="mini-stat-label">File Rows</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="card">
             <div className="card-header">
-              <div>
-                <h2>📤 Upload New Students</h2>
+              <div className="card-icon-badge">📤</div>
+              <div className="card-header-text">
+                <h2>Upload New Students</h2>
                 <p>Select assignment details and upload Excel/CSV file</p>
               </div>
             </div>
@@ -548,7 +595,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                 <div className="alert error">
                   <span>⚠️</span>
                   <div>
-                    <strong>Bulk upload is disabled:</strong> Students already exist in the database for the selected Department and Division.
+                    <strong>Bulk upload is disabled:</strong> Students already exist in the database for the selected Department, Division, and Academic Year.
                   </div>
                 </div>
               )}

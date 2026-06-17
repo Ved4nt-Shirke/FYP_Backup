@@ -504,7 +504,11 @@ const AppContent = () => {
       {userRole === "superadmin" ? (
         <SuperAdminNavbar />
       ) : userRole === "office" ? (
-        <OfficeHeader onMenuToggle={handleMenuToggle} />
+        <OfficeHeader
+          onMenuToggle={handleMenuToggle}
+          staffName={localStorage.getItem("staffName") || localStorage.getItem("name") || "Office Staff"}
+          currentTab={currentTab}
+        />
       ) : userRole === "admin" ? (
         <AdminHeader onMenuToggle={handleMenuToggle} />
       ) : userRole !== "admin" ? (

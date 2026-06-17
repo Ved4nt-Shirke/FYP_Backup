@@ -6,9 +6,17 @@ import {
 } from "../utils/institutionBranding";
 import "./OfficeHeader.css";
 
-const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff" }) => {
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good Morning";
+  if (hour < 17) return "Good Afternoon";
+  return "Good Evening";
+};
+
+const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff", currentTab }) => {
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [notifCount] = useState(0);
   const institutionCode = (
     localStorage.getItem("institutionCode") ||
     localStorage.getItem("college") ||
@@ -16,13 +24,12 @@ const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff" }) => {
   ).toUpperCase();
   const institutionName =
     localStorage.getItem("institutionName") || institutionCode;
-  const institutionLogoUrl = buildInstitutionLogoUrl(
-    localStorage.getItem("institutionLogoUrl") || "",
-  );
-  const institutionFallback = getInstitutionInitials(
-    institutionName,
-    institutionCode,
-  );
+
+  const tabLabels = {
+    upload: "Upload Students",
+    manage: "Manage Students",
+    notices: "Notices",
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -32,6 +39,7 @@ const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff" }) => {
   return (
     <header className="office-header-container">
       <div className="office-header-content">
+        {/* Left: Hamburger + Greeting */}
         <div className="office-header-left">
           <button
             className="menu-toggle"
@@ -40,12 +48,27 @@ const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff" }) => {
           >
             <i className="bi bi-list"></i>
           </button>
-          <div className="office-logo" title={institutionName}>
-            <span className="logo-text">{institutionName}</span>
+          <div className="header-greeting">
+            <p className="greeting-main">
+              {getGreeting()} 👋 <span className="greeting-name">{staffName.split(" ")[0]}</span>
+            </p>
+            <p className="greeting-sub">
+              {currentTab ? tabLabels[currentTab] || "Office Portal" : "Student Management System"}
+            </p>
           </div>
         </div>
 
+        {/* Right: Bell + Avatar */}
         <div className="office-header-right">
+          {/* Notification Bell */}
+          <button className="notif-btn" aria-label="Notifications">
+            <span className="notif-icon">🔔</span>
+            {notifCount > 0 && <span className="notif-badge">{notifCount}</span>}
+          </button>
+
+          <div className="header-divider" />
+
+          {/* User Avatar */}
           <div className="user-menu-wrapper">
             <button
               className="user-button"
@@ -54,8 +77,11 @@ const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff" }) => {
               <span className="user-avatar">
                 {staffName.charAt(0).toUpperCase()}
               </span>
-              <span className="user-name">{staffName}</span>
-              <i className="bi bi-chevron-down dropdown-icon"></i>
+              <div className="user-info-text">
+                <span className="user-name">{staffName}</span>
+                <span className="user-role-tag">Office Staff</span>
+              </div>
+              <i className={`bi bi-chevron-down dropdown-icon ${showUserMenu ? "rotated" : ""}`}></i>
             </button>
 
             {showUserMenu && (
@@ -71,7 +97,7 @@ const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff" }) => {
                     </div>
                     <div>
                       <p className="user-menu-name">{staffName}</p>
-                      <p className="user-menu-role">Office Staff</p>
+                      <p className="user-menu-role">Office Staff · {institutionCode}</p>
                     </div>
                   </div>
                   <div className="user-menu-divider"></div>
@@ -80,7 +106,7 @@ const OfficeHeader = ({ onMenuToggle, staffName = "Office Staff" }) => {
                     onClick={handleLogout}
                   >
                     <span>🚪</span>
-                    Logout
+                    Sign Out
                   </button>
                 </div>
               </>

@@ -6,9 +6,11 @@
   padding: 32px;
   width: 100%;
   box-sizing: border-box;
-  background: var(--office-bg);
-  min-height: calc(100vh - 64px);
-  margin-top: 64px; /* Space below top header */
+  background:
+    radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%),
+    linear-gradient(180deg, #F8FAFC 0%, #FDFDFF 100%);
+  min-height: calc(100vh - 72px);
+  margin-top: 72px;
   animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;

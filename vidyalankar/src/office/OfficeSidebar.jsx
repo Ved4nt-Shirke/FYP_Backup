@@ -22,6 +22,13 @@ const OfficeSidebar = ({
   ).toUpperCase();
   const institutionName =
     localStorage.getItem("institutionName") || institutionCode;
+
+  // Use username (e.g. "shreyas.bandekar") for display, fall back to staffName
+  const displayUsername =
+    localStorage.getItem("username") ||
+    localStorage.getItem("email")?.split("@")[0] ||
+    staffName;
+
   const institutionLogoUrl = buildInstitutionLogoUrl(
     localStorage.getItem("institutionLogoUrl") || "",
   );
@@ -88,8 +95,9 @@ const OfficeSidebar = ({
             ) : (
               <div className="sidebar-logo-fallback">{institutionFallback}</div>
             )}
-            <div className="sidebar-logo-text">
+          <div className="sidebar-logo-text">
               <p className="sidebar-title">Office Portal</p>
+              <p className="sidebar-subtitle">Student Management System</p>
             </div>
           </div>
           <button
@@ -103,11 +111,10 @@ const OfficeSidebar = ({
 
         <div className="sidebar-user-info">
           <div className="sidebar-user-avatar">
-            {staffName.charAt(0).toUpperCase()}
+            {displayUsername.charAt(0).toUpperCase()}
           </div>
           <div className="sidebar-user-details">
-            <p className="sidebar-user-name">{staffName}</p>
-            <p className="sidebar-user-role">Office Staff</p>
+            <p className="sidebar-user-name">{displayUsername}</p>
           </div>
         </div>
 
@@ -139,14 +146,6 @@ const OfficeSidebar = ({
           })}
         </nav>
 
-        <div className="sidebar-footer">
-          <button className="sidebar-footer-btn logout-btn" onClick={onLogout}>
-            <span role="img" aria-label="logout">
-              🚪
-            </span>
-            Logout
-          </button>
-        </div>
       </aside>
     </>
   );
