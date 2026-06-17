@@ -19,18 +19,6 @@ const generateSafePassword = (length = 8) => {
   }
   return password;
 };
-
-
-const generateSafePassword = (length = 8) => {
-  const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
-};
-
-
 // Institution and department mappings
 // Departments will be fetched dynamically from the database
 const institutionDepartments = {};
