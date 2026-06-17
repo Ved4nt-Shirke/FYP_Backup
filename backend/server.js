@@ -9,12 +9,27 @@ if (process.env.DEBUG !== "true") {
     "MongoDB Connected Successfully",
     "Superadmin user already exists in database",
     "Superadmin user created successfully",
-    "Starting Conversational WhatsApp Attendance Bot"
+    "Starting Conversational WhatsApp Attendance Bot",
+    "Scan this QR with WhatsApp",
+    "Session saved after scan",
+    "WhatsApp Bot:",
+    "WhatsApp Attendance Bot",
+    "WhatsApp Auth Failed",
+    "QR",
+    "▄",
+    "█",
+    "▀",
+    "📱",
+    "✅",
+    "🤖",
+    "⚠️",
+    "❌",
+    "📨"
   ];
   const originalLog = console.log;
   console.log = (...args) => {
     const msg = util.format(...args);
-    if (allowedStartupMessages.some(pattern => msg.includes(pattern))) {
+    if (allowedStartupMessages.some(pattern => msg.includes(pattern)) || /[▄█▀📱✅🤖⚠️❌📨]/.test(msg)) {
       originalLog(...args);
     }
   };

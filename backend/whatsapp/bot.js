@@ -66,8 +66,20 @@ const client = new Client({
     }),
     puppeteer: {
         headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-software-rasterizer",
+            "--disable-extensions",
+            "--no-zygote",
+        ],
     },
+});
+
+client.on("loading_screen", (percent, message) => {
+    console.log(`🤖 WhatsApp Bot loading: ${percent}% - ${message}`);
 });
 
 client.on("qr", (qr) => {
@@ -189,20 +201,38 @@ client.on("message", async (message) => {
     const raw = message.body?.trim();
     if (!raw) return;
 
-    const phone = message.from.replace("@c.us", "");
+    let phone = message.from.replace("@c.us", "");
+    if (message.from.endsWith("@lid")) {
+        try {
+            const contact = await message.getContact();
+            if (contact && contact.number) {
+                phone = contact.number;
+            } else {
+                const mappings = await client.getContactLidAndPhone([message.from]);
+                if (mappings && mappings.length > 0 && mappings[0].pn) {
+                    phone = mappings[0].pn;
+                } else {
+                    phone = message.from.replace("@lid", "");
+                }
+            }
+        } catch (err) {
+            console.error("Failed to resolve phone from LID:", err);
+            phone = message.from.replace("@lid", "");
+        }
+    }
     const text = raw.toLowerCase();
 
     // Log incoming message to local file for diagnostic review
     try {
         fs.appendFileSync(
             path.resolve(__dirname, "../incoming_messages.log"),
-            `${new Date().toISOString()} | Sender: ${phone} | Msg: ${raw}\n`
+            `${new Date().toISOString()} | Sender: ${message.from} (Resolved: ${phone}) | Msg: ${raw}\n`
         );
     } catch (logErr) {
         console.error("Failed to write incoming messages log:", logErr);
     }
 
-    console.log(`📨 [${phone}] ${raw.substring(0, 120)}`);
+    console.log(`📨 [${message.from} -> resolved: ${phone}] ${raw.substring(0, 120)}`);
 
     // ── Roll Number Validation/Attendance Flow (Student/Direct Validation) ─────
     if (isRollNoFormat(raw)) {

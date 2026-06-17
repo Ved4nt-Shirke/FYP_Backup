@@ -83,6 +83,7 @@ router.post("/", authenticate, authorizeOffice, async (req, res) => {
       departmentId,
       courseId,
       divisionId,
+      academicYear: (academicYear || "").toString().trim(),
       $or: [{ rollNo }, { enrollmentNo }],
     });
 
@@ -125,6 +126,16 @@ router.post("/", authenticate, authorizeOffice, async (req, res) => {
       hashedPassword = await bcrypt.hash(plainPassword, 10);
     }
 
+    // Resolve division name string from divisionId if not provided (ensures backward compatibility)
+    let resolvedDivisionName = division || "";
+    if (!resolvedDivisionName && divisionId) {
+      const Division = require("../models/Division");
+      const divisionDoc = await Division.findOne({ _id: divisionId, institution: req.user.college });
+      if (divisionDoc) {
+        resolvedDivisionName = divisionDoc.name;
+      }
+    }
+
     // Create student record
     const newStudent = new Student({
       rollNo,
@@ -132,7 +143,7 @@ router.post("/", authenticate, authorizeOffice, async (req, res) => {
       studentName,
       batch,
       academicYear: (academicYear || "").toString().trim(),
-      division: division || "",
+      division: resolvedDivisionName,
       departmentId,
       courseId,
       divisionId,
@@ -189,6 +200,7 @@ router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
       // Check if student already exists
       const existingStudent = await Student.findOne({
         institution: req.user.college,
+        academicYear: (academicYear || "").toString().trim(),
         $or: [{ rollNo: rollNo }, { enrollmentNo: enrollmentNo }],
       });
 
