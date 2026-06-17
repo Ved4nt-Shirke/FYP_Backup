@@ -1,0 +1,701 @@
+.ciann-print-page {
+  min-height: 100vh;
+  background: #f4f6fb;
+  padding: 20px;
+}
+
+.ciann-print-toolbar {
+  max-width: 1000px;
+  margin: 0 auto 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ciann-print-sheet {
+  background: #ffffff;
+  color: #111827;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #d1d5db;
+}
+
+.print-block {
+  margin-bottom: 24px;
+  break-inside: avoid;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #000;
+}
+
+.front-page-block {
+  page-break-after: always;
+}
+
+.course-diary-card {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.course-diary-header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.course-diary-logo-cell {
+  width: 84px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.course-diary-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.course-diary-logo-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background-color: #e5e7eb;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.course-diary-title {
+  flex: 1;
+  background: var(--app-header-bg);
+  color: #fff;
+  text-align: center;
+  font-size: 38px;
+  font-weight: 700;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.course-diary-body-center {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.course-diary-body-center p {
+  margin: 4px 0;
+  font-size: 20px;
+}
+
+.institution-name {
+  font-size: 34px;
+  color: #444;
+  margin: 0 0 8px;
+  text-transform: lowercase;
+}
+
+.ciann-name {
+  color: var(--app-header-bg);
+  font-size: 42px;
+  margin: 0 0 8px;
+}
+
+.diary-info-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  display: table;
+}
+
+.diary-row {
+  display: table-row;
+}
+
+.diary-row .label,
+.diary-row .value {
+  display: table-cell;
+  padding: 12px 15px;
+  font-size: 16px;
+  border: 1px solid #d1d5db;
+}
+
+.diary-row .label {
+  width: 35%;
+  background: var(--app-header-bg);
+  color: #fff;
+  font-weight: 700;
+}
+
+.diary-row .value {
+  width: 65%;
+  background: #fff;
+}
+
+.print-grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  border: 2px solid #000;
+}
+
+.print-grid th,
+.print-grid td {
+  border: 1px solid #000;
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 12px;
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+.print-grid thead th {
+  border: 2px solid #000;
+  font-weight: 700;
+  background: #f3f4f6;
+}
+
+.timetable-print-table .time-col {
+  font-weight: 700;
+  width: 180px;
+  background: #f9fafb;
+}
+
+.tt-cell {
+  min-height: 34px;
+}
+
+.syllabus-image-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.syllabus-image-block {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.syllabus-page-label {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.syllabus-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.two-col-grid h4,
+.subject-section h4 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.small-note {
+  margin: 0 0 10px;
+  color: #374151;
+  font-size: 13px;
+}
+
+.subject-section {
+  margin-bottom: 14px;
+}
+
+.plan-page {
+  margin-bottom: 18px;
+  page-break-inside: avoid;
+}
+
+.plan-page-title {
+  display: inline-block;
+  border: 1px solid #d1d5db;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.tp-table th,
+.tp-table td {
+  font-size: 11px;
+}
+
+.entry-no-cell {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ciann-print-loading {
+  text-align: center;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #374151;
+}
+
+.ciann-print-empty {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .two-col-grid,
+  .syllabus-image-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .course-diary-title {
+    font-size: 24px;
+  }
+
+  .course-diary-body-center p {
+    font-size: 16px;
+  }
+}
+
+@media print {
+  @page {
+    margin: 10mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .ciann-print-page {
+    padding: 0;
+    background: #fff;
+  }
+
+  .ciann-print-sheet {
+    max-width: none;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-grid,
+  .course-diary-card,
+  .plan-page,
+  .print-block {
+    page-break-inside: avoid;
+  }
+
+  .front-page-block {
+    page-break-after: always;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .course-diary-title {
+    font-size: 24px;
+  }
+
+  .course-diary-body-center p {
+    font-size: 14px;
+  }
+
+  .ciann-name {
+    font-size: 28px;
+  }
+
+  .institution-name {
+    font-size: 22px;
+  }
+}
+
+/* --- MSBTE Format Appends Styles --- */
+
+/* Format K3 (FA-PA) Styles */
+.k3-format-section {
+  background: #fff;
+  border: 1px solid #000;
+  padding: 14px;
+  margin-bottom: 24px;
+}
+.k3-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #000;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+.k3-sheet-title {
+  text-align: center;
+  flex: 1;
+}
+.k3-sheet-board {
+  font-weight: 700;
+  font-size: 14px;
+}
+.k3-sheet-subtitle {
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 700;
+}
+.k3-sheet-format {
+  font-weight: 700;
+  font-size: 12px;
+  text-align: right;
+}
+.k3-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 6px 18px;
+  font-size: 12px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+.k3-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+  table-layout: auto;
+}
+.k3-table th,
+.k3-table td {
+  border: 1px solid #000 !important;
+  padding: 3px 2px !important;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+.k3-table thead th {
+  background: #f1f3f5;
+  font-weight: 700;
+}
+.k3-name {
+  text-align: left !important;
+  padding-left: 6px !important;
+}
+.k3-empty {
+  text-align: center;
+  padding: 16px 0;
+}
+.k3-signature-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+  font-size: 12px;
+}
+.k3-sign-label {
+  font-size: 11px;
+  color: #444;
+}
+
+/* Format K4 (SA-PR) Styles */
+.k4-format-section {
+  border: 1px solid #000;
+  background: #fff;
+  padding: 10px;
+  margin-bottom: 24px;
+}
+.k4-print-sheet {
+  background: #fff;
+}
+.k4-print-board {
+  font-size: 13px;
+  font-weight: 700;
+}
+.k4-print-subtitle {
+  font-size: 13px;
+  font-weight: 700;
+}
+.k4-print-format {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+.k4-print-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin-bottom: 0;
+  border: 1px solid #000;
+  font-size: 9px;
+}
+.k4-print-table th,
+.k4-print-table td {
+  border: 1px solid #000 !important;
+  font-size: 9px;
+  padding: 3px 2px !important;
+  text-align: center;
+  vertical-align: middle;
+  background: #fff;
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+.k4-structure-table {
+  table-layout: fixed;
+  width: 100%;
+}
+.k4-col-roll { width: 10%; }
+.k4-col-enroll { width: 15%; }
+.k4-col-name { width: 40%; }
+.k4-col-seat { width: 15%; }
+.k4-col-marks { width: 20%; }
+.k4-sheet-title-cell {
+  padding: 4px 8px !important;
+}
+.k4-sheet-title-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.k4-meta-left,
+.k4-meta-right,
+.k4-meta-center {
+  font-size: 11px !important;
+  font-weight: 600;
+  text-align: left !important;
+  padding: 4px 8px !important;
+}
+.k4-meta-right { text-align: right !important; }
+.k4-meta-center { text-align: center !important; }
+.k4-print-signatures {
+  border: 1px solid #000;
+  border-top: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 110px;
+}
+.k4-sign-column {
+  padding: 8px;
+  font-size: 12px;
+  text-align: left;
+}
+.k4-sign-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.k4-print-table thead th {
+  background: #f1f3f5 !important;
+  font-weight: 700;
+}
+.k4-print-table td.text-start {
+  text-align: left !important;
+  padding-left: 6px !important;
+}
+
+/* Format K5 (FA-TH) Styles */
+.k5-format-section {
+  border: 1px solid #000;
+  background: #fff;
+  padding: 10px;
+  margin-bottom: 24px;
+}
+.k5-sheet {
+  background: #fff;
+}
+.k5-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+.k5-table th,
+.k5-table td {
+  border: 1px solid #000 !important;
+  font-size: 9px;
+  padding: 3px 2px !important;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+.k5-title-cell {
+  position: relative;
+  text-align: center;
+  padding: 8px 10px !important;
+}
+.k5-title-top {
+  font-weight: 700;
+  font-size: 13px;
+}
+.k5-title-sub {
+  font-weight: 700;
+  font-size: 12px;
+}
+.k5-format {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-weight: 700;
+  font-size: 12px;
+}
+.k5-meta-left,
+.k5-meta-right {
+  text-align: left;
+  padding: 6px 8px !important;
+}
+.k5-meta-right {
+  text-align: right !important;
+}
+.k5-name {
+  text-align: left !important;
+}
+.k5-empty {
+  text-align: center;
+  padding: 16px 8px !important;
+}
+.k5-signatures {
+  border: 1px solid #000;
+  border-top: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 13px;
+  min-height: 78px;
+}
+.k5-signatures > div {
+  text-align: left;
+}
+
+/* Attendance Records Section Styles */
+.attendance-records-section {
+  background: #fff;
+  border: 1px solid #000;
+  padding: 14px;
+  margin-bottom: 24px;
+}
+.attendance-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #000;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+.attendance-title-box {
+  text-align: center;
+  flex: 1;
+}
+.attendance-board {
+  font-weight: 700;
+  font-size: 14px;
+}
+.attendance-subtitle {
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 700;
+}
+.attendance-format-label {
+  font-weight: 700;
+  font-size: 12px;
+  text-align: right;
+}
+.attendance-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 6px 18px;
+  font-size: 12px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+.attendance-table-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  text-align: left;
+  border-bottom: 1px solid #000;
+  padding-bottom: 4px;
+}
+.attendance-log-table,
+.attendance-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+  margin-bottom: 18px;
+}
+.attendance-log-table th,
+.attendance-log-table td,
+.attendance-summary-table th,
+.attendance-summary-table td {
+  border: 1px solid #000 !important;
+  padding: 3px 2px !important;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+.attendance-log-table thead th,
+.attendance-summary-table thead th {
+  background: #f1f3f5;
+  font-weight: 700;
+}
+.attendance-log-table td.text-start,
+.attendance-summary-table td.text-start {
+  text-align: left !important;
+  padding-left: 6px !important;
+}
+.attendance-empty {
+  text-align: center;
+  padding: 12px 0;
+  color: #666;
+}
+.attendance-signatures {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  font-size: 12px;
+}
+.attendance-signatures .sign-label {
+  font-size: 11px;
+  color: #444;
+}
+
+/* Page Break before print format classes */
+.page-break-before {
+  page-break-before: always !important;
+  break-before: page !important;
+  margin-top: 40px;
+}
+
+@media print {
+  .page-break-before {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+  .k3-format-section,
+  .k4-format-section,
+  .k5-format-section,
+  .attendance-records-section {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    padding: 10px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+

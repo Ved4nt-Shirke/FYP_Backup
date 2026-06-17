@@ -1,0 +1,62 @@
+/* Container Styling */
+.course-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px;
+  background-color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Title */
+.course-form-container h1 {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--app-header-bg, #0e9d4c) !important; /* Use theme variable */
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--app-header-bg, #0e9d4c) !important; /* Use theme variable */
+  display: inline-block;
+  padding-bottom: 5px;
+}
+
+/* Form Group */
+.course-form-container .form-group {
+  margin-bottom: 20px;
+}
+
+/* Label Styling */
+.course-form-container label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+/* Select Dropdown Styling */
+.course-form-container select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  appearance: none;
+  background-color: #fff;
+}
+
+/* Submit Button */
+.course-form-container button[type="submit"] {
+  margin-top: 20px;
+  background-color: var(--app-header-bg, #0e9d4c) !important; /* Use theme variable */
+  color: white !important;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border-color: var(--app-header-bg, #0e9d4c) !important;
+}
+
+.course-form-container button[type="submit"]:hover {
+  background-color: var(--primary-accent-dark, #087839) !important; /* Use theme variable */
+  border-color: var(--primary-accent-dark, #087839) !important;
+}

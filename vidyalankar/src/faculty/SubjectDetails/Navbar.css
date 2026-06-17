@@ -1,0 +1,80 @@
+/* Container for the navbar links */
+.simple-navbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 1px solid #e2eaf5;
+  padding: 0 0 10px;
+  margin-bottom: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Styling for each navigation link */
+.simple-navbar a {
+  text-decoration: none;
+  padding: 11px 16px;
+  color: #4d607c;
+  font-size: 0.98rem;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  background: #f4f8ff;
+  position: relative;
+  white-space: nowrap;
+  min-width: max-content;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hover effect for links */
+.simple-navbar a:hover {
+  color: #1e4a95;
+  background-color: #edf4ff;
+  border-color: #c8d8f1;
+}
+
+/* Style for the currently active link */
+.simple-navbar a.active {
+  color: #11408a;
+  font-weight: 600;
+  border-color: rgba(31, 99, 211, 0.34);
+  background: linear-gradient(180deg, #eaf3ff 0%, #ddeaff 100%);
+  box-shadow: 0 3px 10px rgba(18, 72, 154, 0.12);
+}
+
+/* Add a subtle separator between tabs */
+.simple-navbar a:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: 24%;
+  height: 52%;
+  width: 1px;
+  background-color: #e1eaf5;
+  opacity: 0.8;
+}
+
+.simple-navbar a.active::after {
+  display: none;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .simple-navbar {
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  .simple-navbar a {
+    padding: 9px 12px;
+    font-size: 0.88rem;
+    min-width: max-content;
+  }
+}

@@ -66,7 +66,7 @@ const upload = multer({
 });
 
 const ensureFaculty = (req, res, next) => {
-  if (!req.user || req.user.role !== "faculty") {
+  if (!req.user || !["faculty", "hod", "academic_coordinator"].includes(req.user.role)) {
     return res.status(403).json({ success: false, message: "Access denied. Faculty only." });
   }
   next();
@@ -319,7 +319,7 @@ router.get("/file/:id", async (req, res) => {
       return res.status(404).json({ success: false, message: "File resource not found" });
     }
 
-    if (!["student", "faculty", "admin", "office"].includes(req.user.role)) {
+    if (!["student", "faculty", "admin", "office", "hod", "academic_coordinator"].includes(req.user.role)) {
       return res.status(403).json({ success: false, message: "Unauthorized access" });
     }
 

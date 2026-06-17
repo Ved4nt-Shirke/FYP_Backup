@@ -1,5 +1,19 @@
 // server.js
 
+// Global error handlers to prevent crashes from async/third-party library unhandled exceptions (e.g., whatsapp-web.js EBUSY locking errors on Windows)
+process.on("uncaughtException", (err) => {
+  console.error("⚠️ Uncaught Exception caught:", err);
+  if (err.message && (err.message.includes("EBUSY") || err.message.includes("resource busy or locked"))) {
+    console.warn("ℹ️ Ignored EBUSY lock error to prevent process crash.");
+  } else {
+    console.error("Fatal exception. Continuing process execution...");
+  }
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("⚠️ Unhandled Rejection at:", promise, "reason:", reason);
+});
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -135,6 +149,12 @@ app.get("/api/health", (req, res) => {
 
 // CIAAN Routes
 app.use("/api/cianns", require("./routes/cianns"));
+
+// Notifications Routes
+app.use("/api/notifications", require("./routes/notifications"));
+
+// Faculty Routes
+app.use("/api/faculty", require("./routes/faculty"));
 
 // Student Portal Routes
 app.use("/api/student-portal", require("./routes/studentPortal"));

@@ -1,0 +1,166 @@
+﻿.vat2-page {
+  min-height: 100vh;
+  padding: 1.2rem;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(31, 95, 191, 0.12), transparent 38%),
+    radial-gradient(circle at 92% 2%, rgba(19, 73, 150, 0.08), transparent 35%),
+    linear-gradient(180deg, #f2f7ff 0%, #eaf2ff 100%);
+}
+
+.vat2-hero {
+  border: 1px solid #d7e5f8;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #ffffff, #edf5ff);
+  box-shadow: 0 12px 26px rgba(18, 43, 82, 0.08);
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 0.9rem;
+}
+
+.vat2-hero h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #143257;
+}
+
+.vat2-hero p {
+  margin: 0.35rem 0 0;
+  color: #5d7090;
+  font-weight: 600;
+}
+
+.vat2-panel {
+  border: 1px solid #d7e5f8;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(18, 43, 82, 0.08);
+  padding: 0.95rem;
+  margin-bottom: 0.9rem;
+}
+
+.vat2-table-wrapper {
+  min-width: 0;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e6eefb;
+}
+
+.vat2-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+  margin: 0;
+}
+
+.vat2-table thead {
+  background: #edf4ff;
+}
+
+.vat2-table th {
+  padding: 0.85rem;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #355ea8;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border: 1px solid #e6eefb;
+}
+
+.vat2-table td {
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #183861;
+  border: 1px solid #e6eefb;
+}
+
+.vat2-table tbody tr:nth-child(even) td {
+  background: #fbfdff;
+}
+
+.vat2-status {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.vat2-status--present {
+  background: rgba(29, 143, 95, 0.12);
+  color: #1d8f5f;
+}
+
+.vat2-status--absent {
+  background: rgba(220, 53, 69, 0.12);
+  color: #dc3545;
+}
+
+.vat2-actions {
+  margin-top: 0.9rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.vat2-print-btn {
+  border: none;
+  border-radius: 10px;
+  min-height: 40px;
+  padding: 0 1.1rem;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #1f5fbf, #134996);
+  transition: all 0.2s ease;
+}
+
+.vat2-print-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(31, 95, 191, 0.25);
+}
+
+.vat2-state {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5d7090;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .vat2-hero h1 {
+    font-size: 1.5rem;
+  }
+
+  .vat2-panel {
+    padding: 0.7rem;
+  }
+
+  .vat2-table th,
+  .vat2-table td {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media print {
+  .vat2-page {
+    background: #fff !important;
+    padding: 0 !important;
+  }
+
+  .vat2-print-btn,
+  .vat2-actions {
+    display: none !important;
+  }
+
+  .vat2-table {
+    min-width: auto !important;
+    page-break-inside: avoid;
+  }
+}

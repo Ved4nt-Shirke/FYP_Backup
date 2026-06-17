@@ -126,53 +126,55 @@ const ExpertLectureK9 = () => {
           ) : (
             <div className="table-responsive">
               <table
-                className="table table-bordered table-sm"
-                style={{ background: "transparent", color: "#334155", border: "1px solid #cbd5e1" }}
+                className="table table-bordered table-hover align-middle mb-0"
+                style={{ width: "100%", background: "#ffffff", color: "#334155", border: "1px solid #e2e8f0" }}
               >
                 <thead>
-                  <tr style={{ background: "#f1f5f9" }}>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px" }}>Academic Year</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px" }}>Programme</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px" }}>Division / Class</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px", textAlign: "center" }}>Entries</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px" }}>Last Updated</th>
-                    <th style={{ color: "#0f172a", border: "1px solid #cbd5e1", padding: "12px", textAlign: "center", width: "240px" }}>Actions</th>
+                  <tr style={{ background: "#f8fafc" }}>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", width: "140px" }}>Academic Year</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap" }}>Programme</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", width: "140px" }}>Division / Class</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", textAlign: "center", whiteSpace: "nowrap", width: "100px" }}>Entries</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", width: "180px" }}>Last Updated</th>
+                    <th style={{ color: "#0f172a", border: "1px solid #e2e8f0", padding: "14px 16px", textAlign: "center", whiteSpace: "nowrap", width: "270px" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {records.map((rec) => (
                     <tr key={rec._id}>
-                      <td style={{ border: "1px solid #cbd5e1", padding: "12px" }}>{rec.academicYear}</td>
-                      <td style={{ border: "1px solid #cbd5e1", padding: "12px" }}>{rec.programme}</td>
-                      <td style={{ border: "1px solid #cbd5e1", padding: "12px" }}>{rec.division}</td>
-                      <td style={{ border: "1px solid #cbd5e1", padding: "12px", textAlign: "center" }}>
+                      <td style={{ border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap" }}>{rec.academicYear}</td>
+                      <td style={{ border: "1px solid #e2e8f0", padding: "14px 16px" }}>{rec.programme}</td>
+                      <td style={{ border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap" }}>{rec.division}</td>
+                      <td style={{ border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", textAlign: "center", fontWeight: "600" }}>
                         {Array.isArray(rec.entries) ? rec.entries.length : 0}
                       </td>
-                      <td style={{ border: "1px solid #cbd5e1", padding: "12px" }}>
+                      <td style={{ border: "1px solid #e2e8f0", padding: "14px 16px", whiteSpace: "nowrap", color: "#64748b" }}>
                         {new Date(rec.updatedAt).toLocaleDateString()} {new Date(rec.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </td>
-                      <td style={{ border: "1px solid #cbd5e1", padding: "8px", textAlign: "center" }}>
-                        <button
-                          className="btn btn-sm me-2"
-                          onClick={() => navigate(`/msbte/expert-lecture/k9/generate?id=${rec._id}`)}
-                          style={{ background: "#0ea5e9", color: "#fff", padding: "6px 10px" }}
-                        >
-                          <i className="bi bi-eye"></i> Preview
-                        </button>
-                        <button
-                          className="btn btn-sm me-2"
-                          onClick={() => navigate(`/msbte/expert-lecture/k9/edit?id=${rec._id}`)}
-                          style={{ background: "#f59e0b", color: "#fff", padding: "6px 10px" }}
-                        >
-                          <i className="bi bi-pencil"></i> Edit
-                        </button>
-                        <button
-                          className="btn btn-sm"
-                          onClick={() => handleDelete(rec._id)}
-                          style={{ background: "#ef4444", color: "#fff", padding: "6px 10px" }}
-                        >
-                          <i className="bi bi-trash"></i> Delete
-                        </button>
+                      <td style={{ border: "1px solid #e2e8f0", padding: "8px 12px", textAlign: "center" }}>
+                        <div className="d-flex justify-content-center align-items-center gap-2" style={{ flexWrap: "nowrap" }}>
+                          <button
+                            className="btn btn-sm"
+                            onClick={() => navigate(`/msbte/expert-lecture/k9/generate?id=${rec._id}`)}
+                            style={{ background: "#0ea5e9", color: "#fff", padding: "5px 10px", borderRadius: "6px", border: "none", display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.85rem", fontWeight: "500" }}
+                          >
+                            <i className="bi bi-eye"></i> Preview
+                          </button>
+                          <button
+                            className="btn btn-sm"
+                            onClick={() => navigate(`/msbte/expert-lecture/k9/edit?id=${rec._id}`)}
+                            style={{ background: "#f59e0b", color: "#fff", padding: "5px 10px", borderRadius: "6px", border: "none", display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.85rem", fontWeight: "500" }}
+                          >
+                            <i className="bi bi-pencil"></i> Edit
+                          </button>
+                          <button
+                            className="btn btn-sm"
+                            onClick={() => handleDelete(rec._id)}
+                            style={{ background: "#ef4444", color: "#fff", padding: "5px 10px", borderRadius: "6px", border: "none", display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.85rem", fontWeight: "500" }}
+                          >
+                            <i className="bi bi-trash"></i> Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

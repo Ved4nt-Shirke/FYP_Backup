@@ -1,0 +1,80 @@
+.activity-card {
+  border: 1px solid #d7e3f3;
+  border-radius: 16px;
+  padding: 22px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  height: 100%;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 22px rgba(15, 40, 84, 0.08);
+}
+
+.activity-card:hover {
+  border-color: #9ec6fb;
+  box-shadow: 0 14px 24px rgba(36, 89, 176, 0.14);
+  transform: translateY(-4px);
+}
+
+.activity-card.selected {
+  border-color: #3b78d4;
+  background: linear-gradient(180deg, #f2f8ff 0%, #eaf5ff 100%);
+  box-shadow: 0 14px 26px rgba(24, 80, 164, 0.2);
+}
+
+.activity-card-inner {
+  width: 100%;
+  position: relative;
+}
+
+.activity-card-badge {
+  position: absolute;
+  right: 0;
+  top: -10px;
+  border: 1px solid #cfe0f5;
+  background: #f6faff;
+  color: #35557e;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.activity-card.selected .activity-card-badge {
+  border-color: #7cb4ff;
+  background: #e6f2ff;
+  color: #154e99;
+}
+
+.activity-card-icon {
+  font-size: 2.5rem;
+  color: #2a6fd6;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.activity-card.selected .activity-card-icon {
+  color: #185dc6;
+  transform: scale(1.1);
+}
+
+.activity-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #193457;
+  margin-bottom: 8px;
+}
+
+.activity-card-label {
+  font-size: 0.9rem;
+  color: #5f7698;
+  margin: 0;
+}
+
+.activity-card.selected .activity-card-label {
+  color: #2f5788;
+}

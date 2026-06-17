@@ -17,7 +17,7 @@ const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g,
 const sameObjectId = (left, right) => String(left || "") === String(right || "");
 
 const isFacultyOrAdmin = (req, res, next) => {
-  if (!["faculty", "admin", "superadmin"].includes(req.user?.role)) {
+  if (!["faculty", "admin", "superadmin", "hod", "academic_coordinator"].includes(req.user?.role)) {
     return res.status(403).json({ success: false, message: "Access denied" });
   }
   return next();
@@ -256,7 +256,7 @@ router.post("/", isFacultyOrAdmin, async (req, res) => {
 router.get("/", isFacultyOrAdmin, async (req, res) => {
   try {
     const { courseId, divisionId, subjectId, status } = req.query;
-    const query = req.user.role === "faculty" ? { createdBy: req.user._id } : {};
+    const query = ["faculty", "hod", "academic_coordinator"].includes(req.user.role) ? { createdBy: req.user._id } : {};
 
     if (courseId && isValidObjectId(courseId)) query.courseId = courseId;
     if (divisionId && isValidObjectId(divisionId)) query.divisionId = divisionId;
@@ -481,7 +481,7 @@ router.delete("/:id", isFacultyOrAdmin, async (req, res) => {
 router.get("/results/summary", isFacultyOrAdmin, async (req, res) => {
   try {
     const { courseId, divisionId, subjectId, examId } = req.query;
-    const examQuery = req.user.role === "faculty" ? { createdBy: req.user._id } : {};
+    const examQuery = ["faculty", "hod", "academic_coordinator"].includes(req.user.role) ? { createdBy: req.user._id } : {};
 
     if (examId && isValidObjectId(examId)) examQuery._id = examId;
     if (courseId && isValidObjectId(courseId)) examQuery.courseId = courseId;

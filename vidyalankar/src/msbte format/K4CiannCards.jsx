@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../basic/Header";
 import { config } from "../config/api";
-import "../components/EditCiann.css";
+import "../faculty/components/EditCiann.css";
 import "./k4.css";
 
 const K4CiannCards = ({ mode, title }) => {

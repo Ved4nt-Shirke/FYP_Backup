@@ -25,7 +25,7 @@ const CiannSchema = new mongoose.Schema(
     ownerUsername: { type: String, required: true, trim: true },
     ownerRole: {
       type: String,
-      enum: ["faculty", "admin", "superadmin", "office"],
+      enum: ["faculty", "admin", "superadmin", "office", "hod", "academic_coordinator"],
       required: true,
     },
     faculty: { type: mongoose.Schema.Types.ObjectId, ref: "Faculty" },
@@ -82,6 +82,27 @@ const CiannSchema = new mongoose.Schema(
         respondedBy: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
+        },
+      },
+    ],
+    comments: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        username: {
+          type: String,
+          required: true,
+        },
+        comment: {
+          type: String,
+          required: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
         },
       },
     ],

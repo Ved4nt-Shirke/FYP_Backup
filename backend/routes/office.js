@@ -12,6 +12,15 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { authenticate, authorizeOffice } = require("../middleware/auth");
 
+const generateSafePassword = () => {
+  const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let password = "";
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
 const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const institutionFilter = (institutionCode = "") => ({
@@ -65,11 +74,12 @@ router.get(
   authorizeOffice,
   async (req, res) => {
     try {
-      const totalStudents = await Student.countDocuments();
+      const totalStudents = await Student.countDocuments({ institution: req.user.college });
       const totalDivisions = await Student.distinct("division", {
+        institution: req.user.college,
         division: { $ne: "", $exists: true },
       }).then((divs) => divs.filter((d) => d).length);
-      const totalBatches = await Student.distinct("batch");
+      const totalBatches = await Student.distinct("batch", { institution: req.user.college });
 
       res.json({
         success: true,
@@ -102,7 +112,7 @@ router.get("/students", authenticate, authorizeOffice, async (req, res) => {
     const normalizedDivisionId = (divisionId || "").toString().trim();
     const normalizedAcademicYear = (academicYear || "").toString().trim();
 
-    const baseQuery = {};
+    const baseQuery = { institution: req.user.college };
 
     if (normalizedDivision) {
       baseQuery.division = {
@@ -170,7 +180,7 @@ router.get("/students", authenticate, authorizeOffice, async (req, res) => {
 router.delete("/students", authenticate, authorizeOffice, async (req, res) => {
   try {
     const { departmentId, courseId, divisionId, batch, academicYear } = req.body || {};
-    const query = {};
+    const query = { institution: req.user.college };
 
     if (departmentId) query.departmentId = departmentId;
     if (courseId) query.courseId = courseId;
@@ -213,6 +223,7 @@ router.delete("/students", authenticate, authorizeOffice, async (req, res) => {
 router.get("/divisions", authenticate, authorizeOffice, async (req, res) => {
   try {
     const divisions = await Student.distinct("division", {
+      institution: req.user.college,
       division: { $ne: "", $exists: true },
     });
     res.json({
@@ -232,7 +243,7 @@ router.get("/divisions", authenticate, authorizeOffice, async (req, res) => {
  */
 router.get("/batches", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const batches = await Student.distinct("batch");
+    const batches = await Student.distinct("batch", { institution: req.user.college });
     res.json({
       success: true,
       batches: batches.filter((b) => b),
@@ -385,7 +396,7 @@ router.post(
   authorizeOffice,
   async (req, res) => {
     try {
-      const student = await Student.findById(req.params.studentId);
+      const student = await Student.findOne({ _id: req.params.studentId, institution: req.user.college });
 
       if (!student) {
         return res
@@ -394,7 +405,7 @@ router.post(
       }
 
       // Generate new password
-      const newPassword = Math.random().toString(36).slice(-8);
+      const newPassword = generateSafePassword();
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 
       // Update student record
@@ -451,7 +462,7 @@ router.post(
 
       const bulkOps = Object.entries(seatNumbers).map(([studentId, seatNo]) => ({
         updateOne: {
-          filter: { _id: studentId },
+          filter: { _id: studentId, institution: req.user.college },
           update: { $set: { seatNo: (seatNo || "").toString().trim() } },
         },
       }));
@@ -475,7 +486,7 @@ router.post(
  */
 router.get("/student/:id", authenticate, authorizeOffice, async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const student = await Student.findOne({ _id: req.params.id, institution: req.user.college });
 
     if (!student) {
       return res
@@ -566,11 +577,11 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
       : [];
 
     // Verify that the department, course, and division exist and are properly related
-    const department = await Department.findById(departmentId);
+    const department = await Department.findOne({ _id: departmentId, institution: req.user.college });
     if (!department) {
       return res.status(404).json({
         success: false,
-        message: "Department not found",
+        message: "Department not found in your institution",
       });
     }
 
@@ -582,11 +593,11 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
       });
     }
 
-    const division = await Division.findById(divisionId);
+    const division = await Division.findOne({ _id: divisionId, institution: req.user.college });
     if (!division || division.courseId.toString() !== courseId) {
       return res.status(400).json({
         success: false,
-        message: "Invalid division for the selected course",
+        message: "Invalid division for the selected course in your institution",
       });
     }
 
@@ -618,6 +629,7 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
         // Check if student already exists in this class (same department, course, and division)
         // (allows same student info in different classes)
         const existingStudent = await Student.findOne({
+          institution: req.user.college,
           departmentId,
           courseId,
           divisionId,
@@ -650,6 +662,7 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
           }
 
           const existingCredentialStudent = await Student.findOne({
+            institution: req.user.college,
             username,
             plainPassword: { $exists: true, $ne: "" },
           }).sort({ updatedAt: -1, createdAt: -1 });
@@ -657,14 +670,14 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
           if (existingCredentialStudent?.plainPassword) {
             plainPassword = existingCredentialStudent.plainPassword;
           } else {
-            plainPassword = Math.random().toString(36).slice(-8);
+            plainPassword = generateSafePassword();
             hashedPassword = await bcrypt.hash(plainPassword, 10);
             existingUser.password = hashedPassword;
             existingUser.college = req.user.college;
             await existingUser.save();
           }
         } else {
-          plainPassword = Math.random().toString(36).slice(-8);
+          plainPassword = generateSafePassword();
           hashedPassword = await bcrypt.hash(plainPassword, 10);
         }
 
@@ -679,6 +692,7 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
           departmentId,
           courseId,
           divisionId,
+          institution: req.user.college,
           username,
           plainPassword,
           passwordGeneratedAt: new Date(),
@@ -750,7 +764,7 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
       });
     }
 
-    const currentStudent = await Student.findById(req.params.id);
+    const currentStudent = await Student.findOne({ _id: req.params.id, institution: req.user.college });
     if (!currentStudent) {
       return res.status(404).json({ success: false, message: "Student not found" });
     }
@@ -761,6 +775,7 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
 
     const duplicate = await Student.findOne({
       _id: { $ne: req.params.id },
+      institution: req.user.college,
       departmentId: deptId,
       courseId: crsId,
       divisionId: divId,
@@ -787,9 +802,9 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
 
     // If new department/course/division IDs are provided, validate and update them
     if (departmentId && courseId && divisionId) {
-      const department = await Department.findById(departmentId);
+      const department = await Department.findOne({ _id: departmentId, institution: req.user.college });
       const course = await Course.findById(courseId);
-      const division = await Division.findById(divisionId);
+      const division = await Division.findOne({ _id: divisionId, institution: req.user.college });
 
       if (!department || !course || !division) {
         return res.status(404).json({
@@ -848,7 +863,7 @@ router.delete(
   authorizeOffice,
   async (req, res) => {
     try {
-      const student = await Student.findById(req.params.id);
+      const student = await Student.findOne({ _id: req.params.id, institution: req.user.college });
 
       if (!student) {
         return res
@@ -861,7 +876,7 @@ router.delete(
         await User.findOneAndDelete({ username: student.username });
       }
 
-      await Student.findByIdAndDelete(req.params.id);
+      await Student.deleteOne({ _id: req.params.id, institution: req.user.college });
 
       res.json({
         success: true,

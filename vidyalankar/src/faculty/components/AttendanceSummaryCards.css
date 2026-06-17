@@ -1,0 +1,109 @@
+﻿.attendance-summary-page {
+  padding: 1.1rem;
+  min-height: calc(100vh - 64px);
+  background:
+    radial-gradient(circle at 8% 8%, rgba(31, 95, 191, 0.12), transparent 38%),
+    radial-gradient(circle at 92% 2%, rgba(19, 73, 150, 0.08), transparent 35%),
+    linear-gradient(180deg, #f2f7ff 0%, #eaf2ff 100%);
+}
+
+.attendance-summary-header {
+  border: 1px solid #d7e5f8;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #ffffff, #edf5ff);
+  box-shadow: 0 12px 26px rgba(18, 43, 82, 0.08);
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.attendance-summary-header h2 {
+  margin: 0;
+  color: #143257;
+  font-size: 1.9rem;
+  font-weight: 800;
+}
+
+.attendance-summary-header p {
+  margin: 0.35rem 0 0;
+  color: #5d7090;
+  font-weight: 600;
+}
+
+.attendance-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.9rem;
+}
+
+.attendance-summary-card {
+  border: 1px solid #d7e5f8;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(18, 43, 82, 0.08);
+  padding: 0.95rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.attendance-summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 26px rgba(18, 43, 82, 0.12);
+}
+
+.attendance-summary-card__icon {
+  color: #1f5fbf;
+  font-size: 1.35rem;
+}
+
+.attendance-summary-card__body h3 {
+  margin: 0.2rem 0;
+  color: #143257;
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.attendance-summary-card__body p {
+  margin: 0;
+  color: #5d7090;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.attendance-summary-card__cta {
+  margin-top: 0.55rem;
+  color: #1f5fbf;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.attendance-summary-loading,
+.attendance-summary-empty {
+  grid-column: 1 / -1;
+  border: 1px solid #d7e5f8;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #5d7090;
+  font-weight: 700;
+  padding: 1rem;
+  text-align: center;
+}
+
+.attendance-summary-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid #d7e5f8;
+  border-top-color: #1f5fbf;
+  margin: 0 auto 10px;
+  animation: attendance-summary-spin 0.9s linear infinite;
+}
+
+@keyframes attendance-summary-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

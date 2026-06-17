@@ -77,7 +77,7 @@ const findStudentFromRequest = async (user) => {
 };
 
 const ensureFaculty = (req, res, next) => {
-  if (!req.user || req.user.role !== "faculty") {
+  if (!req.user || !["faculty", "hod", "academic_coordinator"].includes(req.user.role)) {
     return res.status(403).json({ success: false, message: "Access denied. Faculty only." });
   }
   next();
@@ -326,7 +326,7 @@ router.get("/file/:id", async (req, res) => {
       if (!sameDivisionById && !sameDivisionByName) {
         return res.status(403).json({ success: false, message: "Unauthorized access to timetable" });
       }
-    } else if (req.user.role !== "faculty" && req.user.role !== "admin" && req.user.role !== "office") {
+    } else if (!["faculty", "hod", "academic_coordinator", "admin", "office"].includes(req.user.role)) {
       return res.status(403).json({ success: false, message: "Unauthorized role" });
     }
 

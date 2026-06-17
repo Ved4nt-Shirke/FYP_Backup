@@ -67,6 +67,11 @@ const FacultySchema = new mongoose.Schema({
     enum: ["active", "inactive"],
     default: "active",
   },
+  role: {
+    type: String,
+    enum: ["faculty", "hod", "academic_coordinator"],
+    default: "faculty",
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

@@ -30,6 +30,20 @@ const AdminDashboard = () => {
       available: true,
     },
     {
+      label: "Create HOD",
+      icon: "bi-person-plus-fill",
+      path: "/admin-create-hod",
+      description: "Create new Head of Department accounts",
+      available: true,
+    },
+    {
+      label: "Create Academic Coordinator",
+      icon: "bi-person-plus-fill",
+      path: "/admin-create-academic-coordinator",
+      description: "Create new Academic Coordinator accounts",
+      available: true,
+    },
+    {
       label: "Create Office Staff",
       icon: "bi-person-badge",
       path: "/admin-create-office-staff",
@@ -41,6 +55,20 @@ const AdminDashboard = () => {
       icon: "bi-people",
       path: "/admin-faculty",
       description: "View, edit, or manage faculty profiles and information",
+      available: true,
+    },
+    {
+      label: "Manage HODs",
+      icon: "bi-people-fill",
+      path: "/admin-hod",
+      description: "View, edit, or manage Head of Department profiles",
+      available: true,
+    },
+    {
+      label: "Manage Academic Coordinators",
+      icon: "bi-people-fill",
+      path: "/admin-academic-coordinator",
+      description: "View, edit, or manage Academic Coordinator profiles",
       available: true,
     },
     {

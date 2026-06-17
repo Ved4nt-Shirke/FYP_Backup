@@ -5,11 +5,16 @@ const Student = require("./models/Student");
 const Course = require("./models/Course");
 const Subject = require("./models/Subject");
 const Ciann = require("./models/Ciann");
+const Faculty = require("./models/Faculty");
 
 mongoose
   .connect(process.env.MONGO_URI || "mongodb://localhost:27017/vidyalankarDB")
   .then(async () => {
     console.log("Connected to MongoDB");
+
+    const faculty = await Faculty.find({});
+    console.log("FACULTY IN DATABASE:");
+    console.log(faculty);
 
     const academicYear = "2025-26";
     const semester = "5";

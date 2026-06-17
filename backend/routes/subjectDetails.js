@@ -16,7 +16,6 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-
 // ==================== BOOK RESOURCES ====================
 
 // Get all book resources for a CIANN
@@ -293,6 +292,44 @@ router.put("/knowledge-map/:id", async (req, res) => {
     res.json(updatedMap);
   } catch (error) {
     console.error("Error updating knowledge map:", error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// ==================== CIANN SUBJECT DETAILS ====================
+
+// Get all details for a CIANN
+router.get("/ciann/:ciannId", async (req, res) => {
+  try {
+    const { ciannId } = req.params;
+    let details = await CiannSubjectDetails.findOne({ ciannId: parseInt(ciannId) });
+    if (!details) {
+      details = new CiannSubjectDetails({ ciannId: parseInt(ciannId) });
+      await details.save();
+    }
+    res.json(details);
+  } catch (error) {
+    console.error("Error fetching CiannSubjectDetails:", error);
+    res.status(500).json({ error: "Failed to fetch CIANN Subject Details" });
+  }
+});
+
+// Update specific fields of CIANN subject details
+router.post("/ciann/:ciannId", async (req, res) => {
+  try {
+    const { ciannId } = req.params;
+    const updateData = req.body;
+    
+    // Find and update or insert if not exists
+    const updatedDetails = await CiannSubjectDetails.findOneAndUpdate(
+      { ciannId: parseInt(ciannId) },
+      { $set: updateData },
+      { new: true, upsert: true, runValidators: true }
+    );
+    
+    res.json(updatedDetails);
+  } catch (error) {
+    console.error("Error updating CiannSubjectDetails:", error);
     res.status(400).json({ error: error.message });
   }
 });

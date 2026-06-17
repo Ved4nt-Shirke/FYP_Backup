@@ -38,6 +38,16 @@ const AuditLog = require("../models/AuditLog");
 const { authenticate, authorizeSuperAdmin } = require("../middleware/auth");
 const enhancedSecurity = require("../middleware/enhancedSecurity");
 
+const generateSafePassword = (length = 8) => {
+  const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
+
 const isDummyInstitutionRecord = (institution) => {
   const matcher = /dummy|test|demo|sample/i;
   return (
@@ -213,7 +223,7 @@ router.post("/create-institution", institutionLogoUpload.single("logo"), async (
     } else {
       // Generate credentials
       finalAdminUsername = `${code.toLowerCase()}.admin`;
-      finalAdminPassword = Math.random().toString(36).slice(-10);
+      finalAdminPassword = generateSafePassword(10);
       hashedPassword = await bcrypt.hash(finalAdminPassword, 10);
     }
 

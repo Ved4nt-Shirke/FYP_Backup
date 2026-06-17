@@ -11,7 +11,8 @@
 
   display: flex;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--student-primary-light) 38%, #ffffff 62%) 0%,
@@ -191,9 +192,10 @@
 .student-main-content {
   flex: 1;
   margin-left: 270px;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .student-header {

@@ -36,7 +36,8 @@ const Sidebar = ({
   const navigate = useNavigate();
   const location = useLocation();
   const userRole = localStorage.getItem("role") || "faculty";
-  const isFaculty = userRole === "faculty";
+  const isFaculty = userRole === "faculty" || userRole === "hod" || userRole === "academic_coordinator";
+  const isHodOrCoordinator = userRole === "hod" || userRole === "academic_coordinator";
 
   useEffect(() => {
     const checkMobile = () => {
@@ -216,6 +217,12 @@ const Sidebar = ({
       navigateAndClose("/msbte/expert-lecture/k9/print");
     } else if (option === "Attendance Report") {
       navigateAndClose("/msbte/attendance");
+    } else if (option === "Industrial Visit K8") {
+      navigateAndClose("/msbte/industrial-visit/k8");
+    } else if (option === "Expert Lecture K9") {
+      navigateAndClose("/msbte/expert-lecture/k9");
+    } else if (option === "Term Analysis K7") {
+      navigateAndClose("/msbte/term-analysis");
     }
   };
 
@@ -831,6 +838,20 @@ const Sidebar = ({
                     <i className="bi bi-file-earmark"></i> FA-TH-K5
                   </a>
                 </li>
+                {!isHodOrCoordinator && (
+                  <li>
+                    <a
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleMSBTESelect("Term Analysis K7");
+                      }}
+                    >
+                      <i className="bi bi-bar-chart-line-fill"></i> Term Analysis K7
+                    </a>
+                  </li>
+                )}
                 <li>
                   <a
                     className="dropdown-item d-flex align-items-center justify-content-between gap-2"
@@ -1054,6 +1075,17 @@ const Sidebar = ({
               </ul>
             </div>
           </li>
+          {isHodOrCoordinator && (
+            <li
+              className={`sidebar-item sidebar-link-item ${
+                isRouteActive(["/msbte/term-analysis"]) ? "active" : ""
+              }`}
+              onClick={() => navigateAndClose("/msbte/term-analysis")}
+            >
+              <i className="bi bi-bar-chart-line-fill"></i>
+              <span>Term Analysis K7</span>
+            </li>
+          )}
 
           {/* Practical Exams Dropdown */}
           <li className="sidebar-item">

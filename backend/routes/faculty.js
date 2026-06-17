@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { authenticate } = require("../middleware/auth");
 const Notice = require("../models/Notice");
+const Faculty = require("../models/Faculty");
 
 // Middleware to authenticate all notice routes
 router.use(authenticate);
@@ -139,6 +140,46 @@ router.delete("/notices/:id", async (req, res) => {
       message: "Error deleting notice",
       error: error.message,
     });
+  }
+});
+
+// Get directory of active faculty members in same institution
+router.get("/directory", async (req, res) => {
+  try {
+    const college = (req.user.college || "").trim();
+    const { search, department } = req.query;
+
+    let query = { 
+      institution: { $regex: new RegExp("^" + college + "$", "i") }, 
+      status: "active" 
+    };
+
+    if (department) {
+      query.department = department;
+    }
+
+    if (search) {
+      query.$or = [
+        { fullName: { $regex: search, $options: "i" } },
+        { employeeId: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { generatedUsername: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    // Don't show current user in search results to avoid sharing with self
+    query.generatedUsername = { $ne: req.user.username };
+
+    const facultyList = await Faculty.find(query)
+      .populate("department", "name code")
+      .select("fullName email employeeId generatedUsername department")
+      .sort({ fullName: 1 })
+      .limit(50);
+
+    res.json({ success: true, faculty: facultyList });
+  } catch (error) {
+    console.error("Error fetching faculty directory:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
