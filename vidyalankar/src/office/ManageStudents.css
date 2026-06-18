@@ -7,8 +7,8 @@
   width: 100%;
   box-sizing: border-box;
   background:
-    radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%),
-    linear-gradient(180deg, #F8FAFC 0%, #FDFDFF 100%);
+    radial-gradient(circle at top right, var(--office-primary-light), transparent 40%),
+    linear-gradient(180deg, var(--office-bg) 0%, var(--office-surface) 100%);
   min-height: calc(100vh - 72px);
   margin-top: 72px;
   animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -54,7 +54,7 @@
   font-size: 14px;
   font-weight: 750;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
   transition: var(--office-transition);
   display: inline-flex;
   align-items: center;
@@ -63,7 +63,7 @@
 
 .btn-add-student:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 6px 18px rgba(30, 58, 138, 0.25);
   background: var(--office-gradient-primary-hover);
 }
 
@@ -88,7 +88,7 @@
 
 .manage-controls:hover {
   box-shadow: var(--office-shadow-lg);
-  border-color: rgba(99, 102, 241, 0.15);
+  border-color: rgba(30, 58, 138, 0.15);
 }
 
 .controls-header {
@@ -171,9 +171,9 @@
 .filter-group select:focus,
 .filter-group input:focus {
   outline: none;
-  border-color: var(--office-primary);
+  border-color: var(--office-accent);
   background: var(--office-surface);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
 .filter-group select:disabled {
@@ -200,12 +200,12 @@
   font-weight: 750;
   cursor: pointer;
   transition: var(--office-transition);
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 4px 10px rgba(30, 58, 138, 0.15);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.25);
 }
 
 .btn-primary:disabled {
@@ -323,7 +323,7 @@
 }
 
 .manage-table tbody tr:hover td {
-  background: rgba(99, 102, 241, 0.015);
+  background: rgba(37, 99, 235, 0.015);
 }
 
 .manage-table tbody tr:last-child td {
@@ -356,7 +356,7 @@
 
 .btn-regenerate {
   background: var(--office-primary-light);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(37, 99, 235, 0.2);
   color: var(--office-primary);
   width: 26px;
   height: 26px;
@@ -391,9 +391,9 @@
 
 .table-seat-input:focus {
   outline: none;
-  border-color: var(--office-primary);
+  border-color: var(--office-accent);
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
 /* Action Trigger Buttons */
@@ -417,7 +417,7 @@
 
 .btn-edit {
   background: var(--office-primary-light);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(37, 99, 235, 0.2);
   color: var(--office-primary);
 }
 
@@ -579,9 +579,9 @@
 .edit-student-modal .form-row-col input:focus,
 .edit-student-modal .form-row-col select:focus {
   outline: none;
-  border-color: var(--office-primary);
+  border-color: var(--office-accent);
   background: var(--office-surface);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
 .modal-buttons {
@@ -662,12 +662,12 @@
   border: none;
   color: white;
   font-weight: 750;
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 4px 10px rgba(30, 58, 138, 0.15);
 }
 
 .modal-btn-primary:hover {
   background: var(--office-gradient-primary-hover);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.25);
 }
 
 /* Responsive Adjustments */

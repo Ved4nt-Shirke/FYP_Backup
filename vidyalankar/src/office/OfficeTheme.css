@@ -6,31 +6,32 @@
   --office-font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
   
   /* Primary Theme Colors */
-  --office-primary: #6366f1; /* Indigo */
-  --office-primary-dark: #4f46e5;
-  --office-primary-light: rgba(99, 102, 241, 0.08);
-  --office-accent: #c084fc; /* Purple */
-  --office-accent-light: rgba(192, 132, 252, 0.1);
+  --office-primary: #1e3a8a; /* Deep Navy */
+  --office-primary-dark: #172554;
+  --office-primary-light: rgba(30, 58, 138, 0.06);
+  --office-accent: #2563eb; /* Royal Blue */
+  --office-accent-light: rgba(37, 99, 235, 0.08);
   
   /* Advanced Gradients */
-  --office-gradient-primary: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #3b82f6 100%);
-  --office-gradient-primary-hover: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
-  --office-gradient-accent: linear-gradient(135deg, #c084fc 0%, #818cf8 100%);
-  --office-gradient-card: linear-gradient(180deg, #ffffff 0%, #fcfdfe 100%);
+  --office-gradient-primary: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  --office-gradient-primary-hover: linear-gradient(135deg, #172554 0%, #1d4ed8 100%);
+  --office-gradient-accent: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+  --office-gradient-card: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   --office-gradient-alert-error: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
-  --office-gradient-alert-success: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-  --office-gradient-glow: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 80%);
+  --office-gradient-alert-success: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  --office-gradient-glow: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.12) 0%, transparent 80%);
 
   /* Background & Surface */
   --office-bg: #f8fafc;
   --office-bg-main: #f1f5f9;
   --office-surface: #ffffff;
-  --office-border: #e2e8f0;
+  --office-border: #cbd5e1;
   
   /* Text Colors */
   --office-text: #0f172a;
+  --office-text-primary: #0f172a; /* Explicitly mapped for backup */
   --office-text-secondary: #475569;
-  --office-muted: #94a3b8;
+  --office-muted: #64748b;
   
   /* Status Colors */
   --office-success: #10b981;
@@ -45,25 +46,25 @@
   --office-info-light: #dbeafe;
   
   /* Shadows */
-  --office-shadow-sm: 0 2px 8px rgba(99, 102, 241, 0.03);
-  --office-shadow-md: 0 8px 20px -6px rgba(99, 102, 241, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
-  --office-shadow-lg: 0 20px 32px -12px rgba(99, 102, 241, 0.12), 0 1px 3px rgba(0, 0, 0, 0.02);
-  --office-shadow-xl: 0 25px 50px -12px rgba(99, 102, 241, 0.2);
-  --office-shadow-glow: 0 0 25px rgba(99, 102, 241, 0.3);
+  --office-shadow-sm: 0 2px 8px rgba(30, 58, 138, 0.03);
+  --office-shadow-md: 0 8px 20px -6px rgba(30, 58, 138, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --office-shadow-lg: 0 20px 32px -12px rgba(30, 58, 138, 0.12), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --office-shadow-xl: 0 25px 50px -12px rgba(30, 58, 138, 0.2);
+  --office-shadow-glow: 0 0 25px rgba(37, 99, 235, 0.25);
   
   /* Borders & Radius */
   --office-radius-sm: 8px;
-  --office-radius-md: 14px;
-  --office-radius-lg: 20px;
-  --office-radius-xl: 32px;
+  --office-radius-md: 12px;
+  --office-radius-lg: 16px;
+  --office-radius-xl: 24px;
   
   /* Glassmorphism */
-  --office-glass-bg: rgba(255, 255, 255, 0.7);
-  --office-glass-border: rgba(226, 232, 240, 0.6);
-  --office-glass-blur: blur(16px);
+  --office-glass-bg: rgba(255, 255, 255, 0.85);
+  --office-glass-border: rgba(203, 213, 225, 0.6);
+  --office-glass-blur: blur(12px);
 
   /* Transitions */
-  --office-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --office-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --office-transition-fast: all 0.15s ease-out;
 }
 
@@ -79,25 +80,26 @@ body.light-mode,
 [data-theme="light"] {
   --office-bg: #f8fafc;
   --office-surface: #ffffff;
-  --office-border: #e2e8f0;
+  --office-border: #cbd5e1;
 }
 
 /* Dark theme adjustments */
 body.dark-mode,
 [data-theme="dark"] {
-  --office-bg: #0b0f19;
+  --office-bg: #0b1329;
   --office-bg-main: #020617;
   --office-surface: #0f172a;
   --office-border: #1e293b;
   --office-text: #f8fafc;
+  --office-text-primary: #f8fafc;
   --office-text-secondary: #94a3b8;
   --office-muted: #475569;
-  --office-primary-light: rgba(99, 102, 241, 0.15);
-  --office-glass-bg: rgba(15, 23, 42, 0.75);
-  --office-glass-border: rgba(30, 41, 59, 0.6);
-  --office-gradient-card: linear-gradient(180deg, #0f172a 0%, #0b0f19 100%);
-  --office-gradient-alert-error: linear-gradient(135deg, #180f12 0%, #2a1014 100%);
-  --office-gradient-alert-success: linear-gradient(135deg, #0c1813 0%, #0d2a1c 100%);
+  --office-primary-light: rgba(37, 99, 235, 0.15);
+  --office-glass-bg: rgba(15, 23, 42, 0.85);
+  --office-glass-border: rgba(30, 41, 59, 0.7);
+  --office-gradient-card: linear-gradient(180deg, #0f172a 0%, #0b1329 100%);
+  --office-gradient-alert-error: linear-gradient(135deg, #1c1012 0%, #2d1216 100%);
+  --office-gradient-alert-success: linear-gradient(135deg, #0d1a14 0%, #0f3020 100%);
 }
 
 /* Animations */

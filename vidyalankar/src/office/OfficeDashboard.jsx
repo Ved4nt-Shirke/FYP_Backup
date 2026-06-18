@@ -461,28 +461,28 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
             </div>
             <div className="upload-page-stats">
               <div className="mini-stat">
-                <span className="mini-stat-icon" style={{background:"#EEF2FF"}}>👥</span>
+                <span className="mini-stat-icon students">👥</span>
                 <div>
                   <p className="mini-stat-val">{students.length}</p>
                   <p className="mini-stat-label">Students</p>
                 </div>
               </div>
               <div className="mini-stat">
-                <span className="mini-stat-icon" style={{background:"#DBEAFE"}}>🏫</span>
+                <span className="mini-stat-icon departments">🏫</span>
                 <div>
                   <p className="mini-stat-val">{departments.length}</p>
                   <p className="mini-stat-label">Departments</p>
                 </div>
               </div>
               <div className="mini-stat">
-                <span className="mini-stat-icon" style={{background:"#DCFCE7"}}>📋</span>
+                <span className="mini-stat-icon divisions">📋</span>
                 <div>
                   <p className="mini-stat-val">{divisions.length || "—"}</p>
                   <p className="mini-stat-label">Divisions</p>
                 </div>
               </div>
               <div className="mini-stat">
-                <span className="mini-stat-icon" style={{background:"#FEF3C7"}}>📁</span>
+                <span className="mini-stat-icon filerows">📁</span>
                 <div>
                   <p className="mini-stat-val">{parsedRows.length > 0 ? parsedRows.length : "—"}</p>
                   <p className="mini-stat-label">File Rows</p>
