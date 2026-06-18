@@ -190,7 +190,8 @@ router.post('/save-marks', async (req, res) => {
         if (ciann) {
           batchStudents = await resolveStudents({
             batch: batch,
-            academicYear: ciann.academicYear
+            academicYear: ciann.academicYear,
+            semester: ciann.semester
           }, ciann.college);
         }
       }

@@ -29,6 +29,7 @@ const WHATSAPP_AUTH_DATA_PATH = "./whatsapp/auth";
 const WHATSAPP_AUTH_CLIENT_ID = "attendance-bot";
 
 // ── Lazy model getters (models registered by server.js on boot) ────────────
+const { resolveStudents } = require("../utils/studentHistoryHelper");
 const getModel = (name) => mongoose.model(name);
 
 // ── In-memory session store: { "phone": SessionObject } ───────────────────
@@ -538,10 +539,10 @@ async function handleAbsentRolls(message, raw, faculty, phone, session) {
     const ciannId = selectedCiann.ciannId;
     const date = selectedPlanDetails.date;
 
-    const { resolveStudents } = require("../utils/studentHistoryHelper");
     const students = await resolveStudents({
         division: selectedCiann.division,
-        academicYear: selectedCiann.academicYear
+        academicYear: selectedCiann.academicYear,
+        semester: selectedCiann.semester
     }, selectedCiann.college || (faculty && faculty.institution));
     
     if (students.length === 0) {
@@ -794,10 +795,10 @@ async function handleDirectAttendance(message, body, faculty, phone) {
             return;
         }
 
-        const { resolveStudents } = require("../utils/studentHistoryHelper");
         const students = await resolveStudents({
             division: ciann.division,
-            academicYear: ciann.academicYear
+            academicYear: ciann.academicYear,
+            semester: ciann.semester
         }, ciann.college);
 
         if (students.length === 0) {

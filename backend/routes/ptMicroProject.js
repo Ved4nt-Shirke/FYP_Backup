@@ -433,7 +433,8 @@ router.get('/new/students/:ciannId', async (req, res) => {
     const students = await resolveStudents({
       courseId: ciann.courseId,
       division: ciann.division,
-      academicYear: ciann.academicYear
+      academicYear: ciann.academicYear,
+      semester: ciann.semester
     }, req.user.college);
 
     res.json({

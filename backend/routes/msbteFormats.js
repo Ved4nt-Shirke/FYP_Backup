@@ -811,7 +811,8 @@ router.get("/k7/populate", async (req, res) => {
     const students = await resolveStudents({
       departmentId,
       divisionId,
-      academicYear
+      academicYear,
+      semester
     }, req.user.college);
     if (students.length === 0) {
       return res.json({ success: true, courseConfigs: [], studentMarks: [], message: "No students found in this division" });

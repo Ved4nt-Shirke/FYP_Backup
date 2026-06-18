@@ -48,6 +48,9 @@ function Studentlist() {
       if (ciannData?.academicYear) {
         query.set("academicYear", ciannData.academicYear);
       }
+      if (ciannData?.semester) {
+        query.set("semester", ciannData.semester);
+      }
       const deptId = ciannData?.department?._id || ciannData?.department;
       if (deptId) {
         query.set("departmentId", deptId);

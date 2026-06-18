@@ -2565,6 +2565,15 @@ router.post("/promotions/promote", authenticate, authorizeAdmin, async (req, res
 
       // 1. Create history log for the previous semester (which is now completed)
       try {
+        let oldDivisionId = student.divisionId;
+        if (!oldDivisionId && student.division) {
+          const divDoc = await Division.findOne({ 
+            name: { $regex: new RegExp(`^${student.division.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+            institution 
+          });
+          if (divDoc) oldDivisionId = divDoc._id;
+        }
+
         await StudentAcademicHistory.findOneAndUpdate(
           {
             studentId: student._id,
@@ -2575,7 +2584,7 @@ router.post("/promotions/promote", authenticate, authorizeAdmin, async (req, res
             studentId: student._id,
             academicYear: student.academicYear || "unknown",
             semester: sourceSemester,
-            divisionId: student.divisionId,
+            divisionId: oldDivisionId,
             rollNo: student.rollNo,
             seatNo: student.seatNo || "",
             status: "completed",

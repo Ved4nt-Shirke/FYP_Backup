@@ -72,6 +72,7 @@ const K3Print = () => {
             batch,
             division: ciannData.division || undefined,
             academicYear: ciannData.academicYear || undefined,
+            semester: ciannData.semester || undefined,
           },
         });
         studentList = Array.isArray(studentsResult.data)

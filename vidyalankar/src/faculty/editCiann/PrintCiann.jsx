@@ -453,6 +453,7 @@ const PrintCiann = () => {
         if (resolvedDivName) query.set("division", resolvedDivName);
         if (resolvedDeptId) query.set("departmentId", resolvedDeptId);
         if (data?.academicYear) query.set("academicYear", data.academicYear);
+        if (data?.semester) query.set("semester", data.semester);
 
         const studentsRes = await fetch(
           `${config.students}?${query.toString()}`,
@@ -1214,7 +1215,6 @@ const PrintCiann = () => {
                     <th>Topics / Sub-topics</th>
                     <th>Entry No.</th>
                     <th>Start Date</th>
-                    <th>End Date</th>
                     <th>Teaching Methods</th>
                   </tr>
                 </thead>
@@ -1239,7 +1239,6 @@ const PrintCiann = () => {
                             </td>
                           )}
                           <td>{plan?.startDate || ""}</td>
-                          <td>{plan?.endDate || ""}</td>
                           <td>{plan?.teachingMethod || ""}</td>
                         </tr>
                       );

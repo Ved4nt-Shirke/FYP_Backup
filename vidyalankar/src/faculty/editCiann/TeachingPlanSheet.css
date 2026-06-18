@@ -6,7 +6,7 @@
   overflow-x: hidden; /* hide horizontal scroll on outer container */
   background-color: var(--card-bg, #fefefe);
   border: 1px solid var(--card-border, #ccc);
-  border-radius: 0px !important;
+  border-radius: 16px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 18px; /* Reduced padding for more compact look */
   height: auto !important;

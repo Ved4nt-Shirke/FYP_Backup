@@ -27,6 +27,9 @@ const SAPRK4Generate = () => {
         if (ciannData?.academicYear) {
           query.set("academicYear", ciannData.academicYear);
         }
+        if (ciannData?.semester) {
+          query.set("semester", ciannData.semester);
+        }
 
         const url = query.toString()
           ? `${config.students}?${query.toString()}`

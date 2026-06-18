@@ -23,6 +23,12 @@ const SATHEdit = () => {
         if (ciannData?.department?._id) {
           query.set("departmentId", ciannData.department._id);
         }
+        if (ciannData?.academicYear) {
+          query.set("academicYear", ciannData.academicYear);
+        }
+        if (ciannData?.semester) {
+          query.set("semester", ciannData.semester);
+        }
 
         const url = query.toString()
           ? `${config.students}?${query.toString()}`

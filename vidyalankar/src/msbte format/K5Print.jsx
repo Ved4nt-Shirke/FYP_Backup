@@ -73,6 +73,7 @@ const K5Print = () => {
           params: {
             division: ciannData.division || undefined,
             academicYear: ciannData.academicYear || undefined,
+            semester: ciannData.semester || undefined,
           },
         });
 
