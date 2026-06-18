@@ -21,8 +21,7 @@ const modalStyles = {
     justifyContent: "center",
   },
   content: {
-    background: "var(--ciann-surface, #ffffff)",
-    border: "1px solid var(--ciann-border, #dbe5f2)",
+    background: "white",
     borderRadius: "16px", // More rounded corners
     width: "90%",
     maxWidth: "900px", // Increased for better visibility
@@ -141,6 +140,25 @@ const TeachingPlan = () => {
     };
     fetchAttendance();
   }, [ciannId]);
+
+  // Synchronize plans with loaded attendance records
+  useEffect(() => {
+    if (plans.length > 0 && attendanceRecords.length > 0) {
+      let changed = false;
+      const updated = plans.map((p) => {
+        if (!p.subTopic) return p;
+        const att = attendanceRecords.find((a) => a.topic === p.subTopic);
+        if (att && att.date && p.endDate !== att.date) {
+          changed = true;
+          return { ...p, endDate: att.date };
+        }
+        return p;
+      });
+      if (changed) {
+        setPlans(updated);
+      }
+    }
+  }, [attendanceRecords]);
 
   // Chapter dropdown options fetched from DB
   const [chapterOptions, setChapterOptions] = useState([
@@ -297,12 +315,14 @@ const TeachingPlan = () => {
       if (found && found.plans && found.plans.length > 0) {
         setPlans(
           found.plans.map((p) => {
+            const att = attendanceRecords.find((a) => a.topic === p.subTopic);
             return {
               co: p.co || "",
               tlo: p.tlo || "",
               chapter: p.chapter || "",
               subTopic: p.subTopic || "",
               startDate: p.startDate || "",
+              endDate: att && att.date ? att.date : (p.endDate || ""),
               teachingMethod: p.teachingMethod || "",
             };
           })
@@ -315,6 +335,7 @@ const TeachingPlan = () => {
             chapter: "",
             subTopic: "",
             startDate: "",
+            endDate: "",
             teachingMethod: "",
           },
         ]);
@@ -338,12 +359,21 @@ const TeachingPlan = () => {
           chapter: "",
           subTopic: "",
           startDate: "",
+          endDate: "",
           teachingMethod: "",
         },
       ];
     }
 
     updated[index][field] = value;
+
+    if (field === "subTopic") {
+      const att = attendanceRecords.find((a) => a.topic === value);
+      if (att && att.date) {
+        updated[index].endDate = att.date;
+      }
+    }
+
     setPlans(updated);
   };
 
@@ -446,6 +476,12 @@ const TeachingPlan = () => {
           <td data-label="TLO">{p.tlo || ""}</td>
           <td data-label="Sub-Topic">{p.subTopic || ""}</td>
           <td data-label="Start Date">{p.startDate || ""}</td>
+          <td data-label="End Date">
+            {(() => {
+              const att = attendanceRecords.find((a) => a.topic === p.subTopic);
+              return att && att.date ? att.date : (p.endDate || "");
+            })()}
+          </td>
           <td data-label="Teaching Method">{p.teachingMethod || ""}</td>
         </tr>
       ));
@@ -468,6 +504,7 @@ const TeachingPlan = () => {
           <td data-label="TLO"></td>
           <td data-label="Sub-Topic"></td>
           <td data-label="Start Date"></td>
+          <td data-label="End Date"></td>
           <td data-label="Teaching Method"></td>
         </tr>
       );
@@ -532,12 +569,12 @@ const TeachingPlan = () => {
 
         <div className="weekwise-form-container">
           <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: "15px 0" }}>
-            <label style={{ fontWeight: "600", fontSize: "15px", color: "var(--ciann-text, #495057)" }}>Select Entry (Week):</label>
+            <label style={{ fontWeight: "600", fontSize: "15px", color: "#495057" }}>Select Entry (Week):</label>
             <select
               value={modalWeek}
               onChange={(e) => handleWeekChange(e.target.value)}
               className="form-input"
-              style={{ width: "160px", padding: "6px 10px", fontSize: "14px", border: "1px solid var(--ciann-border, #dde3ea)", borderRadius: "8px", background: "var(--ciann-surface, #ffffff)", color: "var(--ciann-text, #10223d)" }}
+              style={{ width: "160px", padding: "6px 10px", fontSize: "14px", border: "1px solid #dde3ea", borderRadius: "8px" }}
             >
               <option value="">Select Week</option>
               {Array.from({ length: 16 }, (_, i) => (
@@ -553,11 +590,12 @@ const TeachingPlan = () => {
               <thead>
                 <tr>
                   <th style={{ width: "8%" }}>CO</th>
-                  <th style={{ width: "18%" }}>Chapter</th>
-                  <th style={{ width: "16%" }}>TLO</th>
-                  <th style={{ width: "18%" }}>Sub-Topic</th>
-                  <th style={{ width: "20%" }}>Start Date</th>
-                  <th style={{ width: "15%" }}>Teaching Method</th>
+                  <th style={{ width: "14%" }}>Chapter</th>
+                  <th style={{ width: "12%" }}>TLO</th>
+                  <th style={{ width: "14%" }}>Sub-Topic</th>
+                  <th style={{ width: "18%" }}>Start Date</th>
+                  <th style={{ width: "18%" }}>End Date</th>
+                  <th style={{ width: "11%" }}>Teaching Method</th>
                   <th style={{ width: "5%" }}>Action</th>
                 </tr>
               </thead>
@@ -647,6 +685,17 @@ const TeachingPlan = () => {
                     </td>
                     <td>
                       <input
+                        type="date"
+                        value={plan.endDate || ""}
+                        readOnly={true}
+                        disabled={true}
+                        className="form-input"
+                        title="End Date is automatically loaded after attendance is successfully recorded"
+                        style={{ backgroundColor: "#f1f3f5", cursor: "not-allowed", border: "1px dashed #ccc" }}
+                      />
+                    </td>
+                    <td>
+                      <input
                         type="text"
                         placeholder="Teaching Method"
                         value={plan.teachingMethod || ""}
@@ -695,6 +744,7 @@ const TeachingPlan = () => {
                     chapter: "",
                     subTopic: "",
                     startDate: "",
+                    endDate: "",
                     teachingMethod: "",
                   },
                 ]);
@@ -704,13 +754,11 @@ const TeachingPlan = () => {
                 marginTop: "15px",
                 padding: "8px 16px",
                 fontSize: "14px",
-                backgroundColor: "var(--primary-color, #2e7d32)",
-                color: "var(--text-on-primary, white)",
-                borderRadius: "8px",
-                border: "1px solid var(--primary-accent, rgba(26, 87, 185, 0.26))",
-                cursor: "pointer",
-                fontWeight: "600",
-                boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
+                backgroundColor: "#2e7d32",
+                color: "white",
+                borderRadius: "6px",
+                border: "none",
+                cursor: "pointer"
               }}
             >
               + Add Row
@@ -868,6 +916,7 @@ const TeachingPlan = () => {
                         <th>TLO</th>
                         <th>Sub-Topic</th>
                         <th>Start Date</th>
+                        <th>End Date</th>
                         <th>Teaching Method</th>
                       </tr>
                     </thead>

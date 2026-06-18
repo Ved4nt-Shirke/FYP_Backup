@@ -58,7 +58,7 @@
   font-size: 14px;
   font-weight: 750;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
   transition: var(--office-transition);
   display: inline-flex;
   align-items: center;
@@ -67,7 +67,7 @@
 
 .office-btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 6px 18px rgba(30, 58, 138, 0.25);
   background: var(--office-gradient-primary-hover);
 }
 
@@ -133,9 +133,9 @@
 
 .notice-form-modal .form-input:focus {
   outline: none;
-  border-color: var(--office-primary);
+  border-color: var(--office-accent);
   background: var(--office-surface);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
 /* Custom Rich Text Editor Toolbar */
@@ -244,7 +244,7 @@
 .notice-card-page:hover {
   transform: translateY(-4px);
   box-shadow: var(--office-shadow-lg);
-  border-color: rgba(99, 102, 241, 0.2);
+  border-color: rgba(30, 58, 138, 0.15);
 }
 
 .notice-card-header {
@@ -263,7 +263,7 @@
   border-radius: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border: 1px solid rgba(99, 102, 241, 0.1);
+  border: 1px solid var(--office-border);
 }
 
 .notice-date {
