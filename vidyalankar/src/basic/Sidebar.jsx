@@ -13,6 +13,7 @@ const Sidebar = ({
   const [openMsbteSections, setOpenMsbteSections] = useState({
     k3: false,
     k4: false,
+    saTh: false,
     k8: false,
     k9: false,
     k7: false,
@@ -203,6 +204,12 @@ const Sidebar = ({
       navigateAndClose("/msbte/sa-pr-k4/cianns?mode=edit");
     } else if (option === "SA-PR-K4 Print") {
       navigateAndClose("/msbte/sa-pr-k4/cianns?mode=print");
+    } else if (option === "SA-TH Generate") {
+      navigateAndClose("/msbte/sa-th/cianns?mode=generate");
+    } else if (option === "SA-TH Edit") {
+      navigateAndClose("/msbte/sa-th/cianns?mode=edit");
+    } else if (option === "SA-TH Print") {
+      navigateAndClose("/msbte/sa-th/cianns?mode=print");
     } else if (option === "K8 Generate") {
       navigateAndClose("/msbte/industrial-visit/k8/generate");
     } else if (option === "K8 Edit") {
@@ -819,6 +826,63 @@ const Sidebar = ({
                         onClick={(e) => {
                           e.preventDefault();
                           handleMSBTESelect("SA-PR-K4 Print");
+                        }}
+                      >
+                        Print
+                      </a>
+                    </li>
+                  </>
+                )}
+                <li>
+                  <a
+                    className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleMsbteSection("saTh");
+                    }}
+                  >
+                    <span className="d-flex align-items-center gap-2">
+                      <i className="bi bi-file-earmark"></i> SA-TH
+                    </span>
+                    <i
+                      className={`bi ${openMsbteSections.saTh ? "bi-chevron-down" : "bi-chevron-left"}`}
+                    ></i>
+                  </a>
+                </li>
+                {openMsbteSections.saTh && (
+                  <>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMSBTESelect("SA-TH Generate");
+                        }}
+                      >
+                        Generate
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMSBTESelect("SA-TH Edit");
+                        }}
+                      >
+                        Edit
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMSBTESelect("SA-TH Print");
                         }}
                       >
                         Print

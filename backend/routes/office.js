@@ -576,6 +576,7 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
           departmentId,
           courseId,
           divisionId,
+          academicYear: (academicYear || "").toString().trim(),
           $or: [{ rollNo }, { enrollmentNo }],
         });
 
@@ -729,6 +730,7 @@ router.put("/student/:id", authenticate, authorizeOffice, async (req, res) => {
       departmentId: deptId,
       courseId: crsId,
       divisionId: divId,
+      academicYear: (academicYear || "").toString().trim(),
       $or: [{ rollNo }, { enrollmentNo }],
     });
 

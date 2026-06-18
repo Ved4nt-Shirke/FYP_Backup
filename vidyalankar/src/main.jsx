@@ -4,6 +4,12 @@ import axios from "axios";
 import App from "./App";
 import { config } from "./config/api";
 
+// Silence verbose console logs to prevent information leakage and console vulnerabilities
+if (import.meta.env.VITE_DEBUG !== "true") {
+  console.log = () => {};
+  console.info = () => {};
+}
+
 // Attach base URL and auth headers for axios requests
 axios.defaults.baseURL = config.apiBaseUrl;
 axios.interceptors.request.use((axiosConfig) => {

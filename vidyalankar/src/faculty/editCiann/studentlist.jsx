@@ -48,6 +48,9 @@ function Studentlist() {
       if (ciannData?.academicYear) {
         query.set("academicYear", ciannData.academicYear);
       }
+      if (ciannData?.semester) {
+        query.set("semester", ciannData.semester);
+      }
       const deptId = ciannData?.department?._id || ciannData?.department;
       if (deptId) {
         query.set("departmentId", deptId);
@@ -57,7 +60,10 @@ function Studentlist() {
         ? `${config.students}?${query.toString()}`
         : config.students;
 
-      const response = await fetch(endpoint);
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const response = await fetch(endpoint, { headers });
       if (!response.ok) throw new Error("Failed to fetch students");
       const data = await response.json();
       setStudents(data);

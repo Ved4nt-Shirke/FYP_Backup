@@ -19,13 +19,13 @@ const modalStyles = {
     background: "white",
     borderRadius: "16px",
     width: "95%",
-    maxWidth: "950px",
-    maxHeight: "90vh", // Keep modal within viewport on mobile
+    maxWidth: "1200px",
+    maxHeight: "90vh",
     animation: "fadeIn 0.3s ease-in-out",
     display: "flex",
     flexDirection: "column",
     boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4)",
-    overflow: "hidden", // Ensure modal content doesn't overflow outside its rounded corners
+    overflow: "hidden",
     padding: "0",
     marginTop: "0",
   },
@@ -56,6 +56,8 @@ const WeekwisePlan = ({
   const [experiments, setExperiments] = useState([]);
   const [loadingExperiments, setLoadingExperiments] = useState(false);
   const [coData, setCoData] = useState([]);
+  const [openLloDropdownIndex, setOpenLloDropdownIndex] = useState(null);
+  const dropdownRefs = React.useRef([]);
 
   // Fetch TloLlo details for CO and LLO dropdowns
   useEffect(() => {
@@ -143,15 +145,16 @@ const WeekwisePlan = ({
       const weekNo = parseInt(week.replace("Week ", ""));
       const filtered = existingData.filter((p) => p.weekNo === weekNo);
       if (filtered.length > 0) {
-        const updatedPlans = plans.map((plan, i) => ({
-          batch: plan.batch,
-          co: filtered[i]?.co || "",
-          llo: filtered[i]?.llo || "",
-          exptNo: filtered[i]?.exptNo || "",
-          exptName: filtered[i]?.exptName || "",
-          date: filtered[i]?.date || "",
-        }));
-        setPlans(updatedPlans);
+        setPlans(
+          filtered.map((item) => ({
+            batch: item.batch || "B1",
+            co: item.co || "",
+            llo: item.llo || "",
+            exptNo: item.exptNo || "",
+            exptName: item.exptName || "",
+            date: item.date || "",
+          }))
+        );
       } else {
         setPlans([
           { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
@@ -160,7 +163,22 @@ const WeekwisePlan = ({
         ]);
       }
     }
-  }, [week, initialWeek, existingData]); // Added plans to dependencies to prevent stale closure issues if plans were updated elsewhere.
+  }, [week, initialWeek, existingData]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openLloDropdownIndex !== null) {
+        const ref = dropdownRefs.current[openLloDropdownIndex];
+        if (ref && !ref.contains(event.target)) {
+          setOpenLloDropdownIndex(null);
+        }
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openLloDropdownIndex]);
 
   const handleChange = (index, field, value) => {
     const updatedPlans = [...plans];
@@ -209,127 +227,281 @@ const WeekwisePlan = ({
         }
 
         .modal-header-weekwise {
-          background: #fff;
-          color: #333;
-          padding: 15px 25px;
+          background: var(--ciann-surface, #ffffff);
+          color: var(--ciann-text, #10223d);
+          padding: 18px 24px;
           font-size: 20px;
-          font-weight: 600;
+          font-weight: 700;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 1px solid #eee;
-          flex-shrink: 0; /* Prevent header from shrinking */
+          border-bottom: 1px solid var(--ciann-border, #e2eaf5);
+          flex-shrink: 0;
         }
 
         .weekwise-container {
-          padding: 25px;
-          /* Calculate max-height to fit between header (60px) and footer buttons (64px) */
-          max-height: calc(90vh - 60px - 64px); 
-          overflow-y: auto; /* Vertical scroll inside modal */
-          -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
-          background-color: #fff;
-          font-family: 'Inter', sans-serif;
-          flex-grow: 1; /* Allow content to grow and fill available space */
+          padding: 24px;
+          max-height: calc(90vh - 65px - 70px); 
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          background-color: var(--ciann-surface, #ffffff);
+          flex-grow: 1;
         }
         
         .plan-table-wrapper {
-          overflow-x: auto; /* Horizontal scroll for the table */
-          -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
-          margin-top: 20px;
-          padding-bottom: 0; /* Remove bottom gap so grid lines meet border */
-          border: 1px solid #cfd4da; /* Slightly darker grey for clearer lines */
-          border-radius: 10px; /* Rounded corners */
-          background: #fff; /* Ensure solid background under sticky header */
-          overflow: hidden; /* Clip table to rounded corners */
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          margin-top: 15px;
+          border: 1px solid var(--ciann-border, #d8e3f2);
+          border-radius: 12px;
+          background: var(--ciann-surface, #ffffff);
+          box-shadow: 0 4px 16px rgba(13, 35, 72, 0.04);
         }
 
         .plan-table {
           width: 100%;
-          border-collapse: collapse; /* Ensure header/body borders meet */
-          min-width: 600px; /* Minimum width to force horizontal scroll on small screens */
-          table-layout: fixed; /* Ensures column widths are respected */
-          border: 0; /* Use wrapper for outer border */
+          border-collapse: collapse;
+          min-width: 1050px;
+          table-layout: fixed;
         }
 
         .plan-table th,
         .plan-table td {
-          border: 1px solid #e0e0e0;
+          border: 1px solid var(--ciann-border, #e2eaf5);
           padding: 10px 8px;
           text-align: center;
           vertical-align: middle;
           font-size: 13px;
-          /* word-wrap: break-word; /* Allow long words to break within cell */
-          white-space: normal; /* Allow text to wrap naturally */
+          white-space: normal;
         }
 
         .plan-table th {
-          background-color: #f0f2f5;
+          background-color: var(--primary-light, #f4f8ff);
           font-weight: 600;
-          color: #495057;
-          position: sticky; /* Make headers sticky for vertical scroll */
+          color: var(--text-color-primary, #233f64);
+          position: sticky;
           top: 0;
-          z-index: 10; /* Ensure header is above scrolling content */
+          z-index: 10;
         }
         
         /* Column widths */
-        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 14%; } /* Week No */
-        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 8%; } /* Batch No */
-        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 12%; } /* CO */
-        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 22%; } /* LLO */
-        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 14%; } /* Experiment No */
-        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 18%; } /* Experiment Name */
-        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 12%; } /* Planned Date */
+        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 12%; } /* Week No */
+        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 9%; }  /* Batch No */
+        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 13%; } /* CO */
+        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 18%; } /* LLO */
+        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 12%; } /* Experiment No */
+        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 20%; } /* Experiment Name */
+        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 11%; } /* Planned Date */
+        .plan-table th:nth-child(8), .plan-table td:nth-child(8) { width: 5%; }  /* Action */
 
         .plan-table input,
-        .plan-table select,
-        .plan-table textarea {
+        .plan-table select {
           width: 100%;
-          padding: 10px 12px;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          font-size: 14px;
+          padding: 7px 10px;
+          border: 1px solid var(--ciann-border, #dde3ea);
+          border-radius: 6px;
+          font-size: 13px;
           box-sizing: border-box;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
-          background-color: white;
+          background-color: var(--ciann-surface, #ffffff);
+          color: var(--ciann-text, #10223d);
         }
         .plan-table input:focus,
-        .plan-table select:focus,
-        .plan-table textarea:focus {
+        .plan-table select:focus {
           outline: none;
-          border-color: #81c784;
-          box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
-        }
-        
-        .plan-table textarea[readonly] {
-          background-color: #f5f5f5;
-          cursor: default;
-        }
-        
-        .plan-table select {
-          cursor: pointer;
+          border-color: var(--primary-color, #2f74e0);
+          box-shadow: 0 0 0 3px var(--primary-accent-light, rgba(47, 116, 224, 0.15));
         }
         
         .plan-table select:disabled,
-        .plan-table input:disabled,
-        .plan-table textarea:disabled {
+        .plan-table input:disabled {
           background-color: #f5f5f5;
           cursor: not-allowed;
           opacity: 0.7;
         }
 
         .week-select {
-          padding: 6px;
+          padding: 8px;
+          font-weight: 600;
+        }
+
+        .batch-select {
+          font-weight: 500;
+        }
+
+        .co-badges-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+          justify-content: center;
+        }
+        .co-badge-btn {
+          background-color: var(--primary-light, #f4f8ff);
+          color: var(--text-color-secondary, #425a7d);
+          border: 1px solid var(--card-border, #cfdef2);
+          border-radius: 6px;
+          padding: 4px 8px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          user-select: none;
+        }
+        .co-badge-btn:hover:not(:disabled) {
+          background-color: var(--primary-accent-light, #edf4ff);
+          color: var(--primary-color, #1f62cf);
+          border-color: var(--primary-color, #aac5eb);
+        }
+        .co-badge-btn.active {
+          background-color: var(--primary-color, #2f74e0) !important;
+          color: var(--text-on-primary, white) !important;
+          border-color: var(--primary-accent-dark, #1f62cf) !important;
+        }
+        .co-badge-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        .llo-dropdown-container {
+          position: relative;
+          width: 100%;
+        }
+        .llo-dropdown-trigger {
+          width: 100%;
+          padding: 7px 10px;
+          background-color: var(--ciann-surface, #ffffff);
+          border: 1px solid var(--ciann-border, #dde3ea);
+          border-radius: 6px;
+          text-align: left;
+          font-size: 13px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          cursor: pointer;
+          color: var(--ciann-text, #10223d);
+        }
+        .llo-dropdown-trigger:disabled {
+          background-color: #f5f5f5;
+          cursor: not-allowed;
+          opacity: 0.7;
+        }
+        .llo-trigger-text {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .llo-trigger-arrow {
+          font-size: 10px;
+          color: #888;
+          margin-left: 5px;
+        }
+        .llo-dropdown-menu {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background-color: white;
+          border: 1px solid var(--ciann-border, #cfdef2);
+          border-radius: 8px;
+          box-shadow: 0 4px 16px rgba(13, 35, 72, 0.12);
+          max-height: 200px;
+          overflow-y: auto;
+          z-index: 100;
+          text-align: left;
+          margin-top: 4px;
+        }
+        .llo-dropdown-item {
+          display: flex;
+          align-items: flex-start;
+          padding: 8px 12px;
+          cursor: pointer;
+          font-size: 12px;
+          transition: background-color 0.2s ease;
+          user-select: none;
+          border-bottom: 1px solid #f0f4f9;
+        }
+        .llo-dropdown-item:last-child {
+          border-bottom: none;
+        }
+        .llo-dropdown-item:hover {
+          background-color: var(--primary-light, #f4f8ff);
+        }
+        .llo-dropdown-item input[type="checkbox"] {
+          margin-right: 8px;
+          margin-top: 2px;
+          width: 14px;
+          height: 14px;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+        .llo-item-text {
+          line-height: 1.4;
+          color: var(--ciann-text, #333);
+        }
+        .llo-dropdown-empty {
+          padding: 12px;
+          color: #888;
+          font-size: 12px;
+          text-align: center;
+        }
+        
+        .add-row-btn {
+          background: linear-gradient(180deg, var(--primary-color, #28a745) 0%, var(--primary-accent-dark, #218838) 100%) !important;
+          color: var(--text-on-primary, white) !important;
+          border: 1px solid var(--primary-accent-dark, #1e7e34) !important;
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 6px rgba(40, 167, 69, 0.15);
+        }
+        .add-row-btn:hover:not(:disabled) {
+          filter: brightness(0.95);
+        }
+        .add-row-btn:disabled {
+          background-color: #e9ecef !important;
+          color: #6c757d !important;
+          cursor: not-allowed;
+          box-shadow: none;
+          border: 1px solid #dee2e6 !important;
+        }
+        
+        .delete-row-btn {
+          background-color: #ffeef0 !important;
+          color: #d32f2f !important;
+          border: 1px solid #ffccd2 !important;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .delete-row-btn:hover:not(:disabled) {
+          background-color: #d32f2f !important;
+          color: white !important;
+          border-color: #d32f2f !important;
+        }
+        .delete-row-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
         
         .action-buttons-container {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
-            padding: 15px 25px;
-            background: #f8f9fa;
-            border-top: 1px solid #eee;
-            flex-shrink: 0; /* Prevent footer from shrinking */
+            gap: 12px;
+            padding: 16px 24px;
+            background: var(--primary-light, #f4f8ff);
+            border-top: 1px solid var(--ciann-border, #e2eaf5);
+            flex-shrink: 0;
         }
 
         .action-buttons-container button {
@@ -338,28 +510,30 @@ const WeekwisePlan = ({
           border: none;
           border-radius: 8px;
           cursor: pointer;
-          transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+          transition: all 0.2s ease;
           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
-        .action-buttons-container button:first-child {
-            background-color: #4CAF50;
-            color: white;
+        .action-buttons-container button.submit-btn {
+            background: linear-gradient(180deg, var(--primary-color, #2f74e0) 0%, var(--primary-accent-dark, #1f62cf) 100%) !important;
+            color: var(--text-on-primary, white) !important;
+            border: 1px solid var(--primary-accent-dark, #1f5bbd) !important;
+            box-shadow: 0 4px 12px rgba(31, 98, 207, 0.2) !important;
         }
         
-        .action-buttons-container button:first-child:hover {
-            background-color: #43A047;
-            transform: translateY(-1px);
+        .action-buttons-container button.submit-btn:hover {
+            filter: brightness(0.95);
         }
         
-        .action-buttons-container button.cancel {
-            background-color: #d22e2eff;
-            color: white;
+        .action-buttons-container button.cancel-btn {
+            background-color: #ffffff;
+            color: var(--ciann-text, #425a7d);
+            border: 1px solid var(--ciann-border, #dbe5f2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
-        .action-buttons-container button.cancel:hover {
-            background-color: #ab8686ff;
-            transform: translateY(-1px);
+        .action-buttons-container button.cancel-btn:hover {
+            background-color: #f8f9fa;
         }
         
         .submission-message {
@@ -377,22 +551,17 @@ const WeekwisePlan = ({
         @media (max-width: 768px) {
             .weekwise-container {
               padding: 15px;
-              /* Adjusted max-height slightly for mobile to account for smaller header/footer if needed,
-                 but calc(90vh - 124px) should be good if header/footer heights are consistent */
               max-height: calc(90vh - 120px); 
               overflow-y: auto;
             }
             .plan-table-wrapper {
-              overflow-x: auto; /* Ensure horizontal scroll remains for the table */
+              overflow-x: auto;
             }
             .plan-table {
-              min-width: 600px; /* Crucial: Keep minimum width to force horizontal scroll */
+              min-width: 1050px;
             }
-            /* Do NOT change table display properties to block on mobile,
-               to maintain horizontal scrolling. */
-            
             .action-buttons-container {
-                flex-direction: column;
+                flex-direction: column-reverse;
                 align-items: center;
                 gap: 10px;
             }
@@ -412,11 +581,11 @@ const WeekwisePlan = ({
           {loadingExperiments && (
             <div style={{ 
               padding: "10px", 
-              background: "#e3f2fd", 
+              background: "var(--primary-accent-light, #e3f2fd)", 
               borderRadius: "5px", 
               marginBottom: "10px",
               textAlign: "center",
-              color: "#1976d2"
+              color: "var(--primary-color, #1976d2)"
             }}>
               Loading experiments...
             </div>
@@ -436,8 +605,6 @@ const WeekwisePlan = ({
           <div className="plan-table-wrapper">
             <table className="plan-table">
               <thead>
-                {/* <col> tags are better used outside <thead> if you want to define column properties for the whole table.
-                    For consistent column sizing, table-layout: fixed combined with direct th/td widths is more robust. */}
                 <tr>
                   <th>Week No</th>
                   <th>Batch No</th>
@@ -446,13 +613,14 @@ const WeekwisePlan = ({
                   <th>Experiment No</th>
                   <th>Experiment Name</th>
                   <th>Planned Date</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {plans.map((plan, i) => (
                   <tr key={i}>
                     {i === 0 && (
-                      <td rowSpan="3">
+                      <td rowSpan={plans.length}>
                         <select
                           value={week}
                           onChange={(e) => setWeek(e.target.value)}
@@ -467,45 +635,127 @@ const WeekwisePlan = ({
                         </select>
                       </td>
                     )}
-                    <td>{plan.batch}</td>
                     <td>
                       <select
-                        value={plan.co || ""}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const updated = [...plans];
-                          updated[i].co = val;
-                          updated[i].llo = ""; // reset llo when co changes
-                          setPlans(updated);
-                        }}
+                        value={plan.batch}
+                        onChange={(e) => handleChange(i, "batch", e.target.value)}
                         disabled={!week}
+                        className="batch-select"
                       >
-                        <option value="">Select CO</option>
-                        {coData.map((co) => (
-                          <option key={co.coNumber} value={co.coNumber}>
-                            {co.coNumber}
-                          </option>
-                        ))}
+                        <option value="B1">B1</option>
+                        <option value="B2">B2</option>
+                        <option value="B3">B3</option>
+                        <option value="B4">B4</option>
+                        <option value="B5">B5</option>
+                        <option value="B6">B6</option>
                       </select>
                     </td>
                     <td>
-                      <select
-                        value={plan.llo || ""}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const updated = [...plans];
-                          updated[i].llo = val;
-                          setPlans(updated);
-                        }}
-                        disabled={!week || !plan.co}
+                      <div className="co-badges-container">
+                        {coData.map((co) => {
+                          const selectedCOs = plan.co ? plan.co.split(",").map(c => c.trim()) : [];
+                          const isSelected = selectedCOs.includes(co.coNumber);
+                          return (
+                            <button
+                              key={co.coNumber}
+                              type="button"
+                              className={`co-badge-btn ${isSelected ? "active" : ""}`}
+                              onClick={() => {
+                                let nextCOs;
+                                if (isSelected) {
+                                  nextCOs = selectedCOs.filter((c) => c !== co.coNumber);
+                                } else {
+                                  nextCOs = [...selectedCOs, co.coNumber];
+                                }
+                                nextCOs.sort();
+                                
+                                const updated = [...plans];
+                                updated[i].co = nextCOs.join(", ");
+                                
+                                const remainingCOsLlos = coData
+                                  .filter((c) => nextCOs.includes(c.coNumber))
+                                  .flatMap((c) => [...(c.llos || []), ...(c.tlos || [])])
+                                  .map(item => item.trim())
+                                  .filter(Boolean);
+                                const currentLlos = plan.llo ? plan.llo.split(",").map(l => l.trim()) : [];
+                                const validLlos = currentLlos.filter(lloVal => remainingCOsLlos.includes(lloVal));
+                                updated[i].llo = validLlos.join(", ");
+                                
+                                setPlans(updated);
+                              }}
+                              disabled={!week}
+                              title={co.coDescription}
+                            >
+                              {co.coNumber}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </td>
+                    <td>
+                      <div 
+                        className="llo-dropdown-container" 
+                        ref={(el) => (dropdownRefs.current[i] = el)}
                       >
-                        <option value="">Select LLO</option>
-                        {(coData.find((c) => c.coNumber === plan.co)?.llos || []).map((lloText, lloIdx) => (
-                          <option key={lloIdx} value={lloText}>
-                            {lloText}
-                          </option>
-                        ))}
-                      </select>
+                        <button
+                          type="button"
+                          className="llo-dropdown-trigger"
+                          onClick={() => setOpenLloDropdownIndex(openLloDropdownIndex === i ? null : i)}
+                          disabled={!week || !plan.co}
+                        >
+                          <span className="llo-trigger-text">
+                            {plan.llo && plan.llo.split(",").map(l => l.trim()).filter(Boolean).length > 0
+                              ? `${plan.llo.split(",").map(l => l.trim()).filter(Boolean).length} selected`
+                              : "Select LLOs"}
+                          </span>
+                          <span className="llo-trigger-arrow">▼</span>
+                        </button>
+                        
+                        {openLloDropdownIndex === i && (
+                          <div className="llo-dropdown-menu">
+                            {(() => {
+                              const selectedCOs = plan.co ? plan.co.split(",").map(c => c.trim()) : [];
+                              const availableLlos = [...new Set(coData
+                                .filter(c => selectedCOs.includes(c.coNumber))
+                                .flatMap(c => [...(c.llos || []), ...(c.tlos || [])]))]
+                                .map(item => item.trim())
+                                .filter(Boolean);
+                              
+                              if (availableLlos.length === 0) {
+                                return <div className="llo-dropdown-empty">No LLOs available for selected COs</div>;
+                              }
+                              
+                              const selectedLlos = plan.llo ? plan.llo.split(",").map(l => l.trim()) : [];
+                              
+                              return availableLlos.map((lloText, lloIdx) => {
+                                const isLloSelected = selectedLlos.includes(lloText);
+                                return (
+                                  <label key={lloIdx} className="llo-dropdown-item">
+                                    <input
+                                      type="checkbox"
+                                      checked={isLloSelected}
+                                      onChange={() => {
+                                        let nextLlos;
+                                        if (isLloSelected) {
+                                          nextLlos = selectedLlos.filter((l) => l !== lloText);
+                                        } else {
+                                          nextLlos = [...selectedLlos, lloText];
+                                        }
+                                        const updated = [...plans];
+                                        updated[i].llo = nextLlos.join(", ");
+                                        setPlans(updated);
+                                      }}
+                                    />
+                                    <span className="llo-item-text" title={lloText}>
+                                      {lloText}
+                                    </span>
+                                  </label>
+                                );
+                              });
+                            })()}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <select
@@ -524,14 +774,23 @@ const WeekwisePlan = ({
                       </select>
                     </td>
                     <td>
-                      <textarea
-                        value={plan.exptName}
-                        onChange={(e) =>
-                          handleChange(i, "exptName", e.target.value)
-                        }
-                        disabled={!week}
-                        readOnly
-                      />
+                      <div style={{
+                        textAlign: "left",
+                        fontSize: "12px",
+                        padding: "6px 8px",
+                        background: "var(--primary-light, #f8f9fa)",
+                        border: "1px solid var(--ciann-border, #dde3ea)",
+                        borderRadius: "6px",
+                        minHeight: "36px",
+                        maxHeight: "60px",
+                        overflowY: "auto",
+                        display: "flex",
+                        alignItems: "center",
+                        color: "var(--ciann-text, #333)",
+                        wordBreak: "break-word"
+                      }}>
+                        {plan.exptName || <span style={{ color: "#aaa" }}>Auto-filled</span>}
+                      </div>
                     </td>
                     <td>
                       <input
@@ -544,19 +803,48 @@ const WeekwisePlan = ({
                         disabled={!week}
                       />
                     </td>
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = plans.filter((_, idx) => idx !== i);
+                          setPlans(updated);
+                        }}
+                        className="delete-row-btn"
+                        title="Delete Row"
+                        disabled={!week}
+                      >
+                        ✕
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "12px" }}>
+            <button
+              type="button"
+              className="add-row-btn"
+              onClick={() => {
+                setPlans([
+                  ...plans,
+                  { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" }
+                ]);
+              }}
+              disabled={!week}
+            >
+              + Add Row
+            </button>
+          </div>
           {message && <div className="submission-message">{message}</div>}
         </div>
         <div className="action-buttons-container">
-          <button onClick={handleSubmit}>
-            {initialWeek ? "Update" : "Submit"}
-          </button>
-          <button className="cancel" onClick={onCancel}>
+          <button className="cancel-btn" onClick={onCancel}>
             Cancel
+          </button>
+          <button className="submit-btn" onClick={handleSubmit}>
+            {initialWeek ? "Update" : "Submit"}
           </button>
         </div>
       </div>

@@ -104,3 +104,49 @@
 .ct-ciann-error {
   color: #b4233f;
 }
+
+/* Archived CT Card styling */
+.ct-ciann-card.archived-card {
+  background: #f8fafc;
+  border-color: rgba(203, 213, 225, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  opacity: 0.85;
+}
+
+.ct-ciann-card.archived-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 18px rgba(100, 116, 139, 0.15);
+  opacity: 1;
+}
+
+.ct-ciann-card.archived-card .ct-ciann-card-id {
+  color: #64748b;
+  background-color: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+.ct-ciann-card.archived-card .ct-ciann-open {
+  color: #64748b;
+}
+
+/* Section Group styling */
+.workspace-section-group {
+  margin-bottom: 2.5rem;
+}
+
+.workspace-section-title {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+.no-workspaces-alert {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 0.95rem;
+}
+

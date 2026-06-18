@@ -191,6 +191,10 @@ import SAPRK4Print from "./pages/msbte/SAPRK4Print";
 import FATHK5CiannCards from "./pages/msbte/FATHK5CiannCards";
 import FATHK5Print from "./pages/msbte/FATHK5Print";
 import AttendanceReport from "./pages/msbte/AttendanceReport";
+import SATHCiannCards from "./pages/msbte/SATHCiannCards";
+import SATHGenerate from "./pages/msbte/SATHGenerate";
+import SATHEdit from "./pages/msbte/SATHEdit";
+import SATHPrint from "./pages/msbte/SATHPrint";
 import IndustrialVisitK8 from "./pages/msbte/IndustrialVisitK8";
 import IndustrialVisitK8Generate from "./pages/msbte/IndustrialVisitK8Generate";
 import IndustrialVisitK8Edit from "./pages/msbte/IndustrialVisitK8Edit";
@@ -500,7 +504,11 @@ const AppContent = () => {
       {userRole === "superadmin" ? (
         <SuperAdminNavbar />
       ) : userRole === "office" ? (
-        <OfficeHeader onMenuToggle={handleMenuToggle} />
+        <OfficeHeader
+          onMenuToggle={handleMenuToggle}
+          staffName={localStorage.getItem("staffName") || localStorage.getItem("name") || "Office Staff"}
+          currentTab={currentTab}
+        />
       ) : userRole === "admin" ? (
         <AdminHeader onMenuToggle={handleMenuToggle} />
       ) : userRole !== "admin" ? (
@@ -731,6 +739,10 @@ const AppContent = () => {
               element={<AssessPAStudentlist />}
             />
             <Route
+              path="/assesspastudentlist"
+              element={<AssessPAStudentlist />}
+            />
+            <Route
               path="/assessment-student-select"
               element={<AssessmentStudentSelectForm />}
             />
@@ -869,6 +881,16 @@ const AppContent = () => {
             />
             <Route path="/msbte/sa-pr-k4/edit" element={<SAPRK4Edit />} />
             <Route path="/msbte/sa-pr-k4/print" element={<SAPRK4Print />} />
+            <Route
+              path="/msbte/sa-th/cianns"
+              element={<SATHCiannCards />}
+            />
+            <Route
+              path="/msbte/sa-th/generate"
+              element={<SATHGenerate />}
+            />
+            <Route path="/msbte/sa-th/edit" element={<SATHEdit />} />
+            <Route path="/msbte/sa-th/print" element={<SATHPrint />} />
             <Route path="/msbte/attendance" element={<AttendanceReport />} />
             <Route
               path="/msbte/industrial-visit/k8"

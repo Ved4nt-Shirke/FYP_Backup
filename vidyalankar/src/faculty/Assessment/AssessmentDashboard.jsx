@@ -256,7 +256,7 @@ export default function AssessmentDashboard() {
                                     <button
                                       className="btn btn-sm btn-outline-primary me-1"
                                       onClick={() =>
-                                        navigate("/assesspastudentlist", {
+                                        navigate("/assess-pa-studentlist", {
                                           state: {
                                             experiment: {
                                               id: exp.experimentId,

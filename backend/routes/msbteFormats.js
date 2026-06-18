@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const SaPrK4 = require("../models/SaPrK4");
+const SaTh = require("../models/SaTh");
 const Student = require("../models/Student");
 const { resolveStudents } = require("../utils/studentHistoryHelper");
 const Division = require("../models/Division");
@@ -160,6 +161,149 @@ router.post("/sa-pr-k4/save", authenticate, async (req, res) => {
     res.json({ success: true, data: record });
   } catch (error) {
     console.error("Error saving SA-PR K4 record:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// ==========================================
+// SA-TH ROUTES
+// ==========================================
+
+// GET SA-TH record by CIANN + division
+router.get("/sa-th", authenticate, async (req, res) => {
+  try {
+    const { ciannId, division } = req.query;
+
+    if (!ciannId || !division) {
+      return res
+        .status(400)
+        .json({ success: false, message: "ciannId and division are required" });
+    }
+
+    const record = await SaTh.findOne({
+      ciannId: Number(ciannId),
+      division: String(division),
+      owner: req.user._id,
+    });
+
+    let data = null;
+    if (record) {
+      // Fetch latest seat numbers from Student collection to overwrite snapshots
+      data = record.toObject();
+      const studentIds = data.students.map((s) => s.studentId).filter(Boolean);
+      
+      const dbStudents = await Student.find({
+        $or: [
+          { _id: { $in: studentIds } },
+          { division: String(division) }
+        ]
+      }).select("_id rollNo enrollmentNo seatNo");
+
+      const seatMap = new Map();
+      const seatMapByRoll = new Map();
+      const seatMapByEnroll = new Map();
+
+      dbStudents.forEach((s) => {
+        const seatVal = (s.seatNo || "").toString().trim();
+        if (seatVal) {
+          seatMap.set(s._id.toString(), seatVal);
+          if (s.rollNo) {
+            seatMapByRoll.set(s.rollNo.toString().trim().toLowerCase(), seatVal);
+          }
+          if (s.enrollmentNo) {
+            seatMapByEnroll.set(s.enrollmentNo.toString().trim().toLowerCase(), seatVal);
+          }
+        }
+      });
+
+      data.students = data.students.map((s) => {
+        let currentSeatNo = s.seatNo || "";
+        if (s.studentId && seatMap.has(s.studentId.toString())) {
+          currentSeatNo = seatMap.get(s.studentId.toString());
+        } else if (s.enrollmentNo && seatMapByEnroll.has(s.enrollmentNo.toString().trim().toLowerCase())) {
+          currentSeatNo = seatMapByEnroll.get(s.enrollmentNo.toString().trim().toLowerCase());
+        } else if (s.rollNo && seatMapByRoll.has(s.rollNo.toString().trim().toLowerCase())) {
+          currentSeatNo = seatMapByRoll.get(s.rollNo.toString().trim().toLowerCase());
+        }
+        return {
+          ...s,
+          seatNo: currentSeatNo
+        };
+      });
+    }
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("Error fetching SA-TH record:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// CREATE/UPDATE SA-TH record
+router.post("/sa-th/save", authenticate, async (req, res) => {
+  try {
+    const {
+      ciannId,
+      subjectName,
+      subjectCode,
+      courseCode,
+      academicYear,
+      division,
+      examDate,
+      maxMarks,
+      minMarks,
+      students,
+    } = req.body;
+
+    if (!ciannId || !division || !subjectName || maxMarks === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "ciannId, division, subjectName, and maxMarks are required",
+      });
+    }
+
+    if (!Array.isArray(students)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "students must be an array" });
+    }
+
+    const sanitizedStudents = students.map((student) => ({
+      studentId: student.studentId || undefined,
+      rollNo: student.rollNo || "",
+      enrollmentNo: student.enrollmentNo || "",
+      studentName: student.studentName || "",
+      seatNo: student.seatNo || "",
+      marks:
+        student.marks === "" || student.marks === null || student.marks === undefined
+          ? undefined
+          : Number(student.marks),
+    }));
+
+    const update = {
+      ciannId: Number(ciannId),
+      subjectName: String(subjectName),
+      subjectCode: subjectCode ? String(subjectCode) : "",
+      courseCode: courseCode ? String(courseCode) : "",
+      academicYear: academicYear ? String(academicYear) : "",
+      division: String(division),
+      examDate: examDate ? new Date(examDate) : undefined,
+      maxMarks: Number(maxMarks),
+      minMarks: Number(minMarks || 0),
+      owner: req.user._id,
+      ownerUsername: req.user.userName || req.user.username || "",
+      students: sanitizedStudents,
+    };
+
+    const record = await SaTh.findOneAndUpdate(
+      { ciannId: Number(ciannId), division: String(division), owner: req.user._id },
+      update,
+      { new: true, upsert: true, setDefaultsOnInsert: true },
+    );
+
+    res.json({ success: true, data: record });
+  } catch (error) {
+    console.error("Error saving SA-TH record:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -667,7 +811,8 @@ router.get("/k7/populate", async (req, res) => {
     const students = await resolveStudents({
       departmentId,
       divisionId,
-      academicYear
+      academicYear,
+      semester
     }, req.user.college);
     if (students.length === 0) {
       return res.json({ success: true, courseConfigs: [], studentMarks: [], message: "No students found in this division" });
@@ -743,6 +888,7 @@ router.get("/k7/populate", async (req, res) => {
     const microProjectsList = await PTMicroProject.find({ ciannId: { $in: ciannIds }, activityType: "Microproject" });
     const assessmentsList = await Assessment.find({ ciannId: { $in: ciannIds } });
     const saPrK4List = await SaPrK4.find({ ciannId: { $in: ciannIds }, division: divisionName });
+    const saThList = await SaTh.find({ ciannId: { $in: ciannIds }, division: divisionName });
 
     // Fetch StudentResults (SA-TH)
     const studentIds = students.map(s => s._id);
@@ -839,15 +985,29 @@ router.get("/k7/populate", async (req, res) => {
           }
         }
 
-        // 5. SA-TH (StudentResult end-term theory marks)
-        const studentRes = studentResultsList.find(r => 
-          r.studentId?.toString() === studentIdStr && 
-          (
-            r.subject.toString().toLowerCase() === subName.toLowerCase() ||
-            r.subject.toString() === subCode.toString()
-          )
-        );
-        if (studentRes) saTh = studentRes.marks;
+        // 5. SA-TH (SaTh marks or fallback to StudentResult)
+        const saThRecord = saThList.find(r => r.ciannId === cId);
+        if (saThRecord && Array.isArray(saThRecord.students)) {
+          const studentSaThObj = saThRecord.students.find(s => 
+            (s.studentId && s.studentId.toString() === studentIdStr) ||
+            (s.rollNo && s.rollNo.toString().trim().toLowerCase() === rollNoStr) ||
+            (s.enrollmentNo && s.enrollmentNo.toString().trim().toLowerCase() === (student.enrollmentNo || "").toString().trim().toLowerCase())
+          );
+          if (studentSaThObj && studentSaThObj.marks !== undefined && studentSaThObj.marks !== null) {
+            saTh = studentSaThObj.marks;
+          }
+        }
+
+        if (saTh === null) {
+          const studentRes = studentResultsList.find(r => 
+            r.studentId?.toString() === studentIdStr && 
+            (
+              r.subject.toString().toLowerCase() === subName.toLowerCase() ||
+              r.subject.toString() === subCode.toString()
+            )
+          );
+          if (studentRes) saTh = studentRes.marks;
+        }
 
         // Compute FA-TH = CT average + Final
         let ctAvg = null;

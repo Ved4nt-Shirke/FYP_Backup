@@ -16,6 +16,7 @@ export default function AssessPA() {
   const [experiments, setExperiments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [assessedIds, setAssessedIds] = useState([]);
 
   useEffect(() => {
     fetchExperiments();
@@ -95,31 +96,20 @@ export default function AssessPA() {
         console.log('AssessPA - Using experiments from navigation state:', allExperiments.length);
       }
 
-      // Fetch assessed experiments for this batch to filter them out
+      // Fetch assessed experiments for this batch
       try {
         const assessedResponse = await fetch(`http://localhost:5000/api/assessments/assessed-experiments?batch=${batch}`);
         const assessedData = await assessedResponse.json();
 
         if (assessedData.success) {
           const assessedExperimentIds = assessedData.experiments.map(exp => exp.id);
-          const unassessedExperiments = allExperiments.filter(exp => !assessedExperimentIds.includes(exp.practicalNo));
-          console.log('AssessPA - Total:', allExperiments.length, 'Assessed:', assessedExperimentIds.length, 'Unassessed:', unassessedExperiments.length);
-
-          // If everything is already assessed, show a clearer message
-          if (allExperiments.length > 0 && unassessedExperiments.length === 0) {
-            setExperiments([]);
-            setError(`All experiments are already assessed for batch ${batch}`);
-          } else {
-            setExperiments(unassessedExperiments);
-          }
-        } else {
-          setExperiments(allExperiments);
-          console.log('AssessPA - Experiments loaded (no filter):', allExperiments.length);
+          setAssessedIds(assessedExperimentIds);
+          console.log('AssessPA - Total:', allExperiments.length, 'Assessed count:', assessedExperimentIds.length);
         }
       } catch (assessedError) {
-        console.warn('AssessPA - Could not fetch assessed experiments, showing all:', assessedError);
-        setExperiments(allExperiments);
+        console.warn('AssessPA - Could not fetch assessed experiments:', assessedError);
       }
+      setExperiments(allExperiments);
     } catch (error) {
       console.error('AssessPA - Error fetching experiments:', error);
       setError(error.message);
@@ -129,7 +119,7 @@ export default function AssessPA() {
     }
   };
 
-  const handleAssess = (exp) => {
+  const handleAssess = (exp, isEdit) => {
     navigate("/assess-pa-studentlist", {
       state: {
         experiment: {
@@ -141,6 +131,7 @@ export default function AssessPA() {
         program,
         className,
         course,
+        isEditMode: isEdit,
       },
     });
   };
@@ -201,39 +192,80 @@ export default function AssessPA() {
         )}
 
         <div className="table-responsive">
-          <table className="table table-bordered table-hover table-striped">
-            <thead className="table-light">
-              <tr>
-                <th style={{ width: '10%', textAlign: 'center' }}>Exp ID</th>
-                <th style={{ width: '70%' }}>Exp Name</th>
-                <th style={{ width: '20%', textAlign: 'center' }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {experiments.length === 0 ? (
-                <tr>
-                  <td colSpan="3" className="text-center">
-                    {error ? 'Failed to load experiments' : 'No experiments found for this subject'}
-                  </td>
-                </tr>
-              ) : (
-                experiments.map((exp) => (
-                  <tr key={exp.practicalNo}>
-                    <td style={{ textAlign: 'center' }}>{exp.practicalNo}</td>
-                    <td>{exp.practicalName}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button
-                        className="btn btn-success"
-                        onClick={() => handleAssess(exp)}
-                      >
-                        Assess
-                      </button>
-                    </td>
+          {(() => {
+            const pendingExperiments = experiments.filter(
+              (exp) => !assessedIds.map(String).includes(String(exp.practicalNo))
+            );
+
+            if (experiments.length === 0) {
+              return (
+                <table className="table table-bordered table-hover table-striped">
+                  <thead className="table-light">
+                    <tr>
+                      <th style={{ width: '10%', textAlign: 'center' }}>Exp ID</th>
+                      <th style={{ width: '70%' }}>Exp Name</th>
+                      <th style={{ width: '20%', textAlign: 'center' }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colSpan="3" className="text-center">
+                        {error ? 'Failed to load experiments' : 'No experiments found for this subject'}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              );
+            }
+
+            if (pendingExperiments.length === 0) {
+              return (
+                <div className="text-center p-5 bg-white border rounded shadow-sm my-3">
+                  <i className="bi bi-check-circle-fill text-success" style={{ fontSize: '3rem' }}></i>
+                  <h4 className="mt-3 font-semibold text-dark">All Experiments Assessed</h4>
+                  <p className="text-secondary mt-1">
+                    All experiments for <strong>{batch}</strong> have already been assessed.
+                  </p>
+                  <button 
+                    className="btn btn-primary mt-3 px-4 py-2"
+                    onClick={() => navigate("/assessment/edit-prog", { 
+                      state: { batch, ciannData, program, className, course } 
+                    })}
+                  >
+                    <i className="bi bi-pencil-fill me-2"></i> Go to Edit Progressive Assessment
+                  </button>
+                </div>
+              );
+            }
+
+            return (
+              <table className="table table-bordered table-hover table-striped">
+                <thead className="table-light">
+                  <tr>
+                    <th style={{ width: '10%', textAlign: 'center' }}>Exp ID</th>
+                    <th style={{ width: '70%' }}>Exp Name</th>
+                    <th style={{ width: '20%', textAlign: 'center' }}>Action</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {pendingExperiments.map((exp) => (
+                    <tr key={exp.practicalNo}>
+                      <td style={{ textAlign: 'center' }}>{exp.practicalNo}</td>
+                      <td>{exp.practicalName}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <button
+                          className="btn btn-success"
+                          onClick={() => handleAssess(exp, false)}
+                        >
+                          Assess
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            );
+          })()}
         </div>
       </div>
 

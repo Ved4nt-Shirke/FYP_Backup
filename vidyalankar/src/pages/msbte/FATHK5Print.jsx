@@ -53,6 +53,9 @@ const FATHK5Print = () => {
         if (ciannData?.academicYear) {
           query.set("academicYear", ciannData.academicYear);
         }
+        if (ciannData?.semester) {
+          query.set("semester", ciannData.semester);
+        }
 
         const studentsUrl = query.toString()
           ? `${config.students}?${query.toString()}`

@@ -480,20 +480,19 @@
 
 /* Styling for Table Layout in Teaching Plan Modal */
 .tps-modal .plan-table-wrapper {
-  overflow-x: auto;
+  overflow-x: auto !important;
   -webkit-overflow-scrolling: touch;
   margin-top: 20px;
   padding-bottom: 0;
   border: 1px solid #cfd4da;
   border-radius: 10px;
   background: #fff;
-  overflow: hidden;
 }
 
 .tps-modal .plan-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
+  min-width: 1050px;
   table-layout: fixed;
   border: 0;
 }
@@ -517,6 +516,55 @@
   z-index: 10;
 }
 
+/* Explicit widths and min-widths to prevent squeezing and optimize vacant space */
+.tps-modal .plan-table th:nth-child(1),
+.tps-modal .plan-table td:nth-child(1) {
+  width: 8% !important;
+  min-width: 80px !important;
+}
+
+.tps-modal .plan-table th:nth-child(2),
+.tps-modal .plan-table td:nth-child(2) {
+  width: 14% !important;
+  min-width: 140px !important;
+}
+
+.tps-modal .plan-table th:nth-child(3),
+.tps-modal .plan-table td:nth-child(3) {
+  width: 12% !important;
+  min-width: 120px !important;
+}
+
+.tps-modal .plan-table th:nth-child(4),
+.tps-modal .plan-table td:nth-child(4) {
+  width: 14% !important;
+  min-width: 140px !important;
+}
+
+.tps-modal .plan-table th:nth-child(5),
+.tps-modal .plan-table td:nth-child(5) {
+  width: 18% !important;
+  min-width: 160px !important;
+}
+
+.tps-modal .plan-table th:nth-child(6),
+.tps-modal .plan-table td:nth-child(6) {
+  width: 18% !important;
+  min-width: 160px !important;
+}
+
+.tps-modal .plan-table th:nth-child(7),
+.tps-modal .plan-table td:nth-child(7) {
+  width: 11% !important;
+  min-width: 120px !important;
+}
+
+.tps-modal .plan-table th:nth-child(8),
+.tps-modal .plan-table td:nth-child(8) {
+  width: 5% !important;
+  min-width: 50px !important;
+}
+
 .tps-modal .plan-table select,
 .tps-modal .plan-table input {
   width: 100% !important;
@@ -528,6 +576,11 @@
   background-color: white !important;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.06) !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Guarantee date inputs have sufficient minimum width */
+.tps-modal .plan-table input[type="date"] {
+  min-width: 130px !important;
 }
 
 .tps-modal .plan-table select:focus,

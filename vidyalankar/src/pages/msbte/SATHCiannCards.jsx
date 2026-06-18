@@ -5,12 +5,12 @@ import "../../faculty/components/EditCiann.css";
 import "./K3Pages.css";
 
 const modeToPath = {
-  generate: "/msbte/sa-pr-k4/generate",
-  edit: "/msbte/sa-pr-k4/edit",
-  print: "/msbte/sa-pr-k4/print",
+  generate: "/msbte/sa-th/generate",
+  edit: "/msbte/sa-th/edit",
+  print: "/msbte/sa-th/print",
 };
 
-const SAPRK4CiannCards = () => {
+const SATHCiannCards = () => {
   const [ciannDataList, setCiannDataList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -108,7 +108,7 @@ const SAPRK4CiannCards = () => {
     <div className="k3-page">
       <div className="k3-page-header">
         <h2>MSBTE Formats (K Scheme)</h2>
-        <p>SA-PR-K4 - Select CIANN ({mode})</p>
+        <p>SA-TH - Select CIANN ({mode})</p>
       </div>
 
       {loading ? (
@@ -158,4 +158,4 @@ const SAPRK4CiannCards = () => {
   );
 };
 
-export default SAPRK4CiannCards;
+export default SATHCiannCards;

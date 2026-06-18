@@ -20,7 +20,6 @@ const StudentAcademicHistorySchema = new mongoose.Schema(
     divisionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Division",
-      required: true,
     },
     rollNo: {
       type: String,

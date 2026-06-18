@@ -57,33 +57,7 @@ export default function TloLlo() {
           throw new Error("Subject ID not found on CIANN data.");
         }
 
-        // 1. Fetch Admin Course Details for COs
-        const courseDetailsRes = await fetch(
-          getApiUrl(`/pt-microproject/new/course-details/${subjectId}`),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const courseDetailsData = await courseDetailsRes.json();
-
-        let loadedCOs = [];
-        if (courseDetailsData.success && courseDetailsData.courseDetails) {
-          loadedCOs = courseDetailsData.courseDetails.courseOutcomes || [];
-          setCourseOutcomes(loadedCOs);
-        } else {
-          // Fallback outcomes if admin hasn't configured course outcomes yet
-          loadedCOs = [
-            { coNumber: "CO1", description: "Course Outcome 1" },
-            { coNumber: "CO2", description: "Course Outcome 2" },
-            { coNumber: "CO3", description: "Course Outcome 3" },
-          ];
-          setCourseOutcomes(loadedCOs);
-        }
-
-        // 2. Fetch Existing TLOs & LLOs Mappings
+        // Fetch Existing TLOs, LLOs & COs Mappings from Ciann-specific TloLlo record
         const tloLloRes = await fetch(
           getApiUrl(`/subject-details/tlo-llo/${ciannData.ciannId}/${subjectId}`),
           {
@@ -95,21 +69,53 @@ export default function TloLlo() {
         );
         const tloLloData = await tloLloRes.json();
 
+        let loadedCOs = [];
         const initialMappings = {};
-        // Pre-initialize empty arrays for each Course Outcome
-        loadedCOs.forEach((co) => {
-          initialMappings[co.coNumber] = { tlos: [""], llos: [""] };
-        });
 
-        if (tloLloData.success && tloLloData.data && Array.isArray(tloLloData.data.coData)) {
+        if (tloLloData.success && tloLloData.data && Array.isArray(tloLloData.data.coData) && tloLloData.data.coData.length > 0) {
+          loadedCOs = tloLloData.data.coData.map((coItem) => ({
+            coNumber: coItem.coNumber,
+            description: coItem.coDescription || "",
+          }));
           tloLloData.data.coData.forEach((coItem) => {
             initialMappings[coItem.coNumber] = {
               tlos: coItem.tlos.length > 0 ? coItem.tlos : [""],
               llos: coItem.llos.length > 0 ? coItem.llos : [""],
             };
           });
+        } else {
+          // Fallback: load COs from courseDetails endpoint
+          const courseDetailsRes = await fetch(
+            getApiUrl(`/pt-microproject/new/course-details/${subjectId}`),
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          const courseDetailsData = await courseDetailsRes.json();
+          if (courseDetailsData.success && courseDetailsData.courseDetails) {
+            const tempCOs = courseDetailsData.courseDetails.courseOutcomes || [];
+            if (tempCOs.length > 0) {
+              loadedCOs = tempCOs.map((c) => ({
+                coNumber: c.coNumber,
+                description: c.description || "",
+              }));
+              tempCOs.forEach((c) => {
+                initialMappings[c.coNumber] = { tlos: [""], llos: [""] };
+              });
+            } else {
+              loadedCOs = [{ coNumber: "CO1", description: "" }];
+              initialMappings["CO1"] = { tlos: [""], llos: [""] };
+            }
+          } else {
+            loadedCOs = [{ coNumber: "CO1", description: "" }];
+            initialMappings["CO1"] = { tlos: [""], llos: [""] };
+          }
         }
 
+        setCourseOutcomes(loadedCOs);
         setCoMappings(initialMappings);
       } catch (err) {
         console.error("Error fetching TLO/LLO details:", err);
@@ -121,6 +127,39 @@ export default function TloLlo() {
 
     loadData();
   }, [ciannData]);
+
+  // Mutation Handlers for COs
+  const handleAddCo = () => {
+    const nextCoNum = `CO${courseOutcomes.length + 1}`;
+    setCourseOutcomes((prev) => [...prev, { coNumber: nextCoNum, description: "" }]);
+    setCoMappings((prev) => ({
+      ...prev,
+      [nextCoNum]: { tlos: [""], llos: [""] }
+    }));
+  };
+
+  const handleDeleteCo = (coNumber) => {
+    if (courseOutcomes.length <= 1) return;
+    const indexToDelete = courseOutcomes.findIndex((c) => c.coNumber === coNumber);
+    const updatedCOs = courseOutcomes.filter((_, idx) => idx !== indexToDelete);
+
+    // Renumber remaining COs
+    const renumberedCOs = updatedCOs.map((c, i) => ({
+      ...c,
+      coNumber: `CO${i + 1}`
+    }));
+
+    // Remap coMappings
+    const remappedMappings = {};
+    renumberedCOs.forEach((c, i) => {
+      const origIndex = i >= indexToDelete ? i + 1 : i;
+      const origCoNum = `CO${origIndex + 1}`;
+      remappedMappings[c.coNumber] = coMappings[origCoNum] || { tlos: [""], llos: [""] };
+    });
+
+    setCourseOutcomes(renumberedCOs);
+    setCoMappings(remappedMappings);
+  };
 
   // Mappings Mutation Handlers
   const handleAddOutcomeField = (coNumber, type) => {
@@ -220,10 +259,18 @@ export default function TloLlo() {
               <div>
                 <h2 className="fw-bold text-dark mb-1">TLO & LLO Details</h2>
                 <p className="text-secondary mb-0">
-                  Define Topic Learning Outcomes (TLO) and Lab Learning Outcomes (LLO) per Course Outcome (CO) from Admin Subject Course Details.
+                  Define Topic Learning Outcomes (TLO) and Lab Learning Outcomes (LLO) per Course Outcome (CO) directly.
                 </p>
               </div>
-              <div>
+              <div className="d-flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleAddCo}
+                  disabled={loading || !ciannData}
+                  className="btn btn-outline-success rounded-pill px-4 fw-bold shadow-sm"
+                >
+                  <i className="bi bi-plus-lg me-1"></i> Add Course Outcome
+                </button>
                 <button
                   onClick={handleSave}
                   disabled={saving || loading || !ciannData}
@@ -272,7 +319,7 @@ export default function TloLlo() {
                       <i className="bi bi-diagram-2-fill fs-1 text-muted mb-3"></i>
                       <h5 className="text-muted">No Course Outcomes Defined</h5>
                       <p className="text-secondary small mb-0">
-                        Please check Course Outcomes in Admin Subject Course Details.
+                        Please add a Course Outcome using the '+ Add Course Outcome' button above.
                       </p>
                     </div>
                   </div>
@@ -284,11 +331,38 @@ export default function TloLlo() {
                       <div key={co.coNumber} className="col-12 mb-4">
                         <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
                           {/* Card Header (CO Number and Name) */}
-                          <div className="card-header border-0 bg-dark text-white p-3 d-flex align-items-center gap-3">
-                            <span className="badge bg-success fs-6 px-3 py-2 rounded-pill">
-                              {co.coNumber}
-                            </span>
-                            <h5 className="mb-0 fw-semibold text-white-70">{co.description}</h5>
+                          <div className="card-header border-0 bg-dark text-white p-3 d-flex align-items-center justify-content-between">
+                            <div className="d-flex align-items-center gap-3 flex-grow-1">
+                              <span className="badge bg-success fs-6 px-3 py-2 rounded-pill">
+                                {co.coNumber}
+                              </span>
+                              <input
+                                type="text"
+                                value={co.description || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setCourseOutcomes((prev) =>
+                                    prev.map((c) =>
+                                      c.coNumber === co.coNumber
+                                        ? { ...c, description: val }
+                                        : c
+                                    )
+                                  );
+                                }}
+                                placeholder="Enter Course Outcome Description..."
+                                className="form-control form-control-sm bg-transparent border-0 text-white fw-semibold fs-5 p-0"
+                                style={{ outline: "none", boxShadow: "none" }}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCo(co.coNumber)}
+                              disabled={courseOutcomes.length <= 1}
+                              className="btn btn-sm btn-outline-danger border-0 text-white"
+                              title="Delete Course Outcome"
+                            >
+                              <i className="bi bi-trash-fill text-danger fs-5"></i>
+                            </button>
                           </div>
 
                           {/* Card Body */}

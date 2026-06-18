@@ -48,7 +48,7 @@ const K4MarksForm = () => {
       try {
         setLoading(true);
         const studentResponse = await axios.get(config.students, {
-          params: { division, academicYear: ciannData.academicYear },
+          params: { division, academicYear: ciannData.academicYear, semester: ciannData.semester },
         });
 
         const studentList = Array.isArray(studentResponse.data)

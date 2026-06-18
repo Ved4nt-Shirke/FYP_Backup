@@ -8,8 +8,24 @@ const Division = require("../models/Division");
  * @param {Object} student - The Student document (from master Student collection).
  */
 async function ensureStudentHistory(student) {
-  if (!student || !student._id || !student.courseId || !student.academicYear || !student.divisionId) {
+  if (!student || !student._id || !student.courseId || !student.academicYear) {
     return null;
+  }
+
+  let divisionId = student.divisionId;
+  if (!divisionId && student.division) {
+    try {
+      const divDoc = await Division.findOne({ 
+        name: { $regex: new RegExp(`^${student.division.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+        institution: student.institution 
+      });
+      if (divDoc) {
+        divisionId = divDoc._id;
+        await Student.findByIdAndUpdate(student._id, { divisionId });
+      }
+    } catch (err) {
+      console.warn(`[StudentHistoryHelper] Failed to heal divisionId for student ${student.enrollmentNo}:`, err.message);
+    }
   }
 
   try {
@@ -35,7 +51,7 @@ async function ensureStudentHistory(student) {
         studentId: student._id,
         academicYear: student.academicYear,
         semester: semester,
-        divisionId: student.divisionId,
+        divisionId: divisionId,
         rollNo: student.rollNo,
         seatNo: student.seatNo || "",
         status: "active"
@@ -82,7 +98,7 @@ async function backfillAllStudentsHistory() {
  * Falls back to querying the master Student table if no records found.
  */
 async function resolveStudents(params, college) {
-  const { batch, division, divisionId, courseId, departmentId, academicYear } = params;
+  const { batch, division, divisionId, courseId, departmentId, academicYear, semester } = params;
   let useHistory = false;
   let historyQuery = {};
 
@@ -90,9 +106,13 @@ async function resolveStudents(params, college) {
     historyQuery.academicYear = academicYear;
     useHistory = true;
   }
+  if (semester) {
+    historyQuery.semester = Number(semester);
+    useHistory = true;
+  }
   if (divisionId) {
     historyQuery.divisionId = divisionId;
-    if (!academicYear) {
+    if (!academicYear && !semester) {
       historyQuery.status = "active";
     }
     useHistory = true;
@@ -103,7 +123,7 @@ async function resolveStudents(params, college) {
     });
     if (foundDivs.length > 0) {
       historyQuery.divisionId = { $in: foundDivs.map(d => d._id) };
-      if (!academicYear) {
+      if (!academicYear && !semester) {
         historyQuery.status = "active";
       }
       useHistory = true;
@@ -171,7 +191,14 @@ async function resolveStudents(params, college) {
     } else if (division) {
       query.division = division;
     }
-    if (courseId) query.courseId = courseId;
+    if (courseId) {
+      query.courseId = courseId;
+    } else if (semester) {
+      const courses = await Course.find({ semester: String(semester) });
+      if (courses.length > 0) {
+        query.courseId = { $in: courses.map(c => c._id) };
+      }
+    }
     if (departmentId) query.departmentId = departmentId;
     if (academicYear) query.academicYear = academicYear;
 

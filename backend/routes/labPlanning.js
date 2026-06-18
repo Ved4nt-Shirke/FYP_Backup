@@ -303,7 +303,8 @@ async function syncLabPlanToPracticalAttendance(ciannId, weekNo, plans) {
     const students = await resolveStudents({
       divisionId: ciann.divisionId,
       division: ciann.division,
-      academicYear: ciann.academicYear
+      academicYear: ciann.academicYear,
+      semester: ciann.semester
     }, ciann.college);
     
     if (students.length === 0) {

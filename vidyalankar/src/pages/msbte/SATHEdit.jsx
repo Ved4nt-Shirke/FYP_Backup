@@ -5,17 +5,16 @@ import Sidebar from "../../basic/Sidebar";
 import { config } from "../../config/api";
 import "./MSBTEPages.css";
 
-const SAPRK4Edit = () => {
+const SATHEdit = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const ciannData = location.state?.ciannData || null;
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [students, setStudents] = useState([]);
   const [marks, setMarks] = useState({});
-  const [maxLimit, setMaxLimit] = useState(100);
+  const [maxLimit, setMaxLimit] = useState(70);
   const [saving, setSaving] = useState(false);
 
-  // Fetch students on component load
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -39,7 +38,6 @@ const SAPRK4Edit = () => {
         if (response.ok) {
           const data = await response.json();
           setStudents(data);
-          // Initialize marks object
           const initialMarks = {};
           data.forEach((student) => {
             initialMarks[student._id] = "";
@@ -48,7 +46,7 @@ const SAPRK4Edit = () => {
           let nextMarks = initialMarks;
           if (ciannData?.ciannId && ciannData?.division) {
             const recordRes = await fetch(
-              `${config.msbte}/sa-pr-k4?ciannId=${encodeURIComponent(
+              `${config.msbte}/sa-th?ciannId=${encodeURIComponent(
                 ciannData.ciannId,
               )}&division=${encodeURIComponent(ciannData.division)}`,
             );
@@ -165,7 +163,7 @@ const SAPRK4Edit = () => {
       };
 
       const token = localStorage.getItem("token");
-      const response = await fetch(`${config.msbte}/sa-pr-k4/save`, {
+      const response = await fetch(`${config.msbte}/sa-th/save`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -176,13 +174,13 @@ const SAPRK4Edit = () => {
 
       const data = await response.json();
       if (!response.ok || !data?.success) {
-        throw new Error(data?.message || "Failed to update SA-PR-K4 marks");
+        throw new Error(data?.message || "Failed to update SA-TH marks");
       }
 
-      alert("SA-PR Sheet updated successfully!");
+      alert("SA-TH Sheet updated successfully!");
     } catch (error) {
-      console.error("Error updating SA-PR-K4 marks:", error);
-      alert(error.message || "Failed to update SA-PR-K4 marks");
+      console.error("Error updating SA-TH marks:", error);
+      alert(error.message || "Failed to update SA-TH marks");
     } finally {
       setSaving(false);
     }
@@ -202,17 +200,17 @@ const SAPRK4Edit = () => {
 
         {!ciannData && (
           <div className="alert alert-warning">
-            Please select a CIANN first for SA-PR-K4 edit.
+            Please select a CIANN first for SA-TH edit.
             <button
               className="btn btn-sm btn-outline-secondary ms-3"
-              onClick={() => navigate("/msbte/sa-pr-k4/cianns?mode=edit")}
+              onClick={() => navigate("/msbte/sa-th/cianns?mode=edit")}
             >
               Select CIANN
             </button>
           </div>
         )}
 
-        <h3 className="mb-4">Edit SA-PR Sheet</h3>
+        <h3 className="mb-4">Edit SA-TH Sheet</h3>
 
         <div className="mb-3" style={{ maxWidth: 240 }}>
           <label className="form-label">Limit Marks</label>
@@ -232,7 +230,7 @@ const SAPRK4Edit = () => {
                 <th>Roll ID</th>
                 <th>Name</th>
                 <th>Seat No.</th>
-                <th>Marks</th>
+                <th>Marks (Max {maxLimit})</th>
               </tr>
             </thead>
             <tbody>
@@ -285,4 +283,4 @@ const SAPRK4Edit = () => {
   );
 };
 
-export default SAPRK4Edit;
+export default SATHEdit;

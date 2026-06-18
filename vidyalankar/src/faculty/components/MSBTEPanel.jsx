@@ -6,7 +6,7 @@ const MSBTEPanel = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
-  const [openSections, setOpenSections] = useState({ k3: true, k4: true, k7: false });
+  const [openSections, setOpenSections] = useState({ k3: true, k4: true, saTh: true, k7: false });
 
   useEffect(() => {
     if (isOpen) {
@@ -111,6 +111,46 @@ const MSBTEPanel = ({ isOpen, onClose }) => {
               className="msbte-dropdown-option"
               onClick={() =>
                 handleItemClick("/msbte/sa-pr-k4/cianns?mode=print")
+              }
+            >
+              <i className="bi bi-dot"></i>
+              <span>Print</span>
+            </button>
+          </>
+        )}
+
+        <button
+          className="msbte-dropdown-option"
+          onClick={() => toggleSection("saTh")}
+        >
+          <i className="bi bi-file-earmark"></i>
+          <span>SA-TH</span>
+          <i
+            className={`bi ms-auto ${openSections.saTh ? "bi-chevron-down" : "bi-chevron-left"}`}
+          ></i>
+        </button>
+        {openSections.saTh && (
+          <>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() =>
+                handleItemClick("/msbte/sa-th/cianns?mode=generate")
+              }
+            >
+              <i className="bi bi-dot"></i>
+              <span>Generate</span>
+            </button>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() => handleItemClick("/msbte/sa-th/cianns?mode=edit")}
+            >
+              <i className="bi bi-dot"></i>
+              <span>Edit</span>
+            </button>
+            <button
+              className="msbte-dropdown-option"
+              onClick={() =>
+                handleItemClick("/msbte/sa-th/cianns?mode=print")
               }
             >
               <i className="bi bi-dot"></i>

@@ -5,17 +5,17 @@ import Sidebar from "../../basic/Sidebar";
 import { config } from "../../config/api";
 import "./MSBTEPages.css";
 
-const SAPRK4Edit = () => {
+const SATHGenerate = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const ciannData = location.state?.ciannData || null;
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [students, setStudents] = useState([]);
   const [marks, setMarks] = useState({});
-  const [maxLimit, setMaxLimit] = useState(100);
+  const [maxLimit, setMaxLimit] = useState(70);
   const [saving, setSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
-  // Fetch students on component load
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -39,7 +39,6 @@ const SAPRK4Edit = () => {
         if (response.ok) {
           const data = await response.json();
           setStudents(data);
-          // Initialize marks object
           const initialMarks = {};
           data.forEach((student) => {
             initialMarks[student._id] = "";
@@ -48,7 +47,7 @@ const SAPRK4Edit = () => {
           let nextMarks = initialMarks;
           if (ciannData?.ciannId && ciannData?.division) {
             const recordRes = await fetch(
-              `${config.msbte}/sa-pr-k4?ciannId=${encodeURIComponent(
+              `${config.msbte}/sa-th?ciannId=${encodeURIComponent(
                 ciannData.ciannId,
               )}&division=${encodeURIComponent(ciannData.division)}`,
             );
@@ -64,6 +63,7 @@ const SAPRK4Edit = () => {
                 if (record.maxMarks) {
                   setMaxLimit(Number(record.maxMarks));
                 }
+
                 nextMarks = { ...initialMarks };
                 data.forEach((student) => {
                   const key = `${student.rollNo || student.rollId || ""}::${student.studentName || student.name || ""}`;
@@ -71,6 +71,7 @@ const SAPRK4Edit = () => {
                     nextMarks[student._id] = marksByKey[key];
                   }
                 });
+                setIsSaved(true);
               }
             }
           }
@@ -123,7 +124,11 @@ const SAPRK4Edit = () => {
     });
   };
 
-  const handleUpdate = async () => {
+  const handleSubmit = () => {
+    alert("SA-TH sheet data prepared successfully.");
+  };
+
+  const handleSave = async () => {
     if (!ciannData?.ciannId || !ciannData?.division) {
       alert("Please select a CIANN first.");
       return;
@@ -165,7 +170,7 @@ const SAPRK4Edit = () => {
       };
 
       const token = localStorage.getItem("token");
-      const response = await fetch(`${config.msbte}/sa-pr-k4/save`, {
+      const response = await fetch(`${config.msbte}/sa-th/save`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -176,13 +181,15 @@ const SAPRK4Edit = () => {
 
       const data = await response.json();
       if (!response.ok || !data?.success) {
-        throw new Error(data?.message || "Failed to update SA-PR-K4 marks");
+        throw new Error(data?.message || "Failed to save SA-TH marks");
       }
 
-      alert("SA-PR Sheet updated successfully!");
+      setIsSaved(true);
+      alert("SA-TH marks saved. Continue editing from Edit page only.");
+      navigate("/msbte/sa-th/edit", { state: { ciannData } });
     } catch (error) {
-      console.error("Error updating SA-PR-K4 marks:", error);
-      alert(error.message || "Failed to update SA-PR-K4 marks");
+      console.error("Error saving SA-TH marks:", error);
+      alert(error.message || "Failed to save SA-TH marks");
     } finally {
       setSaving(false);
     }
@@ -202,17 +209,24 @@ const SAPRK4Edit = () => {
 
         {!ciannData && (
           <div className="alert alert-warning">
-            Please select a CIANN first for SA-PR-K4 edit.
+            Please select a CIANN first for SA-TH.
             <button
               className="btn btn-sm btn-outline-secondary ms-3"
-              onClick={() => navigate("/msbte/sa-pr-k4/cianns?mode=edit")}
+              onClick={() => navigate("/msbte/sa-th/cianns?mode=generate")}
             >
               Select CIANN
             </button>
           </div>
         )}
 
-        <h3 className="mb-4">Edit SA-PR Sheet</h3>
+        <h3 className="mb-4">Generate SA-TH Sheet</h3>
+
+        {isSaved && (
+          <div className="alert alert-info">
+            Marks are already saved for this CIANN/division. Generate is locked.
+            Use Edit page to modify marks.
+          </div>
+        )}
 
         <div className="mb-3" style={{ maxWidth: 240 }}>
           <label className="form-label">Limit Marks</label>
@@ -222,17 +236,18 @@ const SAPRK4Edit = () => {
             min="1"
             value={maxLimit}
             onChange={(e) => handleMaxLimitChange(e.target.value)}
+            disabled={isSaved}
           />
         </div>
 
-        <div className="table-responsive">
+        <div className="table-responsive mt-4">
           <table className="table table-bordered table-hover">
             <thead className="table-light">
               <tr>
                 <th>Roll ID</th>
                 <th>Name</th>
                 <th>Seat No.</th>
-                <th>Marks</th>
+                <th>Marks (Max {maxLimit})</th>
               </tr>
             </thead>
             <tbody>
@@ -253,6 +268,7 @@ const SAPRK4Edit = () => {
                         }
                         min="0"
                         max={maxLimit}
+                        disabled={isSaved}
                       />
                     </td>
                   </tr>
@@ -268,13 +284,25 @@ const SAPRK4Edit = () => {
           </table>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-3">
           <button
-            className="btn btn-warning me-2"
-            onClick={handleUpdate}
-            disabled={saving}
+            className="btn btn-success me-2"
+            onClick={handleSave}
+            disabled={saving || isSaved}
           >
-            <i className="bi bi-pencil-square"></i> Update Sheet
+            <i className="bi bi-save"></i>{" "}
+            {saving ? "Saving..." : isSaved ? "Saved" : "Save"}
+          </button>
+          <button className="btn btn-primary me-2" onClick={handleSubmit}>
+            <i className="bi bi-download"></i> Generate Sheet
+          </button>
+          <button
+            className="btn btn-info me-2"
+            onClick={() =>
+              navigate("/msbte/sa-th/print", { state: { marks, ciannData } })
+            }
+          >
+            <i className="bi bi-printer-fill"></i> Print Preview
           </button>
           <button className="btn btn-secondary" onClick={() => navigate(-1)}>
             Cancel
@@ -285,4 +313,4 @@ const SAPRK4Edit = () => {
   );
 };
 
-export default SAPRK4Edit;
+export default SATHGenerate;

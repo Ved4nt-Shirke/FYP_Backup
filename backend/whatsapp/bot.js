@@ -29,6 +29,7 @@ const WHATSAPP_AUTH_DATA_PATH = "./whatsapp/auth";
 const WHATSAPP_AUTH_CLIENT_ID = "attendance-bot";
 
 // ── Lazy model getters (models registered by server.js on boot) ────────────
+const { resolveStudents } = require("../utils/studentHistoryHelper");
 const getModel = (name) => mongoose.model(name);
 
 // ── In-memory session store: { "phone": SessionObject } ───────────────────
@@ -66,8 +67,20 @@ const client = new Client({
     }),
     puppeteer: {
         headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-software-rasterizer",
+            "--disable-extensions",
+            "--no-zygote",
+        ],
     },
+});
+
+client.on("loading_screen", (percent, message) => {
+    console.log(`🤖 WhatsApp Bot loading: ${percent}% - ${message}`);
 });
 
 client.on("qr", (qr) => {
@@ -189,20 +202,38 @@ client.on("message", async (message) => {
     const raw = message.body?.trim();
     if (!raw) return;
 
-    const phone = message.from.replace("@c.us", "");
+    let phone = message.from.replace("@c.us", "");
+    if (message.from.endsWith("@lid")) {
+        try {
+            const contact = await message.getContact();
+            if (contact && contact.number) {
+                phone = contact.number;
+            } else {
+                const mappings = await client.getContactLidAndPhone([message.from]);
+                if (mappings && mappings.length > 0 && mappings[0].pn) {
+                    phone = mappings[0].pn;
+                } else {
+                    phone = message.from.replace("@lid", "");
+                }
+            }
+        } catch (err) {
+            console.error("Failed to resolve phone from LID:", err);
+            phone = message.from.replace("@lid", "");
+        }
+    }
     const text = raw.toLowerCase();
 
     // Log incoming message to local file for diagnostic review
     try {
         fs.appendFileSync(
             path.resolve(__dirname, "../incoming_messages.log"),
-            `${new Date().toISOString()} | Sender: ${phone} | Msg: ${raw}\n`
+            `${new Date().toISOString()} | Sender: ${message.from} (Resolved: ${phone}) | Msg: ${raw}\n`
         );
     } catch (logErr) {
         console.error("Failed to write incoming messages log:", logErr);
     }
 
-    console.log(`📨 [${phone}] ${raw.substring(0, 120)}`);
+    console.log(`📨 [${message.from} -> resolved: ${phone}] ${raw.substring(0, 120)}`);
 
     // ── Roll Number Validation/Attendance Flow (Student/Direct Validation) ─────
     if (isRollNoFormat(raw)) {
@@ -508,10 +539,10 @@ async function handleAbsentRolls(message, raw, faculty, phone, session) {
     const ciannId = selectedCiann.ciannId;
     const date = selectedPlanDetails.date;
 
-    const { resolveStudents } = require("../utils/studentHistoryHelper");
     const students = await resolveStudents({
         division: selectedCiann.division,
-        academicYear: selectedCiann.academicYear
+        academicYear: selectedCiann.academicYear,
+        semester: selectedCiann.semester
     }, selectedCiann.college || (faculty && faculty.institution));
     
     if (students.length === 0) {
@@ -764,10 +795,10 @@ async function handleDirectAttendance(message, body, faculty, phone) {
             return;
         }
 
-        const { resolveStudents } = require("../utils/studentHistoryHelper");
         const students = await resolveStudents({
             division: ciann.division,
-            academicYear: ciann.academicYear
+            academicYear: ciann.academicYear,
+            semester: ciann.semester
         }, ciann.college);
 
         if (students.length === 0) {
@@ -946,6 +977,11 @@ function matchRollNoInList(input, studentRolls) {
 // ── Start ────────────────────────────────────────────────────────────────────
 function startWhatsAppBot() {
     console.log("🚀 Starting Conversational WhatsApp Attendance Bot...");
+    try {
+        resetLocalSessionData();
+    } catch (err) {
+        console.error("Warning: Failed to clear session locks:", err.message);
+    }
     initializeWithRecovery();
 }
 

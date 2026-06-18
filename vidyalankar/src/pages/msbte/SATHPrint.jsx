@@ -3,16 +3,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { config } from "../../config/api";
 import "./MSBTEPages.css";
 
-const SAPRK4Print = () => {
+const SATHPrint = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const ciannData = location.state?.ciannData || null;
   const marksFromState = location.state?.marks || {};
   const [savedMarks, setSavedMarks] = useState({});
-  const [maxLimit, setMaxLimit] = useState("");
+  const [maxLimit, setMaxLimit] = useState("70");
 
-  // Fetch students on component load
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -43,7 +42,7 @@ const SAPRK4Print = () => {
             ciannData?.division
           ) {
             const recordRes = await fetch(
-              `${config.msbte}/sa-pr-k4?ciannId=${encodeURIComponent(
+              `${config.msbte}/sa-th?ciannId=${encodeURIComponent(
                 ciannData.ciannId,
               )}&division=${encodeURIComponent(ciannData.division)}`,
             );
@@ -105,10 +104,10 @@ const SAPRK4Print = () => {
       {!ciannData ? (
         <div className="k3-form-card">
           <h3>Missing CIANN Selection</h3>
-          <p className="k3-error">Please select a CIANN first for SA-PR-K4 print.</p>
+          <p className="k3-error">Please select a CIANN first for SA-TH print.</p>
           <button
             className="btn btn-success"
-            onClick={() => navigate("/msbte/sa-pr-k4/cianns?mode=print")}
+            onClick={() => navigate("/msbte/sa-th/cianns?mode=print")}
           >
             Go to CIANN Selection
           </button>
@@ -132,10 +131,10 @@ const SAPRK4Print = () => {
                         Maharashtra State Board of Technical Education
                       </div>
                       <div className="k4-print-subtitle">
-                        SUMMATIVE ASSESSMENT OF PRACTICAL (SA-PR)
+                        SUMMATIVE ASSESSMENT OF THEORY (SA-TH)
                       </div>
                     </div>
-                    <div className="k4-print-format">Format K4</div>
+                    <div className="k4-print-format">Format SA-TH</div>
                   </div>
                 </th>
               </tr>
@@ -154,7 +153,7 @@ const SAPRK4Print = () => {
                   <strong>Course and Code:</strong> {ciannData?.class || "C05K-A"}
                 </th>
                 <th colSpan="3" className="k4-meta-center">
-                  <strong>Marks: Max:</strong> {maxLimit || "-"} &nbsp;&nbsp;
+                  <strong>Marks: Max:</strong> {maxLimit || "70"} &nbsp;&nbsp;
                   <strong>Min</strong> 0 &nbsp;&nbsp;
                   <strong>Date of Examination :</strong> {formatDate()}
                 </th>
@@ -164,7 +163,7 @@ const SAPRK4Print = () => {
                 <th>Enrollment Number</th>
                 <th>Name of the Student</th>
                 <th>Exam Seat No.</th>
-                <th>Marks obtained in SA part of Practical as per L-A Scheme ( Max Marks )</th>
+                <th>Marks obtained in SA part of Theory ( Max Marks {maxLimit} )</th>
               </tr>
               <tr>
                 <th></th>
@@ -182,7 +181,7 @@ const SAPRK4Print = () => {
                     <td>{student.enrollmentNo || "-"}</td>
                     <td className="text-start">{student.studentName || student.name || "-"}</td>
                     <td>{student.examSeatNo || student.seatNo || student.examSeat || "-"}</td>
-                    <td>{marks[student._id] || ""}</td>
+                    <td>{marks[student._id] !== undefined && marks[student._id] !== null ? marks[student._id] : ""}</td>
                   </tr>
                 ))
               ) : (
@@ -215,4 +214,4 @@ const SAPRK4Print = () => {
   );
 };
 
-export default SAPRK4Print;
+export default SATHPrint;

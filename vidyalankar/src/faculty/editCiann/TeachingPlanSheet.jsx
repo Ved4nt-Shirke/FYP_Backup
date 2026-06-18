@@ -21,7 +21,8 @@ const modalStyles = {
     justifyContent: "center",
   },
   content: {
-    background: "white",
+    background: "var(--ciann-surface, #ffffff)",
+    border: "1px solid var(--ciann-border, #dbe5f2)",
     borderRadius: "16px", // More rounded corners
     width: "90%",
     maxWidth: "900px", // Increased for better visibility
@@ -110,6 +111,36 @@ const TeachingPlan = () => {
   const [message, setMessage] = useState(""); // For submission messages
   const [modalWeek, setModalWeek] = useState("");
   const [coData, setCoData] = useState([]);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+
+  // Fetch theory attendance records for the selected ciannId
+  useEffect(() => {
+    if (!ciannId) return;
+    const fetchAttendance = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(
+          getApiUrl(`/theory-attendance?ciannId=${ciannId}`),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setAttendanceRecords(Array.isArray(data) ? data : []);
+        } else {
+          setAttendanceRecords([]);
+        }
+      } catch (err) {
+        console.error("Error fetching attendance records:", err);
+        setAttendanceRecords([]);
+      }
+    };
+    fetchAttendance();
+  }, [ciannId]);
 
   // Chapter dropdown options fetched from DB
   const [chapterOptions, setChapterOptions] = useState([
@@ -265,15 +296,16 @@ const TeachingPlan = () => {
       const found = teachingPlans.find((p) => p.weekNo === numericWeek);
       if (found && found.plans && found.plans.length > 0) {
         setPlans(
-          found.plans.map((p) => ({
-            co: p.co || "",
-            tlo: p.tlo || "",
-            chapter: p.chapter || "",
-            subTopic: p.subTopic || "",
-            startDate: p.startDate || "",
-            endDate: p.endDate || "",
-            teachingMethod: p.teachingMethod || "",
-          }))
+          found.plans.map((p) => {
+            return {
+              co: p.co || "",
+              tlo: p.tlo || "",
+              chapter: p.chapter || "",
+              subTopic: p.subTopic || "",
+              startDate: p.startDate || "",
+              teachingMethod: p.teachingMethod || "",
+            };
+          })
         );
       } else {
         setPlans([
@@ -283,7 +315,6 @@ const TeachingPlan = () => {
             chapter: "",
             subTopic: "",
             startDate: "",
-            endDate: "",
             teachingMethod: "",
           },
         ]);
@@ -307,7 +338,6 @@ const TeachingPlan = () => {
           chapter: "",
           subTopic: "",
           startDate: "",
-          endDate: "",
           teachingMethod: "",
         },
       ];
@@ -416,7 +446,6 @@ const TeachingPlan = () => {
           <td data-label="TLO">{p.tlo || ""}</td>
           <td data-label="Sub-Topic">{p.subTopic || ""}</td>
           <td data-label="Start Date">{p.startDate || ""}</td>
-          <td data-label="End Date">{p.endDate || ""}</td>
           <td data-label="Teaching Method">{p.teachingMethod || ""}</td>
         </tr>
       ));
@@ -439,7 +468,6 @@ const TeachingPlan = () => {
           <td data-label="TLO"></td>
           <td data-label="Sub-Topic"></td>
           <td data-label="Start Date"></td>
-          <td data-label="End Date"></td>
           <td data-label="Teaching Method"></td>
         </tr>
       );
@@ -504,12 +532,12 @@ const TeachingPlan = () => {
 
         <div className="weekwise-form-container">
           <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: "15px 0" }}>
-            <label style={{ fontWeight: "600", fontSize: "15px", color: "#495057" }}>Select Entry (Week):</label>
+            <label style={{ fontWeight: "600", fontSize: "15px", color: "var(--ciann-text, #495057)" }}>Select Entry (Week):</label>
             <select
               value={modalWeek}
               onChange={(e) => handleWeekChange(e.target.value)}
               className="form-input"
-              style={{ width: "160px", padding: "6px 10px", fontSize: "14px", border: "1px solid #dde3ea", borderRadius: "8px" }}
+              style={{ width: "160px", padding: "6px 10px", fontSize: "14px", border: "1px solid var(--ciann-border, #dde3ea)", borderRadius: "8px", background: "var(--ciann-surface, #ffffff)", color: "var(--ciann-text, #10223d)" }}
             >
               <option value="">Select Week</option>
               {Array.from({ length: 16 }, (_, i) => (
@@ -525,12 +553,11 @@ const TeachingPlan = () => {
               <thead>
                 <tr>
                   <th style={{ width: "8%" }}>CO</th>
-                  <th style={{ width: "16%" }}>Chapter</th>
-                  <th style={{ width: "20%" }}>TLO</th>
-                  <th style={{ width: "16%" }}>Sub-Topic</th>
-                  <th style={{ width: "13%" }}>Start Date</th>
-                  <th style={{ width: "13%" }}>End Date</th>
-                  <th style={{ width: "14%" }}>Teaching Method</th>
+                  <th style={{ width: "18%" }}>Chapter</th>
+                  <th style={{ width: "16%" }}>TLO</th>
+                  <th style={{ width: "18%" }}>Sub-Topic</th>
+                  <th style={{ width: "20%" }}>Start Date</th>
+                  <th style={{ width: "15%" }}>Teaching Method</th>
                   <th style={{ width: "5%" }}>Action</th>
                 </tr>
               </thead>
@@ -620,16 +647,6 @@ const TeachingPlan = () => {
                     </td>
                     <td>
                       <input
-                        type="date"
-                        value={plan.endDate || ""}
-                        onChange={(e) => handleChange(index, "endDate", e.target.value)}
-                        onFocus={(e) => e.target.showPicker()}
-                        disabled={!modalWeek}
-                        className="form-input"
-                      />
-                    </td>
-                    <td>
-                      <input
                         type="text"
                         placeholder="Teaching Method"
                         value={plan.teachingMethod || ""}
@@ -678,7 +695,6 @@ const TeachingPlan = () => {
                     chapter: "",
                     subTopic: "",
                     startDate: "",
-                    endDate: "",
                     teachingMethod: "",
                   },
                 ]);
@@ -688,11 +704,13 @@ const TeachingPlan = () => {
                 marginTop: "15px",
                 padding: "8px 16px",
                 fontSize: "14px",
-                backgroundColor: "#2e7d32",
-                color: "white",
-                borderRadius: "6px",
-                border: "none",
-                cursor: "pointer"
+                backgroundColor: "var(--primary-color, #2e7d32)",
+                color: "var(--text-on-primary, white)",
+                borderRadius: "8px",
+                border: "1px solid var(--primary-accent, rgba(26, 87, 185, 0.26))",
+                cursor: "pointer",
+                fontWeight: "600",
+                boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
               }}
             >
               + Add Row
@@ -850,7 +868,6 @@ const TeachingPlan = () => {
                         <th>TLO</th>
                         <th>Sub-Topic</th>
                         <th>Start Date</th>
-                        <th>End Date</th>
                         <th>Teaching Method</th>
                       </tr>
                     </thead>

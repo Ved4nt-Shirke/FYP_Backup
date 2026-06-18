@@ -56,37 +56,7 @@ export default function Tlo() {
           throw new Error("Subject ID not found on CIANN data.");
         }
 
-        // 1. Fetch Admin Course Details for COs
-        const courseDetailsRes = await fetch(
-          getApiUrl(`/pt-microproject/new/course-details/${subjectId}`),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const courseDetailsData = await courseDetailsRes.json();
-
-        let loadedCOs = [];
-        if (courseDetailsData.success && courseDetailsData.courseDetails) {
-          loadedCOs = courseDetailsData.courseDetails.courseOutcomes || [];
-          setCourseOutcomes(loadedCOs);
-          if (loadedCOs.length > 0) {
-            setSelectedCo(loadedCOs[0].coNumber);
-          }
-        } else {
-          // Fallback outcomes if admin hasn't configured course outcomes yet
-          loadedCOs = [
-            { coNumber: "CO1", description: "Course Outcome 1" },
-            { coNumber: "CO2", description: "Course Outcome 2" },
-            { coNumber: "CO3", description: "Course Outcome 3" },
-          ];
-          setCourseOutcomes(loadedCOs);
-          setSelectedCo("CO1");
-        }
-
-        // 2. Fetch Existing TLOs & LLOs Mappings
+        // Fetch Existing TLOs, LLOs & COs Mappings from Ciann-specific TloLlo record
         const tloLloRes = await fetch(
           getApiUrl(`/subject-details/tlo-llo/${ciannData.ciannId}/${subjectId}`),
           {
@@ -98,21 +68,57 @@ export default function Tlo() {
         );
         const tloLloData = await tloLloRes.json();
 
+        let loadedCOs = [];
         const initialMappings = {};
-        loadedCOs.forEach((co) => {
-          initialMappings[co.coNumber] = { tlos: [""], llos: [""] };
-        });
 
-        if (tloLloData.success && tloLloData.data && Array.isArray(tloLloData.data.coData)) {
+        if (tloLloData.success && tloLloData.data && Array.isArray(tloLloData.data.coData) && tloLloData.data.coData.length > 0) {
+          loadedCOs = tloLloData.data.coData.map((coItem) => ({
+            coNumber: coItem.coNumber,
+            description: coItem.coDescription || "",
+          }));
           tloLloData.data.coData.forEach((coItem) => {
             initialMappings[coItem.coNumber] = {
               tlos: coItem.tlos.length > 0 ? coItem.tlos : [""],
               llos: coItem.llos.length > 0 ? coItem.llos : [""],
             };
           });
+        } else {
+          // Fallback: load COs from courseDetails endpoint
+          const courseDetailsRes = await fetch(
+            getApiUrl(`/pt-microproject/new/course-details/${subjectId}`),
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          const courseDetailsData = await courseDetailsRes.json();
+          if (courseDetailsData.success && courseDetailsData.courseDetails) {
+            const tempCOs = courseDetailsData.courseDetails.courseOutcomes || [];
+            if (tempCOs.length > 0) {
+              loadedCOs = tempCOs.map((c) => ({
+                coNumber: c.coNumber,
+                description: c.description || "",
+              }));
+              tempCOs.forEach((c) => {
+                initialMappings[c.coNumber] = { tlos: [""], llos: [""] };
+              });
+            } else {
+              loadedCOs = [{ coNumber: "CO1", description: "" }];
+              initialMappings["CO1"] = { tlos: [""], llos: [""] };
+            }
+          } else {
+            loadedCOs = [{ coNumber: "CO1", description: "" }];
+            initialMappings["CO1"] = { tlos: [""], llos: [""] };
+          }
         }
 
+        setCourseOutcomes(loadedCOs);
         setCoMappings(initialMappings);
+        if (loadedCOs.length > 0) {
+          setSelectedCo(loadedCOs[0].coNumber);
+        }
       } catch (err) {
         console.error("Error fetching TLO details:", err);
         setError("Error loading Course Outcomes: " + err.message);
@@ -125,6 +131,41 @@ export default function Tlo() {
   }, [ciannData]);
 
   // Mutation Handlers
+  const handleAddCo = () => {
+    const nextCoNum = `CO${courseOutcomes.length + 1}`;
+    setCourseOutcomes((prev) => [...prev, { coNumber: nextCoNum, description: "" }]);
+    setCoMappings((prev) => ({
+      ...prev,
+      [nextCoNum]: { tlos: [""], llos: [""] }
+    }));
+    setSelectedCo(nextCoNum);
+  };
+
+  const handleDeleteCo = () => {
+    if (courseOutcomes.length <= 1) return;
+    const indexToDelete = courseOutcomes.findIndex((c) => c.coNumber === selectedCo);
+    const updatedCOs = courseOutcomes.filter((_, idx) => idx !== indexToDelete);
+
+    // Renumber remaining COs
+    const renumberedCOs = updatedCOs.map((c, i) => ({
+      ...c,
+      coNumber: `CO${i + 1}`
+    }));
+
+    // Remap coMappings
+    const remappedMappings = {};
+    renumberedCOs.forEach((c, i) => {
+      const origIndex = i >= indexToDelete ? i + 1 : i;
+      const origCoNum = `CO${origIndex + 1}`;
+      remappedMappings[c.coNumber] = coMappings[origCoNum] || { tlos: [""], llos: [""] };
+    });
+
+    setCourseOutcomes(renumberedCOs);
+    setCoMappings(remappedMappings);
+    const newSelectIndex = Math.max(0, indexToDelete - 1);
+    setSelectedCo(renumberedCOs[newSelectIndex].coNumber);
+  };
+
   const handleAddTloField = () => {
     if (!selectedCo) return;
     setCoMappings((prev) => {
@@ -301,14 +342,45 @@ export default function Tlo() {
                             ))}
                           </select>
 
+                          <div className="d-flex gap-2 mt-3">
+                            <button
+                              type="button"
+                              onClick={handleAddCo}
+                              className="btn btn-sm btn-outline-primary w-100 fw-bold"
+                            >
+                              + Add CO
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleDeleteCo}
+                              disabled={courseOutcomes.length <= 1}
+                              className="btn btn-sm btn-outline-danger w-100 fw-bold"
+                            >
+                              Delete CO
+                            </button>
+                          </div>
+
                           {selectedCoObj && (
                             <div className="mt-4 p-3 bg-light rounded-3 border-start border-4 border-primary">
-                              <span className="text-primary fw-bold text-uppercase fs-7 block mb-1">
+                              <span className="text-primary fw-bold text-uppercase fs-7 block mb-2 d-block">
                                 Description
                               </span>
-                              <p className="mb-0 text-dark small fw-semibold">
-                                {selectedCoObj.description || "(No description configured)"}
-                              </p>
+                              <textarea
+                                value={selectedCoObj.description || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setCourseOutcomes((prev) =>
+                                    prev.map((c) =>
+                                      c.coNumber === selectedCo
+                                        ? { ...c, description: val }
+                                        : c
+                                    )
+                                  );
+                                }}
+                                className="form-control form-control-sm bg-white text-dark"
+                                placeholder="Enter Course Outcome Description..."
+                                rows="4"
+                              />
                             </div>
                           )}
                         </div>
