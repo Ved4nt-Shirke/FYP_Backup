@@ -21,6 +21,16 @@ const rateLimit = (options = {}) => {
   }, windowMs);
 
   return (req, res, next) => {
+    // Bypass rate limiting in development, local, or debug environments to prevent development blockages
+    if (
+      process.env.NODE_ENV === "development" ||
+      process.env.NODE_ENV !== "production" ||
+      process.env.DEBUG === "true" ||
+      process.env.DISABLE_RATE_LIMIT === "true"
+    ) {
+      return next();
+    }
+
     const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip;
     const now = Date.now();
 
