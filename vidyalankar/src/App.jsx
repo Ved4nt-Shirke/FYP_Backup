@@ -341,16 +341,74 @@ const AppContent = () => {
   // Auth Guard
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role") || "faculty";
     const isLoginPage = location.pathname === "/login";
     const isPublicPage = [
       "view-attend2",
       "view-practical3",
+      "view-extra-practical3",
+      "view-extra-theory-attend2",
+      "view-tutorial-attendance2",
       "summary-pages",
       "edit-ciann-print",
+      "public/practical-exam",
     ].some((p) => location.pathname.includes(p));
 
-    if (!token && !isLoginPage && !isPublicPage) {
-      navigate("/login");
+    if (!token) {
+      if (!isLoginPage && !isPublicPage) {
+        navigate("/login");
+      }
+    } else {
+      // If logged in and hitting login page, redirect to dashboard
+      if (isLoginPage) {
+        navigate("/dashboard");
+        return;
+      }
+
+      const path = location.pathname;
+
+      // Restrict superadmin routes to only superadmin role
+      if (path.startsWith("/superadmin-") || path.startsWith("/superadmin/")) {
+        if (role !== "superadmin") {
+          navigate("/dashboard");
+          return;
+        }
+      }
+
+      // Restrict admin routes to only admin or superadmin role
+      if (path.startsWith("/admin-") || path.startsWith("/admin/")) {
+        if (role !== "admin" && role !== "superadmin") {
+          navigate("/dashboard");
+          return;
+        }
+      }
+
+      // Restrict office routes to only office or superadmin role
+      if (path.startsWith("/office-") || path.startsWith("/office/")) {
+        if (role !== "office" && role !== "superadmin") {
+          navigate("/dashboard");
+          return;
+        }
+      }
+
+      // Restrict faculty-only pages for students
+      const isFacultyOrAdminPath = ![
+        "/dashboard",
+        "/study-material",
+        "/messages",
+        "/mock-exams",
+        "/practical-exams",
+        "/practical-exam-upload",
+        "/timetable",
+        "/results",
+        "/notices",
+        "/profile"
+      ].some((p) => path === p || path.startsWith(p + "/")) && !isPublicPage;
+
+      if (role === "student" && isFacultyOrAdminPath && path !== "/") {
+        navigate("/dashboard");
+        return;
+      }
     }
   }, [location.pathname, navigate]);
 
