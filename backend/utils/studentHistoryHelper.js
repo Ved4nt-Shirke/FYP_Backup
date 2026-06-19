@@ -169,6 +169,7 @@ async function resolveStudents(params, college) {
             departmentId: s.departmentId?._id || s.departmentId,
             courseId: s.courseId?._id || s.courseId,
             seatNo: rec.seatNo || s.seatNo || "",
+            username: s.username,
             plainPassword: s.plainPassword,
             aadhaarNo: s.aadhaarNo,
             departmentName: s.departmentId?.name || "",
@@ -206,7 +207,7 @@ async function resolveStudents(params, college) {
       .populate("departmentId", "name code")
       .populate("courseId", "name semester class scheme courseCode")
       .populate("divisionId", "name")
-      .select("rollNo studentName enrollmentNo batch academicYear division departmentId courseId divisionId seatNo plainPassword aadhaarNo")
+      .select("rollNo studentName enrollmentNo batch academicYear division departmentId courseId divisionId seatNo plainPassword username aadhaarNo")
       .lean()
       .exec();
 

@@ -1,112 +1,70 @@
-/* OfficeTheme.css - Professional Office Staff Theme */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+/* OfficeTheme.css - Premium SaaS Admin Dashboard Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   /* Fonts */
-  --office-font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  --office-font-family: 'Inter', 'Outfit', sans-serif;
   
-  /* Primary Theme Colors */
-  --office-primary: #1e3a8a; /* Deep Navy */
-  --office-primary-dark: #172554;
-  --office-primary-light: rgba(30, 58, 138, 0.06);
-  --office-accent: #2563eb; /* Royal Blue */
-  --office-accent-light: rgba(37, 99, 235, 0.08);
-  
-  /* Advanced Gradients */
-  --office-gradient-primary: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-  --office-gradient-primary-hover: linear-gradient(135deg, #172554 0%, #1d4ed8 100%);
-  --office-gradient-accent: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
-  --office-gradient-card: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  --office-gradient-alert-error: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
-  --office-gradient-alert-success: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  --office-gradient-glow: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.12) 0%, transparent 80%);
+  /* Primary SaaS Design System Colors */
+  --office-primary: #2563EB;
+  --office-secondary: #4F46E5;
+  --office-success: #10B981;
+  --office-warning: #F59E0B;
+  --office-danger: #EF4444;
+  --office-bg: #F8FAFC;
+  --office-surface: #FFFFFF;
+  --office-text: #0F172A;
+  --office-muted: #64748B;
+  --office-border: #E2E8F0;
 
-  /* Background & Surface */
-  --office-bg: #f8fafc;
-  --office-bg-main: #f1f5f9;
-  --office-surface: #ffffff;
-  --office-border: #cbd5e1;
+  /* Shaded and Light Variants */
+  --office-primary-dark: #1D4ED8;
+  --office-primary-light: rgba(37, 99, 235, 0.06);
+  --office-secondary-dark: #3730A3;
+  --office-secondary-light: rgba(79, 70, 229, 0.06);
   
-  /* Text Colors */
-  --office-text: #0f172a;
-  --office-text-primary: #0f172a; /* Explicitly mapped for backup */
-  --office-text-secondary: #475569;
-  --office-muted: #64748b;
+  /* Gradient Combinations */
+  --office-gradient-primary: linear-gradient(135deg, #2563EB 0%, #4F46E5 100%);
+  --office-gradient-hover: linear-gradient(135deg, #1D4ED8 0%, #3730A3 100%);
+  --office-gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  --office-gradient-danger: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  --office-gradient-glow: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.08) 0%, transparent 85%);
+
+  /* Border Radii */
+  --office-radius-sm: 6px;
+  --office-radius-md: 10px;
+  --office-radius-lg: 14px;
   
-  /* Status Colors */
-  --office-success: #10b981;
-  --office-success-dark: #047857;
-  --office-success-light: #ecfdf5;
-  --office-warning: #f59e0b;
-  --office-warning-light: #fffbeb;
-  --office-danger: #ef4444;
-  --office-danger-dark: #b91c1c;
-  --office-danger-light: #fee2e2;
-  --office-info: #3b82f6;
-  --office-info-light: #dbeafe;
+  /* Drop Shadows */
+  --office-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --office-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --office-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --office-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   
-  /* Shadows */
-  --office-shadow-sm: 0 2px 8px rgba(30, 58, 138, 0.03);
-  --office-shadow-md: 0 8px 20px -6px rgba(30, 58, 138, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
-  --office-shadow-lg: 0 20px 32px -12px rgba(30, 58, 138, 0.12), 0 1px 3px rgba(0, 0, 0, 0.02);
-  --office-shadow-xl: 0 25px 50px -12px rgba(30, 58, 138, 0.2);
-  --office-shadow-glow: 0 0 25px rgba(37, 99, 235, 0.25);
-  
-  /* Borders & Radius */
-  --office-radius-sm: 8px;
-  --office-radius-md: 12px;
-  --office-radius-lg: 16px;
-  --office-radius-xl: 24px;
-  
-  /* Glassmorphism */
-  --office-glass-bg: rgba(255, 255, 255, 0.85);
-  --office-glass-border: rgba(203, 213, 225, 0.6);
-  --office-glass-blur: blur(12px);
+  /* Layout Dimensions */
+  --sidebar-width: 280px;
+  --header-height: 0px;
 
   /* Transitions */
-  --office-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --office-transition-fast: all 0.15s ease-out;
+  --office-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --office-transition-fast: all 0.1s ease-out;
 }
 
-/* Base Body Font Override and Smooth Scroll */
+/* Base Body Styles */
 body {
   font-family: var(--office-font-family);
+  background-color: var(--office-bg);
+  color: var(--office-text);
+  margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* Light theme adjustments */
-body.light-mode,
-[data-theme="light"] {
-  --office-bg: #f8fafc;
-  --office-surface: #ffffff;
-  --office-border: #cbd5e1;
-}
-
-/* Dark theme adjustments */
-body.dark-mode,
-[data-theme="dark"] {
-  --office-bg: #0b1329;
-  --office-bg-main: #020617;
-  --office-surface: #0f172a;
-  --office-border: #1e293b;
-  --office-text: #f8fafc;
-  --office-text-primary: #f8fafc;
-  --office-text-secondary: #94a3b8;
-  --office-muted: #475569;
-  --office-primary-light: rgba(37, 99, 235, 0.15);
-  --office-glass-bg: rgba(15, 23, 42, 0.85);
-  --office-glass-border: rgba(30, 41, 59, 0.7);
-  --office-gradient-card: linear-gradient(180deg, #0f172a 0%, #0b1329 100%);
-  --office-gradient-alert-error: linear-gradient(135deg, #1c1012 0%, #2d1216 100%);
-  --office-gradient-alert-success: linear-gradient(135deg, #0d1a14 0%, #0f3020 100%);
 }
 
 /* Animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -122,7 +80,7 @@ body.dark-mode,
 @keyframes slideInLeft {
   from {
     opacity: 0;
-    transform: translateX(-24px);
+    transform: translateX(-16px);
   }
   to {
     opacity: 1;
@@ -130,7 +88,7 @@ body.dark-mode,
   }
 }
 
-@keyframes drawerSlideIn {
+@keyframes slideInRight {
   from {
     transform: translateX(100%);
   }
@@ -139,10 +97,10 @@ body.dark-mode,
   }
 }
 
-@keyframes modalZoomIn {
+@keyframes modalScaleIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
   to {
     opacity: 1;
@@ -150,7 +108,7 @@ body.dark-mode,
   }
 }
 
-/* Custom Scrollbar Styles for Containers */
+/* Scrollbar customization */
 .office-scrollable,
 .scrollable-content,
 .sidebar-nav,
@@ -183,7 +141,7 @@ body.dark-mode,
 .batch-allocation-grid::-webkit-scrollbar-thumb,
 .editor-content::-webkit-scrollbar-thumb {
   background-color: var(--office-border);
-  border-radius: 20px;
+  border-radius: 9999px;
 }
 
 .office-scrollable::-webkit-scrollbar-thumb:hover,

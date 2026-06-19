@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { config } from "../config/api";
 import "./ManageStudents.css";
-
-const generateBatchOptions = (count = 12) =>
-  Array.from({ length: count }, (_, index) => `Batch ${index + 1}`);
 
 const generateAcademicYearOptions = () => {
   const currentYear = new Date().getFullYear();
@@ -27,19 +25,15 @@ const normalizeBatch = (value) =>
 const normalizeAcademicYear = (value) => {
   const raw = (value || "").toString().trim();
   if (!raw) return "";
-
   const compact = raw.replace(/\s+/g, "").replace(/\//g, "-");
   const parts = compact.split("-").filter(Boolean);
-
   if (parts.length === 2) {
     const start = parts[0].replace(/\D/g, "");
     const end = parts[1].replace(/\D/g, "");
-
     if (start.length === 4 && end.length >= 2) {
       return `${start}-${end.slice(-2)}`;
     }
   }
-
   return compact.toLowerCase();
 };
 
@@ -55,13 +49,17 @@ const ManageStudents = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
+  // Sorting
+  const [sortField, setSortField] = useState("rollNo");
+  const [sortDirection, setSortDirection] = useState("asc");
+
   // Cascading filters
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedDivision, setSelectedDivision] = useState("");
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
-  const [showFilters, setShowFilters] = useState(true);
+  const [filterSearch, setFilterSearch] = useState("");
 
   // Dropdown data
   const [departments, setDepartments] = useState([]);
@@ -77,39 +75,30 @@ const ManageStudents = () => {
     academicYear: "",
     batch: "",
     seatNo: "",
-    section: "",
     aadhaarNo: "",
   });
 
-  // Search
-  const [filterSearch, setFilterSearch] = useState("");
+  // Selected Student for Details Drawer
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [showDetailsDrawer, setShowDetailsDrawer] = useState(false);
+  const [isEditingInDrawer, setIsEditingInDrawer] = useState(false);
+  const [drawerEditData, setDrawerEditData] = useState({});
+  const [regeneratingPasswordId, setRegeneratingPasswordId] = useState(null);
 
-  // Edit mode
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({});
+  // Clipboard copied
+  const [copiedId, setCopiedId] = useState(null);
 
-  // Delete confirmation
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-  const [deleteConfirmName, setDeleteConfirmName] = useState("");
-
-  // Password modal
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState("");
-  const [generatedPasswordStudent, setGeneratedPasswordStudent] = useState("");
+  // Bulk Seat Number Upload
+  const [showBulkSeatModal, setShowBulkSeatModal] = useState(false);
+  const [bulkSeatFile, setBulkSeatFile] = useState(null);
+  const [bulkSeatFileName, setBulkSeatFileName] = useState("");
+  const [bulkSeatParsedRows, setBulkSeatParsedRows] = useState([]);
+  const [bulkSeatUploading, setBulkSeatUploading] = useState(false);
+  const [bulkSeatResult, setBulkSeatResult] = useState(null);
 
   // Initial load
   useEffect(() => {
     fetchDepartments();
-
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded = JSON.parse(atob(token.split(".")[1]));
-        console.log("Current user from token:", decoded);
-      } catch (e) {
-        console.log("Could not decode token:", e.message);
-      }
-    }
   }, []);
 
   // Sync seat numbers state with student records
@@ -219,39 +208,19 @@ const ManageStudents = () => {
       if (selectedDepartment) params.append("departmentId", selectedDepartment);
       if (selectedCourse) params.append("courseId", selectedCourse);
       if (selectedDivision) params.append("divisionId", selectedDivision);
-      if (selectedAcademicYear)
-        params.append("academicYear", selectedAcademicYear);
+      if (selectedAcademicYear) params.append("academicYear", selectedAcademicYear);
       if (selectedBatch) params.append("batch", selectedBatch.trim());
 
       if (params.toString()) url += `?${params.toString()}`;
-
-      console.log("=== FETCH STUDENTS DEBUG ===");
-      console.log("Filters:", {
-        department: selectedDepartment,
-        course: selectedCourse,
-        division: selectedDivision,
-        academicYear: selectedAcademicYear,
-        batch: selectedBatch,
-      });
-      console.log("Fetching URL:", url);
 
       const token = localStorage.getItem("token");
       const res = await fetch(url, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
-      console.log("Response status:", res.status);
-
       const data = await res.json();
-      console.log("Full response data:", data);
-      console.log("Is data.students array?", Array.isArray(data.students));
-      console.log("Is data.students populated?", data.students?.length);
-      if (data.filterHint) {
-        console.log("Filter hint from server:", data.filterHint);
-      }
-
-      // Handle both direct array and object with students property
       let studentList = [];
+
       if (Array.isArray(data)) {
         studentList = data;
       } else if (data.students && Array.isArray(data.students)) {
@@ -260,27 +229,17 @@ const ManageStudents = () => {
         studentList = data.data;
       }
 
-      console.log("Setting students to array with length:", studentList.length);
-      if (studentList.length > 0) {
-        console.log("First student:", studentList[0]);
-      }
-
-      if (
-        studentList.length === 0 &&
-        data.filterHint?.code === "FILTER_MISMATCH"
-      ) {
+      // Retry with relaxed filter logic if server returns a filter mismatch
+      if (studentList.length === 0 && data.filterHint?.code === "FILTER_MISMATCH") {
         const relaxedParams = new URLSearchParams(params);
         relaxedParams.delete("academicYear");
         relaxedParams.delete("batch");
 
         if (relaxedParams.toString()) {
           const relaxedUrl = `${config.office.students}?${relaxedParams.toString()}`;
-          console.log("Retrying with relaxed filters:", relaxedUrl);
-
           const relaxedRes = await fetch(relaxedUrl, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           });
-
           const relaxedData = await relaxedRes.json();
           let relaxedList = [];
 
@@ -288,41 +247,26 @@ const ManageStudents = () => {
             relaxedList = relaxedData;
           } else if (Array.isArray(relaxedData.students)) {
             relaxedList = relaxedData.students;
-          } else if (Array.isArray(relaxedData.data)) {
-            relaxedList = relaxedData.data;
           }
 
-          const normalizedSelectedYear =
-            normalizeAcademicYear(selectedAcademicYear);
+          const normalizedSelectedYear = normalizeAcademicYear(selectedAcademicYear);
           const normalizedSelectedBatch = normalizeBatch(selectedBatch);
 
           const normalizedMatches = relaxedList.filter((student) => {
             const studentYear = normalizeAcademicYear(student?.academicYear);
             const studentBatch = normalizeBatch(student?.batch);
-
-            const yearMatches = normalizedSelectedYear
-              ? studentYear === normalizedSelectedYear
-              : true;
-            const batchMatches = normalizedSelectedBatch
-              ? studentBatch === normalizedSelectedBatch
-              : true;
-
+            const yearMatches = normalizedSelectedYear ? studentYear === normalizedSelectedYear : true;
+            const batchMatches = normalizedSelectedBatch ? studentBatch === normalizedSelectedBatch : true;
             return yearMatches && batchMatches;
           });
 
           if (normalizedMatches.length > 0) {
             setStudents(normalizedMatches);
-            setSuccess(
-              `Applied normalized matching and found ${normalizedMatches.length} student(s) for selected filters.`,
-            );
-            setTimeout(() => setSuccess(""), 2500);
             return;
           }
 
           if (relaxedList.length > 0) {
-            setError(
-              `No exact/normalized match for Academic Year \"${selectedAcademicYear}\" and Batch \"${selectedBatch}\". Please verify uploaded values. ${relaxedList.length} students exist for selected Department/Course/Division.`,
-            );
+            setError(`No exact match for academic year "${selectedAcademicYear}" and batch "${selectedBatch}".`);
             setStudents([]);
             return;
           }
@@ -330,19 +274,12 @@ const ManageStudents = () => {
       }
 
       setStudents(studentList);
-
       if (studentList.length === 0) {
-        if (data.filterHint?.code === "FILTER_MISMATCH") {
-          setError(
-            "Students exist for selected Department/Course/Division, but Batch or Academic Year does not match uploaded data. Please clear Batch/Academic Year and try again.",
-          );
-        } else {
-          setError("No students found for the selected filters.");
-        }
+        setError("No students found matching current filters.");
       }
     } catch (err) {
       console.error("Failed to fetch students", err);
-      setError("Could not load students. Please try again.");
+      setError("Could not load students directory.");
       setStudents([]);
     } finally {
       setLoading(false);
@@ -352,7 +289,7 @@ const ManageStudents = () => {
   const handleFilterApply = () => {
     setCurrentPage(1);
     if (!selectedDepartment) {
-      setError("Please select a Department first.");
+      setError("Please choose a department filter first.");
       return;
     }
     fetchStudents();
@@ -369,6 +306,7 @@ const ManageStudents = () => {
     setDivisions([]);
     setStudents([]);
     setCurrentPage(1);
+    setError("");
   };
 
   const handleSeatNumberChange = (studentId, value) => {
@@ -384,10 +322,7 @@ const ManageStudents = () => {
       setError("");
       setSuccess("");
       const token = localStorage.getItem("token");
-
-      if (!token) {
-        throw new Error("Session expired. Please login again.");
-      }
+      if (!token) throw new Error("Session expired. Please sign in again.");
 
       const res = await fetch(config.office.saveSeatNumbers, {
         method: "POST",
@@ -399,19 +334,15 @@ const ManageStudents = () => {
       });
 
       const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.message || "Failed to save seat numbers");
-      }
+      if (!res.ok) throw new Error(result.message || "Failed to save seat numbers");
 
-      setSuccess("All seat numbers saved successfully.");
-      
+      setSuccess("Seat numbers updated successfully.");
       setStudents((prev) =>
-        prev.map((student) => ({
-          ...student,
-          seatNo: seatNumbers[student._id] !== undefined ? seatNumbers[student._id] : student.seatNo,
+        prev.map((s) => ({
+          ...s,
+          seatNo: seatNumbers[s._id] !== undefined ? seatNumbers[s._id] : s.seatNo,
         }))
       );
-      
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err.message);
@@ -420,29 +351,33 @@ const ManageStudents = () => {
     }
   };
 
-  const handleEditStart = (student) => {
-    setEditingId(student._id);
-    setEditData({ ...student });
-    setError("");
-    setSuccess("");
+  const handleOpenDetailsDrawer = (student) => {
+    setSelectedStudent(student);
+    setDrawerEditData({ ...student });
+    setIsEditingInDrawer(false);
+    setShowDetailsDrawer(true);
   };
 
-  const handleEditCancel = () => {
-    setEditingId(null);
-    setEditData({});
+  const handleCloseDetailsDrawer = () => {
+    setShowDetailsDrawer(false);
+    setSelectedStudent(null);
+    setIsEditingInDrawer(false);
   };
 
-  const handleEditChange = (field, value) => {
-    setEditData({ ...editData, [field]: value });
+  const handleDrawerEditChange = (field, value) => {
+    setDrawerEditData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  const handleEditSave = async () => {
+  const handleSaveDrawerProfile = async () => {
     if (
-      !editData.studentName?.trim() ||
-      !editData.rollNo?.trim() ||
-      !editData.enrollmentNo?.trim() ||
-      !editData.academicYear?.trim() ||
-      !editData.batch?.trim()
+      !drawerEditData.studentName?.trim() ||
+      !drawerEditData.rollNo?.trim() ||
+      !drawerEditData.enrollmentNo?.trim() ||
+      !drawerEditData.academicYear?.trim() ||
+      !drawerEditData.batch?.trim()
     ) {
       setError("All required fields must be filled.");
       return;
@@ -451,7 +386,7 @@ const ManageStudents = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const url = `${config.students}/${editingId}`;
+      const url = `${config.students}/${selectedStudent._id}`;
 
       const res = await fetch(url, {
         method: "PUT",
@@ -460,34 +395,24 @@ const ManageStudents = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          rollNo: editData.rollNo.trim(),
-          enrollmentNo: editData.enrollmentNo.trim(),
-          studentName: editData.studentName.trim(),
-          academicYear: editData.academicYear.trim(),
-          batch: editData.batch.trim(),
-          division: editData.division?.trim() || "",
-          aadhaarNo: editData.aadhaarNo?.trim() || "",
-          seatNo: seatNumbers[editingId] !== undefined ? seatNumbers[editingId] : (editData.seatNo || ""),
+          rollNo: drawerEditData.rollNo.trim(),
+          enrollmentNo: drawerEditData.enrollmentNo.trim(),
+          studentName: drawerEditData.studentName.trim(),
+          academicYear: drawerEditData.academicYear.trim(),
+          batch: drawerEditData.batch.trim(),
+          division: drawerEditData.division?.trim() || "",
+          aadhaarNo: drawerEditData.aadhaarNo?.trim() || "",
+          seatNo: seatNumbers[selectedStudent._id] !== undefined ? seatNumbers[selectedStudent._id] : (drawerEditData.seatNo || ""),
         }),
       });
 
       const result = await res.json();
+      if (!res.ok) throw new Error(result.message || "Failed to update profile");
 
-      if (!res.ok) {
-        if (res.status === 401)
-          throw new Error("Session expired. Please login again.");
-        if (res.status === 403)
-          throw new Error("You don't have permission to edit students.");
-        throw new Error(result.message || "Failed to update student");
-      }
-
-      setSuccess(`"${editData.studentName}" updated successfully.`);
-      setEditingId(null);
-      setEditData({});
-      setStudents(
-        students.map((s) => (s._id === editingId ? result.student : s)),
-      );
-
+      setSuccess(`"${drawerEditData.studentName}" profile updated successfully.`);
+      setStudents(students.map((s) => (s._id === selectedStudent._id ? result.student : s)));
+      setSelectedStudent(result.student);
+      setIsEditingInDrawer(false);
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err.message);
@@ -496,8 +421,42 @@ const ManageStudents = () => {
     }
   };
 
-  const handleAddStudent = async () => {
-    // Validation
+  const handleRegeneratePassword = async () => {
+    const studentId = selectedStudent._id;
+    try {
+      setRegeneratingPasswordId(studentId);
+      setError("");
+      setSuccess("");
+
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.office.regeneratePassword(studentId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Password regeneration failed");
+      }
+
+      setSuccess(`New credentials generated for ${data.studentName}.`);
+      
+      const updatedStudent = {
+        ...selectedStudent,
+        plainPassword: data.plainPassword,
+      };
+
+      setStudents(students.map((s) => (s._id === studentId ? updatedStudent : s)));
+      setSelectedStudent(updatedStudent);
+      setTimeout(() => setSuccess(""), 3500);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setRegeneratingPasswordId(null);
+    }
+  };
+
+  const handleAddStudentSubmit = async () => {
     if (
       !newStudent.studentName?.trim() ||
       !newStudent.rollNo?.trim() ||
@@ -508,14 +467,14 @@ const ManageStudents = () => {
       !selectedCourse ||
       !selectedDivision
     ) {
-      setError(
-        "All required fields (Name, Roll No, Enrollment No, Academic Year, Batch, Department, Course, Division) must be filled.",
-      );
+      setError("Please fill all required student details and ensure parent filters are selected.");
       return;
     }
 
     try {
       setLoading(true);
+      setError("");
+      setSuccess("");
       const token = localStorage.getItem("token");
 
       const res = await fetch(config.students, {
@@ -533,12 +492,9 @@ const ManageStudents = () => {
       });
 
       const result = await res.json();
+      if (!res.ok) throw new Error(result.message || "Failed to create student profile.");
 
-      if (!res.ok) {
-        throw new Error(result.message || "Failed to add student");
-      }
-
-      setSuccess(`"${newStudent.studentName}" added successfully.`);
+      setSuccess(`Created profile for "${newStudent.studentName}" successfully.`);
       setNewStudent({
         studentName: "",
         rollNo: "",
@@ -546,18 +502,12 @@ const ManageStudents = () => {
         academicYear: "",
         batch: "",
         seatNo: "",
-        section: "",
         aadhaarNo: "",
       });
       setShowAddStudentModal(false);
 
-      // Refresh student list
-      setTimeout(() => {
-        if (selectedDepartment && selectedCourse && selectedDivision) {
-          fetchStudents();
-        }
-      }, 500);
-
+      // Refresh list
+      setTimeout(() => fetchStudents(), 500);
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err.message);
@@ -566,33 +516,32 @@ const ManageStudents = () => {
     }
   };
 
-  const handleDeleteConfirm = (student) => {
-    setDeleteConfirmId(student._id);
-    setDeleteConfirmName(student.studentName);
-  };
+  const handleDeleteStudent = async (studentId, studentName) => {
+    if (!window.confirm(`Are you sure you want to permanently delete student "${studentName}"? This action will revoke portal credentials.`)) {
+      return;
+    }
 
-  const handleDeleteConfirmed = async () => {
     try {
       setLoading(true);
+      setError("");
+      setSuccess("");
+
       const token = localStorage.getItem("token");
-      const res = await fetch(config.office.deleteStudent(deleteConfirmId), {
+      const res = await fetch(config.office.deleteStudent(studentId), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await res.json();
-
       if (!res.ok || !data.success) {
-        throw new Error(data.message || "Failed to remove student");
+        throw new Error(data.message || "Failed to delete student record.");
       }
 
-      setSuccess(
-        `"${deleteConfirmName}" removed successfully. Login credentials are revoked.`,
-      );
-      setStudents(students.filter((s) => s._id !== deleteConfirmId));
-      setDeleteConfirmId(null);
-      setDeleteConfirmName("");
-
+      setSuccess(`Removed student profile for "${studentName}" successfully.`);
+      setStudents(students.filter((s) => s._id !== studentId));
+      if (selectedStudent?._id === studentId) {
+        handleCloseDetailsDrawer();
+      }
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err.message);
@@ -601,521 +550,417 @@ const ManageStudents = () => {
     }
   };
 
-  const handleViewPassword = (student) => {
-    if (!student.plainPassword) {
-      setError("Password not available for this student.");
-      return;
-    }
-    setGeneratedPassword(student.plainPassword);
-    setGeneratedPasswordStudent(student.studentName);
-    setShowPasswordModal(true);
-    setError("");
-  };
-
-  const handleDownloadPdf = () => {
+  const handleDownloadCredentialsPdf = () => {
     if (filteredStudents.length === 0) {
-      setError("No students available to export.");
+      setError("No students found to export credentials report.");
       return;
     }
 
-    const departmentName =
-      departments.find((dept) => dept._id === selectedDepartment)?.name ||
-      "All";
-    const courseLabel =
-      courses.find((course) => course._id === selectedCourse)?.courseCode ||
-      "All";
-    const divisionLabel =
-      divisions.find((div) => div._id === selectedDivision)?.name || "All";
-    const batchLabel = selectedBatch || "All";
+    const deptName = departments.find((d) => d._id === selectedDepartment)?.name || "All";
+    const courseCode = courses.find((c) => c._id === selectedCourse)?.courseCode || "All";
+    const divName = divisions.find((d) => d._id === selectedDivision)?.name || "All";
+    const batchName = selectedBatch || "All";
 
     const doc = new jsPDF({ orientation: "landscape", unit: "pt" });
     doc.setFontSize(16);
     doc.text("Student Credentials Report", 40, 40);
     doc.setFontSize(11);
     doc.text(
-      `Department: ${departmentName} | Course: ${courseLabel} | Division: ${divisionLabel} | Batch: ${batchLabel}`,
+      `Dept: ${deptName} | Course: ${courseCode} | Division: ${divName} | Batch: ${batchName}`,
       40,
-      60,
+      60
     );
 
-    const rows = filteredStudents.map((student) => [
-      student.rollNo || "",
-      student.enrollmentNo || "",
-      student.studentName || "",
-      student.username || "—",
-      student.plainPassword || "—",
-      student.batch || "",
-      student.division || "—",
+    const rows = filteredStudents.map((s) => [
+      s.rollNo || "",
+      s.enrollmentNo || "",
+      s.studentName || "",
+      s.username || "—",
+      s.plainPassword || "—",
+      s.batch || "",
+      s.divisionName || s.division || "—",
     ]);
 
     autoTable(doc, {
       startY: 80,
-      head: [
-        [
-          "Roll No",
-          "Enrollment No",
-          "Name",
-          "Username",
-          "Password",
-          "Batch",
-          "Division",
-        ],
-      ],
+      head: [["Roll No", "Enrollment No", "Name", "Username", "Password", "Batch", "Division"]],
       body: rows,
       styles: { fontSize: 9, cellPadding: 6 },
-      headStyles: { fillColor: [30, 64, 175] },
-      columnStyles: {
-        0: { cellWidth: 70 },
-        1: { cellWidth: 95 },
-        2: { cellWidth: 140 },
-        3: { cellWidth: 120 },
-        4: { cellWidth: 100 },
-        5: { cellWidth: 70 },
-        6: { cellWidth: 70 },
-      },
+      headStyles: { fillColor: [37, 99, 235] },
     });
 
-    const fileSafeBatch = batchLabel.replace(/\s+/g, "-");
-    doc.save(`students-${fileSafeBatch}-credentials.pdf`);
+    doc.save(`credentials_report_${batchName}.pdf`);
   };
 
-  // Client-side search filter
-  const filteredStudents = students.filter((student) => {
+  // Client-side search and filtering
+  const filteredStudents = students.filter((s) => {
     const term = (filterSearch || "").toLowerCase().trim();
-    const studentName = (student.studentName || "").toString().toLowerCase();
-    const rollNo = (student.rollNo || "").toString().toLowerCase();
-    const enrollmentNo = (student.enrollmentNo || "").toString().toLowerCase();
+    const name = (s.studentName || "").toString().toLowerCase();
+    const roll = (s.rollNo || "").toString().toLowerCase();
+    const enroll = (s.enrollmentNo || "").toString().toLowerCase();
 
     if (!term) return true;
-
-    return (
-      studentName.includes(term) ||
-      rollNo.includes(term) ||
-      enrollmentNo.includes(term)
-    );
+    return name.includes(term) || roll.includes(term) || enroll.includes(term);
   });
 
+  // Sorting
+  const sortedStudents = [...filteredStudents].sort((a, b) => {
+    let aVal = a[sortField] || "";
+    let bVal = b[sortField] || "";
+
+    if (sortField === "rollNo") {
+      return sortDirection === "asc"
+        ? aVal.localeCompare(bVal, undefined, { numeric: true, sensitivity: "base" })
+        : bVal.localeCompare(aVal, undefined, { numeric: true, sensitivity: "base" });
+    }
+
+    aVal = String(aVal).toLowerCase();
+    bVal = String(bVal).toLowerCase();
+
+    if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+    if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentStudents = filteredStudents.slice(
-    indexOfFirstItem,
-    indexOfLastItem,
-  );
-  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const paginatedStudents = sortedStudents.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sortedStudents.length / itemsPerPage);
+
+  const requestSort = (field) => {
+    let direction = "asc";
+    if (sortField === field && sortDirection === "asc") {
+      direction = "desc";
+    }
+    setSortField(field);
+    setSortDirection(direction);
+  };
+
+  const copyToClipboard = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1500);
+  };
+
+  // === Bulk Seat Number Upload Handlers ===
+  const handleDownloadSeatTemplate = () => {
+    const headers = [["Enrollment No", "Seat No"]];
+    const sampleData = [
+      ["EN2101001", "A-101"],
+      ["EN2101002", "A-102"],
+      ["EN2101003", "A-103"],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Seat Numbers");
+    XLSX.writeFile(wb, "seat_numbers_template.xlsx");
+  };
+
+  const handleBulkSeatFileChange = (event) => {
+    const file = event.target.files?.[0];
+    setBulkSeatResult(null);
+    setBulkSeatParsedRows([]);
+
+    if (!file) return;
+
+    setBulkSeatFileName(file.name);
+    setBulkSeatFile(file);
+
+    if (!file.name.toLowerCase().endsWith(".xlsx") && !file.name.toLowerCase().endsWith(".xls") && !file.name.toLowerCase().endsWith(".csv")) {
+      setError("Supported file formats are Excel (.xlsx, .xls) or CSV.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+        const mapped = json.map((row) => {
+          const normalized = {};
+          Object.entries(row).forEach(([key, value]) => {
+            const safeKey = key.toLowerCase().replace(/\s+/g, "");
+            normalized[safeKey] = value === undefined || value === null ? "" : value.toString().trim();
+          });
+          return {
+            enrollmentNo: normalized["enrollmentno"] || normalized["enrollment_no"] || normalized["enrollment"] || "",
+            seatNo: normalized["seatno"] || normalized["seat_no"] || normalized["seat"] || normalized["seatnumber"] || normalized["seat_number"] || "",
+          };
+        }).filter((row) => row.enrollmentNo && row.seatNo);
+
+        if (mapped.length === 0) {
+          setError("Excel sheet must contain 'Enrollment No' and 'Seat No' columns with valid data.");
+          return;
+        }
+
+        setBulkSeatParsedRows(mapped);
+      } catch (err) {
+        console.error("Failed to parse seat file", err);
+        setError("Error parsing seat numbers file. Please use the template format.");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleBulkSeatUpload = async () => {
+    if (bulkSeatParsedRows.length === 0) {
+      setError("No seat numbers to upload. Please select a valid file first.");
+      return;
+    }
+
+    try {
+      setBulkSeatUploading(true);
+      setError("");
+      setSuccess("");
+
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Session expired. Please sign in again.");
+
+      const res = await fetch(config.office.bulkSeatNumbers, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          entries: bulkSeatParsedRows,
+          departmentId: selectedDepartment || undefined,
+          courseId: selectedCourse || undefined,
+          divisionId: selectedDivision || undefined,
+          academicYear: selectedAcademicYear || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to upload seat numbers.");
+      }
+
+      setBulkSeatResult(data);
+      setSuccess(data.message);
+
+      // Refresh the student list to show updated seat numbers
+      if (students.length > 0) {
+        fetchStudents();
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBulkSeatUploading(false);
+    }
+  };
+
+  const handleCloseBulkSeatModal = () => {
+    setShowBulkSeatModal(false);
+    setBulkSeatFile(null);
+    setBulkSeatFileName("");
+    setBulkSeatParsedRows([]);
+    setBulkSeatResult(null);
+  };
 
   return (
-    <div className="manage-students-page">
-      {/* Header */}
-      <div className="manage-header">
-        <div>
-          <h1>👥 Manage Students</h1>
-          <p>
-            Filter, view, edit, and manage student records with full cascading
-            controls.
-          </p>
+    <div className="manage-layout-wrapper animate-fadeIn">
+      
+      {/* Upper Title / Summary Row */}
+      <div className="manage-title-row">
+        <div className="title-left">
+          <h2>Student Directory</h2>
+          <span className="directory-count-badge">{filteredStudents.length} Students</span>
         </div>
-        <div className="manage-header-actions">
-          <button
-            className="btn-add-student"
-            onClick={() => setShowAddStudentModal(true)}
-            disabled={
-              !selectedDepartment || !selectedCourse || !selectedDivision
-            }
-            title="Select Department, Course, and Division first"
+        
+        <div className="title-actions">
+          <button 
+            className="wizard-btn-outline text-primary" 
+            onClick={handleDownloadCredentialsPdf}
+            disabled={filteredStudents.length === 0}
           >
-            ➕ Add Student
+            Export Credentials PDF
+          </button>
+
+          <button
+            className="wizard-btn-outline"
+            onClick={() => setShowBulkSeatModal(true)}
+            disabled={filteredStudents.length === 0}
+          >
+            📤 Upload Seat Numbers
+          </button>
+          
+          <button
+            className="wizard-btn-primary"
+            onClick={() => setShowAddStudentModal(true)}
+            disabled={!selectedDepartment || !selectedCourse || !selectedDivision}
+            title={(!selectedDepartment || !selectedCourse || !selectedDivision) ? "Please select Department, Course and Division filter first" : ""}
+          >
+            Add Student Profile
           </button>
         </div>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
-      {success && <div className="alert alert-success">{success}</div>}
+      {/* Notifications */}
+      {error && <div className="alert-banner error margin-bottom-sm">{error}</div>}
+      {success && <div className="alert-banner success margin-bottom-sm">{success}</div>}
 
-      {/* Add Student Modal */}
-      {showAddStudentModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowAddStudentModal(false)}
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Add New Student</h2>
-            <p>Create a new student record</p>
+      {/* Sticky Compact Filters bar */}
+      <div className="sticky-filters-container">
+        <div className="filters-card-inner">
+          <div className="filter-select-group">
+            <select value={selectedDepartment} onChange={handleDepartmentChange}>
+              <option value="">Department</option>
+              {departments.map((d) => (
+                <option key={d._id} value={d._id}>{d.name} ({d.code})</option>
+              ))}
+            </select>
 
-            <div className="modal-form">
-              <div className="form-row">
-                <label>
-                  Student Name <span className="required">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter student name"
-                  value={newStudent.studentName}
-                  onChange={(e) =>
-                    setNewStudent({
-                      ...newStudent,
-                      studentName: e.target.value,
-                    })
-                  }
-                  disabled={loading}
-                />
-              </div>
+            <select 
+              value={selectedCourse} 
+              onChange={handleCourseChange}
+              disabled={!selectedDepartment}
+            >
+              <option value="">Course / Sem</option>
+              {courses.map((c) => (
+                <option key={c._id} value={c._id}>Sem {c.semester} - {c.courseCode}</option>
+              ))}
+            </select>
 
-              <div className="form-row">
-                <label>
-                  Roll Number <span className="required">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., 101"
-                  value={newStudent.rollNo}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, rollNo: e.target.value })
-                  }
-                  disabled={loading}
-                />
-              </div>
+            <select 
+              value={selectedDivision} 
+              onChange={handleDivisionChange}
+              disabled={!selectedCourse}
+            >
+              <option value="">Division</option>
+              {divisions.map((d) => (
+                <option key={d._id} value={d._id}>{d.name}</option>
+              ))}
+            </select>
 
-              <div className="form-row">
-                <label>
-                  Enrollment Number <span className="required">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., 2024001"
-                  value={newStudent.enrollmentNo}
-                  onChange={(e) =>
-                    setNewStudent({
-                      ...newStudent,
-                      enrollmentNo: e.target.value,
-                    })
-                  }
-                  disabled={loading}
-                />
-              </div>
+            <select 
+              value={selectedAcademicYear} 
+              onChange={handleAcademicYearChange}
+            >
+              <option value="">Academic Year</option>
+              {generateAcademicYearOptions().map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
 
-              <div className="form-row">
-                <label>
-                  Academic Year <span className="required">*</span>
-                </label>
-                <select
-                  value={newStudent.academicYear}
-                  onChange={(e) =>
-                    setNewStudent({
-                      ...newStudent,
-                      academicYear: e.target.value,
-                    })
-                  }
-                  disabled={loading}
-                >
-                  <option value="">-- Select Academic Year --</option>
-                  {generateAcademicYearOptions().map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <select 
+              value={selectedBatch} 
+              onChange={handleBatchChange}
+            >
+              <option value="">Batch</option>
+              {Array.from({ length: 12 }, (_, i) => `Batch ${i + 1}`).map((b) => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
+          </div>
 
-              <div className="form-row">
-                <label>
-                  Batch <span className="required">*</span>
-                </label>
-                <select
-                  value={newStudent.batch}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, batch: e.target.value })
-                  }
-                  disabled={loading}
-                >
-                  <option value="">-- Select Batch --</option>
-                  {generateBatchOptions().map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-row">
-                <label>Section</label>
-                <input
-                  type="text"
-                  placeholder="e.g., A"
-                  value={newStudent.section}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, section: e.target.value })
-                  }
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="form-row">
-                <label>Aadhaar Number</label>
-                <input
-                  type="text"
-                  placeholder="e.g., 1234 5678 9012"
-                  value={newStudent.aadhaarNo}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, aadhaarNo: e.target.value })
-                  }
-                  disabled={loading}
-                />
-              </div>
+          <div className="filter-right-search-action">
+            <div className="search-input-wrapper">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="search-svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.604 10.604z" />
+              </svg>
+              <input 
+                type="text" 
+                placeholder="Search name, enrollment..." 
+                value={filterSearch}
+                onChange={(e) => setFilterSearch(e.target.value)}
+              />
             </div>
 
-            <div className="modal-form-buttons">
-              <button
-                className="modal-btn"
-                onClick={() => setShowAddStudentModal(false)}
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                className="modal-btn modal-btn-primary"
-                onClick={handleAddStudent}
-                disabled={loading}
-              >
-                {loading ? "Adding..." : "Add Student"}
-              </button>
+            <div className="button-group-trigger">
+              <button className="wizard-btn-primary" onClick={handleFilterApply}>Apply</button>
+              <button className="wizard-btn-outline" onClick={handleFilterClear}>Clear</button>
             </div>
           </div>
         </div>
-      )}
-
-      {/* Filters */}
-      <div className="manage-controls">
-        <div className="controls-header" onClick={() => setShowFilters(!showFilters)}>
-          <h3>🔍 Filters & Search {selectedDepartment && "• Active"}</h3>
-          <div className="controls-header-right">
-            {!showFilters && selectedDepartment && (
-              <span className="filter-summary-pill">
-                Active: {departments.find((d) => d._id === selectedDepartment)?.code || "Dept"}
-                {selectedCourse && ` / Sem ${courses.find((c) => c._id === selectedCourse)?.semester || ""}`}
-                {selectedDivision && ` / Div ${divisions.find((d) => d._id === selectedDivision)?.name || ""}`}
-                {selectedAcademicYear && ` / ${selectedAcademicYear}`}
-                {selectedBatch && ` / ${selectedBatch}`}
-              </span>
-            )}
-            <button className="btn-toggle-filters">
-              {showFilters ? "Hide ▲" : "Show ▼"}
-            </button>
-          </div>
-        </div>
-
-        {showFilters && (
-          <>
-            <div className="filter-group">
-              <div className="form-row">
-                <label>
-                  Department <span className="required">*</span>
-                </label>
-                <select
-                  value={selectedDepartment}
-                  onChange={handleDepartmentChange}
-                  disabled={loading}
-                >
-                  <option value="">-- Select Department --</option>
-                  {departments.map((dept) => (
-                    <option key={dept._id} value={dept._id}>
-                      {dept.name} ({dept.code})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-row">
-                <label>Course</label>
-                <select
-                  value={selectedCourse}
-                  onChange={handleCourseChange}
-                  disabled={!selectedDepartment || loading}
-                >
-                  <option value="">-- Select Course --</option>
-                  {courses.map((course) => (
-                    <option key={course._id} value={course._id}>
-                      Semester {course.semester} - {course.courseCode} ({course.scheme})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-row">
-                <label>Division</label>
-                <select
-                  value={selectedDivision}
-                  onChange={handleDivisionChange}
-                  disabled={!selectedCourse || loading}
-                >
-                  <option value="">-- Select Division --</option>
-                  {divisions.map((div) => (
-                    <option key={div._id} value={div._id}>
-                      {div.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-row">
-                <label>Academic Year</label>
-                <select
-                  value={selectedAcademicYear}
-                  onChange={handleAcademicYearChange}
-                  disabled={loading}
-                >
-                  <option value="">-- Select Academic Year --</option>
-                  {generateAcademicYearOptions().map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-row">
-                <label>Batch</label>
-                <select
-                  value={selectedBatch}
-                  onChange={handleBatchChange}
-                  disabled={loading}
-                >
-                  <option value="">-- Select Batch --</option>
-                  {generateBatchOptions().map((batch) => (
-                    <option key={batch} value={batch}>
-                      {batch}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-row">
-                <label>
-                  Search <span className="hint">(optional)</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Name, roll no, or enrollment..."
-                  value={filterSearch}
-                  onChange={(e) => setFilterSearch(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div className="filter-buttons">
-              <button
-                className="btn-primary"
-                onClick={handleFilterApply}
-                disabled={loading || !selectedDepartment}
-              >
-                {loading ? "Loading..." : "Apply Filters"}
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={handleFilterClear}
-                disabled={loading}
-              >
-                Clear All
-              </button>
-            </div>
-          </>
-        )}
       </div>
 
-      {/* Table Section */}
-      <div className="manage-table-wrapper">
-        <div className="table-info">
-          <span className="pill">{filteredStudents.length} students found</span>
-          <div className="table-actions">
-            {filteredStudents.length > 0 && (
-              <button
-                className="btn-save-seats"
-                onClick={handleSaveAllSeats}
-                disabled={loading || savingSeats}
-              >
-                {savingSeats ? "Saving..." : "💾 Save Seat Numbers"}
-              </button>
-            )}
-            <button
-              className="btn-secondary"
-              onClick={handleDownloadPdf}
-              disabled={filteredStudents.length === 0 || loading}
-            >
-              Download PDF
-            </button>
+      {/* Modern Table List */}
+      <div className="student-records-table-card">
+        {loading ? (
+          <div className="table-loader-state">
+            <div className="loading-ring-spinner" />
+            <span>Loading student profiles...</span>
           </div>
-        </div>
-
-        {currentStudents.length === 0 ? (
-          <div className="empty-state">
-            <p>
-              {loading
-                ? "Loading students..."
-                : "No students match the selected filters."}
-            </p>
+        ) : sortedStudents.length === 0 ? (
+          <div className="table-empty-state">
+            <div className="empty-state-icon">👥</div>
+            <h4>No students loaded</h4>
+            <p>Apply valid department filters or add a student to initialize the roster.</p>
           </div>
         ) : (
-          <>
-            <table className="manage-table">
+          <div className="table-container-inner office-scrollable">
+            <table className="directory-data-table">
               <thead>
                 <tr>
-                  <th>Roll No</th>
-                  <th>Enrollment No</th>
-                  <th>Name</th>
-                  <th>Username</th>
-                  <th>Year</th>
+                  <th onClick={() => requestSort("rollNo")} className="sortable-th">
+                    Roll No {sortField === "rollNo" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+                  </th>
+                  <th onClick={() => requestSort("enrollmentNo")} className="sortable-th">
+                    Enrollment No {sortField === "enrollmentNo" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+                  </th>
+                  <th onClick={() => requestSort("studentName")} className="sortable-th">
+                    Name {sortField === "studentName" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+                  </th>
                   <th>Batch</th>
                   <th>Division</th>
-                  <th>Seat No</th>
-                  <th>Aadhaar</th>
-                  <th>Actions</th>
+                  <th>Seat Number</th>
+                  <th>Credentials</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {currentStudents.map((student) => (
+                {paginatedStudents.map((student) => (
                   <tr key={student._id}>
-                    <td>{student.rollNo}</td>
-                    <td>{student.enrollmentNo}</td>
-                    <td className="student-name-bold">{student.studentName}</td>
-                    <td className="credential-cell">
-                      <span className="credential-display">
-                        {student.username || "—"}
-                      </span>
-                      {student.username && (
-                        <button
-                          className="btn-regenerate"
-                          onClick={() => handleViewPassword(student)}
-                          title="View Password"
-                        >
-                          👁️
-                        </button>
-                      )}
+                    <td><strong>{student.rollNo}</strong></td>
+                    <td><code className="code-tag">{student.enrollmentNo}</code></td>
+                    <td>
+                      <div className="student-cell-identity">
+                        <span className="student-identity-name">{student.studentName}</span>
+                      </div>
                     </td>
-                    <td>{student.academicYear || "—"}</td>
-                    <td>{student.batch}</td>
-                    <td>{student.division || "—"}</td>
+                    <td><span className="batch-badge">{student.batch}</span></td>
+                    <td><span className="division-badge">{student.divisionName || student.division || "—"}</span></td>
                     <td>
                       <input
                         type="text"
-                        className="table-seat-input"
-                        value={seatNumbers[student._id] !== undefined ? seatNumbers[student._id] : ""}
+                        className="table-inline-input"
+                        placeholder="Assign Seat"
+                        value={seatNumbers[student._id] || ""}
                         onChange={(e) => handleSeatNumberChange(student._id, e.target.value)}
-                        placeholder="Seat No"
-                        disabled={loading || savingSeats}
                       />
                     </td>
-                    <td>{student.aadhaarMasked || "—"}</td>
                     <td>
-                      <div className="action-buttons">
+                      {student.plainPassword ? (
+                        <div className="credentials-action-cell">
+                          <code className="code-tag password">••••••••</code>
+                          <button
+                            className="btn-tiny-icon"
+                            title="Copy Password"
+                            onClick={() => copyToClipboard(student.plainPassword, student._id + "_pass")}
+                          >
+                            {copiedId === student._id + "_pass" ? "✓" : "📋"}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="muted-italic">Not generated</span>
+                      )}
+                    </td>
+                    <td className="text-right">
+                      <div className="action-buttons-flex-row">
                         <button
-                          className="btn-edit"
-                          onClick={() => handleEditStart(student)}
+                          className="action-link-btn"
+                          onClick={() => handleOpenDetailsDrawer(student)}
                         >
-                          Edit
+                          View Details
                         </button>
                         <button
-                          className="btn-delete"
-                          onClick={() => handleDeleteConfirm(student)}
+                          className="action-link-btn danger"
+                          onClick={() => handleDeleteStudent(student._id, student.studentName)}
                         >
                           Remove
                         </button>
@@ -1125,226 +970,470 @@ const ManageStudents = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
 
-            <div className="table-bottom-actions">
-              {filteredStudents.length > 0 && (
+        {/* Save seat numbers footer & pagination bar */}
+        {sortedStudents.length > 0 && (
+          <div className="table-footer-actions-row">
+            <button 
+              className="wizard-btn-primary" 
+              onClick={handleSaveAllSeats}
+              disabled={savingSeats}
+            >
+              {savingSeats ? "Saving Seat Numbers..." : "Save Seat Numbers"}
+            </button>
+
+            {totalPages > 1 && (
+              <div className="pagination-controls-box">
                 <button
-                  className="btn-save-seats bottom-btn"
-                  onClick={handleSaveAllSeats}
-                  disabled={loading || savingSeats}
+                  className="pagination-btn"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
                 >
-                  {savingSeats ? "Saving..." : "💾 Save Seat Numbers"}
+                  ◀
                 </button>
-              )}
-              {totalPages > 1 && (
-                <div className="pagination">
-                  <button
-                    className="btn-nav"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </button>
-                  <span className="page-info">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    className="btn-nav"
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
-            </div>
-          </>
+                <span className="pagination-status">Page {currentPage} of {totalPages}</span>
+                <button
+                  className="pagination-btn"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  ▶
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Edit Student Modal */}
-      {editingId && (
-        <div
-          className="modal-overlay"
-          onClick={handleEditCancel}
-        >
-          <div
-            className="modal-content edit-student-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2>✏️ Edit Student</h2>
-            <p>Update student records</p>
+      {/* Student Details Sliding Drawer (Stripe style) */}
+      {showDetailsDrawer && selectedStudent && (
+        <div className="drawer-overlay-backdrop" onClick={handleCloseDetailsDrawer}>
+          <div className="details-slider-drawer animate-slideInRight" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-header-row">
+              <div className="drawer-user-info-meta">
+                <div className="drawer-avatar">
+                  {selectedStudent.studentName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3>{selectedStudent.studentName}</h3>
+                  <span className="role-label">Enrollment: {selectedStudent.enrollmentNo}</span>
+                </div>
+              </div>
+              <button className="drawer-close-btn" onClick={handleCloseDetailsDrawer}>✕</button>
+            </div>
 
-            <div className="modal-form">
-              <div className="form-row-col">
-                <label>Student Name <span className="required">*</span></label>
+            <div className="drawer-scrolling-content office-scrollable">
+              {/* Profile Details section */}
+              <div className="drawer-section-card">
+                <div className="section-header-trigger-row">
+                  <h4>Academic profile details</h4>
+                  <button 
+                    className="wizard-btn-outline compact-btn"
+                    onClick={() => setIsEditingInDrawer(!isEditingInDrawer)}
+                  >
+                    {isEditingInDrawer ? "Cancel" : "Edit Profile"}
+                  </button>
+                </div>
+
+                {isEditingInDrawer ? (
+                  <div className="drawer-edit-form-grid">
+                    <div className="form-input-control">
+                      <label>Student Name</label>
+                      <input 
+                        type="text" 
+                        value={drawerEditData.studentName || ""} 
+                        onChange={(e) => handleDrawerEditChange("studentName", e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="form-input-control">
+                      <label>Roll Number</label>
+                      <input 
+                        type="text" 
+                        value={drawerEditData.rollNo || ""} 
+                        onChange={(e) => handleDrawerEditChange("rollNo", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-input-control">
+                      <label>Enrollment Number</label>
+                      <input 
+                        type="text" 
+                        value={drawerEditData.enrollmentNo || ""} 
+                        onChange={(e) => handleDrawerEditChange("enrollmentNo", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-input-control">
+                      <label>Batch</label>
+                      <input 
+                        type="text" 
+                        value={drawerEditData.batch || ""} 
+                        onChange={(e) => handleDrawerEditChange("batch", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-input-control">
+                      <label>Academic Year</label>
+                      <input 
+                        type="text" 
+                        value={drawerEditData.academicYear || ""} 
+                        onChange={(e) => handleDrawerEditChange("academicYear", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-input-control">
+                      <label>Seat Number</label>
+                      <input 
+                        type="text" 
+                        value={drawerEditData.seatNo || ""} 
+                        onChange={(e) => handleDrawerEditChange("seatNo", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-input-control">
+                      <label>Aadhaar Number</label>
+                      <input 
+                        type="text" 
+                        value={drawerEditData.aadhaarNo || ""} 
+                        onChange={(e) => handleDrawerEditChange("aadhaarNo", e.target.value)}
+                      />
+                    </div>
+
+                    <button className="wizard-btn-primary margin-top-sm" onClick={handleSaveDrawerProfile}>
+                      Save Changes
+                    </button>
+                  </div>
+                ) : (
+                  <div className="drawer-details-list">
+                    <div className="details-item-row">
+                      <span className="item-label">Roll Number</span>
+                      <span className="item-value">{selectedStudent.rollNo}</span>
+                    </div>
+                    <div className="details-item-row">
+                      <span className="item-label">Enrollment Number</span>
+                      <span className="item-value">{selectedStudent.enrollmentNo}</span>
+                    </div>
+                    <div className="details-item-row">
+                      <span className="item-label">Division</span>
+                      <span className="item-value">{selectedStudent.divisionName || selectedStudent.division || "—"}</span>
+                    </div>
+                    <div className="details-item-row">
+                      <span className="item-label">Batch</span>
+                      <span className="item-value">{selectedStudent.batch}</span>
+                    </div>
+                    <div className="details-item-row">
+                      <span className="item-label">Academic Year</span>
+                      <span className="item-value">{selectedStudent.academicYear || "—"}</span>
+                    </div>
+                    <div className="details-item-row">
+                      <span className="item-label">Seat Number</span>
+                      <span className="item-value">{selectedStudent.seatNo || "—"}</span>
+                    </div>
+                    <div className="details-item-row">
+                      <span className="item-label">Aadhaar Number</span>
+                      <span className="item-value">{selectedStudent.aadhaarNo || "—"}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Portal Credentials Card */}
+              <div className="drawer-section-card margin-top-md">
+                <h4>Portal access credentials</h4>
+                <div className="drawer-details-list">
+                  <div className="details-item-row">
+                    <span className="item-label">Username</span>
+                    <span className="item-value">
+                      <code className="code-tag">{selectedStudent.username || "—"}</code>
+                    </span>
+                  </div>
+
+                  <div className="details-item-row">
+                    <span className="item-label">Plain Password</span>
+                    <span className="item-value">
+                      {selectedStudent.plainPassword ? (
+                        <div className="credentials-action-cell">
+                          <code className="code-tag password">{selectedStudent.plainPassword}</code>
+                          <button
+                            className="btn-tiny-icon"
+                            onClick={() => copyToClipboard(selectedStudent.plainPassword, "drawer_pass")}
+                          >
+                            {copiedId === "drawer_pass" ? "✓ Copied" : "📋 Copy"}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="muted-italic">Password not stored</span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="drawer-card-actions-footer">
+                  <button
+                    className="wizard-btn-outline text-primary full-width"
+                    onClick={handleRegeneratePassword}
+                    disabled={regeneratingPasswordId !== null}
+                  >
+                    {regeneratingPasswordId ? "Regenerating..." : "🔄 Reset & Regenerate Password"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Student Modal */}
+      {showAddStudentModal && (
+        <div className="modal-wrapper-overlay" onClick={() => setShowAddStudentModal(false)}>
+          <div className="modal-dialog-box animate-modalScaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-dialog-header">
+              <h3>Create Student Profile</h3>
+              <p>Add a single student profile record manually.</p>
+            </div>
+
+            <div className="modal-dialog-body office-scrollable">
+              <div className="form-input-control">
+                <label>Student Name <span className="req">*</span></label>
                 <input
                   type="text"
-                  value={editData.studentName || ""}
-                  onChange={(e) => handleEditChange("studentName", e.target.value)}
+                  placeholder="Full name (e.g. Aarav Sharma)"
+                  value={newStudent.studentName}
+                  onChange={(e) => setNewStudent({ ...newStudent, studentName: e.target.value })}
                 />
               </div>
 
-              <div className="form-row-col">
-                <label>Roll Number <span className="required">*</span></label>
+              <div className="form-input-control">
+                <label>Roll Number <span className="req">*</span></label>
                 <input
                   type="text"
-                  value={editData.rollNo || ""}
-                  onChange={(e) => handleEditChange("rollNo", e.target.value)}
+                  placeholder="e.g. 101"
+                  value={newStudent.rollNo}
+                  onChange={(e) => setNewStudent({ ...newStudent, rollNo: e.target.value })}
                 />
               </div>
 
-              <div className="form-row-col">
-                <label>Enrollment Number <span className="required">*</span></label>
+              <div className="form-input-control">
+                <label>Enrollment Number <span className="req">*</span></label>
                 <input
                   type="text"
-                  value={editData.enrollmentNo || ""}
-                  onChange={(e) => handleEditChange("enrollmentNo", e.target.value)}
+                  placeholder="e.g. EN2101001"
+                  value={newStudent.enrollmentNo}
+                  onChange={(e) => setNewStudent({ ...newStudent, enrollmentNo: e.target.value })}
                 />
               </div>
 
-              <div className="form-row-col">
-                <label>Academic Year <span className="required">*</span></label>
+              <div className="form-input-control">
+                <label>Batch Name <span className="req">*</span></label>
                 <select
-                  value={editData.academicYear || ""}
-                  onChange={(e) => handleEditChange("academicYear", e.target.value)}
+                  value={newStudent.batch}
+                  onChange={(e) => setNewStudent({ ...newStudent, batch: e.target.value })}
                 >
-                  <option value="">-- Select Academic Year --</option>
-                  {generateAcademicYearOptions().map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
+                  <option value="">Select Batch</option>
+                  {Array.from({ length: 12 }, (_, i) => `Batch ${i + 1}`).map((b) => (
+                    <option key={b} value={b}>{b}</option>
                   ))}
                 </select>
               </div>
 
-              <div className="form-row-col">
-                <label>Batch <span className="required">*</span></label>
+              <div className="form-input-control">
+                <label>Academic Year <span className="req">*</span></label>
                 <select
-                  value={editData.batch || ""}
-                  onChange={(e) => handleEditChange("batch", e.target.value)}
+                  value={newStudent.academicYear}
+                  onChange={(e) => setNewStudent({ ...newStudent, academicYear: e.target.value })}
                 >
-                  <option value="">-- Select Batch --</option>
-                  {generateBatchOptions().map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
+                  <option value="">Select Academic Year</option>
+                  {generateAcademicYearOptions().map((y) => (
+                    <option key={y} value={y}>{y}</option>
                   ))}
                 </select>
               </div>
 
-              <div className="form-row-col">
-                <label>Division</label>
+              <div className="form-input-control">
+                <label>Aadhaar Number <span className="hint">(Optional)</span></label>
                 <input
                   type="text"
-                  value={editData.division || ""}
-                  onChange={(e) => handleEditChange("division", e.target.value)}
-                />
-              </div>
-
-              <div className="form-row-col">
-                <label>Seat Number</label>
-                <input
-                  type="text"
-                  value={seatNumbers[editingId] !== undefined ? seatNumbers[editingId] : (editData.seatNo || "")}
-                  onChange={(e) => handleSeatNumberChange(editingId, e.target.value)}
-                  placeholder="Seat No"
-                />
-              </div>
-
-              <div className="form-row-col">
-                <label>Aadhaar Number</label>
-                <input
-                  type="text"
-                  value={editData.aadhaarNo || ""}
-                  onChange={(e) => handleEditChange("aadhaarNo", e.target.value)}
+                  placeholder="12-digit Aadhaar"
+                  value={newStudent.aadhaarNo}
+                  onChange={(e) => setNewStudent({ ...newStudent, aadhaarNo: e.target.value })}
                 />
               </div>
             </div>
 
-            <div className="modal-buttons">
-              <button
-                className="btn-secondary"
-                onClick={handleEditCancel}
-              >
+            <div className="modal-dialog-footer">
+              <button className="wizard-btn-outline" onClick={() => setShowAddStudentModal(false)}>
                 Cancel
               </button>
-              <button
-                className="primary-btn"
-                onClick={handleEditSave}
+              <button 
+                className="wizard-btn-primary" 
+                onClick={handleAddStudentSubmit}
+                disabled={loading}
               >
-                Save Changes
+                Create Profile
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Modal */}
-      {deleteConfirmId && (
-        <div className="modal-overlay" onClick={() => setDeleteConfirmId(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Confirm Deletion</h2>
-            <p>
-              Remove <strong>{deleteConfirmName}</strong>?
-            </p>
-            <p className="warning">
-              This action cannot be undone. Student login credentials will stop
-              working immediately.
-            </p>
-            <div className="modal-buttons">
-              <button className="btn-delete" onClick={handleDeleteConfirmed}>
-                Remove
+      {/* Bulk Seat Number Upload Modal */}
+      {showBulkSeatModal && (
+        <div className="modal-wrapper-overlay" onClick={handleCloseBulkSeatModal}>
+          <div className="modal-dialog-box bulk-seat-modal animate-modalScaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-dialog-header">
+              <h3>📤 Bulk Upload Seat Numbers</h3>
+              <p>Upload an Excel or CSV file with <strong>Enrollment No</strong> and <strong>Seat No</strong> columns to assign seat numbers in bulk.</p>
+            </div>
+
+            <div className="modal-dialog-body office-scrollable">
+              {/* Template download */}
+              <div className="download-template-card-box">
+                <div className="template-info">
+                  <h4>Download Seat Number Template</h4>
+                  <p>Use this Excel template to fill in enrollment numbers and seat numbers.</p>
+                </div>
+                <button className="wizard-btn-outline" onClick={handleDownloadSeatTemplate}>
+                  📥 Download Template
+                </button>
+              </div>
+
+              {/* File upload */}
+              <div className="drag-drop-file-wrapper">
+                <input
+                  id="bulk-seat-file-selector"
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleBulkSeatFileChange}
+                />
+                <label htmlFor="bulk-seat-file-selector" className="drag-drop-area-label compact">
+                  <div className="drag-drop-cloud-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="cloud-svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5h10.5a2.25 2.25 0 002.25-2.25V13.5a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 13.5v3.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                  </div>
+                  {bulkSeatFileName ? (
+                    <div className="file-metadata-info">
+                      <span className="metadata-name">{bulkSeatFileName}</span>
+                      <span className="metadata-change-label">Click to select another file</span>
+                    </div>
+                  ) : (
+                    <div className="file-prompt-info">
+                      <strong>Choose Excel or CSV file</strong>
+                      <span>with Enrollment No and Seat No columns</span>
+                    </div>
+                  )}
+                </label>
+              </div>
+
+              {/* Preview parsed rows */}
+              {bulkSeatParsedRows.length > 0 && !bulkSeatResult && (
+                <div className="bulk-seat-preview-section">
+                  <div className="preview-header-row">
+                    <h4>Preview ({bulkSeatParsedRows.length} entries)</h4>
+                  </div>
+                  <div className="preview-table-box office-scrollable" style={{ maxHeight: "180px" }}>
+                    <table className="preview-records-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Enrollment No</th>
+                          <th>Seat No</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bulkSeatParsedRows.slice(0, 15).map((row, idx) => (
+                          <tr key={idx}>
+                            <td>{idx + 1}</td>
+                            <td><code className="code-tag">{row.enrollmentNo}</code></td>
+                            <td><strong>{row.seatNo}</strong></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {bulkSeatParsedRows.length > 15 && (
+                      <div className="preview-records-more-label">
+                        And {bulkSeatParsedRows.length - 15} more entries...
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Upload result summary */}
+              {bulkSeatResult && (
+                <div className="bulk-seat-result-section">
+                  <div className="result-summary-card">
+                    <div className="result-stat">
+                      <span className="result-stat-value success">{bulkSeatResult.updated || 0}</span>
+                      <span className="result-stat-label">Updated</span>
+                    </div>
+                    <div className="result-stat">
+                      <span className="result-stat-value warning">{bulkSeatResult.skipped || 0}</span>
+                      <span className="result-stat-label">Skipped</span>
+                    </div>
+                    <div className="result-stat">
+                      <span className="result-stat-value danger">{(bulkSeatResult.notFound || []).length}</span>
+                      <span className="result-stat-label">Not Found</span>
+                    </div>
+                  </div>
+
+                  {bulkSeatResult.notFound && bulkSeatResult.notFound.length > 0 && (
+                    <div className="not-found-list-card">
+                      <h4>⚠️ Not Found Enrollment Numbers</h4>
+                      <div className="preview-table-box office-scrollable" style={{ maxHeight: "140px" }}>
+                        <table className="preview-records-table">
+                          <thead>
+                            <tr>
+                              <th>Enrollment No</th>
+                              <th>Seat No (Attempted)</th>
+                              <th>Reason</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {bulkSeatResult.notFound.map((nf, idx) => (
+                              <tr key={idx}>
+                                <td><code className="code-tag">{nf.enrollmentNo}</code></td>
+                                <td>{nf.seatNo}</td>
+                                <td style={{ color: "var(--office-danger)", fontSize: "11.5px" }}>{nf.error}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="modal-dialog-footer">
+              <button className="wizard-btn-outline" onClick={handleCloseBulkSeatModal}>
+                {bulkSeatResult ? "Close" : "Cancel"}
               </button>
-              <button
-                className="btn-cancel"
-                onClick={() => setDeleteConfirmId(null)}
-              >
-                Cancel
-              </button>
+              {!bulkSeatResult && (
+                <button
+                  className="wizard-btn-primary"
+                  onClick={handleBulkSeatUpload}
+                  disabled={bulkSeatParsedRows.length === 0 || bulkSeatUploading}
+                >
+                  {bulkSeatUploading ? (
+                    <>
+                      <div className="loading-ring-spinner small" />
+                      Uploading...
+                    </>
+                  ) : (
+                    `Upload ${bulkSeatParsedRows.length} Seat Numbers`
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowPasswordModal(false)}
-        >
-          <div
-            className="modal-content password-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2>Student Password</h2>
-            <p>
-              For <strong>{generatedPasswordStudent}</strong>
-            </p>
-            <div className="password-display">
-              <code>{generatedPassword}</code>
-              <button
-                className="btn-copy"
-                onClick={() => {
-                  navigator.clipboard.writeText(generatedPassword);
-                  alert("Password copied to clipboard!");
-                }}
-              >
-                📋 Copy
-              </button>
-            </div>
-            <button
-              className="btn-primary"
-              onClick={() => setShowPasswordModal(false)}
-              style={{ width: "100%" }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -5,9 +5,6 @@ import ManageStudents from "./ManageStudents";
 import NoticesPage from "./NoticesPage";
 import "./OfficeDashboard.css";
 
-const generateBatchOptions = (count = 12) =>
-  Array.from({ length: count }, (_, index) => `Batch ${index + 1}`);
-
 const generateAcademicYearOptions = () => {
   const currentYear = new Date().getFullYear();
   const startYear = currentYear - 1;
@@ -16,17 +13,6 @@ const generateAcademicYearOptions = () => {
     return `${year}-${String(year + 1).slice(-2)}`;
   });
 };
-
-const headerOptions = [
-  "roll no",
-  "rollno",
-  "roll_no",
-  "enrollment no",
-  "enrollmentno",
-  "enrollment_no",
-  "student name",
-  "name",
-];
 
 const normalizeValue = (value) =>
   value === undefined || value === null ? "" : value.toString().trim();
@@ -53,49 +39,41 @@ const mapRow = (row) => {
 };
 
 const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
+  // Wizard flow step state: 1: Assignment, 2: Upload, 3: Preview, 4: Import
+  const [currentStep, setCurrentStep] = useState(1);
+  
   const [fileName, setFileName] = useState("");
+  const [fileSize, setFileSize] = useState("");
   const [parsedRows, setParsedRows] = useState([]);
   const [copied, setCopied] = useState(false);
+  const [skippedStudents, setSkippedStudents] = useState([]);
+  const [existingClassCount, setExistingClassCount] = useState(0);
 
-  // Cascading filter states
+  // Cascading assignment filter states
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedDivision, setSelectedDivision] = useState("");
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [batch, setBatch] = useState("");
 
-  // Dropdown data
+  // Dropdown options
   const [departments, setDepartments] = useState([]);
   const [courses, setCourses] = useState([]);
   const [divisions, setDivisions] = useState([]);
 
-  // Main data
+  // Stats / Dashboard data
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [generatedCredentials, setGeneratedCredentials] = useState([]);
-  const [showBatchAllocationDialog, setShowBatchAllocationDialog] =
-    useState(false);
+  
+  // Batch allocation
+  const [showBatchAllocationDialog, setShowBatchAllocationDialog] = useState(false);
   const [batchAllocationCount, setBatchAllocationCount] = useState(1);
   const [batchAllocations, setBatchAllocations] = useState([]);
   const [batchAllocationError, setBatchAllocationError] = useState("");
-
-  const hasPreview = useMemo(() => parsedRows.length > 0, [parsedRows]);
-
-  const isUploadDisabled = useMemo(() => {
-    if (!selectedDepartment || !selectedDivision || !selectedAcademicYear) return false;
-    return students.some((s) => {
-      const deptId = s.departmentId?._id || s.departmentId;
-      const divId = s.divisionId?._id || s.divisionId;
-      return (
-        deptId === selectedDepartment &&
-        divId === selectedDivision &&
-        s.academicYear === selectedAcademicYear
-      );
-    });
-  }, [selectedDepartment, selectedDivision, selectedAcademicYear, students]);
 
   useEffect(() => {
     fetchDepartments();
@@ -157,6 +135,30 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
     }
   };
 
+  useEffect(() => {
+    if (selectedDepartment && selectedCourse && selectedDivision && selectedAcademicYear) {
+      fetchExistingClassCount();
+    } else {
+      setExistingClassCount(0);
+    }
+  }, [selectedDepartment, selectedCourse, selectedDivision, selectedAcademicYear]);
+
+  const fetchExistingClassCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${config.office.students}?departmentId=${selectedDepartment}&courseId=${selectedCourse}&divisionId=${selectedDivision}&academicYear=${selectedAcademicYear}`;
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) {
+        setExistingClassCount(data.students?.length || 0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch class student count", err);
+    }
+  };
+
   const handleDepartmentChange = (e) => {
     const deptId = e.target.value;
     setSelectedDepartment(deptId);
@@ -165,7 +167,6 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
     setSelectedAcademicYear("");
     setCourses([]);
     setDivisions([]);
-
     if (deptId) fetchCourses(deptId);
   };
 
@@ -175,16 +176,20 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
     setSelectedDivision("");
     setSelectedAcademicYear("");
     setDivisions([]);
-
     if (courseId) fetchDivisions(courseId);
   };
 
-  const handleDivisionChange = (e) => {
-    setSelectedDivision(e.target.value);
-  };
-
-  const handleAcademicYearChange = (e) => {
-    setSelectedAcademicYear(e.target.value);
+  const handleDownloadTemplate = () => {
+    const headers = [["Roll No", "Enrollment No", "Student Name"]];
+    const sampleData = [
+      ["1", "EN2101001", "Aarav Sharma"],
+      ["2", "EN2101002", "Ishaan Patel"],
+      ["3", "EN2101003", "Diya Sen"],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "student_bulk_upload_template.xlsx");
   };
 
   const handleFileChange = (event) => {
@@ -194,97 +199,48 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
     setParsedRows([]);
 
     if (!file) return;
-    
-    console.log("File selected:", file.name, "Size:", file.size, "Type:", file.type);
-    setFileName(file.name);
 
-    if (
-      file.type === "application/pdf" ||
-      file.name.toLowerCase().endsWith(".pdf")
-    ) {
-      setError("PDF files are not supported. Please upload Excel or CSV.");
+    setFileName(file.name);
+    const sizeKB = (file.size / 1024).toFixed(1);
+    setFileSize(`${sizeKB} KB`);
+
+    if (!file.name.toLowerCase().endsWith(".xlsx") && !file.name.toLowerCase().endsWith(".xls") && !file.name.toLowerCase().endsWith(".csv")) {
+      setError("Supported file formats are Excel (.xlsx, .xls) or CSV.");
       return;
     }
 
     const reader = new FileReader();
-    
-    reader.onerror = () => {
-      console.error("File read error");
-      setError("Error reading file. Please try again.");
-    };
-
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target?.result);
         const workbook = XLSX.read(data, { type: "array" });
-        
-        console.log("Workbook sheets:", workbook.SheetNames);
-        
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-
-        console.log("Raw rows from Excel:", json.length);
-        if (json.length > 0) {
-          console.log("First row keys:", Object.keys(json[0]));
-          console.log("First row data:", json[0]);
-        }
 
         const mapped = json
           .map((row) => mapRow(row))
           .filter((row) => row.rollNo && row.enrollmentNo && row.studentName);
 
-        console.log("Mapped rows:", mapped.length);
-        if (mapped.length > 0) {
-          console.log("First mapped row:", mapped[0]);
-        }
-
         if (mapped.length === 0) {
-          if (json.length === 0) {
-            setError("Excel file is empty. No data found.");
-          } else {
-            setError(
-              `No valid rows found out of ${json.length}. Required columns: RollNo (or Roll), EnrollmentNo (or Enrollment No), StudentName (or Name). Check that all rows have these fields filled.`,
-            );
-          }
+          setError("Excel sheet must contain Roll No, Enrollment No, and Student Name columns.");
           return;
         }
 
         setParsedRows(mapped);
-        setSuccess(`${mapped.length} students ready to upload`);
+        setCurrentStep(3); // Auto advance to preview
       } catch (err) {
         console.error("Failed to parse file", err);
-        setError("Unable to read file. Please use a clean Excel/CSV template. " + err.message);
+        setError("Error parsing sheet format. Please download the template and try again.");
       }
     };
     reader.readAsArrayBuffer(file);
   };
 
-  const handleUpload = async () => {
-    setError("");
-    setSuccess("");
-
-    if (!hasPreview) {
-      setError("Please upload and parse a file first.");
+  const handleConfirmPreview = () => {
+    if (parsedRows.length === 0) {
+      setError("Please upload student file first.");
       return;
     }
-
-    if (
-      !selectedDepartment ||
-      !selectedCourse ||
-      !selectedDivision ||
-      !selectedAcademicYear
-    ) {
-      const missing = [];
-      if (!selectedDepartment) missing.push("Department");
-      if (!selectedCourse) missing.push("Course");
-      if (!selectedDivision) missing.push("Division");
-      if (!selectedAcademicYear) missing.push("Academic Year");
-      setError(
-        `Please select: ${missing.join(", ")}`,
-      );
-      return;
-    }
-
     setBatchAllocationCount(1);
     setBatchAllocations([
       {
@@ -300,17 +256,16 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed <= 0) {
       setBatchAllocationCount(1);
-      setBatchAllocations((prev) => prev.slice(0, 1));
+      setBatchAllocations([{ batch: "Batch 1", count: parsedRows.length }]);
       return;
     }
-
-    const safeCount = Math.min(parsed, Math.max(1, parsedRows.length));
+    const safeCount = Math.min(parsed, parsedRows.length);
     setBatchAllocationCount(safeCount);
-    setBatchAllocations((prev) =>
+    setBatchAllocations(
       Array.from({ length: safeCount }, (_, index) => ({
         batch: `Batch ${index + 1}`,
-        count: Number(prev[index]?.count || 0),
-      })),
+        count: index === 0 ? parsedRows.length : 0,
+      }))
     );
   };
 
@@ -322,41 +277,33 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
               ...allocation,
               [field]: field === "count" ? Number(value || 0) : value,
             }
-          : allocation,
-      ),
+          : allocation
+      )
     );
   };
 
   const totalAllocated = batchAllocations.reduce(
-    (sum, allocation) => sum + (Number(allocation.count) || 0),
-    0,
+    (sum, a) => sum + (Number(a.count) || 0),
+    0
   );
 
   const validateBatchAllocations = () => {
     if (batchAllocations.length !== batchAllocationCount) {
       return `Please configure ${batchAllocationCount} batch rows.`;
     }
-
     const invalid = batchAllocations.find(
-      (allocation) =>
-        !allocation.batch ||
-        !Number.isInteger(Number(allocation.count)) ||
-        Number(allocation.count) <= 0,
+      (a) => !a.batch || !Number.isInteger(Number(a.count)) || Number(a.count) <= 0
     );
-
     if (invalid) {
-      return "Each batch row must have a batch and a positive student count.";
+      return "Each batch row must have a unique batch name and a positive student count.";
     }
-
-    const uniqueBatches = new Set(batchAllocations.map((a) => a.batch));
-    if (uniqueBatches.size !== batchAllocations.length) {
-      return "Batch names must be unique in allocation.";
+    const uniqueNames = new Set(batchAllocations.map((a) => a.batch));
+    if (uniqueNames.size !== batchAllocations.length) {
+      return "Batch names must be unique.";
     }
-
     if (totalAllocated !== parsedRows.length) {
-      return `Total allocated students (${totalAllocated}) must equal uploaded students (${parsedRows.length}).`;
+      return `Allocated students (${totalAllocated}) must equal uploaded students (${parsedRows.length}).`;
     }
-
     return "";
   };
 
@@ -366,7 +313,6 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
       setBatchAllocationError(validationError);
       return;
     }
-
     setBatchAllocationError("");
 
     const payload = {
@@ -379,21 +325,19 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
       batchAllocations,
     };
 
-    console.log("=== UPLOAD DEBUG ===");
-    console.log("Upload endpoint:", config.office.bulkImport);
-    console.log("Upload payload:", payload);
-    console.log("Number of students:", parsedRows.length);
-    console.log("First student sample:", parsedRows[0]);
-    console.log("Token exists:", !!localStorage.getItem("token"));
+    // Set uploading + advance step BEFORE closing dialog to avoid flicker
+    setError("");
+    setSuccess("");
+    setUploading(true);
+    setCurrentStep(4);
+    // Small delay so step 4 spinner renders behind the modal before it closes
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    setShowBatchAllocationDialog(false);
 
     try {
-      setUploading(true);
       const token = localStorage.getItem("token");
-
       if (!token) {
-        setError("Session expired. Please login again.");
-        setUploading(false);
-        return;
+        throw new Error("Session expired. Please sign in again.");
       }
 
       const res = await fetch(config.office.bulkImport, {
@@ -405,411 +349,577 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
         body: JSON.stringify(payload),
       });
 
-      console.log("Response status:", res.status);
       const data = await res.json();
-      console.log("Upload response:", data);
-
-      if (!res.ok) {
-        throw new Error(data.message || `Server error: ${res.status}`);
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to import students");
       }
 
-      if (!data.success) {
-        throw new Error(data.message || "Upload failed");
-      }
-
-      setSuccess(
-        `Successfully uploaded ${data.inserted || 0} students. Skipped ${data.skipped || 0}.`,
-      );
-
+      setSuccess(`Successfully imported ${data.inserted || 0} students. Skipped ${data.skipped || 0}.`);
       if (data.generatedCredentials && data.generatedCredentials.length > 0) {
         setGeneratedCredentials(data.generatedCredentials);
       }
-
-      setShowBatchAllocationDialog(false);
-
-      // Reset form
-      setParsedRows([]);
-      setFileName("");
-      setBatch("");
-      setSelectedAcademicYear("");
-      setTimeout(() => fetchStudents(), 500);
+      if (data.errors && data.errors.length > 0) {
+        const mappedSkipped = data.errors.map((err) => {
+          const matchedRow = parsedRows.find((r) => r.enrollmentNo === err.enrollmentNo);
+          return {
+            enrollmentNo: err.enrollmentNo,
+            studentName: matchedRow ? matchedRow.studentName : "Unknown",
+            error: err.error || "Student already exists in this division",
+          };
+        });
+        setSkippedStudents(mappedSkipped);
+      } else {
+        setSkippedStudents([]);
+      }
+      // Refresh counts
+      fetchStudents();
     } catch (err) {
-      console.error("Upload error:", err);
-      setError(err.message || "Failed to upload students");
+      console.error(err);
+      setError(err.message || "Error importing records.");
+      setCurrentStep(3); // Reset to preview/allocate step on error
+      setShowBatchAllocationDialog(true); // Re-open allocation dialog so they can fix and retry
     } finally {
       setUploading(false);
     }
   };
 
+  // Helper stats
+  const departmentsCount = departments.length;
+  const uniqueDivisions = useMemo(() => {
+    const set = new Set(students.map((s) => s.divisionId?._id || s.divisionId).filter(Boolean));
+    return set.size;
+  }, [students]);
+
+  const lastUpload = useMemo(() => {
+    if (students.length === 0) return "No uploads";
+    const dates = students.map((s) => new Date(s.createdAt || s.updatedAt || Date.now()));
+    const maxDate = new Date(Math.max(...dates));
+    return maxDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  }, [students]);
+
+  const handleResetWizard = () => {
+    setCurrentStep(1);
+    setFileName("");
+    setFileSize("");
+    setParsedRows([]);
+    setGeneratedCredentials([]);
+    setSkippedStudents([]);
+    setExistingClassCount(0);
+    setError("");
+    setSuccess("");
+  };
+
+  const handleDownloadCredentialsCSV = () => {
+    if (generatedCredentials.length === 0) return;
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      ["Enrollment No,Student Name,Username,Password"]
+        .concat(
+          generatedCredentials.map(
+            (c) => `"${c.enrollmentNo}","${c.studentName}","${c.username}","${c.plainPassword}"`
+          )
+        )
+        .join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `student_credentials_${selectedAcademicYear}_${selectedDivision}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
-    <div className="office-page">
-      {/* Active page views */}
-
-      {/* Upload Tab */}
+    <div className="office-grid-wrapper animate-fadeIn">
       {currentTab === "upload" ? (
-        <div className="office-grid">
-
-          {/* Compact Page Header with inline stats */}
-          <div className="upload-page-header">
-            <div className="upload-page-header-left">
-              <div className="upload-page-icon">📤</div>
-              <div>
-                <h1 className="upload-page-title">Upload Students</h1>
-                <p className="upload-page-sub">Assign, upload and manage student records in one place</p>
+        <div className="dashboard-layout-container">
+          
+          {/* Top Row: Mini Stat Cards */}
+          <div className="stats-row-container">
+            <div className="stats-metric-card">
+              <div className="metric-icon-box students">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                </svg>
+              </div>
+              <div className="metric-text-group">
+                <span className="metric-value">{students.length}</span>
+                <span className="metric-title">Total Students</span>
               </div>
             </div>
-            <div className="upload-page-stats">
-              <div className="mini-stat">
-                <span className="mini-stat-icon students">👥</span>
-                <div>
-                  <p className="mini-stat-val">{students.length}</p>
-                  <p className="mini-stat-label">Students</p>
-                </div>
+
+            <div className="stats-metric-card">
+              <div className="metric-icon-box departments">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.33l-7.5-5-7.5 5V21m3.75-9.75h7.5" />
+                </svg>
               </div>
-              <div className="mini-stat">
-                <span className="mini-stat-icon departments">🏫</span>
-                <div>
-                  <p className="mini-stat-val">{departments.length}</p>
-                  <p className="mini-stat-label">Departments</p>
-                </div>
+              <div className="metric-text-group">
+                <span className="metric-value">{departmentsCount}</span>
+                <span className="metric-title">Departments</span>
               </div>
-              <div className="mini-stat">
-                <span className="mini-stat-icon divisions">📋</span>
-                <div>
-                  <p className="mini-stat-val">{divisions.length || "—"}</p>
-                  <p className="mini-stat-label">Divisions</p>
-                </div>
+            </div>
+
+            <div className="stats-metric-card">
+              <div className="metric-icon-box divisions">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
               </div>
-              <div className="mini-stat">
-                <span className="mini-stat-icon filerows">📁</span>
-                <div>
-                  <p className="mini-stat-val">{parsedRows.length > 0 ? parsedRows.length : "—"}</p>
-                  <p className="mini-stat-label">File Rows</p>
-                </div>
+              <div className="metric-text-group">
+                <span className="metric-value">{uniqueDivisions}</span>
+                <span className="metric-title">Divisions</span>
+              </div>
+            </div>
+
+            <div className="stats-metric-card">
+              <div className="metric-icon-box upload">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5h10.5a2.25 2.25 0 002.25-2.25V13.5a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 13.5v3.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+              </div>
+              <div className="metric-text-group">
+                <span className="metric-value">{lastUpload}</span>
+                <span className="metric-title">Last Upload</span>
               </div>
             </div>
           </div>
 
-          <div className="card">
-            <div className="card-header">
-              <div className="card-icon-badge">📤</div>
-              <div className="card-header-text">
-                <h2>Upload New Students</h2>
-                <p>Select assignment details and upload Excel/CSV file</p>
-              </div>
+          {/* Core Upload Wizard Card */}
+          <div className="wizard-main-card">
+            <div className="wizard-header">
+              <h2>Upload Student Directory</h2>
+              <p>Assign students to courses, divisions and upload records in bulk.</p>
             </div>
 
-            {/* Step 1: Assignment */}
-            <div className="form-section animate-fade-in">
-              <h3>Step 1: Select Assignment</h3>
-
-              <div className="form-grid">
-                <div className="form-row-col">
-                  <label>
-                    Department <span className="required">*</span>
-                  </label>
-                  <select
-                    value={selectedDepartment}
-                    onChange={handleDepartmentChange}
-                    disabled={uploading}
-                  >
-                    <option value="">-- Select Department --</option>
-                    {departments.map((dept) => (
-                      <option key={dept._id} value={dept._id}>
-                        {dept.name} ({dept.code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-row-col">
-                  <label>
-                    Course <span className="required">*</span>
-                  </label>
-                  <select
-                    value={selectedCourse}
-                    onChange={handleCourseChange}
-                    disabled={!selectedDepartment || uploading}
-                  >
-                    <option value="">-- Select Course --</option>
-                    {courses.map((course) => (
-                      <option key={course._id} value={course._id}>
-                        Semester {course.semester} - {course.courseCode} ({course.scheme})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-row-col">
-                  <label>
-                    Division <span className="required">*</span>
-                  </label>
-                  <select
-                    value={selectedDivision}
-                    onChange={handleDivisionChange}
-                    disabled={!selectedCourse || uploading}
-                  >
-                    <option value="">-- Select Division --</option>
-                    {divisions.map((div) => (
-                      <option key={div._id} value={div._id}>
-                        {div.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-row-col">
-                  <label>
-                    Academic Year <span className="required">*</span>
-                  </label>
-                  <select
-                    value={selectedAcademicYear}
-                    onChange={handleAcademicYearChange}
-                    disabled={uploading}
-                  >
-                    <option value="">-- Select Academic Year --</option>
-                    {generateAcademicYearOptions().map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-row-col full-width">
-                  <label>
-                    Default Batch <span className="hint">(optional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={batch}
-                    onChange={(e) => setBatch(e.target.value)}
-                    placeholder="Enter batch name (e.g. Batch 1)"
-                    disabled={uploading}
-                  />
-                </div>
-              </div>
-
-              {isUploadDisabled && (
-                <div className="alert error">
-                  <span>⚠️</span>
-                  <div>
-                    <strong>Bulk upload is disabled:</strong> Students already exist in the database for the selected Department, Division, and Academic Year.
+            {/* Steps Indicator Progress bar */}
+            <div className="steps-progress-container">
+              <div className="progress-track-line" />
+              <div 
+                className="progress-fill-line" 
+                style={{ width: `${((currentStep - 1) / 3) * 100}%` }} 
+              />
+              <div className="steps-indicator-nodes">
+                {[
+                  { step: 1, label: "Assignment" },
+                  { step: 2, label: "Upload File" },
+                  { step: 3, label: "Preview Data" },
+                  { step: 4, label: "Import Status" },
+                ].map((s) => (
+                  <div key={s.step} className={`step-node ${currentStep >= s.step ? "active" : ""} ${currentStep === s.step ? "current" : ""}`}>
+                    <div className="node-circle">{s.step}</div>
+                    <span className="node-label">{s.label}</span>
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
 
-            {/* Step 2: File Upload */}
-            <div className="form-section animate-fade-in delay-1">
-              <h3>Step 2: Upload Student Data</h3>
+            {/* Error notifications */}
+            {error && (
+              <div className="alert-banner error">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="alert-banner-svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div className="alert-banner-text">{error}</div>
+              </div>
+            )}
 
-              <div className="file-dropzone-wrapper">
-                <input
-                  id="student-file-input"
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={handleFileChange}
-                  style={{ display: "none" }}
-                  disabled={
-                    !selectedDepartment ||
-                    !selectedCourse ||
-                    !selectedDivision ||
-                    !selectedAcademicYear ||
-                    uploading ||
-                    isUploadDisabled
-                  }
-                />
-                <label 
-                  htmlFor="student-file-input" 
-                  className={`dropzone-label ${(!selectedDepartment || !selectedCourse || !selectedDivision || !selectedAcademicYear || isUploadDisabled) ? 'disabled' : ''}`}
-                >
-                  <div className="dropzone-icon">📊</div>
-                  <div className="dropzone-info">
-                    {fileName ? (
-                      <>
-                        <span className="dropzone-filename">📁 {fileName}</span>
-                        <span className="dropzone-change">Click to change file</span>
-                      </>
-                    ) : (
-                      <>
-                        <strong>Choose an Excel or CSV file</strong>
-                        <span className="dropzone-subtext">Click here to browse student records sheet</span>
-                      </>
+            {/* Success notifications */}
+            {success && (
+              <div className="alert-banner success">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="alert-banner-svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="alert-banner-text">{success}</div>
+              </div>
+            )}
+
+            {/* Step Content panels */}
+            <div className="wizard-step-content-box">
+              
+              {/* Step 1: Academic Assignment */}
+              {currentStep === 1 && (
+                <div className="wizard-step-panel animate-fadeIn">
+                  <div className="step-title-row">
+                    <h3>Academic Context Setup</h3>
+                    <p>Assign students to their correct department, division, and year.</p>
+                  </div>
+                  <div className="wizard-form-grid">
+                    <div className="form-input-control">
+                      <label>Department <span className="req">*</span></label>
+                      <select value={selectedDepartment} onChange={handleDepartmentChange}>
+                        <option value="">-- Choose Department --</option>
+                        {departments.map((dept) => (
+                          <option key={dept._id} value={dept._id}>
+                            {dept.name} ({dept.code})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-input-control">
+                      <label>Course / Semester <span className="req">*</span></label>
+                      <select 
+                        value={selectedCourse} 
+                        onChange={handleCourseChange}
+                        disabled={!selectedDepartment}
+                      >
+                        <option value="">-- Choose Course --</option>
+                        {courses.map((course) => (
+                          <option key={course._id} value={course._id}>
+                            Semester {course.semester} - {course.courseCode} ({course.scheme})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-input-control">
+                      <label>Division <span className="req">*</span></label>
+                      <select 
+                        value={selectedDivision} 
+                        onChange={(e) => setSelectedDivision(e.target.value)}
+                        disabled={!selectedCourse}
+                      >
+                        <option value="">-- Choose Division --</option>
+                        {divisions.map((div) => (
+                          <option key={div._id} value={div._id}>
+                            {div.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-input-control">
+                      <label>Academic Year <span className="req">*</span></label>
+                      <select 
+                        value={selectedAcademicYear} 
+                        onChange={(e) => setSelectedAcademicYear(e.target.value)}
+                      >
+                        <option value="">-- Choose Academic Year --</option>
+                        {generateAcademicYearOptions().map((year) => (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-input-control full-span">
+                      <label>Default Batch <span className="hint">(Optional)</span></label>
+                      <input 
+                        type="text" 
+                        value={batch} 
+                        onChange={(e) => setBatch(e.target.value)}
+                        placeholder="e.g. Batch 1" 
+                      />
+                    </div>
+                    {existingClassCount > 0 && (
+                      <div className="alert-banner warning full-span" style={{ gridColumn: "span 2", display: "flex", gap: "10px", alignItems: "center", backgroundColor: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.2)", padding: "12px", borderRadius: "var(--office-radius-md)" }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="alert-banner-svg" style={{ color: "#D97706", width: "18px", height: "18px", flexShrink: 0 }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <div className="alert-banner-text" style={{ color: "#92400E", fontSize: "12.5px" }}>
+                          <strong>Note:</strong> There are already <strong>{existingClassCount}</strong> students registered in this division for the selected academic year.
+                        </div>
+                      </div>
                     )}
                   </div>
-                </label>
-              </div>
 
-              {hasPreview && (
-                <div className="preview-info-badge">
-                  <span className="checkmark">✓</span>
-                  <span>{parsedRows.length} students loaded and validated</span>
+                  <div className="wizard-action-footer">
+                    <button 
+                      className="wizard-btn-primary" 
+                      disabled={!selectedDepartment || !selectedCourse || !selectedDivision || !selectedAcademicYear}
+                      onClick={() => setCurrentStep(2)}
+                    >
+                      Next Step: File Upload
+                    </button>
+                  </div>
                 </div>
               )}
-            </div>
 
-            <button
-              className="primary-btn upload-submit-btn"
-              onClick={handleUpload}
-              disabled={uploading || !hasPreview || isUploadDisabled}
-            >
-              {uploading ? "Uploading Students..." : "Upload Students"}
-            </button>
-
-            {error && <div className="alert error">{error}</div>}
-            {success && <div className="alert success">{success}</div>}
-
-            {showBatchAllocationDialog && (
-              <div
-                className="modal-overlay"
-                onClick={() => setShowBatchAllocationDialog(false)}
-              >
-                <div
-                  className="modal-content batch-allocation-modal"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="batch-modal-header">
-                    <h2>⚖️ Batch Allocation</h2>
-                    <p>
-                      Distribute <strong>{parsedRows.length}</strong> uploaded students into batches.
-                    </p>
+              {/* Step 2: File Upload */}
+              {currentStep === 2 && (
+                <div className="wizard-step-panel animate-fadeIn">
+                  <div className="step-title-row">
+                    <h3>Import Directory Sheet</h3>
+                    <p>Upload student roster in Excel or CSV. Make sure you use the required template columns.</p>
                   </div>
 
-                  <div className="form-row-col">
+                  <div className="upload-section-action-box">
+                    <div className="download-template-card-box">
+                      <div className="template-info">
+                        <h4>Download Student Template</h4>
+                        <p>Retrieve the expected Excel format matching backend requirements.</p>
+                      </div>
+                      <button className="wizard-btn-outline" onClick={handleDownloadTemplate}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="btn-icon-svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        Download Excel format
+                      </button>
+                    </div>
+
+                    <div className="drag-drop-file-wrapper">
+                      <input 
+                        id="wizard-file-selector" 
+                        type="file" 
+                        accept=".xlsx,.xls,.csv" 
+                        onChange={handleFileChange}
+                      />
+                      <label htmlFor="wizard-file-selector" className="drag-drop-area-label">
+                        <div className="drag-drop-cloud-icon">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="cloud-svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5h10.5a2.25 2.25 0 002.25-2.25V13.5a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 13.5v3.75a2.25 2.25 0 002.25 2.25z" />
+                          </svg>
+                        </div>
+                        {fileName ? (
+                          <div className="file-metadata-info">
+                            <span className="metadata-name">{fileName}</span>
+                            <span className="metadata-size">{fileSize}</span>
+                            <span className="metadata-change-label">Click to select another file</span>
+                          </div>
+                        ) : (
+                          <div className="file-prompt-info">
+                            <strong>Choose Excel or CSV file</strong>
+                            <span>or drag and drop it here</span>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="wizard-action-footer flex-end">
+                    <button className="wizard-btn-outline" onClick={() => setCurrentStep(1)}>
+                      Back
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Preview and Allocation */}
+              {currentStep === 3 && (
+                <div className="wizard-step-panel animate-fadeIn">
+                  <div className="step-title-row">
+                    <h3>Data Verification</h3>
+                    <p>Verify the parsed student list rows below before completing the database upload.</p>
+                  </div>
+
+                  <div className="preview-table-box office-scrollable">
+                    <table className="preview-records-table">
+                      <thead>
+                        <tr>
+                          <th>Roll No</th>
+                          <th>Enrollment No</th>
+                          <th>Student Name</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {parsedRows.slice(0, 10).map((row, index) => (
+                          <tr key={index}>
+                            <td>{row.rollNo}</td>
+                            <td><code className="code-tag">{row.enrollmentNo}</code></td>
+                            <td>{row.studentName}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {parsedRows.length > 10 && (
+                      <div className="preview-records-more-label">
+                        And {parsedRows.length - 10} more rows parsed...
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="wizard-action-footer flex-between">
+                    <button className="wizard-btn-outline" onClick={() => setCurrentStep(2)}>
+                      Back
+                    </button>
+                    <button className="wizard-btn-primary" onClick={handleConfirmPreview}>
+                      Confirm & Allocate Batches
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Import Progress & Success */}
+              {currentStep === 4 && (
+                <div className="wizard-step-panel animate-fadeIn">
+                  <div className="import-status-flow-box">
+                    {uploading ? (
+                      <div className="importing-spinner-layout">
+                        <div className="loading-ring-spinner large" />
+                        <span className="importing-status-label">Uploading student data...</span>
+                        <span className="importing-substatus-label">Creating accounts and assigning batches. This may take a moment.</span>
+                      </div>
+                    ) : (
+                      <div className="importing-success-complete-layout animate-fadeIn">
+                        <div className="success-badge-mark">✓</div>
+                        <h3>Upload Completed Successfully</h3>
+                        <p>{success}</p>
+
+                        {generatedCredentials.length > 0 && (
+                          <div className="import-credentials-export-wrapper">
+                            <div className="export-action-bar-row">
+                              <h4>Student Credentials list</h4>
+                              <div className="action-button-group">
+                                <button
+                                  className={`wizard-btn-outline ${copied ? "copied" : ""}`}
+                                  onClick={() => {
+                                    const text = generatedCredentials
+                                      .map((c) => `${c.enrollmentNo},${c.studentName},${c.username},${c.plainPassword}`)
+                                      .join("\n");
+                                    navigator.clipboard.writeText(text);
+                                    setCopied(true);
+                                    setTimeout(() => setCopied(false), 2000);
+                                  }}
+                                >
+                                  {copied ? "✓ Copied!" : "📋 Copy CSV content"}
+                                </button>
+                                <button className="wizard-btn-outline text-primary" onClick={handleDownloadCredentialsCSV}>
+                                  📥 Download CSV File
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="credentials-scrollable-table office-scrollable">
+                              <table className="credentials-display-table">
+                                <thead>
+                                  <tr>
+                                    <th>Enrollment No</th>
+                                    <th>Student Name</th>
+                                    <th>Username</th>
+                                    <th>Password</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {generatedCredentials.map((c, i) => (
+                                    <tr key={i}>
+                                      <td>{c.enrollmentNo}</td>
+                                      <td><strong>{c.studentName}</strong></td>
+                                      <td><code className="code-tag">{c.username}</code></td>
+                                      <td><code className="code-tag font-password">{c.plainPassword}</code></td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+
+                        {skippedStudents.length > 0 && (
+                          <div className="import-credentials-export-wrapper" style={{ marginTop: "20px", border: "1px solid rgba(245, 158, 11, 0.3)" }}>
+                            <div className="export-action-bar-row" style={{ backgroundColor: "rgba(245, 158, 11, 0.05)", borderBottom: "1px solid rgba(245, 158, 11, 0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <h4 style={{ color: "#D97706" }}>⚠️ Skipped Students (Already Registered in Division)</h4>
+                              <span style={{ fontSize: "11px", fontWeight: "600", padding: "2px 6px", borderRadius: "9999px", backgroundColor: "rgba(245, 158, 11, 0.1)", color: "#D97706" }}>
+                                {skippedStudents.length} Students
+                              </span>
+                            </div>
+
+                            <div className="credentials-scrollable-table office-scrollable">
+                              <table className="credentials-display-table">
+                                <thead>
+                                  <tr>
+                                    <th>Enrollment No</th>
+                                    <th>Student Name</th>
+                                    <th>Status Details</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {skippedStudents.map((s, i) => (
+                                    <tr key={i}>
+                                      <td><code className="code-tag">{s.enrollmentNo}</code></td>
+                                      <td><strong>{s.studentName}</strong></td>
+                                      <td style={{ color: "var(--office-danger)" }}>{s.error}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+
+                        <button className="wizard-btn-primary margin-top-md" onClick={handleResetWizard}>
+                          Upload Another Roster
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+
+          {/* Batch Allocation Modal dialog */}
+          {showBatchAllocationDialog && (
+            <div className="modal-wrapper-overlay">
+              <div className="modal-dialog-box animate-modalScaleIn">
+                <div className="modal-dialog-header">
+                  <h3>⚖️ Batch Allocation</h3>
+                  <p>Distribute <strong>{parsedRows.length}</strong> imported students into division batches.</p>
+                </div>
+
+                <div className="modal-dialog-body office-scrollable">
+                  <div className="form-input-control">
                     <label>How many batches to divide?</label>
                     <input
                       type="number"
                       min="1"
-                      max={Math.max(1, parsedRows.length)}
                       value={batchAllocationCount}
-                      onChange={(e) =>
-                        handleBatchAllocationCountChange(e.target.value)
-                      }
-                      disabled={uploading}
+                      onChange={(e) => handleBatchAllocationCountChange(e.target.value)}
                     />
                   </div>
 
-                  <div className="batch-allocation-grid office-scrollable">
+                  <div className="allocation-rows-grid">
                     {batchAllocations.map((allocation, index) => (
-                      <div key={index} className="batch-allocation-row">
-                        <div className="batch-name-display">Batch {index + 1}</div>
-
-                        <div className="form-row-col">
-                          <label>Students in Batch</label>
+                      <div key={index} className="allocation-row-card">
+                        <span className="allocation-batch-label">Batch {index + 1}</span>
+                        <div className="form-input-control no-margin">
                           <input
                             type="number"
                             min="1"
                             value={allocation.count}
-                            onChange={(e) =>
-                              handleBatchAllocationFieldChange(
-                                index,
-                                "count",
-                                e.target.value,
-                              )
-                            }
-                            disabled={uploading}
+                            placeholder="Student count"
+                            onChange={(e) => handleBatchAllocationFieldChange(index, "count", e.target.value)}
                           />
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  {/* Progress and allocation summary */}
-                  <div className="allocation-progress-wrapper">
-                    <div className="progress-bar-container">
+                  <div className="allocation-progress-bar-block">
+                    <div className="progress-bar-track">
                       <div 
-                        className={`progress-bar-fill ${totalAllocated === parsedRows.length ? 'success' : 'pending'}`} 
+                        className={`progress-bar-fill ${totalAllocated === parsedRows.length ? "success" : "pending"}`} 
                         style={{ width: `${Math.min(100, (totalAllocated / parsedRows.length) * 100)}%` }}
                       />
                     </div>
-                    <div className={`allocation-summary-text ${totalAllocated === parsedRows.length ? 'success' : 'error'}`}>
+                    <span className={`progress-percentage-label ${totalAllocated === parsedRows.length ? "success" : "pending"}`}>
                       Allocated: <strong>{totalAllocated}</strong> / {parsedRows.length} students
-                    </div>
+                    </span>
                   </div>
 
                   {batchAllocationError && (
-                    <div className="alert error">{batchAllocationError}</div>
+                    <div className="alert-banner error compact">{batchAllocationError}</div>
                   )}
-
-                  <div className="modal-buttons">
-                    <button
-                      className="btn-secondary"
-                      onClick={() => setShowBatchAllocationDialog(false)}
-                      disabled={uploading}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="primary-btn"
-                      onClick={handleConfirmBatchAllocation}
-                      disabled={uploading}
-                    >
-                      {uploading ? "Uploading Students..." : "Confirm & Upload"}
-                    </button>
-                  </div>
                 </div>
-              </div>
-            )}
 
-            {/* Generated Credentials */}
-            {generatedCredentials.length > 0 && (
-              <div className="credentials-section">
-                <div className="credentials-header-row">
-                  <div>
-                    <h3>🔐 Generated Student Credentials</h3>
-                    <p className="credentials-warning">
-                      ⚠️ Please save these credentials now. They will not be displayed again.
-                    </p>
-                  </div>
-                  <button
-                    className={`copy-all-btn ${copied ? 'copied' : ''}`}
-                    onClick={() => {
-                      const text = generatedCredentials
-                        .map(
-                          (c) =>
-                            `${c.enrollmentNo},${c.studentName},${c.username},${c.plainPassword}`,
-                        )
-                        .join("\n");
-                      navigator.clipboard.writeText(text);
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
-                    }}
+                <div className="modal-dialog-footer">
+                  <button className="wizard-btn-outline" onClick={() => setShowBatchAllocationDialog(false)}>
+                    Cancel
+                  </button>
+                  <button 
+                    className="wizard-btn-primary" 
+                    disabled={totalAllocated !== parsedRows.length}
+                    onClick={handleConfirmBatchAllocation}
                   >
-                    {copied ? "✓ Copied!" : "📋 Copy All (CSV format)"}
+                    Confirm & Import
                   </button>
                 </div>
-
-                <div className="credentials-table-wrapper office-scrollable">
-                  <table className="credentials-table">
-                    <thead>
-                      <tr>
-                        <th>Enrollment No</th>
-                        <th>Student Name</th>
-                        <th>Username</th>
-                        <th>Password</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {generatedCredentials.map((cred, idx) => (
-                        <tr key={idx}>
-                          <td>{cred.enrollmentNo}</td>
-                          <td className="student-name-bold">{cred.studentName}</td>
-                          <td>
-                            <code className="cred-code">{cred.username}</code>
-                          </td>
-                          <td>
-                            <code className="cred-code password">{cred.plainPassword}</code>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
         </div>
       ) : currentTab === "notices" ? (
         <NoticesPage />
