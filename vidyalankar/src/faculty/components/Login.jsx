@@ -5,7 +5,6 @@ import { TokenManager, SessionManager } from "../../utils/authUtils.js";
 import { buildInstitutionLogoUrl } from "../../utils/institutionBranding";
 import { applyPalette } from "../../utils/theme";
 import "./Login.css";
-import loginImage from "../../assets/login.svg";
 
 // Function to apply theme based on college
 const applyTheme = (college, palette = null) => {
@@ -120,7 +119,7 @@ const Login = () => {
       <div className="login-container">
         {/* Left Branding Section */}
         <div className="login-brand">
-          <img src={loginImage} alt="Vidyalankar Logo" className="logo" />
+          <img src="/vpciaan logo .png" alt="VPCIAAN Logo" className="logo" />
           <h1 className="login-title">CIANN</h1>
           <p className="subheading">Curriculum Implementation Assessment Norms</p>
         </div>

@@ -46,9 +46,15 @@ body {
 }
 
 .logo {
-  height: 60px;
+  height: 180px;
   margin-bottom: 18px;
   object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
 }
 
 .login-title {

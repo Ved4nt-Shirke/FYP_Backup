@@ -449,6 +449,28 @@ const AppContent = () => {
     };
   }, [college, userRole]);
 
+  // Sync auth checks to prevent layout flash before redirect
+  const token = localStorage.getItem("token");
+  const isLoginPage = location.pathname === "/login";
+  const isPublicPage = [
+    "view-attend2",
+    "view-practical3",
+    "view-extra-practical3",
+    "view-extra-theory-attend2",
+    "view-tutorial-attendance2",
+    "summary-pages",
+    "edit-ciann-print",
+    "public/practical-exam",
+  ].some((p) => location.pathname.includes(p));
+
+  if (!token && !isLoginPage && !isPublicPage) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (token && isLoginPage) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const handleMenuToggle = () => setIsSidebarVisible((prev) => !prev);
 
   const isSpecialPage =
