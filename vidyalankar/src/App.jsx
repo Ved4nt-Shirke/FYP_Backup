@@ -139,7 +139,6 @@ import StudentPromotions from "./admin/StudentPromotions";
 
 import OfficeDashboard from "./office/OfficeDashboard";
 import OfficeSidebar from "./office/OfficeSidebar";
-import OfficeHeader from "./office/OfficeHeader";
 
 // Assessment Components
 import SummaryCards from "./faculty/components/SummaryCards";
@@ -561,13 +560,7 @@ const AppContent = () => {
       {/* Header logic */}
       {userRole === "superadmin" ? (
         <SuperAdminNavbar />
-      ) : userRole === "office" ? (
-        <OfficeHeader
-          onMenuToggle={handleMenuToggle}
-          staffName={localStorage.getItem("staffName") || localStorage.getItem("name") || "Office Staff"}
-          currentTab={currentTab}
-        />
-      ) : userRole === "admin" ? (
+      ) : userRole === "office" ? null : userRole === "admin" ? (
         <AdminHeader onMenuToggle={handleMenuToggle} />
       ) : userRole !== "admin" ? (
         <Header

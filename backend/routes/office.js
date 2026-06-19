@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Student = require("../models/Student");
 const { ensureStudentHistory, resolveStudents } = require("../utils/studentHistoryHelper");
+const { generateUniqueUsername } = require("../utils/usernameGenerator");
 const User = require("../models/user");
 const OfficeStaff = require("../models/OfficeStaff");
 const Notice = require("../models/Notice");
@@ -423,6 +424,90 @@ router.post(
 );
 
 /**
+ * POST /api/office/students/bulk-seat-numbers
+ * Bulk upload seat numbers by enrollment number
+ * Auth: Office staff or admin
+ * Body: {
+ *   entries: [{ enrollmentNo, seatNo }],
+ *   departmentId?: ObjectId,
+ *   courseId?: ObjectId,
+ *   divisionId?: ObjectId,
+ *   academicYear?: string
+ * }
+ */
+router.post(
+  "/students/bulk-seat-numbers",
+  authenticate,
+  authorizeOffice,
+  async (req, res) => {
+    try {
+      const { entries, departmentId, courseId, divisionId, academicYear } = req.body;
+
+      if (!Array.isArray(entries) || entries.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Please provide a non-empty array of { enrollmentNo, seatNo } entries.",
+        });
+      }
+
+      let updated = 0;
+      let skipped = 0;
+      const notFound = [];
+      const errors = [];
+
+      for (const entry of entries) {
+        const enrollmentNo = (entry.enrollmentNo || "").toString().trim();
+        const seatNo = (entry.seatNo || "").toString().trim();
+
+        if (!enrollmentNo) {
+          skipped++;
+          errors.push({ enrollmentNo: "(empty)", error: "Missing enrollment number" });
+          continue;
+        }
+
+        if (!seatNo) {
+          skipped++;
+          errors.push({ enrollmentNo, error: "Missing seat number" });
+          continue;
+        }
+
+        // Build filter to find the student
+        const filter = {
+          institution: req.user.college,
+          enrollmentNo: { $regex: new RegExp(`^${enrollmentNo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
+        };
+
+        // Apply optional scope filters
+        if (departmentId) filter.departmentId = departmentId;
+        if (courseId) filter.courseId = courseId;
+        if (divisionId) filter.divisionId = divisionId;
+        if (academicYear) filter.academicYear = (academicYear || "").toString().trim();
+
+        const result = await Student.updateOne(filter, { $set: { seatNo } });
+
+        if (result.matchedCount > 0) {
+          updated++;
+        } else {
+          notFound.push({ enrollmentNo, seatNo, error: "Student not found with this enrollment number" });
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Updated ${updated} seat numbers. ${skipped} skipped. ${notFound.length} not found.`,
+        updated,
+        skipped,
+        notFound,
+        errors,
+      });
+    } catch (err) {
+      console.error("Bulk seat numbers upload error:", err);
+      res.status(500).json({ success: false, message: err.message });
+    }
+  },
+);
+
+/**
  * GET /api/office/student/:id
  * Get specific student details (with auth)
  * Auth: Office staff or admin
@@ -590,7 +675,7 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
         }
 
         // Generate/reuse credentials (keep stable by username)
-        const username = enrollmentNo.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const username = await generateUniqueUsername(enrollmentNo, req.user.college);
         const existingUser = await User.findOne({ username });
         let plainPassword = "";
         let hashedPassword = "";
