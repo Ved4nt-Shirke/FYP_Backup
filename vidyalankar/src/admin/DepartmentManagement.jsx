@@ -4,6 +4,9 @@ import axios from "../utils/axiosConfig";
 import { showSuccessAlert, showErrorAlert } from "../utils/alertUtils.jsx";
 import { config } from "../config/api";
 import "./DepartmentManagement.css";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import BulkUploadFacultyModal from "./BulkUploadFacultyModal";
 
 const DepartmentManagement = () => {
   const { id } = useParams();
@@ -20,6 +23,7 @@ const DepartmentManagement = () => {
   const [filteredAssignedStaff, setFilteredAssignedStaff] = useState([]);
   const [filteredUnassignedStaff, setFilteredUnassignedStaff] = useState([]);
   const [activeView, setActiveView] = useState("faculty"); // "faculty" or "admin"
+  const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
 
   // Get admin's institution from localStorage
   const adminInstitution = localStorage.getItem("college") || "VP";
@@ -36,6 +40,64 @@ const DepartmentManagement = () => {
     fetchDepartmentData();
     fetchAllDepartments();
   }, [id, navigate]);
+
+  const downloadDepartmentCredentialsPDF = () => {
+    const facultyMembers = assignedStaff.filter(s => s.staffType === "faculty");
+
+    if (facultyMembers.length === 0) {
+      showErrorAlert("No assigned faculty found in this department.");
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    doc.setFontSize(16);
+    doc.text(`Faculty Login Credentials - ${department.name} (${department.code})`, pageWidth / 2, 15, {
+      align: "center",
+    });
+
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 22, {
+      align: "center",
+    });
+
+    const tableData = facultyMembers.map((fac) => [
+      fac.fullName,
+      fac.employeeId,
+      fac.email,
+      fac.generatedUsername || "Not set",
+      fac.currentPassword || "Not set",
+    ]);
+
+    autoTable(doc, {
+      head: [["Full Name", "Employee ID", "Email", "Username", "Password"]],
+      body: tableData,
+      startY: 30,
+      theme: "grid",
+      headStyles: {
+        fillColor: [16, 185, 129],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        halign: "center",
+      },
+      margin: 10,
+      didDrawPage: (data) => {
+        const pageCount = doc.internal.pages.length - 1;
+        doc.setFontSize(9);
+        doc.text(
+          `Page ${data.pageNumber} of ${pageCount}`,
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: "center" }
+        );
+      },
+    });
+
+    doc.save(`${department.code}_Faculty_Credentials.pdf`);
+    showSuccessAlert("PDF downloaded successfully.");
+  };
 
   // Filter staff based on active view
   useEffect(() => {
@@ -237,7 +299,25 @@ const DepartmentManagement = () => {
             </p>
           </div>
         </div>
-        <div className="header-right">
+        <div className="header-right" style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+          {activeView === "faculty" && (
+            <>
+              <button
+                className="btn-secondary"
+                onClick={downloadDepartmentCredentialsPDF}
+                title="Download all faculty credentials as PDF"
+              >
+                <i className="bi bi-file-earmark-pdf"></i> Export PDF
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => setShowBulkUploadModal(true)}
+                title="Bulk upload faculty to this department"
+              >
+                <i className="bi bi-upload"></i> Bulk Upload
+              </button>
+            </>
+          )}
           <button
             className="btn-primary"
             onClick={() => navigate(`/admin/departments/${id}/courses`)}
@@ -563,6 +643,12 @@ const DepartmentManagement = () => {
           </div>
         </div>
       )}
+      <BulkUploadFacultyModal
+        show={showBulkUploadModal}
+        onClose={() => setShowBulkUploadModal(false)}
+        onUploadSuccess={fetchDepartmentData}
+        preselectedDepartmentId={id}
+      />
     </div>
   );
 };

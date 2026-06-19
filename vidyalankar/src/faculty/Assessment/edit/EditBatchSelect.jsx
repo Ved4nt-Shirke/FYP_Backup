@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../../basic/Header";
 
-import "../assessBatchSelect.css";
+import "../assessBatchselect.css";
 
 export default function EditBatchSelect() {
   const location = useLocation();

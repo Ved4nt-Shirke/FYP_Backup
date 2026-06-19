@@ -65,6 +65,11 @@ const client = new Client({
         dataPath: WHATSAPP_AUTH_DATA_PATH,
         clientId: WHATSAPP_AUTH_CLIENT_ID,
     }),
+    webVersionCache: {
+        type: "remote",
+        remotePath: "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/{version}.html",
+        strict: false,
+    },
     puppeteer: {
         headless: true,
         args: [
@@ -88,10 +93,10 @@ client.on("qr", (qr) => {
     console.log("📱 Scan this QR with WhatsApp:");
     console.log("========================================\n");
     qrcode.generate(qr, { small: true });
-    console.log("\nSession saved after scan — no re-scan needed on restart.\n");
+    console.log("\n👉 Once you scan this QR code, the session will be saved automatically for future restarts.\n");
 });
 
-client.on("authenticated", () => console.log("✅ WhatsApp Bot: Authenticated."));
+client.on("authenticated", () => console.log("✅ WhatsApp Bot: Authenticated successfully. Session saved."));
 client.on("auth_failure", (msg) => console.error("❌ WhatsApp Auth Failed:", msg));
 client.on("ready", () => console.log("🤖 WhatsApp Attendance Bot is READY!"));
 client.on("disconnected", (r) => console.warn("⚠️ WhatsApp Bot disconnected:", r));

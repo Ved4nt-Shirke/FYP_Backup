@@ -33,7 +33,7 @@ if (process.env.DEBUG !== "true") {
       originalLog(...args);
     }
   };
-  console.info = () => {};
+  console.info = () => { };
 }
 
 // Global error handlers to prevent crashes from async/third-party library unhandled exceptions (e.g., whatsapp-web.js EBUSY locking errors on Windows)
@@ -80,7 +80,12 @@ const isDummyInstitutionRecord = (institution) => {
 const { apiRateLimiter } = require("./middleware/rateLimiter");
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173", // Your frontend
+    origin: [
+      process.env.CLIENT_URL,
+      "https://vpciaan.in",
+      "https://www.vpciaan.in",
+      "http://localhost:5173"
+    ].filter(Boolean),
     credentials: true,
   }),
 );
