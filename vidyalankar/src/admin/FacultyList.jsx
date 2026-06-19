@@ -4,6 +4,7 @@ import axios from "../utils/axiosConfig";
 import { showSuccessAlert, showErrorAlert } from "../utils/alertUtils.jsx";
 import { config } from "../config/api";
 import "./FacultyList.css";
+import BulkUploadFacultyModal from "./BulkUploadFacultyModal";
 
 const FacultyList = ({ filterRole = "faculty" }) => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const FacultyList = ({ filterRole = "faculty" }) => {
   const [confirmDeleteText, setConfirmDeleteText] = useState("");
   const [stats, setStats] = useState(null);
   const [showCredentialsModal, setShowCredentialsModal] = useState(false);
+  const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [showPassword, setShowPassword] = useState({});
   const [editingUsername, setEditingUsername] = useState(null);
@@ -382,6 +384,11 @@ const FacultyList = ({ filterRole = "faculty" }) => {
               <i className="bi bi-list-ul"></i>
             </button>
           </div>
+          {filterRole === "faculty" && (
+            <button className="btn-secondary" style={{ display: "flex", alignItems: "center", gap: "8px" }} onClick={() => setShowBulkUploadModal(true)}>
+              <i className="bi bi-upload"></i> Bulk Import
+            </button>
+          )}
           <button className="btn-primary" onClick={handleCreateFaculty}>
             <i className="bi bi-person-plus"></i>{" "}
             {filterRole === "hod"
@@ -899,6 +906,11 @@ const FacultyList = ({ filterRole = "faculty" }) => {
           </div>
         </div>
       )}
+      <BulkUploadFacultyModal
+        show={showBulkUploadModal}
+        onClose={() => setShowBulkUploadModal(false)}
+        onUploadSuccess={fetchFaculty}
+      />
     </div>
   );
 };

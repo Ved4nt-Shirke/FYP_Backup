@@ -557,7 +557,7 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
       whatsappPhone: facultyData.whatsappPhone || "",
       generatedUsername: facultyData.generatedUsername,
       createdBy: req.user._id,
-      currentPassword: generatedPassword, // Store plain text password for admin access
+      currentPassword: generatedPassword, // Store plain text password for admin reference
       status: facultyData.status || "active",
       role: facultyData.role || "faculty",
     });
@@ -585,6 +585,183 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
     });
   }
 });
+
+// Bulk Import Faculty Profiles
+router.post(
+  "/faculty/bulk-import",
+  authenticate,
+  authorizeAdmin,
+  async (req, res) => {
+    try {
+      const { facultyList, departmentId } = req.body;
+      const institution = req.user.college;
+
+      if (!Array.isArray(facultyList) || facultyList.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid or empty faculty list",
+        });
+      }
+
+      // Check if department exists if departmentId is provided
+      if (departmentId) {
+        const departmentExists = await Department.findOne({
+          _id: departmentId,
+          institution,
+        });
+        if (!departmentExists) {
+          return res.status(404).json({
+            success: false,
+            message: "Department not found in your institution",
+          });
+        }
+      }
+
+      const results = {
+        inserted: 0,
+        skipped: 0,
+        errors: [],
+        generatedCredentials: [],
+      };
+
+      const baseTime = Date.now().toString().slice(-6);
+
+      for (let i = 0; i < facultyList.length; i++) {
+        const item = facultyList[i];
+        const { fullName, email, whatsappPhone, skills } = item;
+
+        if (!fullName || !email) {
+          results.skipped++;
+          results.errors.push({
+            row: i + 1,
+            name: fullName || "Unknown",
+            error: "Full Name and Email are required",
+          });
+          continue;
+        }
+
+        const emailClean = email.toLowerCase().trim();
+
+        // Check if email already exists in Faculty
+        const existingFaculty = await Faculty.findOne({
+          email: emailClean,
+          institution,
+        });
+
+        if (existingFaculty) {
+          results.skipped++;
+          results.errors.push({
+            row: i + 1,
+            name: fullName,
+            email: emailClean,
+            error: "Faculty with this email already exists in this institution",
+          });
+          continue;
+        }
+
+        try {
+          // Generate unique username
+          let baseUsername = fullName
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, ".")
+            .replace(/[^a-z0-9.]/g, "");
+
+          let username = baseUsername;
+          let exists = await User.findOne({ username });
+          let counter = 1;
+          while (exists) {
+            username = `${baseUsername}${counter}`;
+            exists = await User.findOne({ username });
+            counter++;
+          }
+
+          // Generate employee ID (unique)
+          const employeeId = `FAC${baseTime}${String(i).padStart(3, "0")}`;
+
+          // Generate safe password
+          const plainPassword = generateSafePassword(8);
+          const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+          // Create User account document
+          const newUser = new User({
+            username,
+            password: hashedPassword,
+            college: institution,
+            role: "faculty",
+            department: departmentId || null,
+          });
+
+          await newUser.save();
+
+          // Skills parsing (support both string and array)
+          let parsedSkills = [];
+          if (Array.isArray(skills)) {
+            parsedSkills = skills;
+          } else if (typeof skills === "string" && skills.trim()) {
+            parsedSkills = skills.split(",").map((s) => s.trim()).filter(Boolean);
+          }
+
+          // Phone parsing to string
+          let finalPhone = "";
+          if (whatsappPhone !== undefined && whatsappPhone !== null) {
+            finalPhone = whatsappPhone.toString().trim();
+          }
+
+          // Create Faculty document
+          const newFaculty = new Faculty({
+            fullName: fullName.trim(),
+            email: emailClean,
+            employeeId,
+            department: departmentId || null,
+            institution,
+            skills: parsedSkills,
+            whatsappPhone: finalPhone,
+            generatedUsername: username,
+            currentPassword: plainPassword,
+            createdBy: req.user._id,
+            status: "active",
+            role: "faculty",
+          });
+
+          await newFaculty.save();
+
+          results.inserted++;
+          results.generatedCredentials.push({
+            fullName: fullName.trim(),
+            employeeId,
+            email: emailClean,
+            username,
+            plainPassword,
+          });
+        } catch (err) {
+          results.skipped++;
+          results.errors.push({
+            row: i + 1,
+            name: fullName,
+            error: err.message,
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Successfully imported ${results.inserted} faculty. Skipped ${results.skipped}.`,
+        inserted: results.inserted,
+        skipped: results.skipped,
+        errors: results.errors,
+        generatedCredentials: results.generatedCredentials,
+      });
+    } catch (err) {
+      console.error("Bulk import faculty error:", err);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error during bulk import",
+        error: err.message,
+      });
+    }
+  }
+);
 
 // Get All Faculty for Institution
 router.get("/faculty", authenticate, authorizeAdmin, async (req, res) => {

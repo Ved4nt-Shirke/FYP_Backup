@@ -200,7 +200,7 @@ body {
 /* Office page specific styles */
 .office-page .main-content-wrapper {
   padding-top: 0;
-  margin-top: 56px;
+  margin-top: 0;
 }
 
 @media (min-width: 769px) {

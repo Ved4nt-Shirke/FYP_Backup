@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Student = require("../models/Student");
 const { ensureStudentHistory, resolveStudents } = require("../utils/studentHistoryHelper");
+const { generateUniqueUsername } = require("../utils/usernameGenerator");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -94,7 +95,7 @@ router.post("/", authenticate, authorizeOffice, async (req, res) => {
     }
 
     // Generate/reuse credentials (keep stable by username)
-    const username = enrollmentNo.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const username = await generateUniqueUsername(enrollmentNo, req.user.college);
     const existingUser = await User.findOne({ username });
     let plainPassword = "";
     let hashedPassword = "";
@@ -209,12 +210,36 @@ router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
         continue;
       }
 
-      // Generate username and password
-      const username = enrollmentNo.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const plainPassword = generateSafePassword(8);
+      // Generate username
+      const username = await generateUniqueUsername(enrollmentNo, req.user.college);
+      const existingUser = await User.findOne({ username });
+      let plainPassword = "";
+      let hashedPassword = "";
 
-      // Hash password for user account
-      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+      if (existingUser) {
+        if (existingUser.role !== "student") {
+          results.skipped++;
+          continue;
+        }
+
+        const existingCredentialStudent = await Student.findOne({
+          institution: req.user.college,
+          username,
+          plainPassword: { $exists: true, $ne: "" },
+        }).sort({ updatedAt: -1, createdAt: -1 });
+
+        if (existingCredentialStudent?.plainPassword) {
+          plainPassword = existingCredentialStudent.plainPassword;
+        } else {
+          plainPassword = generateSafePassword(8);
+          hashedPassword = await bcrypt.hash(plainPassword, 10);
+          existingUser.password = hashedPassword;
+          await existingUser.save();
+        }
+      } else {
+        plainPassword = generateSafePassword(8);
+        hashedPassword = await bcrypt.hash(plainPassword, 10);
+      }
 
       // Create student record
       const newStudent = new Student({
@@ -238,8 +263,7 @@ router.post("/bulk", authenticate, authorizeOffice, async (req, res) => {
         console.error(`Error creating bulk student history record for ${enrollmentNo}:`, historyErr);
       }
 
-      // Create user account for student
-      const existingUser = await User.findOne({ username });
+      // Create user account for student (if not existing)
       if (!existingUser) {
         const newUser = new User({
           username,

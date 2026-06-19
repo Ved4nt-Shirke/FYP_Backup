@@ -155,6 +155,19 @@ const SubjectManagement = () => {
     setParsedRows([]);
   };
 
+  const handleDownloadTemplate = () => {
+    const headers = [["SubjectName", "SubjectCode"]];
+    const sampleData = [
+      ["Data Structures", "CO203"],
+      ["Object Oriented Programming", "CO204"],
+      ["Database Management Systems", "CO205"],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "subject_bulk_upload_template.xlsx");
+  };
+
   const handleChange = async (field, value) => {
     const nextForm = { ...formData, [field]: value };
 
@@ -553,6 +566,19 @@ const SubjectManagement = () => {
             </div>
           </div>
         )}
+
+        <div className="download-template-card-box">
+          <div className="template-info">
+            <h4>Download Subject Template</h4>
+            <p>Get the required Excel spreadsheet format for bulk subject uploads.</p>
+          </div>
+          <button className="btn-secondary btn-sm" type="button" onClick={handleDownloadTemplate}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="btn-icon-svg">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Download Template
+          </button>
+        </div>
 
         <div className="upload-row">
           <input
