@@ -115,6 +115,33 @@ router.post("/login", loginRateLimiter, async (req, res) => {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
+    // Intercept Superadmin login for Two-Factor Authentication (2FA)
+    if (resolvedRole === "superadmin") {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+      const TwoFactorToken = require("../models/TwoFactorToken");
+      await TwoFactorToken.deleteMany({ userId: user._id });
+      await TwoFactorToken.create({ userId: user._id, token: otp });
+
+      const { send2FACode } = require("../utils/mailer");
+      const targetEmail = process.env.SUPERADMIN_2FA_EMAIL || "prasad.koyande@vpt.edu.in";
+      let emailSent = false;
+      try {
+        const mailResult = await send2FACode(targetEmail, otp);
+        emailSent = mailResult.sent;
+      } catch (mailErr) {
+        console.error("Failed to email 2FA code:", mailErr.message);
+      }
+
+      return res.json({
+        twoFactorRequired: true,
+        userId: user._id,
+        email: targetEmail,
+        msg: "Two-factor authentication code sent to registered email.",
+        emailSent,
+      });
+    }
+
     const token = jwt.sign(
       {
         id: user._id,
@@ -318,6 +345,96 @@ router.put("/profile", authenticate, profilePhotoUpload.single("profilePhoto"), 
   } catch (err) {
     console.error("Profile update failed:", err);
     res.status(500).json({ msg: "Server error updating profile", error: err.message });
+  }
+});
+
+// POST /api/auth/verify-2fa
+router.post("/verify-2fa", loginRateLimiter, async (req, res) => {
+  const { userId, code } = req.body;
+  if (!userId || !code) {
+    return res.status(400).json({ msg: "Missing user identification or verification code" });
+  }
+
+  try {
+    const User = require("../models/user");
+    const user = await User.findById(userId);
+    if (!user || user.role !== "superadmin") {
+      return res.status(400).json({ msg: "Invalid user request" });
+    }
+
+    const TwoFactorToken = require("../models/TwoFactorToken");
+    const activeToken = await TwoFactorToken.findOne({ userId: user._id });
+
+    if (!activeToken) {
+      return res.status(400).json({ msg: "Verification code expired or not requested" });
+    }
+
+    if (activeToken.token !== code.trim()) {
+      return res.status(400).json({ msg: "Incorrect verification code" });
+    }
+
+    // Delete the token so it cannot be reused
+    await TwoFactorToken.deleteOne({ _id: activeToken._id });
+
+    // Generate final JWT token
+    const resolvedRole = user.role;
+    const resolvedCollege = user.college;
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: resolvedRole,
+        college: resolvedCollege,
+      },
+      process.env.JWT_SECRET || "your-secret-key",
+      {
+        expiresIn: "24h",
+      },
+    );
+
+    // Log successful login
+    try {
+      const LoginLog = require("../models/LoginLog");
+      await LoginLog.create({
+        username: user.username,
+        college: resolvedCollege,
+        role: resolvedRole,
+        ip: (
+          req.headers["x-forwarded-for"] ||
+          req.socket.remoteAddress ||
+          ""
+        ).toString(),
+        userAgent: req.headers["user-agent"],
+        success: true,
+        message: "2FA Login successful",
+      });
+    } catch (logErr) {
+      console.error("Login logging failed:", logErr.message);
+    }
+
+    const Institution = require("../models/Institution");
+    let institutionData = null;
+    if (resolvedCollege && resolvedCollege !== "ALL") {
+      institutionData = await Institution.findOne(
+        { code: resolvedCollege },
+        "name code logoUrl palette",
+      );
+    }
+
+    const response = {
+      token,
+      userName: user.username,
+      role: resolvedRole,
+      college: resolvedCollege,
+      institutionName: institutionData?.name || "",
+      institutionCode: institutionData?.code || resolvedCollege,
+      institutionLogoUrl: institutionData?.logoUrl || "",
+      institutionPalette: institutionData?.palette || null,
+    };
+
+    res.json(response);
+  } catch (err) {
+    res.status(500).json({ msg: "Server error during verification", error: err.message });
   }
 });
 
