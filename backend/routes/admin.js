@@ -202,9 +202,14 @@ router.post(
         });
       }
 
+      // Strip prefixes like Dr., Mr., etc. for username generation
+      const cleanedNameForUsername = fullName
+        .replace(/^(dr|mr|mrs|ms|prof)\b\.?\s*/i, "")
+        .trim();
+
       // Generate username from full name (e.g., "John Doe" -> "john.doe.office")
       const username =
-        fullName
+        cleanedNameForUsername
           .toLowerCase()
           .replace(/\s+/g, ".") // Replace spaces with dots
           .replace(/[^a-z0-9.]/g, "") + ".office"; // Remove special characters and add .office
@@ -502,8 +507,13 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
       });
     }
 
+    // Strip prefixes like Dr., Mr., etc. for username generation
+    const cleanedNameForUsername = facultyData.fullName
+      .replace(/^(dr|mr|mrs|ms|prof)\b\.?\s*/i, "")
+      .trim();
+
     // Generate username from full name (e.g., "John Smith" -> "john.smith")
-    const username = facultyData.fullName
+    const username = cleanedNameForUsername
       .toLowerCase()
       .replace(/\s+/g, ".") // Replace spaces with dots
       .replace(/[^a-z0-9.]/g, ""); // Remove special characters
@@ -660,10 +670,14 @@ router.post(
         }
 
         try {
+          // Strip prefixes like Dr., Mr., etc. for username generation
+          const cleanedNameForUsername = fullName
+            .replace(/^(dr|mr|mrs|ms|prof)\b\.?\s*/i, "")
+            .trim();
+
           // Generate unique username
-          let baseUsername = fullName
+          let baseUsername = cleanedNameForUsername
             .toLowerCase()
-            .trim()
             .replace(/\s+/g, ".")
             .replace(/[^a-z0-9.]/g, "");
 
