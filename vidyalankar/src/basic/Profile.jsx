@@ -233,7 +233,10 @@ const Profile = () => {
               style={{ display: "none" }}
             />
             <h3>{profile ? profile.fullName : "Faculty Member"}</h3>
-            <p className="status-badge active">{profile ? profile.status.toUpperCase() : "ACTIVE"}</p>
+            <div className="status-badge active">
+              <span className="status-dot"></span>
+              <span>{profile ? (profile.status || "ACTIVE").toUpperCase() : "ACTIVE"}</span>
+            </div>
             <div className="photo-instructions">
               Supports PNG, JPG, or WEBP. Max size 2MB.
             </div>
@@ -247,7 +250,7 @@ const Profile = () => {
             <form onSubmit={handleProfileSave} className="profile-form">
               <div className="form-grid">
                 <div className="form-group read-only">
-                  <label>Employee ID</label>
+                  <label>ID</label>
                   <div className="input-wrapper">
                     <i className="bi bi-lock-fill lock-icon"></i>
                     <input type="text" value={profile ? profile.employeeId : ""} disabled />
