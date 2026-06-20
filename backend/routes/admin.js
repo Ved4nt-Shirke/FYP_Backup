@@ -72,6 +72,8 @@ router.post(
   authenticate,
   authorizeAdmin,
   async (req, res) => {
+    let userCreated = false;
+    let generatedUsername = "";
     try {
       console.log("Creating faculty with data:", req.body);
       const { fullName, email, whatsappPhone, skills, institution, department } = req.body;
@@ -84,11 +86,44 @@ router.post(
         });
       }
 
-      // Generate username from full name (e.g., "Shlok Lokhande" -> "shlok.lokhande")
-      const username = fullName
+      // Check if faculty email already exists in Faculty collection
+      const existingFacultyEmail = await Faculty.findOne({ email: email.toLowerCase().trim() });
+      if (existingFacultyEmail) {
+        return res.status(400).json({
+          success: false,
+          message: "Faculty with this email already exists in the institution",
+        });
+      }
+
+      // Generate base username from full name (e.g., "Shlok Lokhande" -> "shlok.lokhande")
+      const baseUsername = fullName
         .toLowerCase()
         .replace(/\s+/g, ".") // Replace spaces with dots
         .replace(/[^a-z0-9.]/g, ""); // Remove special characters
+
+      generatedUsername = baseUsername;
+
+      // Ensure username is unique and handle orphaned users
+      let exists = await User.findOne({
+        username: { $regex: new RegExp(`^${generatedUsername}$`, "i") }
+      });
+      let counter = 1;
+      while (exists) {
+        // Check if this existing user is orphaned (not linked to active Faculty or OfficeStaff)
+        const isFaculty = await Faculty.findOne({ generatedUsername });
+        const isOffice = await OfficeStaff.findOne({ generatedUsername });
+        if (!isFaculty && !isOffice) {
+          console.log(`Cleaning up orphaned user record: ${generatedUsername}`);
+          await User.findOneAndDelete({ username: generatedUsername });
+          break;
+        }
+
+        generatedUsername = `${baseUsername}${counter}`;
+        exists = await User.findOne({
+          username: { $regex: new RegExp(`^${generatedUsername}$`, "i") }
+        });
+        counter++;
+      }
 
       // Generate employee ID
       const employeeId = `FAC${Date.now().toString().slice(-6)}`;
@@ -100,33 +135,33 @@ router.post(
       const hashedPassword = await bcrypt.hash(password, 10);
 
       console.log("Creating user with:", {
-        username,
+        username: generatedUsername,
         college: institution,
         role: req.body.role || "faculty",
       });
 
       // Create user
       const newUser = new User({
-        username,
+        username: generatedUsername,
         password: hashedPassword,
         college: institution,
         role: req.body.role || "faculty",
       });
 
       await newUser.save();
+      userCreated = true;
       console.log("User created successfully");
 
       // Create faculty record
-      const Faculty = require("../models/Faculty");
       const newFaculty = new Faculty({
         fullName,
-        email,
+        email: email.toLowerCase().trim(),
         employeeId,
         department: department || null,
         institution,
         skills: skills || [],
         whatsappPhone: whatsappPhone || "",
-        generatedUsername: username,
+        generatedUsername,
         currentPassword: password, // store plain password for admin reference
         createdBy: req.user._id,
         role: req.body.role || "faculty",
@@ -140,7 +175,7 @@ router.post(
         institution,
         skills: skills || [],
         whatsappPhone: whatsappPhone || "",
-        generatedUsername: username,
+        generatedUsername,
       });
 
       await newFaculty.save();
@@ -148,13 +183,23 @@ router.post(
 
       res.json({
         success: true,
-        username,
+        username: generatedUsername,
         password,
         message: "Faculty user created successfully",
       });
     } catch (error) {
       console.error("Error creating faculty user:", error);
       console.error("Error details:", error.errors || error);
+
+      // Rollback user creation if it succeeded but faculty save failed
+      if (userCreated && generatedUsername) {
+        console.log(`Rolling back created user: ${generatedUsername}`);
+        try {
+          await User.findOneAndDelete({ username: generatedUsername });
+        } catch (rollbackErr) {
+          console.error("Rollback failed:", rollbackErr.message);
+        }
+      }
 
       // Handle specific error types
       if (error.code === 11000) {
@@ -190,6 +235,8 @@ router.post(
   authenticate,
   authorizeAdmin,
   async (req, res) => {
+    let userCreated = false;
+    let generatedUsername = "";
     try {
       console.log("Creating office staff with data:", req.body);
       const { fullName, email, institution, department } = req.body;
@@ -202,17 +249,49 @@ router.post(
         });
       }
 
+      // Check if email already exists in OfficeStaff
+      const existingOfficeStaff = await OfficeStaff.findOne({ email: email.toLowerCase().trim() });
+      if (existingOfficeStaff) {
+        return res.status(400).json({
+          success: false,
+          message: "Office staff with this email already exists in the institution",
+        });
+      }
+
       // Strip prefixes like Dr., Mr., etc. for username generation
       const cleanedNameForUsername = fullName
         .replace(/^(dr|mr|mrs|ms|prof)\b\.?\s*/i, "")
         .trim();
 
       // Generate username from full name (e.g., "John Doe" -> "john.doe.office")
-      const username =
+      const baseUsername =
         cleanedNameForUsername
           .toLowerCase()
           .replace(/\s+/g, ".") // Replace spaces with dots
-          .replace(/[^a-z0-9.]/g, "") + ".office"; // Remove special characters and add .office
+          .replace(/[^a-z0-9.]/g, "") + ".office";
+
+      generatedUsername = baseUsername;
+
+      // Ensure username is unique and handle orphaned users
+      let exists = await User.findOne({
+        username: { $regex: new RegExp(`^${generatedUsername}$`, "i") }
+      });
+      let counter = 1;
+      while (exists) {
+        const isFaculty = await Faculty.findOne({ generatedUsername });
+        const isOffice = await OfficeStaff.findOne({ generatedUsername });
+        if (!isFaculty && !isOffice) {
+          console.log(`Cleaning up orphaned user record: ${generatedUsername}`);
+          await User.findOneAndDelete({ username: generatedUsername });
+          break;
+        }
+
+        generatedUsername = `${cleanedNameForUsername.toLowerCase().replace(/\s+/g, ".").replace(/[^a-z0-9.]/g, "")}${counter}.office`;
+        exists = await User.findOne({
+          username: { $regex: new RegExp(`^${generatedUsername}$`, "i") }
+        });
+        counter++;
+      }
 
       // Generate employee ID
       const employeeId = `OFF${Date.now().toString().slice(-6)}`;
@@ -224,14 +303,14 @@ router.post(
       const hashedPassword = await bcrypt.hash(password, 10);
 
       console.log("Creating user with:", {
-        username,
+        username: generatedUsername,
         college: institution,
         role: "office",
       });
 
       // Create user
       const newUser = new User({
-        username,
+        username: generatedUsername,
         password: hashedPassword,
         college: institution,
         role: "office",
@@ -239,16 +318,17 @@ router.post(
       });
 
       await newUser.save();
+      userCreated = true;
       console.log("User created successfully");
 
       // Create office staff record
       const newOfficeStaff = new OfficeStaff({
         fullName,
-        email,
+        email: email.toLowerCase().trim(),
         employeeId,
         department: department || null,
         institution,
-        generatedUsername: username,
+        generatedUsername,
       });
 
       console.log("Creating office staff record with:", {
@@ -257,7 +337,7 @@ router.post(
         employeeId,
         department: department || null,
         institution,
-        generatedUsername: username,
+        generatedUsername,
       });
 
       await newOfficeStaff.save();
@@ -265,13 +345,23 @@ router.post(
 
       res.json({
         success: true,
-        username,
+        username: generatedUsername,
         password,
         message: "Office staff user created successfully",
       });
     } catch (error) {
       console.error("Error creating office staff user:", error);
       console.error("Error details:", error.errors || error);
+
+      // Rollback user creation
+      if (userCreated && generatedUsername) {
+        console.log(`Rolling back created user: ${generatedUsername}`);
+        try {
+          await User.findOneAndDelete({ username: generatedUsername });
+        } catch (rollbackErr) {
+          console.error("Rollback failed:", rollbackErr.message);
+        }
+      }
 
       // Handle specific error types
       if (error.code === 11000) {
@@ -468,6 +558,8 @@ router.delete(
 
 // Create Faculty Profile
 router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
+  let userCreated = false;
+  let finalUsername = "";
   try {
     const facultyData = req.body;
     const institution = req.user.college;
@@ -482,7 +574,7 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
 
     // Check if email already exists
     const existingFaculty = await Faculty.findOne({
-      email: facultyData.email,
+      email: facultyData.email.toLowerCase().trim(),
       institution,
     });
 
@@ -518,26 +610,30 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
       .replace(/\s+/g, ".") // Replace spaces with dots
       .replace(/[^a-z0-9.]/g, ""); // Remove special characters
 
-    // Check if username already exists
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      // If username exists, append employee ID or random number
-      const usernameWithId = `${username}.${facultyData.employeeId.slice(-3)}`;
-      const existingUserWithId = await User.findOne({
-        username: usernameWithId,
-      });
-      if (existingUserWithId) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Unable to generate unique username. Please contact administrator.",
-        });
+    finalUsername = username;
+
+    // Check if username already exists and handle orphaned users
+    let exists = await User.findOne({
+      username: { $regex: new RegExp(`^${finalUsername}$`, "i") }
+    });
+    let counter = 1;
+    while (exists) {
+      const isFaculty = await Faculty.findOne({ generatedUsername: finalUsername });
+      const isOffice = await OfficeStaff.findOne({ generatedUsername: finalUsername });
+      if (!isFaculty && !isOffice) {
+        console.log(`Cleaning up orphaned user record: ${finalUsername}`);
+        await User.findOneAndDelete({ username: finalUsername });
+        break;
       }
-      // Use the username with employee ID
-      facultyData.generatedUsername = usernameWithId;
-    } else {
-      facultyData.generatedUsername = username;
+
+      finalUsername = `${username}.${facultyData.employeeId.slice(-3)}_${counter}`;
+      exists = await User.findOne({
+        username: { $regex: new RegExp(`^${finalUsername}$`, "i") }
+      });
+      counter++;
     }
+
+    facultyData.generatedUsername = finalUsername;
 
     // Generate random password (8 characters)
     const generatedPassword = generateSafePassword(10);
@@ -555,11 +651,12 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
     });
 
     const savedUser = await newUser.save();
+    userCreated = true;
 
     // Create new faculty profile
     const newFaculty = new Faculty({
       fullName: facultyData.fullName,
-      email: facultyData.email,
+      email: facultyData.email.toLowerCase().trim(),
       employeeId: facultyData.employeeId,
       department: facultyData.department || null,
       institution,
@@ -588,6 +685,17 @@ router.post("/faculty", authenticate, authorizeAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating faculty:", error);
+
+    // Rollback user creation
+    if (userCreated && finalUsername) {
+      console.log(`Rolling back created user: ${finalUsername}`);
+      try {
+        await User.findOneAndDelete({ username: finalUsername });
+      } catch (rollbackErr) {
+        console.error("Rollback failed:", rollbackErr.message);
+      }
+    }
+
     res.status(500).json({
       success: false,
       message: "Error creating faculty profile",
@@ -669,6 +777,8 @@ router.post(
           continue;
         }
 
+        let userCreated = false;
+        let username = "";
         try {
           // Strip prefixes like Dr., Mr., etc. for username generation
           const cleanedNameForUsername = fullName
@@ -681,12 +791,25 @@ router.post(
             .replace(/\s+/g, ".")
             .replace(/[^a-z0-9.]/g, "");
 
-          let username = baseUsername;
-          let exists = await User.findOne({ username });
+          username = baseUsername;
+          let exists = await User.findOne({
+            username: { $regex: new RegExp(`^${username}$`, "i") }
+          });
           let counter = 1;
           while (exists) {
+            // Check if this existing user is orphaned
+            const isFaculty = await Faculty.findOne({ generatedUsername: username });
+            const isOffice = await OfficeStaff.findOne({ generatedUsername: username });
+            if (!isFaculty && !isOffice) {
+              console.log(`Cleaning up orphaned user record: ${username}`);
+              await User.findOneAndDelete({ username });
+              break;
+            }
+
             username = `${baseUsername}${counter}`;
-            exists = await User.findOne({ username });
+            exists = await User.findOne({
+              username: { $regex: new RegExp(`^${username}$`, "i") }
+            });
             counter++;
           }
 
@@ -707,6 +830,7 @@ router.post(
           });
 
           await newUser.save();
+          userCreated = true;
 
           // Skills parsing (support both string and array)
           let parsedSkills = [];
@@ -749,6 +873,13 @@ router.post(
             plainPassword,
           });
         } catch (err) {
+          if (userCreated && username) {
+            try {
+              await User.findOneAndDelete({ username });
+            } catch (rollbackErr) {
+              console.error("Bulk rollback failed:", rollbackErr.message);
+            }
+          }
           results.skipped++;
           results.errors.push({
             row: i + 1,
@@ -977,8 +1108,15 @@ router.delete(
       }
 
       // Delete associated user account
-      if (faculty.generatedUsername) {
-        await User.findOneAndDelete({ username: faculty.generatedUsername });
+      const usernameToDelete = faculty.generatedUsername || faculty.fullName
+        .toLowerCase()
+        .replace(/\s+/g, ".")
+        .replace(/[^a-z0-9.]/g, "");
+
+      if (usernameToDelete) {
+        await User.findOneAndDelete({
+          username: { $regex: new RegExp(`^${usernameToDelete}$`, "i") }
+        });
       }
 
       // Delete the faculty
@@ -1374,6 +1512,8 @@ router.put(
 
 // Create Office Staff Profile
 router.post("/office-staff", authenticate, authorizeAdmin, async (req, res) => {
+  let userCreated = false;
+  let finalUsername = "";
   try {
     const staffData = req.body;
     const institution = req.user.college;
@@ -1388,7 +1528,7 @@ router.post("/office-staff", authenticate, authorizeAdmin, async (req, res) => {
 
     // Check if email already exists
     const existingStaff = await OfficeStaff.findOne({
-      email: staffData.email,
+      email: staffData.email.toLowerCase().trim(),
       institution,
     });
 
@@ -1446,30 +1586,29 @@ router.post("/office-staff", authenticate, authorizeAdmin, async (req, res) => {
         .replace(/\s+/g, ".") // Replace spaces with dots
         .replace(/[^a-z0-9.]/g, "") + ".office"; // Remove special characters and add .office
 
-    // Check if username already exists
-    let finalUsername = username;
-    const existingUser = await User.findOne({ username: finalUsername });
-    if (existingUser) {
-      // If username exists, append employee ID or random number
-      finalUsername = `${username}.${employeeId.slice(-3)}`;
-      const existingUserWithId = await User.findOne({
-        username: finalUsername,
-      });
-      if (existingUserWithId) {
-        // Try with timestamp
-        finalUsername = `${username}.${Date.now().toString().slice(-4)}`;
-        const existingUserWithTimestamp = await User.findOne({
-          username: finalUsername,
-        });
-        if (existingUserWithTimestamp) {
-          return res.status(400).json({
-            success: false,
-            message:
-              "Unable to generate unique username. Please contact administrator.",
-          });
-        }
+    finalUsername = username;
+
+    // Check if username already exists and handle orphaned users
+    let exists = await User.findOne({
+      username: { $regex: new RegExp(`^${finalUsername}$`, "i") }
+    });
+    let counter = 1;
+    while (exists) {
+      const isFaculty = await Faculty.findOne({ generatedUsername: finalUsername });
+      const isOffice = await OfficeStaff.findOne({ generatedUsername: finalUsername });
+      if (!isFaculty && !isOffice) {
+        console.log(`Cleaning up orphaned user record: ${finalUsername}`);
+        await User.findOneAndDelete({ username: finalUsername });
+        break;
       }
+
+      finalUsername = `${username}.${employeeId.slice(-3)}_${counter}`;
+      exists = await User.findOne({
+        username: { $regex: new RegExp(`^${finalUsername}$`, "i") }
+      });
+      counter++;
     }
+
     staffData.generatedUsername = finalUsername;
 
     // Generate random password (8 characters)
@@ -1488,11 +1627,12 @@ router.post("/office-staff", authenticate, authorizeAdmin, async (req, res) => {
     });
 
     const savedUser = await newUser.save();
+    userCreated = true;
 
     // Create new office staff profile
     const newOfficeStaff = new OfficeStaff({
       fullName: staffData.fullName,
-      email: staffData.email,
+      email: staffData.email.toLowerCase().trim(),
       employeeId: employeeId,
       department: staffData.department || null,
       institution,
@@ -1521,6 +1661,17 @@ router.post("/office-staff", authenticate, authorizeAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating office staff:", error);
+
+    // Rollback user creation
+    if (userCreated && finalUsername) {
+      console.log(`Rolling back created user: ${finalUsername}`);
+      try {
+        await User.findOneAndDelete({ username: finalUsername });
+      } catch (rollbackErr) {
+        console.error("Rollback failed:", rollbackErr.message);
+      }
+    }
+
     res.status(500).json({
       success: false,
       message: "Error creating office staff profile",
@@ -1748,8 +1899,17 @@ router.delete(
       }
 
       // Delete associated user account
-      if (officeStaff.generatedUsername) {
-        await User.findOneAndDelete({ username: officeStaff.generatedUsername });
+      const usernameToDelete = officeStaff.generatedUsername || officeStaff.fullName
+        .replace(/^(dr|mr|mrs|ms|prof)\b\.?\s*/i, "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, ".")
+        .replace(/[^a-z0-9.]/g, "") + ".office";
+
+      if (usernameToDelete) {
+        await User.findOneAndDelete({
+          username: { $regex: new RegExp(`^${usernameToDelete}$`, "i") }
+        });
       }
 
       // Delete the office staff
