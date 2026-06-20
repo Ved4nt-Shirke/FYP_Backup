@@ -33,11 +33,12 @@ router.get('/:ciannId', async (req, res) => {
       dateSet.add(recordDate);
 
       for (const student of record.students) {
-        const { rollNo, status } = student;
+        const { rollNo, studentName, status } = student;
 
         if (!studentAttendanceMap.has(rollNo)) {
           studentAttendanceMap.set(rollNo, {
             rollNo: rollNo,
+            studentName: studentName || student.studentName || '',
             attendance: {}, // This object will hold date:status pairs
           });
         }

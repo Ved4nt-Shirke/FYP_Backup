@@ -527,7 +527,7 @@ const SecondarySidebar = ({
 
       {/* View-Only Banner */}
       {isReadOnly && createPortal(
-        <div className="ciann-view-only-banner" style={{ zIndex: 999999, position: "fixed", top: 0, left: 0, right: 0 }}>
+        <div className="ciann-view-only-banner" style={{ zIndex: 999999, position: "fixed", top: 0, left: 0, right: 0, height: "38px", boxSizing: "border-box" }}>
           <i className="bi bi-lock-fill me-2"></i>
           <strong>View-Only Access Mode:</strong> You have read-only access to this CIANN. Editing is disabled.
         </div>,

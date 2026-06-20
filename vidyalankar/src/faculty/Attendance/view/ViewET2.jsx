@@ -137,6 +137,7 @@ const ViewExtraTheory2 = () => {
             <thead>
               <tr>
                 <th>ROLL NO.</th>
+                <th>NAME</th>
                 {dates.map((date, index) => (
                   <th key={index}>{formatDate(date)}</th>
                 ))}
@@ -146,6 +147,7 @@ const ViewExtraTheory2 = () => {
               {students.map((student) => (
                 <tr key={student.rollNo}>
                   <td>{student.rollNo}</td>
+                  <td>{student.name || "N/A"}</td>
                   {dates.map((date, index) => (
                     <td key={index}>
                       <span

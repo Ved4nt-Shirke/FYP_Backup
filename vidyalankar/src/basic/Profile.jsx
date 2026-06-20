@@ -14,6 +14,12 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
+  const [currentPasswordInput, setCurrentPasswordInput] = useState("");
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
+  const [passSaving, setPassSaving] = useState(false);
+  const [passMessage, setPassMessage] = useState({ type: "", text: "" });
+
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -127,6 +133,56 @@ const Profile = () => {
     }
   };
 
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (!currentPasswordInput || !newPasswordInput || !confirmPasswordInput) {
+      setPassMessage({ type: "danger", text: "Please fill in all password fields." });
+      return;
+    }
+
+    if (newPasswordInput !== confirmPasswordInput) {
+      setPassMessage({ type: "danger", text: "New passwords do not match." });
+      return;
+    }
+
+    if (newPasswordInput.length < 6) {
+      setPassMessage({ type: "danger", text: "New password must be at least 6 characters long." });
+      return;
+    }
+
+    setPassSaving(true);
+    setPassMessage({ type: "", text: "" });
+
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/auth/change-password`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currentPassword: currentPasswordInput,
+          newPassword: newPasswordInput,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.msg || "Failed to change password");
+      }
+
+      setPassMessage({ type: "success", text: "Password changed successfully!" });
+      setCurrentPasswordInput("");
+      setNewPasswordInput("");
+      setConfirmPasswordInput("");
+    } catch (err) {
+      setPassMessage({ type: "danger", text: err.message || "An error occurred." });
+    } finally {
+      setPassSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="profile-container">
@@ -177,94 +233,175 @@ const Profile = () => {
               style={{ display: "none" }}
             />
             <h3>{profile ? profile.fullName : "Faculty Member"}</h3>
-            <p className="status-badge active">{profile ? profile.status.toUpperCase() : "ACTIVE"}</p>
+            <div className="status-badge active">
+              <span className="status-dot"></span>
+              <span>{profile ? (profile.status || "ACTIVE").toUpperCase() : "ACTIVE"}</span>
+            </div>
             <div className="photo-instructions">
               Supports PNG, JPG, or WEBP. Max size 2MB.
             </div>
           </div>
         </div>
 
-        {/* Details Card */}
-        <div className="profile-card details-card">
-          <h2>Update Credentials</h2>
-          <form onSubmit={handleProfileSave} className="profile-form">
-            <div className="form-grid">
-              <div className="form-group read-only">
-                <label>Employee ID</label>
-                <div className="input-wrapper">
-                  <i className="bi bi-lock-fill lock-icon"></i>
-                  <input type="text" value={profile ? profile.employeeId : ""} disabled />
+        <div className="profile-main-content">
+          {/* Details Card */}
+          <div className="profile-card details-card">
+            <h2>Update Credentials</h2>
+            <form onSubmit={handleProfileSave} className="profile-form">
+              <div className="form-grid">
+                <div className="form-group read-only">
+                  <label>ID</label>
+                  <div className="input-wrapper">
+                    <i className="bi bi-lock-fill lock-icon"></i>
+                    <input type="text" value={profile ? profile.employeeId : ""} disabled />
+                  </div>
+                </div>
+
+                <div className="form-group read-only">
+                  <label>Department</label>
+                  <div className="input-wrapper">
+                    <i className="bi bi-lock-fill lock-icon"></i>
+                    <input type="text" value={profile && profile.department ? profile.department.name : "N/A"} disabled />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Email Address</label>
+                  <div className="input-wrapper">
+                    <i className="bi bi-envelope"></i>
+                    <input
+                      type="email"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>WhatsApp Phone</label>
+                  <div className="input-wrapper">
+                    <i className="bi bi-whatsapp"></i>
+                    <input
+                      type="tel"
+                      value={phoneInput}
+                      onChange={(e) => setPhoneInput(e.target.value)}
+                      placeholder="e.g. 919876543210"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group password-verification-field">
+                  <label className="required-label">Verify Current Password</label>
+                  <div className="input-wrapper">
+                    <i className="bi bi-shield-lock-fill"></i>
+                    <input
+                      type="password"
+                      placeholder="Enter password to authorize profile changes"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <small className="verification-text">
+                    You must confirm your current account password to submit any modifications.
+                  </small>
                 </div>
               </div>
 
-              <div className="form-group read-only">
-                <label>Department</label>
-                <div className="input-wrapper">
-                  <i className="bi bi-lock-fill lock-icon"></i>
-                  <input type="text" value={profile && profile.department ? profile.department.name : "N/A"} disabled />
+              <div className="form-actions">
+                <button type="submit" className="save-btn" disabled={saving}>
+                  {saving ? (
+                    <>
+                      <span className="spinner-small"></span>
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-save"></i>
+                      <span>Save Changes</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Change Password Card */}
+          <div className="profile-card details-card password-card">
+            <h2>Change Password</h2>
+            {passMessage.text && (
+              <div className={`profile-alert-box alert-${passMessage.type}`} style={{ marginBottom: "16px" }}>
+                <i className={passMessage.type === "success" ? "bi bi-check-circle-fill" : "bi bi-exclamation-triangle-fill"}></i>
+                <span>{passMessage.text}</span>
+              </div>
+            )}
+            <form onSubmit={handlePasswordChange} className="profile-form">
+              <div className="form-grid">
+                <div className="form-group">
+                  <label className="required-label">Current Password</label>
+                  <div className="input-wrapper">
+                    <i className="bi bi-shield-lock"></i>
+                    <input
+                      type="password"
+                      placeholder="Enter current password"
+                      value={currentPasswordInput}
+                      onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  {/* Empty spacer for alignment */}
+                </div>
+
+                <div className="form-group">
+                  <label className="required-label">New Password</label>
+                  <div className="input-wrapper">
+                    <i className="bi bi-key-fill"></i>
+                    <input
+                      type="password"
+                      placeholder="Min 6 characters"
+                      value={newPasswordInput}
+                      onChange={(e) => setNewPasswordInput(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="required-label">Confirm New Password</label>
+                  <div className="input-wrapper">
+                    <i className="bi bi-key"></i>
+                    <input
+                      type="password"
+                      placeholder="Confirm new password"
+                      value={confirmPasswordInput}
+                      onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="form-group">
-                <label>Email Address</label>
-                <div className="input-wrapper">
-                  <i className="bi bi-envelope"></i>
-                  <input
-                    type="email"
-                    value={emailInput}
-                    onChange={(e) => setEmailInput(e.target.value)}
-                    required
-                  />
-                </div>
+              <div className="form-actions">
+                <button type="submit" className="save-btn" disabled={passSaving}>
+                  {passSaving ? (
+                    <>
+                      <span className="spinner-small"></span>
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-shield-check"></i>
+                      <span>Update Password</span>
+                    </>
+                  )}
+                </button>
               </div>
-
-              <div className="form-group">
-                <label>WhatsApp Phone</label>
-                <div className="input-wrapper">
-                  <i className="bi bi-whatsapp"></i>
-                  <input
-                    type="tel"
-                    value={phoneInput}
-                    onChange={(e) => setPhoneInput(e.target.value)}
-                    placeholder="e.g. 919876543210"
-                  />
-                </div>
-              </div>
-
-              <div className="form-group password-verification-field">
-                <label className="required-label">Verify Current Password</label>
-                <div className="input-wrapper">
-                  <i className="bi bi-shield-lock-fill"></i>
-                  <input
-                    type="password"
-                    placeholder="Enter password to authorize profile changes"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <small className="verification-text">
-                  You must confirm your current account password to submit any modifications.
-                </small>
-              </div>
-            </div>
-
-            <div className="form-actions">
-              <button type="submit" className="save-btn" disabled={saving}>
-                {saving ? (
-                  <>
-                    <span className="spinner-small"></span>
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-save"></i>
-                    <span>Save Changes</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>

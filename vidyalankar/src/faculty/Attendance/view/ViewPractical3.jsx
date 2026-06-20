@@ -121,6 +121,7 @@ const ViewPractical3 = () => {
                 <thead>
                   <tr>
                     <th>ROLL NO.</th>
+                    <th>NAME</th>
                     {weeks.map((week) => (
                       <th key={week}>
                         Week {week}
@@ -140,6 +141,7 @@ const ViewPractical3 = () => {
                   {studentsList.map((student) => (
                     <tr key={student.rollNo}>
                       <td>{student.rollNo}</td>
+                      <td>{student.studentName || "N/A"}</td>
                       {weeks.map((week) => {
                         const weekData = experiment.weeks[week];
                         let studentStatus = "-";

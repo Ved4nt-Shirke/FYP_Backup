@@ -438,4 +438,40 @@ router.post("/verify-2fa", loginRateLimiter, async (req, res) => {
   }
 });
 
+// PUT /api/auth/change-password
+router.put("/change-password", authenticate, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ msg: "Missing current or new password" });
+  }
+
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ msg: "Not authorized" });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: "Incorrect current password" });
+    }
+
+    // Verify minimum length
+    if (newPassword.length < 6) {
+      return res.status(400).json({ msg: "New password must be at least 6 characters long" });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ success: true, msg: "Password updated successfully" });
+  } catch (err) {
+    console.error("Password change error:", err);
+    res.status(500).json({ msg: "Server error during password update", error: err.message });
+  }
+});
+
 module.exports = router;

@@ -293,7 +293,7 @@ const Login = () => {
 
           <div className="footer-content">
             <p>
-              © 2019 All rights reserved. Template by{" "}
+              © 2026 All rights reserved. Template by{" "}
               <a href="#">Vidyalankar Polytechnic</a>
             </p>
           </div>

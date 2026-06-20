@@ -265,7 +265,7 @@ const BulkUploadFacultyModal = ({ show, onClose, onUploadSuccess, preselectedDep
     ]);
 
     autoTable(doc, {
-      head: [["Full Name", "Employee ID", "Email", "Username", "Password"]],
+      head: [["Full Name", "ID", "Email", "Username", "Password"]],
       body: tableData,
       startY: 30,
       theme: "grid",

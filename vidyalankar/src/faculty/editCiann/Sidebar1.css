@@ -196,13 +196,15 @@
     width: 100vw;
     pointer-events: none;
     z-index: 99999;
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, visibility 0.3s ease;
+    visibility: hidden;
   }
 
   .ciann-secondary-sidebar-wrapper.visible {
     pointer-events: auto;
     background: rgba(11, 25, 52, 0.44);
     backdrop-filter: blur(2px);
+    visibility: visible;
   }
 
   .secondary-sidebar {
@@ -227,7 +229,11 @@
   }
 
   .secondary-sidebar-overlay {
-    display: none;
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    z-index: 99999;
+    display: block !important;
   }
 
   .secondary-sidebar-close-btn {
@@ -268,6 +274,12 @@
 
   .secondary-nav-item {
     min-height: 46px;
+  }
+
+  .secondary-nav-list {
+    overflow-y: visible !important;
+    flex: none !important;
+    padding-bottom: 80px;
   }
 }
 
@@ -663,5 +675,44 @@ body.ciann-view-only a.btn:not(.ciann-comments-toggle-btn) {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+/* View-Only Mode Layout Shifts */
+body.ciann-view-only .header {
+  top: 38px !important;
+}
+body.ciann-view-only .main-content-wrapper {
+  margin-top: calc(var(--header-height, 60px) + 38px) !important;
+}
+body.ciann-view-only .sidebar.main-sidebar {
+  top: calc(var(--header-height, 60px) + 38px) !important;
+  height: calc(100dvh - var(--header-height, 60px) - 38px) !important;
+}
+body.ciann-view-only .ciann-secondary-sidebar-wrapper {
+  top: calc(var(--header-height, 60px) + 38px) !important;
+  height: calc(100dvh - var(--header-height, 60px) - 38px) !important;
+}
+
+@media (max-width: 768px) {
+  body.ciann-view-only .header {
+    top: 38px !important;
+  }
+  body.ciann-view-only .main-content-wrapper {
+    padding-top: calc(50px + 38px) !important;
+    margin-top: 0 !important;
+  }
+  body.ciann-view-only .sidebar.main-sidebar {
+    top: 38px !important;
+    height: calc(100dvh - 38px) !important;
+  }
+  body.ciann-view-only .secondary-sidebar {
+    top: 38px !important;
+    height: calc(100dvh - 38px) !important;
+  }
+  body.ciann-view-only .secondary-sidebar-header {
+    top: 38px !important;
+  }
 }
 

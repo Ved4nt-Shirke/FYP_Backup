@@ -976,6 +976,11 @@ router.delete(
         });
       }
 
+      // Delete associated user account
+      if (faculty.generatedUsername) {
+        await User.findOneAndDelete({ username: faculty.generatedUsername });
+      }
+
       // Delete the faculty
       await Faculty.findByIdAndDelete(id);
 
@@ -1740,6 +1745,11 @@ router.delete(
           success: false,
           message: "Invalid admin password",
         });
+      }
+
+      // Delete associated user account
+      if (officeStaff.generatedUsername) {
+        await User.findOneAndDelete({ username: officeStaff.generatedUsername });
       }
 
       // Delete the office staff

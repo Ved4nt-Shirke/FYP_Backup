@@ -1,13 +1,13 @@
 :root {
-  --final-primary: #1f5fbf;
-  --final-primary-dark: #134996;
-  --final-primary-soft: #eaf2ff;
-  --final-bg-a: #f2f7ff;
-  --final-bg-b: #eaf2ff;
-  --final-card: #ffffff;
-  --final-border: #d7e5f8;
-  --final-text: #143257;
-  --final-muted: #5d7090;
+  --final-primary: var(--primary-color, #1f5fbf);
+  --final-primary-dark: var(--primary-accent-dark, #134996);
+  --final-primary-soft: var(--primary-light, #eaf2ff);
+  --final-bg-a: var(--primary-light, #f2f7ff);
+  --final-bg-b: var(--dash-bg, #eaf2ff);
+  --final-card: var(--card-bg, #ffffff);
+  --final-border: var(--card-border, #d7e5f8);
+  --final-text: var(--text-primary, #143257);
+  --final-muted: var(--text-secondary, #5d7090);
   --final-success-bg: #ecfdf5;
   --final-success-border: #bfe8d5;
   --final-success-text: #0f5132;
@@ -24,8 +24,8 @@
   font-family: "Nunito Sans", "Segoe UI", sans-serif;
   min-height: calc(100vh - 64px);
   background:
-    radial-gradient(circle at 8% 8%, rgba(31, 95, 191, 0.12), transparent 38%),
-    radial-gradient(circle at 92% 2%, rgba(19, 73, 150, 0.08), transparent 35%),
+    radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--primary-color, #1f5fbf) 12%, transparent), transparent 38%),
+    radial-gradient(circle at 92% 2%, color-mix(in srgb, var(--primary-accent-dark, #134996) 8%, transparent), transparent 35%),
     linear-gradient(180deg, var(--final-bg-a) 0%, var(--final-bg-b) 100%);
 }
 
@@ -64,12 +64,12 @@
 }
 
 .final-att-action-btn {
-  border: 1px solid #c8d8ef;
+  border: 1px solid var(--final-border);
   background: #ffffff;
   color: var(--final-primary);
   border-radius: 999px;
   min-height: 38px;
-  padding: 0 14px;
+  padding: 0 16px;
   font-size: 0.85rem;
   font-weight: 800;
   cursor: pointer;
@@ -77,8 +77,9 @@
 }
 
 .final-att-action-btn:hover {
-  border-color: #9dc0f0;
-  background: #edf4ff;
+  border-color: var(--final-primary);
+  background: var(--final-primary-soft);
+  color: var(--final-primary);
 }
 
 .final-att-action-btn.ghost {
@@ -134,7 +135,7 @@
   margin-bottom: 1rem;
 }
 
-.stat-card {
+.final-stat-card {
   background: #eef4ff;
   border: 1px solid #cadeff;
   border-radius: 14px;
@@ -145,7 +146,7 @@
   box-shadow: 0 8px 18px rgba(18, 43, 82, 0.06);
 }
 
-.stat-card .label {
+.final-stat-card .label {
   font-size: 0.76rem;
   color: var(--final-muted);
   text-transform: uppercase;
@@ -153,30 +154,30 @@
   font-weight: 800;
 }
 
-.stat-card .value {
+.final-stat-card .value {
   font-size: 2rem;
   line-height: 1.1;
   font-weight: 800;
   color: var(--final-text);
 }
 
-.stat-card.success {
+.final-stat-card.success {
   background: var(--final-success-bg);
   border-color: var(--final-success-border);
 }
 
-.stat-card.success .value,
-.stat-card.success .label {
+.final-stat-card.success .value,
+.final-stat-card.success .label {
   color: var(--final-success-text);
 }
 
-.stat-card.danger {
+.final-stat-card.danger {
   background: var(--final-danger-bg);
   border-color: var(--final-danger-border);
 }
 
-.stat-card.danger .value,
-.stat-card.danger .label {
+.final-stat-card.danger .value,
+.final-stat-card.danger .label {
   color: var(--final-danger-text);
 }
 
@@ -396,10 +397,10 @@
 }
 
 .final-att-submit-btn {
-  border: 1px solid transparent;
+  border: none;
   border-radius: 999px;
   min-height: 42px;
-  padding: 0 1.1rem;
+  padding: 0 1.5rem;
   background: linear-gradient(
     135deg,
     var(--final-primary),
@@ -409,15 +410,19 @@
   font-weight: 800;
   font-size: 0.9rem;
   cursor: pointer;
+  box-shadow: 0 6px 12px rgba(31, 95, 191, 0.15);
+  transition: all 0.2s ease;
 }
 
 .final-att-submit-btn:hover:not(:disabled) {
-  box-shadow: 0 6px 16px rgba(31, 95, 191, 0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(31, 95, 191, 0.25);
 }
 
 .final-att-submit-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .error-state {

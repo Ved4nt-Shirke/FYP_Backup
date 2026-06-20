@@ -247,36 +247,27 @@ const StudentAttendance = () => {
                 <div
                   key={`${student.rollId}-${index}`}
                   className={`eia-student-card ${student.attendance === "Present" ? "eia-present" : "eia-absent"}`}
+                  onClick={() => toggleAttendance(index)}
+                  style={{ cursor: "pointer" }}
                 >
                   <div className="eia-student-header">
                     <div className="eia-student-roll">{student.rollId}</div>
-                    <label className="eia-custom-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={student.attendance === "Present"}
-                        onChange={() => toggleAttendance(index)}
-                      />
-                      <span className="eia-checkmark"></span>
-                    </label>
+                    <button
+                      type="button"
+                      className={`status-pill status-toggle ${student.attendance === "Present" ? "present" : "absent"}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggleAttendance(index);
+                      }}
+                    >
+                      {student.attendance}
+                    </button>
                   </div>
                   <div className="eia-student-name">{student.name}</div>
                   <div className="eia-student-meta">
                     Enrollment: {student.enrollmentNo}
                   </div>
                   <div className="eia-student-meta">Batch: {student.batch}</div>
-                  <div className="eia-student-status">
-                    {student.attendance === "Present" ? (
-                      <>
-                        <i className="bi bi-check-circle-fill"></i>
-                        Present
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-x-circle-fill"></i>
-                        Absent
-                      </>
-                    )}
-                  </div>
                 </div>
               ))}
             </div>

@@ -71,7 +71,6 @@ import PracticalCiannCards from "./faculty/Attendance/PracticalCiannCards";
 import PracticalAttendance from "./faculty/Attendance/PracticalAttendance";
 import PracticalAttendanceForm from "./faculty/Attendance/PracticalAttendanceForm";
 import PracticalFinalAtt from "./faculty/Attendance/PracticalFinalAtt";
-import PracticalBatchDistribution from "./faculty/Attendance/PracticalBatchDistribution";
 import TheoryEdit from "./faculty/Attendance/TheoryEdit";
 import AttendanceForm from "./faculty/Attendance/Theory";
 import FinalAttendance from "./faculty/Attendance/FinalAtt";
@@ -701,10 +700,6 @@ const AppContent = () => {
               element={<PracticalAttendance />}
             />
             <Route path="/PracticalFinalAtt" element={<PracticalFinalAtt />} />
-            <Route
-              path="/practical-batch-distribution"
-              element={<PracticalBatchDistribution />}
-            />
             <Route
               path="/prac-form/:ciannId/:weekNo/:batch/:exptNo"
               element={<PracticalAttendanceForm />}
