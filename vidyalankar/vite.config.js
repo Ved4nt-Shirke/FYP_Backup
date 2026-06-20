@@ -13,6 +13,12 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
+      headers: {
+        'Content-Security-Policy': "default-src 'self' http://localhost:5000 https://vpciaan.in https://www.vpciaan.in; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data: http://localhost:5000 https://vpciaan.in; connect-src 'self' ws://localhost:5173 http://localhost:5000 https://vpciaan.in https://www.vpciaan.in https://cdn.jsdelivr.net;",
+        'X-Frame-Options': 'DENY',
+        'X-Content-Type-Options': 'nosniff',
+        'Referrer-Policy': 'strict-origin-when-cross-origin'
+      },
       proxy: {
         '/api': {
           target: proxyTarget,

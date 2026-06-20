@@ -78,6 +78,9 @@ const isDummyInstitutionRecord = (institution) => {
 
 // --- Middleware ---
 const { apiRateLimiter } = require("./middleware/rateLimiter");
+const securityHeaders = require("./middleware/securityHeaders");
+
+app.use(securityHeaders);
 app.use(
   cors({
     origin: [
@@ -96,7 +99,7 @@ app.use("/api", apiRateLimiter);
 
 // --- Database Connection ---
 mongoose
-  .connect(process.env.MONGO_URI || "mongodb://localhost:27017/vidyalankarDB")
+  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/vidyalankarDB")
   .then(() => {
     console.log("MongoDB Connected Successfully");
     // Initialize superadmin user

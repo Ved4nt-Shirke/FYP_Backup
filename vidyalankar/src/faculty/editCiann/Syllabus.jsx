@@ -16,6 +16,16 @@ function Syllabus() {
     useState(false);
 
   useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
+
+  useEffect(() => {
     console.log("CIAAN data in Syllabus:", ciannData);
 
     if (!ciannData) {

@@ -59,6 +59,17 @@ const LabPlanningSheet = () => {
   const [labPlans, setLabPlans] = useState([]);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
+
+  useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
+
   const [loading, setLoading] = useState(false);
 
   // Fetch lab plans for specific ciannId from backend

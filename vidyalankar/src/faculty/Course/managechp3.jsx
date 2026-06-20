@@ -15,6 +15,16 @@ function UpdateChapter() {
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] = useState(false);
 
   useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!ciannData) {
       const stored = sessionStorage.getItem("currentCiannData") || localStorage.getItem("ciannData");
       if (stored) {

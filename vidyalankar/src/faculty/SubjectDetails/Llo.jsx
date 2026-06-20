@@ -18,6 +18,16 @@ export default function Llo() {
   const [success, setSuccess] = useState("");
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] = useState(false);
 
+  useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
+
   // Resolve CIANN Data
   useEffect(() => {
     let resolvedCiann = location.state?.ciannData;

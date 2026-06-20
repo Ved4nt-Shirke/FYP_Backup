@@ -495,6 +495,14 @@ const AppContent = () => {
     "/tutorial-plan",
     "/student-list",
     "/subject-details",
+    "/tlo",
+    "/llo",
+    "/add-chapters",
+    "/chapters",
+    "/update-chapter",
+    "/course2",
+    "/course3",
+    "/course4",
   ].some((path) => location.pathname.startsWith(path));
 
   if (isSpecialPage) {

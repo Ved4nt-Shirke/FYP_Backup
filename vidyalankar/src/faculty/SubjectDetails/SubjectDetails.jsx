@@ -12,6 +12,16 @@ const SubjectDetails = () => {
     useState(false); // Start with false for mobile
 
   useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
+
+  useEffect(() => {
     console.log("Current path:", location.pathname);
     console.log("CIAAN data in SubjectDetails:", ciannData);
 
