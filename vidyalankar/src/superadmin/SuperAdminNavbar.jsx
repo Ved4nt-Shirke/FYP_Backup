@@ -48,7 +48,7 @@ const SuperAdminNavbar = () => {
             type="button"
             onClick={() => navigate("/superadmin-dashboard")}
           >
-            <i className="fas fa-shield-halved"></i>
+            <img src="/new.png" className="superadmin-brand-logo" alt="VPCIAAN Logo" />
             <div className="brand-texts">
               <h2>Super Admin</h2>
               <span>Control Panel</span>

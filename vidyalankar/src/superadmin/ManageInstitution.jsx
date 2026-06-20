@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "../utils/axiosConfig";
 import PalettePicker, { DEFAULT_PALETTE } from "./PalettePicker";
 import { showSuccessAlert, showErrorAlert } from "../utils/alertUtils.jsx";
+import { buildInstitutionLogoUrl, getInstitutionInitials } from "../utils/institutionBranding";
 import "./ManageInstitution.css";
 
 const ManageInstitution = () => {
@@ -44,6 +45,11 @@ const ManageInstitution = () => {
     superadminPassword: "",
     confirmation: "",
   });
+
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoSuperadminPassword, setLogoSuperadminPassword] = useState("");
+  const [logoConfirmation, setLogoConfirmation] = useState("");
 
   useEffect(() => {
     fetchInstitution();
@@ -90,6 +96,134 @@ const ManageInstitution = () => {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setLogoFile(null);
+      return;
+    }
+
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      showErrorAlert("Only PNG, JPEG, JPG, or WEBP logo files are allowed");
+      setLogoFile(null);
+      e.target.value = "";
+      return;
+    }
+
+    setLogoFile(file);
+  };
+
+  const handleUpdateLogo = async (e) => {
+    e.preventDefault();
+
+    if (!logoFile) {
+      showErrorAlert("Please select a logo file first");
+      return;
+    }
+
+    if (!logoSuperadminPassword) {
+      showErrorAlert("Superadmin password is required");
+      return;
+    }
+
+    if (logoConfirmation !== "CONFIRM") {
+      showErrorAlert('Please type "CONFIRM" to proceed');
+      return;
+    }
+
+    setLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("logo", logoFile);
+      formData.append("superadminPassword", logoSuperadminPassword);
+      formData.append("confirmation", logoConfirmation);
+
+      const response = await axios.put(
+        `/superadmin/update-institution-logo/${id}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      if (response.data.success) {
+        showSuccessAlert("Institution logo updated successfully");
+        setLogoFile(null);
+        setLogoSuperadminPassword("");
+        setLogoConfirmation("");
+        // If updating the logo for the currently logged in institution, update localstorage
+        const currentCollege = localStorage.getItem("college");
+        if (currentCollege && currentCollege.toUpperCase() === institution?.code?.toUpperCase()) {
+          localStorage.setItem("institutionLogoUrl", buildInstitutionLogoUrl(response.data.institution.logoUrl));
+        }
+        fetchInstitution(); // Refresh data
+      } else {
+        showErrorAlert(response.data.message || "Failed to update logo");
+      }
+    } catch (error) {
+      console.error("Error updating logo:", error);
+      showErrorAlert(
+        "Error updating logo: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = async (e) => {
+    e.preventDefault();
+
+    if (!logoSuperadminPassword) {
+      showErrorAlert("Superadmin password is required to remove logo");
+      return;
+    }
+
+    if (logoConfirmation !== "CONFIRM") {
+      showErrorAlert('Please type "CONFIRM" to confirm logo removal');
+      return;
+    }
+
+    const confirmRemove = window.confirm("Are you sure you want to remove this logo? This will fallback to initials.");
+    if (!confirmRemove) return;
+
+    setLogoUploading(true);
+    try {
+      const response = await axios.put(
+        `/superadmin/update-institution-logo/${id}`,
+        {
+          removeLogo: true,
+          superadminPassword: logoSuperadminPassword,
+          confirmation: logoConfirmation,
+        }
+      );
+
+      if (response.data.success) {
+        showSuccessAlert("Institution logo removed successfully");
+        setLogoFile(null);
+        setLogoSuperadminPassword("");
+        setLogoConfirmation("");
+        // If removing the logo for the currently logged in institution, update localstorage
+        const currentCollege = localStorage.getItem("college");
+        if (currentCollege && currentCollege.toUpperCase() === institution?.code?.toUpperCase()) {
+          localStorage.setItem("institutionLogoUrl", "");
+        }
+        fetchInstitution(); // Refresh data
+      } else {
+        showErrorAlert(response.data.message || "Failed to remove logo");
+      }
+    } catch (error) {
+      console.error("Error removing logo:", error);
+      showErrorAlert(
+        "Error removing logo: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setLogoUploading(false);
     }
   };
 
@@ -663,6 +797,109 @@ const ManageInstitution = () => {
                   <i className="fas fa-edit me-2" />
                   Edit Palette
                 </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Update Institution Logo Section */}
+          <div className="section-card card">
+            <div className="card-header">
+              <h5 className="mb-0">
+                <i className="fas fa-image me-2"></i>
+                Update Institution Logo
+              </h5>
+            </div>
+            <div className="card-body">
+              <div className="logo-section-container" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div style={{ flexShrink: 0 }}>
+                    <div className="small text-muted mb-1">Current Logo:</div>
+                    {institution?.logoUrl ? (
+                      <img
+                        src={buildInstitutionLogoUrl(institution.logoUrl)}
+                        alt="Current Logo"
+                        className="manage-logo-preview"
+                      />
+                    ) : (
+                      <div className="manage-logo-fallback">
+                        {getInstitutionInitials(institution?.name, institution?.code)}
+                      </div>
+                    )}
+                  </div>
+                  {logoFile && (
+                    <div>
+                      <div className="small text-muted mb-1">New Logo Preview:</div>
+                      <img
+                        src={URL.createObjectURL(logoFile)}
+                        alt="New Logo Preview"
+                        className="manage-logo-preview"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="mb-2">
+                  <label className="form-label">Select Logo (PNG/JPEG/WEBP)</label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    onChange={handleLogoChange}
+                  />
+                  <div className="form-text">
+                    Supported formats: PNG, JPG, JPEG, WEBP.
+                  </div>
+                </div>
+
+                <div className="security-section">
+                  <h6 className="security-title">Security Verification</h6>
+                  <div className="grid-2">
+                    <div className="mb-3">
+                      <label className="form-label required">Superadmin Password</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        value={logoSuperadminPassword}
+                        onChange={(e) => setLogoSuperadminPassword(e.target.value)}
+                        placeholder="Enter superadmin password"
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label required">Confirmation</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={logoConfirmation}
+                        onChange={(e) => setLogoConfirmation(e.target.value)}
+                        placeholder="Type CONFIRM to proceed"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-actions" style={{ marginTop: '5px' }}>
+                  {institution?.logoUrl && (
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={handleRemoveLogo}
+                      disabled={logoUploading}
+                      style={{ marginRight: 'auto' }}
+                    >
+                      <i className="fas fa-trash-alt me-2" />
+                      Remove Logo
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleUpdateLogo}
+                    disabled={logoUploading || !logoFile}
+                  >
+                    <i className="fas fa-save me-2" />
+                    {logoUploading ? "Uploading..." : "Update Logo"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

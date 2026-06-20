@@ -88,12 +88,21 @@
   gap: 8px;
 }
 
-.institution-brand-logo,
+.institution-brand-logo {
+  max-width: 120px;
+  max-height: 38px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #bfdbfe);
+  flex-shrink: 0;
+}
+
 .institution-brand-fallback {
   width: 26px;
   height: 26px;
   border-radius: 6px;
-  object-fit: cover;
   border: 1px solid var(--border-color, #bfdbfe);
   flex-shrink: 0;
 }
@@ -233,7 +242,15 @@
     flex-shrink: 0;
   }
 
-  .institution-brand-logo,
+  .institution-brand-logo {
+    max-width: 60px;
+    max-height: 24px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
   .institution-brand-fallback {
     width: 18px;
     height: 18px;
