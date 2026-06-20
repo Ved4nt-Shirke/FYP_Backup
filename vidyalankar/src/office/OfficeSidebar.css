@@ -49,10 +49,12 @@
 }
 
 .brand-logo-img {
-  width: 32px;
-  height: 32px;
+  max-width: 90px;
+  max-height: 38px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
   border-radius: var(--office-radius-sm);
-  object-fit: cover;
   border: 1px solid var(--office-border);
 }
 

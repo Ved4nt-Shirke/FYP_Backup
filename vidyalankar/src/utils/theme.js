@@ -150,12 +150,17 @@ export const loadAndApplyAdminTheme = async (college) => {
 
     // Fallback to cache if API fails
     const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      const palette = JSON.parse(cached);
-      console.log("[THEME] Using cached palette:", palette);
-      applyPalette(palette);
-      _lastAppliedHash = hashPalette(palette);
-      return palette;
+    if (cached && cached !== "undefined" && cached !== "null") {
+      try {
+        const palette = JSON.parse(cached);
+        console.log("[THEME] Using cached palette:", palette);
+        applyPalette(palette);
+        _lastAppliedHash = hashPalette(palette);
+        return palette;
+      } catch (parseErr) {
+        console.warn("[THEME] Corrupt cache entry, clearing:", parseErr.message);
+        localStorage.removeItem(cacheKey);
+      }
     }
     console.warn("[THEME] No palette found in API or cache");
   } catch (e) {
@@ -177,11 +182,16 @@ export const loadAndApplyOfficeTheme = async (college) => {
     }
 
     const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      const palette = JSON.parse(cached);
-      applyPalette(palette);
-      _lastAppliedHash = hashPalette(palette);
-      return palette;
+    if (cached && cached !== "undefined" && cached !== "null") {
+      try {
+        const palette = JSON.parse(cached);
+        applyPalette(palette);
+        _lastAppliedHash = hashPalette(palette);
+        return palette;
+      } catch (parseErr) {
+        console.warn("[THEME] Corrupt office cache entry, clearing:", parseErr.message);
+        localStorage.removeItem(cacheKey);
+      }
     }
   } catch (e) {
     console.error("[THEME] Failed to load office theme:", e);

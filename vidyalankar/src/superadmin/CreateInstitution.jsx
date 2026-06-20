@@ -173,9 +173,9 @@ const CreateInstitution = () => {
       return;
     }
 
-    const allowedTypes = ["image/png", "image/jpeg"];
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      setError("Only PNG or JPEG logo files are allowed");
+      setError("Only PNG, JPEG, JPG, or WEBP logo files are allowed");
       setLogoFile(null);
       e.target.value = "";
       return;
@@ -364,18 +364,33 @@ const CreateInstitution = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Institution Logo (PNG/JPEG)</label>
+                  <label className="form-label">Institution Logo (PNG/JPEG/WEBP)</label>
                   <input
                     type="file"
                     className="form-control"
-                    accept="image/png,image/jpeg"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
                     onChange={handleLogoChange}
                   />
                   <div className="form-text">
                     Optional. If not uploaded, institution short code (example: VP) is used in header.
                   </div>
                   {logoFile && (
-                    <div className="logo-file-name">Selected: {logoFile.name}</div>
+                    <div className="logo-preview-container" style={{ marginTop: '10px' }}>
+                      <div className="small text-muted mb-1">Selected: {logoFile.name}</div>
+                      <img
+                        src={URL.createObjectURL(logoFile)}
+                        alt="Logo Preview"
+                        style={{
+                          maxHeight: '100px',
+                          maxWidth: '100%',
+                          objectFit: 'contain',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '8px',
+                          padding: '4px',
+                          background: '#f8fafc'
+                        }}
+                      />
+                    </div>
                   )}
                 </div>
 

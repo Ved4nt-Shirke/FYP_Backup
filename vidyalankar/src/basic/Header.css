@@ -76,12 +76,20 @@
   min-width: 0;
 }
 
-.institution-logo-image,
+.institution-logo-image {
+  max-width: 120px;
+  max-height: 42px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
 .institution-logo-fallback {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
@@ -439,6 +447,11 @@
   .header {
     padding: 8px 12px;
     height: var(--header-height);
+  }
+
+  .institution-logo-image {
+    max-height: 32px;
+    max-width: 80px;
   }
 
   .header-center {

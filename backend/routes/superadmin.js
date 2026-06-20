@@ -383,6 +383,7 @@ router.put(
           adminUsername: institution.adminUsername,
           isActive: institution.isActive,
           palette: institution.palette,
+          logoUrl: institution.logoUrl,
         },
         message: "Institution details updated successfully",
       });
@@ -396,6 +397,93 @@ router.put(
     }
   },
 );
+
+// Update institution logo
+router.put(
+  "/update-institution-logo/:id",
+  enhancedSecurity("UPDATE_INSTITUTION"),
+  institutionLogoUpload.single("logo"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { removeLogo } = req.body;
+
+      const institution = await Institution.findById(id);
+      if (!institution) {
+        deleteUploadedLogoIfExists(req.file);
+        return res.status(404).json({
+          success: false,
+          message: "Institution not found",
+        });
+      }
+
+      if (removeLogo === "true" || removeLogo === true) {
+        if (institution.logoUrl) {
+          const oldPath = path.join(__dirname, "..", institution.logoUrl);
+          fs.unlink(oldPath, (err) => {
+            if (err && err.code !== 'ENOENT') {
+              console.warn("Failed to delete old institution logo:", err.message);
+            }
+          });
+        }
+        institution.logoUrl = "";
+        institution.logoMimeType = "";
+        await institution.save();
+        return res.json({
+          success: true,
+          institution: {
+            _id: institution._id,
+            name: institution.name,
+            code: institution.code,
+            logoUrl: "",
+          },
+          message: "Logo removed successfully",
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "No logo file provided",
+        });
+      }
+
+      // Delete old logo file if it exists
+      if (institution.logoUrl) {
+        const oldPath = path.join(__dirname, "..", institution.logoUrl);
+        fs.unlink(oldPath, (err) => {
+          if (err && err.code !== 'ENOENT') {
+            console.warn("Failed to delete old institution logo:", err.message);
+          }
+        });
+      }
+
+      institution.logoUrl = `/uploads/institution-logos/${req.file.filename}`;
+      institution.logoMimeType = req.file.mimetype;
+      await institution.save();
+
+      res.json({
+        success: true,
+        institution: {
+          _id: institution._id,
+          name: institution.name,
+          code: institution.code,
+          logoUrl: institution.logoUrl,
+        },
+        message: "Logo updated successfully",
+      });
+    } catch (error) {
+      deleteUploadedLogoIfExists(req.file);
+      console.error("Error updating logo:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error updating logo",
+        error: error.message,
+      });
+    }
+  }
+);
+
 
 // Update institution admin credentials
 router.put(
