@@ -1,21 +1,21 @@
 /* SmartAttendanceHub.css */
 
 :root {
-  --sah-primary: #0f5cc0;
-  --sah-primary-deep: #084892;
-  --sah-surface: #f3f8ff;
-  --sah-surface-soft: #ecf4ff;
-  --sah-border: #d8e5f6;
-  --sah-text: #122844;
-  --sah-muted: #60728c;
+  --sah-primary: var(--primary-color, #0f5cc0);
+  --sah-primary-deep: var(--primary-accent-dark, #084892);
+  --sah-surface: var(--primary-light, #f3f8ff);
+  --sah-surface-soft: var(--dash-bg, #ecf4ff);
+  --sah-border: var(--card-border, #d8e5f6);
+  --sah-text: var(--text-primary, #122844);
+  --sah-muted: var(--text-secondary, #60728c);
 }
 
 .sah-page {
   padding: 1.25rem;
   min-height: calc(100vh - 64px);
   background:
-    radial-gradient(circle at 8% 8%, rgba(15, 92, 192, 0.13), transparent 38%),
-    radial-gradient(circle at 92% 2%, rgba(8, 72, 146, 0.1), transparent 35%),
+    radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--primary-color, #0f5cc0) 13%, transparent), transparent 38%),
+    radial-gradient(circle at 92% 2%, color-mix(in srgb, var(--primary-accent-dark, #084892) 10%, transparent), transparent 35%),
     linear-gradient(180deg, var(--sah-surface), var(--sah-surface-soft));
   font-family: "Inter", "Segoe UI", sans-serif;
 }

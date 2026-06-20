@@ -115,17 +115,16 @@
 }
 
 .form-action-bar {
-  position: sticky;
-  bottom: var(--admin-space-lg);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--admin-border);
   padding: var(--admin-space-md) var(--admin-space-xl);
   display: flex;
   justify-content: flex-end;
-  box-shadow: var(--admin-shadow-lg);
-  z-index: 100;
 }
+
+.form-action-bar:hover {
+  transform: none;
+  box-shadow: var(--admin-shadow-sm);
+}
+
 
 .btn-save {
   min-width: 160px;

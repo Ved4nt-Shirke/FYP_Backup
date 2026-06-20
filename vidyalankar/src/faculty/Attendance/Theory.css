@@ -84,8 +84,8 @@
 .theory-form-group input:focus,
 .theory-form-group textarea:focus {
 	outline: none;
-	border-color: #3b82f6;
-	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16);
+	border-color: var(--primary-color, #3b82f6);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color, #3b82f6) 16%, transparent);
 }
 
 .validation-error {
@@ -122,12 +122,12 @@
 }
 
 .button-group .btn.submit {
-	background: #2563eb;
+	background: var(--primary-color, #2563eb);
 	color: #ffffff;
 }
 
 .button-group .btn.submit:hover {
-	background: #1d4ed8;
+	background: var(--primary-accent-dark, #1d4ed8);
 }
 
 .theory-attendance-form footer {

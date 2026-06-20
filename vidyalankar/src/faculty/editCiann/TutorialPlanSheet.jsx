@@ -85,6 +85,16 @@ const TutorialPlanSheet = () => {
   const [plans, setPlans] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] = useState(false);
+
+  useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
   const [tutorialPlans, setTutorialPlans] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [planningStarted, setPlanningStarted] = useState(false);

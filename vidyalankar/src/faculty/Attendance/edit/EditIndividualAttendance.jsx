@@ -282,39 +282,31 @@ const EditIndividualAttendance = () => {
 
             {formData.students && formData.students.length > 0 ? (
               <div className="eia-students-grid">
-                {formData.students.map((student, index) => (
+                {formData.students.map((student) => (
                   <div
                     key={student.rollNo}
                     className={`eia-student-card ${student.status === "Present" ? "eia-present" : "eia-absent"}`}
+                    onClick={() => handleStudentStatusChange(student.rollNo)}
+                    style={{ cursor: "pointer" }}
                   >
                     <div className="eia-student-header">
                       <div className="eia-student-roll">{student.rollNo}</div>
-                      <label className="eia-custom-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={student.status === "Present"}
-                          onChange={() =>
-                            handleStudentStatusChange(student.rollNo)
-                          }
-                        />
-                        <span className="eia-checkmark"></span>
-                      </label>
+                      <button
+                        type="button"
+                        className={`status-pill status-toggle ${student.status === "Present" ? "present" : "absent"}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleStudentStatusChange(student.rollNo);
+                        }}
+                      >
+                        {student.status}
+                      </button>
                     </div>
                     <div className="eia-student-name">
                       {student.studentName}
                     </div>
-                    <div className="eia-student-status">
-                      {student.status === "Present" ? (
-                        <>
-                          <i className="bi bi-check-circle-fill"></i>
-                          Present
-                        </>
-                      ) : (
-                        <>
-                          <i className="bi bi-x-circle-fill"></i>
-                          Absent
-                        </>
-                      )}
+                    <div className="eia-student-meta">
+                      Enrollment: {student.enrollmentNo || "-"}
                     </div>
                   </div>
                 ))}

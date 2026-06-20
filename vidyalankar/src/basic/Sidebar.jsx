@@ -157,8 +157,6 @@ const Sidebar = ({
       navigateAndClose("/defaulter");
     } else if (option === "Summary") {
       navigateAndClose("/attendance-summary-cards");
-    } else if (option === "Practical Batches") {
-      navigateAndClose("/practical-batch-distribution");
     }
   };
 
@@ -550,18 +548,6 @@ const Sidebar = ({
                     }}
                   >
                     <i className="bi bi-exclamation-triangle"></i> Defaultters
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="dropdown-item d-flex align-items-center gap-2"
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAttendanceSelect("Practical Batches");
-                    }}
-                  >
-                    <i className="bi bi-people-fill"></i> Practical Batches
                   </a>
                 </li>
               </ul>

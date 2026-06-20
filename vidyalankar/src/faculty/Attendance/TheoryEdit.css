@@ -36,7 +36,7 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.9px;
-  color: #1f5fbf;
+  color: var(--primary-color, #1f5fbf);
   text-transform: uppercase;
   margin-bottom: 6px;
 }
@@ -113,12 +113,12 @@
 }
 
 .metric-card.success {
-  background: #eef4ff;
-  border-color: #c7daf7;
+  background: var(--primary-light, #eef4ff);
+  border-color: var(--card-border, #c7daf7);
 }
 
 .metric-card.success strong {
-  color: #1f5fbf;
+  color: var(--primary-color, #1f5fbf);
 }
 
 .metric-card.warning {
@@ -206,9 +206,9 @@
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  border: 1px solid #93c5fd;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border: 1px solid var(--primary-color, #93c5fd);
+  background: var(--primary-light, #eff6ff);
+  color: var(--primary-accent-dark, #1d4ed8);
   border-radius: 999px;
   font-weight: 700;
   font-size: 12px;
@@ -216,9 +216,9 @@
 }
 
 .checkbox-pill.is-locked {
-  border-color: #9dc0f0;
-  background: #eef4ff;
-  color: #1f5fbf;
+  border-color: var(--card-border, #9dc0f0);
+  background: var(--primary-light, #eef4ff);
+  color: var(--primary-color, #1f5fbf);
   cursor: not-allowed;
 }
 
@@ -257,9 +257,9 @@
 }
 
 .theory-pagination button:not(:disabled):hover {
-  border-color: #3b82f6;
-  color: #1d4ed8;
-  background: #eff6ff;
+  border-color: var(--primary-color, #3b82f6);
+  color: var(--primary-accent-dark, #1d4ed8);
+  background: var(--primary-light, #eff6ff);
 }
 
 .theory-pagination button:disabled {

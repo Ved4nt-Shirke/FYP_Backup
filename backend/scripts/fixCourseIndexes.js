@@ -35,7 +35,7 @@ const shouldDropLegacyCourseIndex = (index) => {
 };
 
 async function fixCourseIndexes() {
-  const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/vidyalankarDB";
+  const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/vidyalankarDB";
 
   await mongoose.connect(mongoUri);
   const collection = mongoose.connection.collection(TARGET_COLLECTION);

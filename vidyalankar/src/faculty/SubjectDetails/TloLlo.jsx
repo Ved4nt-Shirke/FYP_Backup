@@ -19,6 +19,16 @@ export default function TloLlo() {
   // Secondary sidebar visibility state (for mobile responsive design)
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] = useState(false);
 
+  useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
+
   // Resolve CIAAN Data on Mount
   useEffect(() => {
     let resolvedCiann = location.state?.ciannData;

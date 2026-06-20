@@ -477,10 +477,10 @@ const Header = ({
             )}
             <span
               className="user-name"
-              title={username}
-              aria-label={`Logged in as ${username}`}
+              title={profile?.fullName || username}
+              aria-label={`Logged in as ${profile?.fullName || username}`}
             >
-              {isSuperAdmin ? `Super Admin (${username})` : username}
+              {isSuperAdmin ? `Super Admin (${username})` : (profile?.fullName || username)}
             </span>
             <span className="dropdown-arrow">▼</span>
           </button>

@@ -3,7 +3,11 @@
 .profile-container {
   max-width: 960px;
   margin: 30px auto;
-  padding: 0 20px;
+  padding: 30px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -341,6 +345,12 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 /* Responsive */

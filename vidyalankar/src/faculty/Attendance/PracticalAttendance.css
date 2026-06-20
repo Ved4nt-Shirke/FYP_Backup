@@ -3,14 +3,14 @@
 }
 
 :root {
-  --practical-ink: #1c1f2a;
-  --practical-muted: #596176;
-  --practical-surface: #f5f7fb;
-  --practical-card: #ffffff;
-  --practical-accent: #1f6feb;
-  --practical-accent-strong: #154db3;
-  --practical-warning: #f59f00;
-  --practical-border: #e3e7ef;
+  --practical-ink: var(--text-primary, #1c1f2a);
+  --practical-muted: var(--text-secondary, #596176);
+  --practical-surface: var(--dash-bg, #f5f7fb);
+  --practical-card: var(--card-bg, #ffffff);
+  --practical-accent: var(--primary-color, #1f6feb);
+  --practical-accent-strong: var(--primary-accent-dark, #154db3);
+  --practical-warning: var(--yellow-accent, #f59f00);
+  --practical-border: var(--card-border, #e3e7ef);
   --practical-shadow: 0 16px 40px rgba(20, 24, 38, 0.1);
 }
 
@@ -27,12 +27,12 @@ body {
   background:
     radial-gradient(
       circle at top left,
-      rgba(31, 111, 235, 0.1),
+      color-mix(in srgb, var(--primary-color, #1f6feb) 10%, transparent),
       transparent 55%
     ),
     radial-gradient(
       circle at top right,
-      rgba(245, 159, 0, 0.18),
+      color-mix(in srgb, var(--yellow-accent, #f59f00) 18%, transparent),
       transparent 50%
     ),
     var(--practical-surface);

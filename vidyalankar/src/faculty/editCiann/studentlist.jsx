@@ -16,6 +16,16 @@ function Studentlist() {
     useState(false);
 
   useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
+
+  useEffect(() => {
     // This logic for managing ciannData is from your original file
     if (!ciannData) {
       const storedCiannData =

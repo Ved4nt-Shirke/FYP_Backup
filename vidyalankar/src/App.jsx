@@ -71,7 +71,6 @@ import PracticalCiannCards from "./faculty/Attendance/PracticalCiannCards";
 import PracticalAttendance from "./faculty/Attendance/PracticalAttendance";
 import PracticalAttendanceForm from "./faculty/Attendance/PracticalAttendanceForm";
 import PracticalFinalAtt from "./faculty/Attendance/PracticalFinalAtt";
-import PracticalBatchDistribution from "./faculty/Attendance/PracticalBatchDistribution";
 import TheoryEdit from "./faculty/Attendance/TheoryEdit";
 import AttendanceForm from "./faculty/Attendance/Theory";
 import FinalAttendance from "./faculty/Attendance/FinalAtt";
@@ -448,6 +447,28 @@ const AppContent = () => {
     };
   }, [college, userRole]);
 
+  // Sync auth checks to prevent layout flash before redirect
+  const token = localStorage.getItem("token");
+  const isLoginPage = location.pathname === "/login";
+  const isPublicPage = [
+    "view-attend2",
+    "view-practical3",
+    "view-extra-practical3",
+    "view-extra-theory-attend2",
+    "view-tutorial-attendance2",
+    "summary-pages",
+    "edit-ciann-print",
+    "public/practical-exam",
+  ].some((p) => location.pathname.includes(p));
+
+  if (!token && !isLoginPage && !isPublicPage) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (token && isLoginPage) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const handleMenuToggle = () => setIsSidebarVisible((prev) => !prev);
 
   const isSpecialPage =
@@ -473,6 +494,14 @@ const AppContent = () => {
     "/tutorial-plan",
     "/student-list",
     "/subject-details",
+    "/tlo",
+    "/llo",
+    "/add-chapters",
+    "/chapters",
+    "/update-chapter",
+    "/course2",
+    "/course3",
+    "/course4",
   ].some((path) => location.pathname.startsWith(path));
 
   if (isSpecialPage) {
@@ -671,10 +700,6 @@ const AppContent = () => {
               element={<PracticalAttendance />}
             />
             <Route path="/PracticalFinalAtt" element={<PracticalFinalAtt />} />
-            <Route
-              path="/practical-batch-distribution"
-              element={<PracticalBatchDistribution />}
-            />
             <Route
               path="/prac-form/:ciannId/:weekNo/:batch/:exptNo"
               element={<PracticalAttendanceForm />}

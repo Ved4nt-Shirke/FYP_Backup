@@ -1,16 +1,25 @@
-﻿.vat2-page {
+.vat2-page {
+  --vat2-primary: var(--primary-color, #1f5fbf);
+  --vat2-primary-dark: var(--primary-accent-dark, #134996);
+  --vat2-primary-light: var(--primary-light, #edf4ff);
+  --vat2-bg-a: var(--primary-light, #f2f7ff);
+  --vat2-bg-b: var(--dash-bg, #eaf2ff);
+  --vat2-border: var(--card-border, #d7e5f8);
+  --vat2-text: var(--text-primary, #143257);
+  --vat2-muted: var(--text-secondary, #5d7090);
+
   min-height: 100vh;
   padding: 1.2rem;
   background:
-    radial-gradient(circle at 8% 8%, rgba(31, 95, 191, 0.12), transparent 38%),
-    radial-gradient(circle at 92% 2%, rgba(19, 73, 150, 0.08), transparent 35%),
-    linear-gradient(180deg, #f2f7ff 0%, #eaf2ff 100%);
+    radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--vat2-primary) 12%, transparent), transparent 38%),
+    radial-gradient(circle at 92% 2%, color-mix(in srgb, var(--vat2-primary-dark) 8%, transparent), transparent 35%),
+    linear-gradient(180deg, var(--vat2-bg-a) 0%, var(--vat2-bg-b) 100%);
 }
 
 .vat2-hero {
-  border: 1px solid #d7e5f8;
+  border: 1px solid var(--vat2-border);
   border-radius: 18px;
-  background: linear-gradient(145deg, #ffffff, #edf5ff);
+  background: linear-gradient(145deg, #ffffff, var(--vat2-primary-light));
   box-shadow: 0 12px 26px rgba(18, 43, 82, 0.08);
   padding: 1.15rem 1.25rem;
   margin-bottom: 0.9rem;
@@ -20,17 +29,17 @@
   margin: 0;
   font-size: 1.9rem;
   font-weight: 800;
-  color: #143257;
+  color: var(--vat2-text);
 }
 
 .vat2-hero p {
   margin: 0.35rem 0 0;
-  color: #5d7090;
+  color: var(--vat2-muted);
   font-weight: 600;
 }
 
 .vat2-panel {
-  border: 1px solid #d7e5f8;
+  border: 1px solid var(--vat2-border);
   border-radius: 16px;
   background: #ffffff;
   box-shadow: 0 10px 24px rgba(18, 43, 82, 0.08);
@@ -54,7 +63,7 @@
 
 .vat2-table th,
 .vat2-table td {
-  border: 1px solid #e6eefb;
+  border: 1px solid var(--vat2-border);
   padding: 0.45rem 0.35rem;
   text-align: center;
   font-size: 0.76rem;
@@ -64,8 +73,8 @@
 }
 
 .vat2-table thead th {
-  background: #edf4ff;
-  color: #355ea8;
+  background: var(--vat2-primary-light);
+  color: var(--vat2-primary);
   font-weight: 800;
   letter-spacing: 0.03em;
   position: sticky;
@@ -77,8 +86,8 @@
   position: sticky;
   left: 0;
   z-index: 1;
-  background: #f4f8ff;
-  color: #143257;
+  background: var(--vat2-primary-light);
+  color: var(--vat2-text);
   width: 96px !important;
   min-width: 96px !important;
   max-width: 96px !important;
@@ -129,17 +138,17 @@
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  background: linear-gradient(135deg, #1f5fbf, #134996);
+  background: linear-gradient(135deg, var(--vat2-primary), var(--vat2-primary-dark));
 }
 
 .vat2-state {
   margin: 1rem;
-  border: 1px solid #d7e5f8;
+  border: 1px solid var(--vat2-border);
   border-radius: 12px;
   padding: 1rem;
   text-align: center;
   background: #fff;
-  color: #5d7090;
+  color: var(--vat2-muted);
   font-weight: 700;
 }
 

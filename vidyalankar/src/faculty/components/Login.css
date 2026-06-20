@@ -46,9 +46,15 @@ body {
 }
 
 .logo {
-  height: 60px;
+  height: 180px;
   margin-bottom: 18px;
   object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
 }
 
 .login-title {
@@ -223,3 +229,97 @@ body {
     padding: 10px 14px;
   }
 }
+
+/* Two-Factor Authentication Styles */
+.two-factor-fadein {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.two-factor-header {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.two-factor-title {
+  font-size: 18px;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.two-factor-subtitle {
+  font-size: 13px;
+  color: #7f8c8d;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.two-factor-email {
+  font-weight: 600;
+  color: var(--primary-accent, #28a745);
+}
+
+.otp-field {
+  text-align: center;
+  font-size: 20px !important;
+  letter-spacing: 6px;
+  font-weight: 700;
+  padding: 12px !important;
+  border: 2px solid #e1e8ed !important;
+}
+
+.otp-field:focus {
+  border-color: var(--primary-accent, #28a745) !important;
+}
+
+.two-factor-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.back-button {
+  flex: 1;
+  background: #f1f2f6;
+  color: #57606f;
+  padding: 11px 18px;
+  border: 1px solid #ced6e0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-sizing: border-box;
+}
+
+.back-button:hover:not(:disabled) {
+  background: #dfe4ea;
+  color: #2f3542;
+  border-color: #a4b0be;
+}
+
+.back-button:disabled,
+.verify-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.verify-button {
+  flex: 2;
+}
+

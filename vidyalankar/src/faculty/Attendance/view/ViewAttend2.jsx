@@ -86,6 +86,7 @@ const ViewAttend2 = () => {
             <thead>
               <tr>
                 <th>ROLL NO.</th>
+                <th>NAME</th>
                 {dates.map((date) => (
                   <th key={date}>{formatDate(date)}</th>
                 ))}
@@ -95,6 +96,7 @@ const ViewAttend2 = () => {
               {students.map((student) => (
                 <tr key={student.rollNo}>
                   <td>{student.rollNo}</td>
+                  <td>{student.studentName || "N/A"}</td>
                   {dates.map((date) => (
                     <td key={`${student.rollNo}-${date}`}>
                       <span

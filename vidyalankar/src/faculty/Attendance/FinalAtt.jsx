@@ -223,15 +223,15 @@ const FinalAttendance = () => {
       )}
 
       <div className="summary-row">
-        <div className="stat-card">
+        <div className="final-stat-card">
           <span className="label">Total Students</span>
           <span className="value">{students.length}</span>
         </div>
-        <div className="stat-card success">
+        <div className="final-stat-card success">
           <span className="label">Present</span>
           <span className="value">{presentCount}</span>
         </div>
-        <div className="stat-card danger">
+        <div className="final-stat-card danger">
           <span className="label">Absent</span>
           <span className="value">{absentCount}</span>
         </div>

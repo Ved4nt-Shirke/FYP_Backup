@@ -1,12 +1,12 @@
 .attendance-main-content {
-  --atf-bg-a: #f3f8ff;
-  --atf-bg-b: #ecf4ff;
-  --atf-panel: #ffffff;
-  --atf-border: #d9e5f6;
-  --atf-text: #132844;
-  --atf-muted: #60728c;
-  --atf-primary: #0f5cc0;
-  --atf-primary-deep: #084892;
+  --atf-bg-a: var(--primary-light, #f3f8ff);
+  --atf-bg-b: var(--dash-bg, #ecf4ff);
+  --atf-panel: var(--card-bg, #ffffff);
+  --atf-border: var(--card-border, #d9e5f6);
+  --atf-text: var(--text-primary, #132844);
+  --atf-muted: var(--text-secondary, #60728c);
+  --atf-primary: var(--primary-color, #0f5cc0);
+  --atf-primary-deep: var(--primary-accent-dark, #084892);
 
   min-height: calc(100vh - 64px);
   padding: 1.25rem;

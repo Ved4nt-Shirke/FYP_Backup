@@ -64,7 +64,7 @@ const ensureIndex = async (collection, indexSpec, options) => {
 };
 
 async function fixCatalogIndexes() {
-  const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/vidyalankarDB";
+  const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/vidyalankarDB";
   await mongoose.connect(mongoUri);
 
   const departmentsCollection = mongoose.connection.collection("departments");

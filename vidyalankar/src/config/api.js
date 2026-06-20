@@ -19,6 +19,7 @@ export const config = {
   auth: {
     login: `${API_BASE_URL}/auth/login`,
     logout: `${API_BASE_URL}/auth/logout`,
+    verify2fa: `${API_BASE_URL}/auth/verify-2fa`,
   },
 
   // CIANN endpoints

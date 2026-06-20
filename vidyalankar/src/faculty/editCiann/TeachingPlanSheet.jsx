@@ -104,6 +104,17 @@ const TeachingPlan = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
+
+  useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
+
   const [teachingPlans, setTeachingPlans] = useState([]);
   const [planningStarted, setPlanningStarted] = useState(false);
   const [loading, setLoading] = useState(false);
