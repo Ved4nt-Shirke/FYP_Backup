@@ -573,7 +573,7 @@ const SummaryPage = () => {
         <div className="footer-summary">
           <button className="print-button" onClick={handlePrint}>Print</button>
           <p>
-            Copyright © 2019. All rights reserved{' '}
+            Copyright © 2026. All rights reserved{' '}
             <a href="https://vpt.edu.in/">Vidyalankar Polytechnic</a>
           </p>
         </div>

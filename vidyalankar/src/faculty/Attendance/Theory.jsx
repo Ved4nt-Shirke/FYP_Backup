@@ -130,7 +130,7 @@ const AttendanceForm = ({
         </div>
         {/* --- FIX START: Added footer element from screenshot --- */}
         <footer>
-          Copyright © 2019. All rights reserved Vidyalankar Polytechnic
+          Copyright © 2026. All rights reserved Vidyalankar Polytechnic
         </footer>
         {/* --- FIX END --- */}
       </div>
