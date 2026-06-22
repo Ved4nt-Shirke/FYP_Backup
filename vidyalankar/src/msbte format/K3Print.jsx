@@ -47,6 +47,8 @@ const K3Print = () => {
   const [error, setError] = useState("");
 
   const facultyName = useMemo(() => {
+    const cachedName = localStorage.getItem("facultyName");
+    if (cachedName) return cachedName;
     const username = localStorage.getItem("username") || "";
     return formatUsername(username) || "Faculty";
   }, []);
@@ -62,7 +64,7 @@ const K3Print = () => {
       setError("");
 
       const program = ciannData.department?.name || "";
-      const className = ciannData.class || ciannData.division || "";
+      const className = ciannData.courseCode || ciannData.class || ciannData.division || "";
       const course = ciannData.subject?.name || "";
 
       let studentList = [];
@@ -261,7 +263,7 @@ const K3Print = () => {
             <strong>Academic Year:</strong> {ciannData.academicYear || ""}
           </div>
           <div>
-            <strong>Course and Code:</strong> {ciannData.class || ""}
+            <strong>Course and Code:</strong> {ciannData.courseCode || ciannData.class || ""}
           </div>
           <div>
             <strong>Subject and Code:</strong> {ciannData.subject?.name || ""} (

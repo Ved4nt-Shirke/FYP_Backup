@@ -46,7 +46,7 @@ const AssismentCiaanCards = () => {
         },
         body: JSON.stringify({
           program: ciannData.department?.name || "",
-          className: ciannData.class || "",
+          className: ciannData.courseCode || ciannData.class || "",
           course: ciannData.subject?.name || "",
         }),
       });

@@ -139,7 +139,7 @@ function LectureSchedule() {
   const pracEseMin = adminDetails?.assessmentScheme?.practical?.saPrMin || "-";
   const pracPaMax = adminDetails?.assessmentScheme?.practical?.faPrMax || "-";
   const pracPaMin = adminDetails?.assessmentScheme?.practical?.faPrMin || "-";
-  
+
   const pracTotalMax = (parseVal(pracEseMax) + parseVal(pracPaMax)) || "-";
   const pracTotalMin = (parseVal(pracEseMin) + parseVal(pracPaMin)) || "-";
 
@@ -383,11 +383,11 @@ function LectureSchedule() {
         </div>
 
         {error && (
-          <div className="alert alert-danger" style={{ 
-            backgroundColor: '#f8d7da', 
-            color: '#721c24', 
-            padding: '12px', 
-            borderRadius: '8px', 
+          <div className="alert alert-danger" style={{
+            backgroundColor: '#f8d7da',
+            color: '#721c24',
+            padding: '12px',
+            borderRadius: '8px',
             marginBottom: '20px',
             border: '1px solid #f5c6cb'
           }}>
@@ -472,7 +472,7 @@ function LectureSchedule() {
                   <button className='popup-submit' type="submit" disabled={saving}>
                     {saving ? "Saving..." : "Submit"}
                   </button>
-                </div>  
+                </div>
               </form>
             </div>
           </div>

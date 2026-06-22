@@ -119,55 +119,21 @@ const extractValue = (data, ...possibleKeys) => {
 };
 
 const getClassAndDiv = (ciannData) => {
-  const className = extractValue(
-    ciannData,
-    "className",
-    "class",
-    "classname",
-    "Class",
-    "ClassName",
-    "semester",
-    "year",
-  );
-  const division = extractValue(
-    ciannData,
-    "division",
-    "div",
-    "section",
-    "Division",
-    "Div",
-    "Section",
-  );
-  return className && division
-    ? `${className} - ${division}`
-    : className || "N/A";
+  if (!ciannData) return "N/A";
+  const deptCode = ciannData.department?.code || "";
+  const sem = ciannData.semester || "";
+  const scheme = ciannData.scheme || "";
+  const div = ciannData.division || "";
+  if (deptCode || sem || scheme || div) {
+    return `${deptCode}${sem}${scheme}${div}`.toUpperCase();
+  }
+  return "N/A";
 };
 
 const getSubjectAndCode = (ciannData) => {
-  const name =
-    extractValue(
-      ciannData,
-      "subjectName",
-      "subject",
-      "subjectname",
-      "Subject",
-      "SubjectName",
-      "title",
-      "courseName",
-      "name",
-    ) || ciannData?.subject?.name;
-  const code =
-    extractValue(
-      ciannData,
-      "subjectCode",
-      "code",
-      "subject_code",
-      "SubjectCode",
-      "Code",
-      "courseCode",
-      "subjectId",
-      "id",
-    ) || ciannData?.subject?.code;
+  if (!ciannData) return "N/A";
+  const name = ciannData.subject?.name || extractValue(ciannData, "subjectName", "subject");
+  const code = ciannData.subject?.code || extractValue(ciannData, "subjectCode", "code");
   if (name && code) return `${name} (${code})`;
   return name || "N/A";
 };
@@ -187,10 +153,26 @@ const PrintCiann = () => {
   const [loading, setLoading] = useState(true);
   const [institutionBranding] = useState(getInstitutionBranding);
 
-  const getTeacherNames = () => {
-    if (!ciannData) return localStorage.getItem("username") || "-";
+  const formatUsername = (rawUsername) => {
+    if (!rawUsername) return "";
+    const localUser = localStorage.getItem("username");
+    const facultyName = localStorage.getItem("facultyName");
+    if (localUser && rawUsername && localUser.trim().toLowerCase() === rawUsername.trim().toLowerCase() && facultyName) {
+      return facultyName;
+    }
+    if (rawUsername.includes(".")) {
+      return rawUsername
+        .split(".")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
+    }
+    return rawUsername.charAt(0).toUpperCase() + rawUsername.slice(1);
+  };
 
-    const primaryOwner = ciannData.ownerUsername || ciannData.owner?.username || ciannData.owner || "N/A";
+  const getTeacherNames = () => {
+    if (!ciannData) return formatUsername(localStorage.getItem("username") || "-");
+
+    const primaryOwner = formatUsername(ciannData.ownerUsername || ciannData.owner?.username || ciannData.owner || "N/A");
     const coFaculty = [];
     const contributors = [];
 
@@ -198,10 +180,11 @@ const PrintCiann = () => {
       ciannData.sharedWith.forEach((share) => {
         const name = share.user?.username || share.username || (typeof share.user === 'string' ? share.user : null);
         if (name) {
+          const formatted = formatUsername(name);
           if (share.permission === "edit") {
-            coFaculty.push(name);
+            coFaculty.push(formatted);
           } else {
-            contributors.push(name);
+            contributors.push(formatted);
           }
         }
       });
@@ -718,16 +701,7 @@ const PrintCiann = () => {
     );
   };
 
-  const formatUsername = (rawUsername) => {
-    if (!rawUsername) return "";
-    if (rawUsername.includes(".")) {
-      return rawUsername
-        .split(".")
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-        .join(" ");
-    }
-    return rawUsername.charAt(0).toUpperCase() + rawUsername.slice(1);
-  };
+
 
   const normalizeMark = (mark, maxMarks) => {
     const numeric = Number(mark);
@@ -918,9 +892,6 @@ const PrintCiann = () => {
               </p>
               <p>
                 <strong>INST. CODE:</strong> 0568
-              </p>
-              <p>
-                <strong>Date:</strong> {new Date().toLocaleString()}
               </p>
             </div>
 
@@ -1299,7 +1270,7 @@ const PrintCiann = () => {
 
           <div className="k3-meta">
             <div><strong>Academic Year:</strong> {ciannData?.academicYear || "2025 - 2026"}</div>
-            <div><strong>Course and Code:</strong> {ciannData?.class || "C05K-A"}</div>
+            <div><strong>Course and Code:</strong> {ciannData?.courseCode || ciannData?.class || "C05K-A"}</div>
             <div><strong>Subject and Code:</strong> {ciannData?.subject?.name || "CLOUD COMPUTING"} ({ciannData?.subject?.code || "315325"})</div>
             <div><strong>Name of Faculty:</strong> {formatUsername(localStorage.getItem("username") || "") || "Faculty"}</div>
             <div><strong>Division:</strong> {ciannData?.division || "-"}</div>
@@ -1418,7 +1389,7 @@ const PrintCiann = () => {
                 </tr>
                 <tr>
                   <th colSpan="2" className="k4-meta-left">
-                    <strong>Course and Code:</strong> {ciannData?.class || "C05K-A"}
+                    <strong>Course and Code:</strong> {ciannData?.courseCode || ciannData?.class || "C05K-A"}
                   </th>
                   <th colSpan="3" className="k4-meta-center">
                     <strong>Marks: Max:</strong> {k4MaxMarks || "25"} &nbsp;&nbsp;
@@ -1494,7 +1465,7 @@ const PrintCiann = () => {
                 <tr>
                   <th colSpan="4" className="k5-meta-left">
                     <div><strong>Academic Year:</strong> {ciannData?.academicYear || "2025 - 2026"}</div>
-                    <div><strong>Course and Code:</strong> {ciannData?.class || "C05K-A"}</div>
+                    <div><strong>Course and Code:</strong> {ciannData?.courseCode || ciannData?.class || "C05K-A"}</div>
                     <div><strong>Marks:</strong> Max: 30&nbsp;&nbsp; Min 00</div>
                   </th>
                   <th colSpan="4" className="k5-meta-right">

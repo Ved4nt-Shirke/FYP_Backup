@@ -111,7 +111,7 @@ const WeekwisePlan = ({
       try {
         const payload = {
           program: ciannData.department?.name || ciannData.department,
-          className: ciannData.class || "",
+          className: ciannData.courseCode || ciannData.class || "",
           course: ciannData.subject?.name || ciannData.subject,
         };
 

@@ -274,8 +274,8 @@ const LabPlanningSheet = () => {
               existingData={
                 Array.isArray(labPlans)
                   ? labPlans.flatMap((lp) =>
-                      lp.plans.map((p) => ({ ...p, weekNo: lp.weekNo })),
-                    )
+                    lp.plans.map((p) => ({ ...p, weekNo: lp.weekNo })),
+                  )
                   : []
               }
               initialWeek={editWeekNo}
@@ -346,45 +346,43 @@ const LabPlanningSheet = () => {
                         {Object.entries(weekData).map(([weekNo, weekPlans]) =>
                           weekPlans.length > 0
                             ? weekPlans.map((p, i) => (
-                                <tr
-                                  key={`${weekNo}-${i}`}
-                                  className={`week-group ${
-                                    i === 0
-                                      ? "first"
-                                      : i === weekPlans.length - 1
-                                        ? "last"
-                                        : ""
+                              <tr
+                                key={`${weekNo}-${i}`}
+                                className={`week-group ${i === 0
+                                    ? "first"
+                                    : i === weekPlans.length - 1
+                                      ? "last"
+                                      : ""
                                   }`}
-                                >
-                                  {i === 0 && (
-                                    <td rowSpan={weekPlans.length}>{weekNo}</td>
-                                  )}
-                                  <td>{p.batch}</td>
-                                  <td>{p.co || ""}</td>
-                                  <td>{p.llo || ""}</td>
-                                  <td>{p.exptNo}</td>
-                                  <td>{p.exptName}</td>
-                                  <td>{p.date}</td>
-                                  <td>{p.actualDate || "--"}</td>
-                                </tr>
-                              ))
+                              >
+                                {i === 0 && (
+                                  <td rowSpan={weekPlans.length}>{weekNo}</td>
+                                )}
+                                <td>{p.batch}</td>
+                                <td>{p.co || ""}</td>
+                                <td>{p.llo || ""}</td>
+                                <td>{p.exptNo}</td>
+                                <td>{p.exptName}</td>
+                                <td>{p.date}</td>
+                                <td>{p.actualDate || "--"}</td>
+                              </tr>
+                            ))
                             : ["B1", "B2", "B3"].map((batch, i) => (
-                                <tr
-                                  key={`${weekNo}-empty-${i}`}
-                                  className={`week-group ${
-                                    i === 0 ? "first" : i === 2 ? "last" : ""
+                              <tr
+                                key={`${weekNo}-empty-${i}`}
+                                className={`week-group ${i === 0 ? "first" : i === 2 ? "last" : ""
                                   }`}
-                                >
-                                  {i === 0 && <td rowSpan={3}>{weekNo}</td>}
-                                  <td>{batch}</td>
-                                  <td></td>
-                                  <td></td>
-                                  <td></td>
-                                  <td></td>
-                                  <td></td>
-                                  <td>--</td>
-                                </tr>
-                              )),
+                              >
+                                {i === 0 && <td rowSpan={3}>{weekNo}</td>}
+                                <td>{batch}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>--</td>
+                              </tr>
+                            )),
                         )}
                       </tbody>
                     )}

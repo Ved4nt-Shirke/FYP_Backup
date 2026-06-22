@@ -116,7 +116,7 @@ const SecondarySidebar = ({
     {
       label: "LLO Details",
       path: "/llo",
-      icon: "bi-flask",
+      icon: "bi-card-checklist",
     },
     { label: "Students List", path: "/student-list", icon: "bi-people" },
     {
@@ -127,7 +127,7 @@ const SecondarySidebar = ({
     {
       label: "Laboratory Plan (LP)",
       path: "/laboratory-plan",
-      icon: "bi-beaker",
+      icon: "bi-clipboard-check",
     },
     {
       label: "Tutorial Planning",
@@ -442,10 +442,10 @@ const SecondarySidebar = ({
               <React.Fragment key={item.label}>
                 <li
                   className={`secondary-nav-item ${!item.subItems &&
-                      (location.pathname === item.path ||
-                        location.pathname.startsWith(`${item.path}/`))
-                      ? "active"
-                      : ""
+                    (location.pathname === item.path ||
+                      location.pathname.startsWith(`${item.path}/`))
+                    ? "active"
+                    : ""
                     }`}
                   onClick={() => {
                     if (item.subItems) {
@@ -476,9 +476,9 @@ const SecondarySidebar = ({
                       <li
                         key={subItem.label}
                         className={`secondary-nav-subitem ${location.pathname === subItem.path ||
-                            location.pathname.startsWith(`${subItem.path}/`)
-                            ? "active"
-                            : ""
+                          location.pathname.startsWith(`${subItem.path}/`)
+                          ? "active"
+                          : ""
                           }`}
                         onClick={() => handleClick(subItem.label)}
                         style={{

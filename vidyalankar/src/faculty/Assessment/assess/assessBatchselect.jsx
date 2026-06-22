@@ -69,7 +69,7 @@ export default function AssessBatchSelect() {
           experiments, // Pass the experiments data
           // Pass subject details for fetching experiments - matching your DB structure
           program: ciannData.department?.name || "Computer Engineering", // Use actual department name
-          className: ciannData.class || ciannData.division || "CO1A", // Use actual class
+          className: ciannData.courseCode || ciannData.class || ciannData.division || "CO1A", // Use actual class
           course: ciannData.subject?.name || "BASIC MATHEMATICS" // Use actual subject name
         },
       });

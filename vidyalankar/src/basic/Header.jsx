@@ -234,6 +234,9 @@ const Header = ({
         const data = await response.json();
         if (data.success && data.profile) {
           setProfile(data.profile);
+          if (data.profile.fullName) {
+            localStorage.setItem("facultyName", data.profile.fullName);
+          }
         }
       }
     } catch (err) {
