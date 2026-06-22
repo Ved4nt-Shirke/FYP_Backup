@@ -272,40 +272,75 @@ function LectureSchedule() {
           background-color: #f44336;
         }
 
-        .title {
+        .sheet-heading {
+          margin-bottom: 20px;
+          border-bottom: 2px solid #000000;
+          padding-bottom: 8px;
+          width: 100%;
+        }
+
+        .sheet-heading h3 {
           margin: 0;
+          font-size: 1.25rem;
           font-weight: 700;
-          font-size: 1.5rem;
-          color: var(--primary-color, #28a745);
+          color: #000000;
+          letter-spacing: 0.5px;
         }
 
-        .table-wrapper {
-          overflow-x: auto;
-          margin-bottom: 30px;
-          border-radius: 8px;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-        }
-
-        .table10 {
-          table-layout: fixed;
+        .msbte-academic-table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 12px;
+          font-size: 11px;
+          border: 2px solid #000000;
+          margin-bottom: 30px;
+        }
+
+        .msbte-academic-table th,
+        .msbte-academic-table td {
+          border: 1px solid #000000;
+          padding: 8px 6px;
           text-align: center;
-        }
-
-        .table10 th,
-        .table10 td {
-          border: 1px solid #dee2e6;
-          padding: 10px 8px;
-          white-space: nowrap;
           vertical-align: middle;
+          white-space: nowrap;
         }
 
-        .table10 thead th {
-          background-color: #f0f2f5;
-          font-weight: 600;
-          color: #495057;
+        .msbte-academic-table th {
+          background-color: #f3f4f6;
+          font-weight: bold;
+          color: #000000;
+        }
+
+        .msbte-academic-table th.vertical-header {
+          min-width: 60px;
+        }
+
+        .msbte-academic-table th.title-header {
+          min-width: 180px;
+        }
+
+        .msbte-academic-table th.category-header {
+          min-width: 70px;
+        }
+
+        .msbte-academic-table th.duration-header {
+          min-width: 60px;
+        }
+
+        .msbte-academic-table td.title-left {
+          text-align: left;
+          padding-left: 8px;
+          font-weight: 500;
+        }
+
+        .msbte-academic-table td.code-bold,
+        .msbte-academic-table td.credits-bold,
+        .msbte-academic-table td.total-bold,
+        .msbte-academic-table td.grand-total-bold {
+          font-weight: bold;
+        }
+
+        .msbte-academic-table td.grand-total-bold {
+          background-color: #f9fafb;
         }
 
         .mentor-container {
@@ -345,12 +380,12 @@ function LectureSchedule() {
         }
 
         @media (max-width: 768px) {
-          .header-row {
+          .sheet-heading {
             flex-direction: column;
             align-items: stretch;
             padding: 15px;
           }
-          .title {
+          .sheet-heading h3 {
             text-align: center;
             margin-bottom: 10px;
           }
@@ -364,8 +399,8 @@ function LectureSchedule() {
       `}</style>
 
       <div className="lecture-page-container">
-        <div className="header-row">
-          <p className="title">3.12 Lecture Schedule</p>
+        <div className="sheet-heading d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+          <h3 className="fw-bold text-dark m-0">IV. TEACHING-LEARNING & ASSESSMENT SCHEME</h3>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <button className="button2" onClick={() => {
               setClusterMentor(submittedClusterMentor || { name: '', designation: '', department: '', contact: '', email: '' });
@@ -400,57 +435,78 @@ function LectureSchedule() {
             Loading teaching-learning schemes...
           </div>
         ) : (
-          <div className="table-wrapper">
-            <table className="table10">
+          <div className="table-responsive">
+            <table className="msbte-academic-table">
               <thead>
+                {/* Row 1 */}
                 <tr>
-                  <th colSpan={3}>Teaching Scheme</th>
-                  <th rowSpan={4} style={{ width: '80px' }}>Credit<br />(L+T+P)</th>
-                  <th rowSpan={4} style={{ width: '80px' }}>Paper<br />Hr</th>
-                  <th colSpan={6}>Theory</th>
-                  <th colSpan={6}>Practical</th>
+                  <th rowSpan="4" className="vertical-header">Course Code</th>
+                  <th rowSpan="4" className="title-header">Course Title</th>
+                  <th rowSpan="4">Abbr</th>
+                  <th rowSpan="4" className="category-header">Course Category/s</th>
+                  <th colSpan="5">Learning Scheme</th>
+                  <th rowSpan="4">Credits</th>
+                  <th rowSpan="4" className="duration-header">Paper Duration</th>
+                  <th colSpan="11">Assessment Scheme</th>
                 </tr>
+                {/* Row 2 */}
                 <tr>
-                  <th rowSpan={3} style={{ width: '50px' }}>L</th>
-                  <th rowSpan={3} style={{ width: '50px' }}>T</th>
-                  <th rowSpan={3} style={{ width: '50px' }}>P</th>
-                  <th colSpan={2}>ESE (SA)</th>
-                  <th colSpan={2}>PA (FA)</th>
-                  <th colSpan={2}>Total</th>
-                  <th colSpan={2}>ESE (SA)</th>
-                  <th colSpan={2}>PA (FA)</th>
-                  <th colSpan={2}>Total</th>
+                  <th colSpan="3">Actual Contact Hrs./Week</th>
+                  <th rowSpan="3">SLH</th>
+                  <th rowSpan="3">NLH</th>
+                  <th colSpan="4">Theory</th>
+                  <th colSpan="4">Based on LL & TL Practical</th>
+                  <th colSpan="2">Based on SL SLA</th>
+                  <th rowSpan="3">Total Marks</th>
                 </tr>
+                {/* Row 3 */}
                 <tr>
-                  <th>Max</th><th>Min</th>
-                  <th>Max</th><th>Min</th>
-                  <th>Max</th><th>Min</th>
-                  <th>Max</th><th>Min</th>
-                  <th>Max</th><th>Min</th>
-                  <th>Max</th><th>Min</th>
+                  <th rowSpan="2">CL</th>
+                  <th rowSpan="2">TL</th>
+                  <th rowSpan="2">LL</th>
+                  <th rowSpan="2">FA-TH</th>
+                  <th rowSpan="2">SA-TH</th>
+                  <th colSpan="2">Total</th>
+                  <th colSpan="2">FA-PR</th>
+                  <th colSpan="2">SA-PR</th>
+                  <th colSpan="2">SLA</th>
+                </tr>
+                {/* Row 4 */}
+                <tr>
+                  <th>Max</th>
+                  <th>Min</th>
+                  <th>Max</th>
+                  <th>Min</th>
+                  <th>Max</th>
+                  <th>Min</th>
+                  <th>Max</th>
+                  <th>Min</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
+                  <td className="code-bold">{adminDetails?.courseCode || "-"}</td>
+                  <td className="title-left">{adminDetails?.courseTitle || "-"}</td>
+                  <td>{adminDetails?.abbreviation || "-"}</td>
+                  <td>{adminDetails?.courseCategory || "-"}</td>
                   <td>{adminDetails?.learningScheme?.cl || "-"}</td>
                   <td>{adminDetails?.learningScheme?.tl || "-"}</td>
                   <td>{adminDetails?.learningScheme?.ll || "-"}</td>
-                  <td><strong>{adminDetails?.credits || "0"}</strong></td>
+                  <td>{adminDetails?.learningScheme?.slh || "-"}</td>
+                  <td>{adminDetails?.learningScheme?.nlh || "-"}</td>
+                  <td className="credits-bold">{adminDetails?.credits || "0"}</td>
                   <td>{adminDetails?.paperDuration || "-"}</td>
-                  {/* Theory Assessment ESE/PA/Total */}
-                  <td>{adminDetails?.assessmentScheme?.theory?.saThMax || "-"}</td>
-                  <td>{adminDetails?.assessmentScheme?.theory?.min || "-"}</td>
                   <td>{adminDetails?.assessmentScheme?.theory?.faThMax || "-"}</td>
-                  <td>-</td>
-                  <td>{adminDetails?.assessmentScheme?.theory?.total || "-"}</td>
+                  <td>{adminDetails?.assessmentScheme?.theory?.saThMax || "-"}</td>
+                  <td className="total-bold">{adminDetails?.assessmentScheme?.theory?.total || "-"}</td>
                   <td>{adminDetails?.assessmentScheme?.theory?.min || "-"}</td>
-                  {/* Practical Assessment ESE/PA/Total */}
-                  <td>{pracEseMax}</td>
-                  <td>{pracEseMin}</td>
-                  <td>{pracPaMax}</td>
-                  <td>{pracPaMin}</td>
-                  <td>{pracTotalMax}</td>
-                  <td>{pracTotalMin}</td>
+                  <td>{adminDetails?.assessmentScheme?.practical?.faPrMax || "-"}</td>
+                  <td>{adminDetails?.assessmentScheme?.practical?.faPrMin || "-"}</td>
+                  <td>{adminDetails?.assessmentScheme?.practical?.saPrMax || "-"}</td>
+                  <td>{adminDetails?.assessmentScheme?.practical?.saPrMin || "-"}</td>
+                  <td>{adminDetails?.assessmentScheme?.sla?.max || "-"}</td>
+                  <td>{adminDetails?.assessmentScheme?.sla?.min || "-"}</td>
+                  <td className="grand-total-bold">{adminDetails?.assessmentScheme?.totalMarks || "-"}</td>
                 </tr>
               </tbody>
             </table>

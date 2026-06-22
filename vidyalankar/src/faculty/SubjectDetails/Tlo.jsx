@@ -458,6 +458,7 @@ export default function Tlo() {
                           {courseOutcomes.map((co) => {
                             const mapping = coMappings[co.coNumber] || { tlos: [] };
                             const nonEmpties = mapping.tlos.filter(Boolean);
+                            const coNum = co.coNumber.replace(/\D/g, "") || "1";
 
                             return (
                               <tr key={co.coNumber}>
@@ -469,13 +470,13 @@ export default function Tlo() {
                                   {nonEmpties.length === 0 ? (
                                     <span className="text-muted italic small">No TLOs mapped yet</span>
                                   ) : (
-                                    <ul className="mb-0 ps-3">
+                                    <div className="d-flex flex-column gap-1">
                                       {nonEmpties.map((t, idx) => (
-                                        <li key={idx} className="small text-dark fw-semibold mb-1">
-                                          {t}
-                                        </li>
+                                        <div key={idx} className="small text-dark fw-semibold">
+                                          {coNum}.{idx + 1} {t}
+                                        </div>
                                       ))}
-                                    </ul>
+                                    </div>
                                   )}
                                 </td>
                               </tr>
