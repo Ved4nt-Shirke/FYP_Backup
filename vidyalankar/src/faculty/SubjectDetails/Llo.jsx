@@ -274,28 +274,11 @@ export default function Llo() {
         <div className="student-main-content">
           <div className="container-fluid py-4 px-md-4">
             {/* Header / Title */}
-            <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-              <div>
-                <h2 className="fw-bold text-dark mb-1">Lab Learning Outcomes (LLO)</h2>
-                <p className="text-secondary mb-0">
-                  Select a Course Outcome (CO) from Admin Subject Course Details and define its corresponding Lab Learning Outcomes.
-                </p>
-              </div>
-              <div>
-                <button
-                  onClick={handleSave}
-                  disabled={saving || loading || !ciannData}
-                  className="btn btn-info rounded-pill px-4 fw-bold text-white shadow-sm"
-                >
-                  {saving ? (
-                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                  ) : (
-                    <>
-                      <i className="bi bi-cloud-arrow-up-fill me-2"></i> Save LLO Details
-                    </>
-                  )}
-                </button>
-              </div>
+            <div className="mb-4">
+              <h2 className="fw-bold text-dark mb-1">Lab Learning Outcomes (LLO)</h2>
+              <p className="text-secondary mb-0">
+                Select a Course Outcome (CO) from Admin Subject Course Details and define its corresponding Lab Learning Outcomes.
+              </p>
             </div>
 
             {/* Alerts */}
@@ -306,12 +289,7 @@ export default function Llo() {
               </div>
             )}
 
-            {success && (
-              <div className="alert alert-success border-0 rounded-3 shadow-sm d-flex align-items-center gap-2 mb-4">
-                <i className="bi bi-check-circle-fill text-success fs-5"></i>
-                <span>{success}</span>
-              </div>
-            )}
+
 
             {loading ? (
               <div className="text-center py-5 bg-white rounded-3 shadow-sm my-4">
@@ -413,8 +391,28 @@ export default function Llo() {
 
                           <div className="outcome-inputs-list" style={{ minHeight: "150px" }}>
                             {activeLlos.map((llo, idx) => (
-                              <div key={idx} className="input-group mb-2 shadow-sm rounded-3 overflow-hidden">
-                                <span className="input-group-text border-0 bg-light text-secondary small fw-semibold">
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                  marginBottom: "10px",
+                                  background: "#f8f9fa",
+                                  borderRadius: "10px",
+                                  padding: "10px 14px",
+                                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    minWidth: "52px",
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                    color: "#6c757d",
+                                    flexShrink: 0,
+                                  }}
+                                >
                                   LLO {idx + 1}
                                 </span>
                                 <input
@@ -422,13 +420,32 @@ export default function Llo() {
                                   value={llo}
                                   onChange={(e) => handleLloFieldChange(idx, e.target.value)}
                                   placeholder="Describe laboratory outcome..."
-                                  className="form-control border-0 px-3 bg-light text-dark"
+                                  style={{
+                                    flex: 1,
+                                    border: "none",
+                                    background: "transparent",
+                                    outline: "none",
+                                    fontSize: "14px",
+                                    color: "#212529",
+                                    padding: "2px 0",
+                                  }}
                                 />
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveLloField(idx)}
-                                  className="btn btn-outline-danger border-0 bg-light"
-                                  title="Delete Field"
+                                  title="Delete LLO"
+                                  style={{
+                                    flexShrink: 0,
+                                    background: "none",
+                                    border: "none",
+                                    color: "#dc3545",
+                                    cursor: "pointer",
+                                    fontSize: "1.15rem",
+                                    lineHeight: 1,
+                                    padding: "0 2px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
                                 >
                                   <i className="bi bi-dash-circle-fill"></i>
                                 </button>
@@ -436,6 +453,28 @@ export default function Llo() {
                             ))}
                           </div>
                         </div>
+                      </div>
+
+                      {/* Save Button Footer */}
+                      <div className="border-top pt-3 mt-2 d-flex align-items-center justify-content-end gap-3">
+                        {success && (
+                          <span className="text-success fw-semibold d-flex align-items-center gap-1">
+                            <i className="bi bi-check-circle-fill"></i> Saved successfully!
+                          </span>
+                        )}
+                        <button
+                          onClick={handleSave}
+                          disabled={saving || loading || !ciannData}
+                          className="btn btn-info rounded-pill px-4 fw-bold text-white shadow-sm"
+                        >
+                          {saving ? (
+                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          ) : (
+                            <>
+                              <i className="bi bi-cloud-arrow-up-fill me-2"></i> Save LLO Details
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
