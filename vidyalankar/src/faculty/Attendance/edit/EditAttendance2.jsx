@@ -15,7 +15,7 @@ const EditAttendance2 = ({ onAttendanceUpdated }) => {
   useEffect(() => {
     const fetchValidCiannIds = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/cianns");
+        const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns`);
         if (!response.ok) throw new Error("Failed to fetch CIANN IDs");
         const cianns = await response.json();
         setValidCiannIds(cianns.map((ciann) => ciann.ciannId));
@@ -49,7 +49,7 @@ const EditAttendance2 = ({ onAttendanceUpdated }) => {
       setIsLoading(true);
       setError(null);
       try {
-        const url = `http://localhost:5000/api/theory-attendance?ciannId=${selectedCiannId}`;
+        const url = `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/theory-attendance?ciannId=${selectedCiannId}`;
         const response = await fetch(url);
 
         if (!response.ok) {

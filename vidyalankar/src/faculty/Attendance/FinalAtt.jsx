@@ -44,7 +44,7 @@ const FinalAttendance = () => {
     }
 
     axios
-      .get("http://localhost:5000/api/students", { params })
+      .get(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`, { params })
       .then((res) => {
         const data = Array.isArray(res.data) ? res.data : [];
         setStudents(data);
@@ -110,7 +110,7 @@ const FinalAttendance = () => {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/theory-attendance",
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/theory-attendance`,
         attendanceData,
       );
       alert("Attendance submitted successfully!");

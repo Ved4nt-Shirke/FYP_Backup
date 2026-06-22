@@ -7,8 +7,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   
   // Extract base URL without /api suffix for proxy target
-  const apiBaseUrl = env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-  const proxyTarget = apiBaseUrl.replace('/api', '')
+  const apiBaseUrl = env.VITE_API_BASE_URL || 'http://localhost:5000'
+  // Safely strip a trailing /api — avoids clobbering domains that contain "api"
+  const proxyTarget = apiBaseUrl.endsWith('/api')
+    ? apiBaseUrl.slice(0, -4)
+    : apiBaseUrl
   
   return {
     plugins: [react()],

@@ -25,7 +25,7 @@ const EditIndividualPracticalAttendance = () => {
     const fetchStudents = async () => {
       try {
         // Fetch all students from the database
-        const response = await axios.get("http://localhost:5000/api/students");
+        const response = await axios.get(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`);
         setStudents(response.data);
 
         // Initialize attendance state - for new practical attendance, all students start as absent
@@ -78,7 +78,7 @@ const EditIndividualPracticalAttendance = () => {
       };
 
       // Save to practical attendance API
-      await axios.post("http://localhost:5000/api/practical-attendance", attendanceData);
+      await axios.post(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/practical-attendance`, attendanceData);
 
       showSuccessAlert("Practical attendance saved successfully!");
       navigate("/edit-practical-attendance2", { state: { selectedCiannId: ciannId } });

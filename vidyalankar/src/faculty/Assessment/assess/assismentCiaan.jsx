@@ -15,12 +15,12 @@ const AssismentCiaanCards = () => {
     const fetchData = async () => {
       try {
         // Fetch CIANNs
-        const ciannRes = await fetch("http://localhost:5000/api/cianns");
+        const ciannRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns`);
         const ciannData = await ciannRes.json();
         setCiannDataList(ciannData);
 
         // Fetch available batches for assessment
-        const batchesRes = await fetch("http://localhost:5000/api/assessments/batches");
+        const batchesRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches`);
         const batchesData = await batchesRes.json();
         if (batchesData.success) {
           setAvailableBatches(batchesData.batches);
@@ -39,7 +39,7 @@ const AssismentCiaanCards = () => {
     setLoadingExperiments(true);
     try {
       // Fetch experiments for this CIAAN's subject
-      const experimentsRes = await fetch("http://localhost:5000/api/assessments/get-experiments", {
+      const experimentsRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

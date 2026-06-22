@@ -22,7 +22,7 @@ const PracticalEdit = () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:5000/api/lab-planning/${ciannData.ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/lab-planning/${ciannData.ciannId}`,
         );
         if (res.status === 404) {
           setLabPlans([]);

@@ -14,12 +14,12 @@ const EditCard = () => {
     const fetchData = async () => {
       try {
         // Fetch CIANNs
-        const ciannRes = await fetch("http://localhost:5000/api/cianns");
+        const ciannRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns`);
         const ciannData = await ciannRes.json();
         setCiannDataList(ciannData);
 
         // Fetch available batches for assessment editing
-        const batchesRes = await fetch("http://localhost:5000/api/assessments/batches");
+        const batchesRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches`);
         const batchesData = await batchesRes.json();
         if (batchesData.success) {
           setAvailableBatches(batchesData.batches);

@@ -23,7 +23,7 @@ const TheoryAt = () => {
       try {
         const ciannId = selectedCiann.ciannId;
         const planRes = await fetch(
-          `http://localhost:5000/api/teaching-plan/${ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/teaching-plan/${ciannId}`,
         );
 
         if (planRes.status === 404) {
@@ -38,7 +38,7 @@ const TheoryAt = () => {
         }
 
         const attRes = await fetch(
-          `http://localhost:5000/api/theory-attendance?ciannId=${ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/theory-attendance?ciannId=${ciannId}`,
         );
 
         if (attRes.status === 404) {

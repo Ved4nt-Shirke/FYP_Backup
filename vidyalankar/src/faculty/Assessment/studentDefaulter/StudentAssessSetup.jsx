@@ -19,7 +19,7 @@ export default function StudentAssessSetup() {
     const fetchBatches = async () => {
       try {
         setLoadingBatches(true);
-        const res = await fetch('http://localhost:5000/api/assessments/batches');
+        const res = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches`);
         const data = await res.json();
         if (data.success) {
           setBatches(data.batches || []);
@@ -45,7 +45,7 @@ export default function StudentAssessSetup() {
     try {
       setLoadingStudents(true);
       setError('');
-      const res = await fetch(`http://localhost:5000/api/assessments/students-by-batch?batch=${encodeURIComponent(batch)}`);
+      const res = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/students-by-batch?batch=${encodeURIComponent(batch)}`);
       const data = await res.json();
       if (data.success) {
         setStudents(data.students || []);

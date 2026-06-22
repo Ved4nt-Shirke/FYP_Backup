@@ -155,7 +155,7 @@ export default function StudentWiseAssess() {
             for (const crs of courseCandidates) {
               try {
                 const params = new URLSearchParams({ program: prog, className: cls, course: crs });
-                const expRes = await fetch(`http://localhost:5000/api/assessments/get-experiments?${params.toString()}`);
+                const expRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments?${params.toString()}`);
                 const expData = await expRes.json();
                 if (expRes.ok && expData?.success && Array.isArray(expData.experiments) && expData.experiments.length > 0) {
                   allExperiments = expData.experiments;
@@ -176,7 +176,7 @@ export default function StudentWiseAssess() {
             if (!prog) continue; // backend requires program
             try {
               const params = new URLSearchParams({ program: prog, course: subjectInfo.course });
-              const expRes = await fetch(`http://localhost:5000/api/assessments/get-experiments?${params.toString()}`);
+              const expRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments?${params.toString()}`);
               const expData = await expRes.json();
               if (expRes.ok && expData?.success && Array.isArray(expData.experiments) && expData.experiments.length > 0) {
                 allExperiments = expData.experiments;
@@ -200,7 +200,7 @@ export default function StudentWiseAssess() {
         // Fetch student assessment history (best-effort)
         if (studentName) {
           try {
-            const histRes = await fetch(`http://localhost:5000/api/assessments/student-history/${encodeURIComponent(studentName)}`);
+            const histRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/student-history/${encodeURIComponent(studentName)}`);
             const histData = await histRes.json();
             const existing = histData?.assessments || [];
 
@@ -299,7 +299,7 @@ export default function StudentWiseAssess() {
           ciannId: ciannData?.ciannId,
         };
 
-        const res = await fetch('http://localhost:5000/api/assessments/save-marks', {
+        const res = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/save-marks`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),

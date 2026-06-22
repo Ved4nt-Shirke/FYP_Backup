@@ -82,7 +82,7 @@ const EditIndividualAttendance = () => {
       };
 
       // ✅ FIX: Corrected the URL to use a hyphen.
-      const url = `http://localhost:5000/api/theory-attendance/${formData._id}`;
+      const url = `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/theory-attendance/${formData._id}`;
       console.log(
         "Sending PUT request to:",
         url,

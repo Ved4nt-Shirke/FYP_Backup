@@ -35,7 +35,7 @@ export default function ViewAssessedStudentList() {
       setError(null);
 
       // Fetch assessed students data
-      const response = await fetch(`http://localhost:5000/api/assessments/view-assessed/${experiment.id}?batch=${batch}`);
+      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/view-assessed/${experiment.id}?batch=${batch}`);
       const data = await response.json();
 
       if (!response.ok) {

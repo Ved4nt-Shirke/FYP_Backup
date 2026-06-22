@@ -24,7 +24,7 @@ const ViewExtraPractical3 = () => {
     const fetchBatchAttendanceData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/view-extra-practical/${ciannId}/${batch}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/view-extra-practical/${ciannId}/${batch}`,
         );
         setBatchAttendanceData(response.data);
       } catch (err) {

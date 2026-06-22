@@ -24,7 +24,7 @@ export default function AssessBatchSelect() {
     const fetchBatches = async () => {
       if (availableBatches.length === 0) {
         try {
-          const response = await fetch("http://localhost:5000/api/assessments/batches");
+          const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches`);
           const data = await response.json();
           if (data.success && data.batches && data.batches.length > 0) {
             setDynamicBatches(data.batches);

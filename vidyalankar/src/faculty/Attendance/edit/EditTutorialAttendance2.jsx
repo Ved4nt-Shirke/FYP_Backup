@@ -27,7 +27,7 @@ const EditTutorialAttendance2 = () => {
           selectedCiannId,
         );
         const response = await axios.get(
-          `http://localhost:5000/api/tutorial-attendance?ciannId=${selectedCiannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/tutorial-attendance?ciannId=${selectedCiannId}`,
         );
         console.log("Tutorial attendance response:", response.data);
         setTutorialRecords(response.data);

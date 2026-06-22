@@ -26,7 +26,7 @@ const StudentAttendance = () => {
 
         // Fetch the attendance record with CIANN data
         const attendanceResponse = await fetch(
-          `http://localhost:5000/api/extra-attendance/${id}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/extra-attendance/${id}`,
         );
         if (!attendanceResponse.ok) {
           throw new Error("Failed to fetch attendance record");
@@ -40,7 +40,7 @@ const StudentAttendance = () => {
           // Try to get CIANN data to filter by division
           try {
             const ciannResponse = await fetch(
-              `http://localhost:5000/api/cianns`,
+              `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns`,
             );
             if (ciannResponse.ok) {
               const cianns = await ciannResponse.json();
@@ -60,7 +60,7 @@ const StudentAttendance = () => {
         }
 
         const studentsResponse = await fetch(
-          `http://localhost:5000/api/students?${params.toString()}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students?${params.toString()}`,
         );
         if (!studentsResponse.ok) {
           throw new Error("Failed to fetch students");
@@ -105,7 +105,7 @@ const StudentAttendance = () => {
     try {
       // Update individual student attendance in database
       const response = await fetch(
-        `http://localhost:5000/api/extra-attendance/${id}/mark`,
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/extra-attendance/${id}/mark`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -183,7 +183,7 @@ const StudentAttendance = () => {
 
         try {
           const response = await fetch(
-            `http://localhost:5000/api/extra-attendance/${id}/mark`,
+            `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/extra-attendance/${id}/mark`,
             {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },

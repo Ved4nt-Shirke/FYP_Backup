@@ -54,7 +54,7 @@ export default function AssessPAStudentlist() {
       if (isEditMode && experiment) {
         // In edit mode, fetch existing assessment data
         const response = await fetch(
-          `http://localhost:5000/api/assessments/edit-data/${experiment.id}?batch=${batch}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}`,
         );
         const data = await response.json();
 
@@ -74,7 +74,7 @@ export default function AssessPAStudentlist() {
         try {
           // First try the regular students endpoint - filter by both batch and division from CIANN
           const division = ciannData?.division || "";
-          const url = `http://localhost:5000/api/students?batch=${encodeURIComponent(batch)}&division=${encodeURIComponent(division)}`;
+          const url = `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students?batch=${encodeURIComponent(batch)}&division=${encodeURIComponent(division)}`;
           console.log("Fetching students from:", url);
           console.log("Applied filters - Batch:", batch, "Division:", division);
 
@@ -105,7 +105,7 @@ export default function AssessPAStudentlist() {
           // Fallback to assessment-specific students endpoint
           try {
             const division = ciannData?.division || "";
-            const fallbackUrl = `http://localhost:5000/api/assessments/students-by-batch?batch=${encodeURIComponent(batch)}&division=${encodeURIComponent(division)}`;
+            const fallbackUrl = `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/students-by-batch?batch=${encodeURIComponent(batch)}&division=${encodeURIComponent(division)}`;
             console.log("Trying fallback URL:", fallbackUrl);
 
             const fallbackResponse = await fetch(fallbackUrl);
@@ -227,7 +227,7 @@ export default function AssessPAStudentlist() {
       console.log("Experiment ID type:", typeof experiment?.id);
 
       const response = await fetch(
-        "http://localhost:5000/api/assessments/save-marks",
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/save-marks`,
         {
           method: "POST",
           headers: {
