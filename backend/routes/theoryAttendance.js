@@ -35,9 +35,6 @@ router.get('/', async (req, res) => {
       return res.status(404).json({ error: 'No CIAAN found for the provided ID' });
     }
     const records = await TheoryAttendance.find({ ciannId });
-    if (records.length === 0) {
-      return res.status(404).json({ message: 'No attendance records found for this CIAAN ID' });
-    }
     res.json(records);
   } catch (err) {
     console.error('Error fetching attendance:', err);
