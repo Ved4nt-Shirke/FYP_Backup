@@ -53,14 +53,9 @@ const Header = ({
   const handleLogout = () => {
     const confirmLogout = window.confirm("Are you sure you want to logout?");
     if (confirmLogout) {
-      localStorage.removeItem("username");
-      localStorage.removeItem("token");
-      // Close dropdown before navigating
-      setShowUserDropdown(false);
-      // Small delay to ensure state update before navigation
-      setTimeout(() => {
-        navigate("/login");
-      }, 100);
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "/login";
     }
   };
 
@@ -322,6 +317,68 @@ const Header = ({
 
   // Test dropdown state
   const [showTestDropdown, setShowTestDropdown] = useState(false);
+  const [activeYear, setActiveYear] = useState(null);
+  const [academicYears, setAcademicYears] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(localStorage.getItem("selectedAcademicYear") && localStorage.getItem("selectedAcademicYear") !== "all" ? localStorage.getItem("selectedAcademicYear") : "");
+
+  useEffect(() => {
+    const fetchYears = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const activeRes = await fetch(config.academicYear.current, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        let currentYearName = "";
+        if (activeRes.ok) {
+          const activeData = await activeRes.json();
+          if (activeData.success && activeData.academicYear) {
+            setActiveYear(activeData.academicYear);
+            currentYearName = activeData.academicYear.yearName;
+          }
+        }
+
+        const yearsRes = await fetch(config.academicYear.all, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        let yearsList = [];
+        if (yearsRes.ok) {
+          const yearsData = await yearsRes.json();
+          if (yearsData.success) {
+            setAcademicYears(yearsData.academicYears || []);
+            yearsList = yearsData.academicYears || [];
+          }
+        }
+
+        // Initialize selectedYear in localStorage/state if not already present or if it's "all"
+        const savedYear = localStorage.getItem("selectedAcademicYear");
+        if (!savedYear || savedYear === "all") {
+          const defaultYear = currentYearName || (yearsList.length > 0 ? yearsList[0].yearName : "");
+          if (defaultYear) {
+            setSelectedYear(defaultYear);
+            localStorage.setItem("selectedAcademicYear", defaultYear);
+            window.dispatchEvent(new CustomEvent("academicYearChanged", { detail: defaultYear }));
+          }
+        } else {
+          setSelectedYear(savedYear);
+        }
+      } catch (err) {
+        console.error("Error fetching academic year data in Header:", err);
+      }
+    };
+    fetchYears();
+  }, []);
+
+  const handleYearChange = (e) => {
+    const newYear = e.target.value;
+    setSelectedYear(newYear);
+    localStorage.setItem("selectedAcademicYear", newYear);
+    window.dispatchEvent(new CustomEvent("academicYearChanged", { detail: newYear }));
+  };
 
   return (
     <div
@@ -437,6 +494,22 @@ const Header = ({
       )}
       <div className="header-right">
         {isFaculty && (
+          <div className="header-year-select-container">
+            <span>Academic Year:</span>
+            <select
+              className="header-year-select"
+              value={selectedYear}
+              onChange={handleYearChange}
+            >
+              {academicYears.map((year) => (
+                <option key={year._id} value={year.yearName}>
+                  AY: {year.yearName} ({year.scheme}) {year.status === "active" ? " (Active)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {isFaculty && (
           <button
             className="ciann-request-bell"
             title="Messages"
@@ -463,12 +536,6 @@ const Header = ({
                 {pendingCiannRequests}
               </span>
             )}
-          </button>
-        )}
-        {isFaculty && (
-          <button className="faculty-logout-button" onClick={handleLogout}>
-            <i className="bi bi-box-arrow-right"></i>
-            <span>Logout</span>
           </button>
         )}
         <div className="user-section" ref={userDropdownRef}>

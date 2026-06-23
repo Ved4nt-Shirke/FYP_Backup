@@ -25,8 +25,8 @@ export default function StudentWiseSelect() {
 
         const query = params.toString();
         const url = query
-          ? `http://localhost:5000/api/assessments/batches?${query}`
-          : 'http://localhost:5000/api/assessments/batches';
+          ? `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches?${query}`
+          : `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches`;
 
         const res = await fetch(url);
         const data = await res.json();
@@ -50,7 +50,7 @@ export default function StudentWiseSelect() {
       if (ciannData?.ciannId) params.append('ciannId', ciannData.ciannId);
       if (ciannData?.division) params.append('division', ciannData.division);
 
-      const res = await fetch(`http://localhost:5000/api/assessments/students-by-batch?${params.toString()}`);
+      const res = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/students-by-batch?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
         setStudents(data.students || []);

@@ -28,7 +28,7 @@ const EditExistingPracticalAttendance = () => {
     const fetchStudents = async () => {
       try {
         // Fetch all students from the database
-        const response = await axios.get("http://localhost:5000/api/students");
+        const response = await axios.get(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`);
         setStudents(response.data);
 
         // Initialize attendance state with existing data
@@ -82,7 +82,7 @@ const EditExistingPracticalAttendance = () => {
 
       // Update the record in the database
       await axios.put(
-        `http://localhost:5000/api/practical-attendance/${attendanceRecord._id}`,
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/practical-attendance/${attendanceRecord._id}`,
         updatedRecord
       );
 

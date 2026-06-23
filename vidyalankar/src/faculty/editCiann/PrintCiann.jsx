@@ -851,21 +851,15 @@ const PrintCiann = () => {
   return (
     <div className="ciann-print-page">
       <div className="ciann-print-toolbar no-print">
-        <div className="toolbar-left">
-          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#1e293b" }}>CIANN Document Preview</h2>
-        </div>
-        <div className="toolbar-right" style={{ display: "flex", gap: "10px" }}>
-          <button
-            className="btn btn-outline-secondary"
-            onClick={() => window.history.back()}
-            style={{ fontWeight: "600", borderRadius: "8px" }}
-          >
-            Go Back
-          </button>
-          <button className="btn btn-success" onClick={printNow} style={{ fontWeight: "600", borderRadius: "8px", padding: "10px 24px" }}>
-            Print
-          </button>
-        </div>
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => window.history.back()}
+        >
+          Go back
+        </button>
+        <button className="btn btn-success" onClick={printNow}>
+          Print
+        </button>
       </div>
 
       <div className="ciann-print-sheet">

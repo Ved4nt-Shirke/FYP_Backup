@@ -1,35 +1,24 @@
 .ciann-print-page {
-  height: 100vh;
-  overflow-y: auto;
+  min-height: 100vh;
   background: #f4f6fb;
-  padding: 24px;
-  box-sizing: border-box;
-  scroll-behavior: smooth;
+  padding: 20px;
 }
 
 .ciann-print-toolbar {
-  max-width: 1120px;
-  margin: 0 auto 20px;
+  max-width: 1000px;
+  margin: 0 auto 16px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  padding: 14px 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(229, 231, 235, 0.5);
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .ciann-print-sheet {
   background: #ffffff;
   color: #111827;
   max-width: 1120px;
-  margin: 0 auto 40px;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #d1d5db;
 }
 
 .print-block {
@@ -249,6 +238,31 @@
   font-size: 11px;
 }
 
+.tp-table th:nth-child(1),
+.tp-table td:nth-child(1) {
+  width: 12% !important;
+}
+.tp-table th:nth-child(2),
+.tp-table td:nth-child(2) {
+  width: 25% !important;
+}
+.tp-table th:nth-child(3),
+.tp-table td:nth-child(3) {
+  width: 30% !important;
+}
+.tp-table th:nth-child(4),
+.tp-table td:nth-child(4) {
+  width: 8% !important;
+}
+.tp-table th:nth-child(5),
+.tp-table td:nth-child(5) {
+  width: 12% !important;
+}
+.tp-table th:nth-child(6),
+.tp-table td:nth-child(6) {
+  width: 13% !important;
+}
+
 .entry-no-cell {
   font-size: 14px;
   font-weight: 700;
@@ -300,8 +314,6 @@
   .ciann-print-page {
     padding: 0;
     background: #fff;
-    height: auto !important;
-    overflow: visible !important;
   }
 
   .ciann-print-sheet {

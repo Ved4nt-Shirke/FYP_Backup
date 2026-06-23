@@ -70,19 +70,19 @@ const Defaulter = () => {
 
       try {
         const studentsRes = await fetchApi(
-          "http://localhost:5000/api/students",
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`,
         );
         const theoryRes = await fetchApi(
-          `http://localhost:5000/api/theory-attendance?ciannId=${ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/theory-attendance?ciannId=${ciannId}`,
         );
         const practicalRes = await fetchApi(
-          `http://localhost:5000/api/practical-attendance?ciannId=${ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/practical-attendance?ciannId=${ciannId}`,
         );
         const extraTheoryRes = await fetchApi(
-          `http://localhost:5000/api/extra-attendance/ciann/${ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/extra-attendance/ciann/${ciannId}`,
         );
         const extraPractRes = await fetchApi(
-          `http://localhost:5000/api/extra-pract?ciannId=${ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/extra-pract?ciannId=${ciannId}`,
         );
 
         const normalizeBatchKey = (val) => {

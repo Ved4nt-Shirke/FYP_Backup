@@ -86,6 +86,13 @@ const AdminDashboard = () => {
       description: "Create and manage courses, divisions, and subjects",
       available: true,
     },
+    {
+      label: "Academic Year",
+      icon: "bi-calendar-range",
+      path: "/admin/academic-year",
+      description: "Manage academic years, schemes, and track CIANN progress",
+      available: true,
+    },
   ];
 
   const handleCardClick = (card) => {

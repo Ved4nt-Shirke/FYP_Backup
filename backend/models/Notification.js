@@ -14,12 +14,20 @@ const NotificationSchema = new mongoose.Schema(
     },
     ciannId: {
       type: Number,
-      required: true,
+      required: false,
     },
     type: {
       type: String,
       required: true,
-      enum: ["access_request", "access_approved", "access_rejected", "ciann_updated", "comment_added"],
+      enum: [
+        "access_request",
+        "access_approved",
+        "access_rejected",
+        "ciann_updated",
+        "comment_added",
+        "academic_year_activated",
+        "academic_year_completed"
+      ],
     },
     message: {
       type: String,

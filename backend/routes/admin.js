@@ -95,18 +95,11 @@ router.post(
         });
       }
 
-      // Strip prefixes like Dr., Prof., Mr., etc. for username generation
-      const cleanedNameForUsername = fullName
-        .replace(/^(dr|mr|mrs|ms|prof)\b\.?\s*/i, "")
-        .trim();
-
       // Generate base username from full name (e.g., "Shlok Lokhande" -> "shlok.lokhande")
-      const baseUsername = cleanedNameForUsername
+      const baseUsername = fullName
         .toLowerCase()
         .replace(/\s+/g, ".") // Replace spaces with dots
-        .replace(/[^a-z0-9.]/g, "") // Remove special characters
-        .replace(/\.{2,}/g, ".") // Collapse consecutive dots
-        .replace(/^\.+|\.+$/g, ""); // Remove leading/trailing dots
+        .replace(/[^a-z0-9.]/g, ""); // Remove special characters
 
       generatedUsername = baseUsername;
 

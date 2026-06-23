@@ -45,7 +45,7 @@ const PracticalAttendanceForm = ({
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/lab-planning/${ciannId}/${weekNo}/${batch}/${exptNo}`,
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/lab-planning/${ciannId}/${weekNo}/${batch}/${exptNo}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

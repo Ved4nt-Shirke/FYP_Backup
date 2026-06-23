@@ -26,7 +26,7 @@ const ViewT2 = () => {
     const fetchAndProcessData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/tutorial-attendance`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/tutorial-attendance`,
           { params: { ciannId } },
         );
         const records = response.data;

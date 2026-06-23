@@ -12,7 +12,7 @@ const ViewAssessmentCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ciannRes = await fetch("http://localhost:5000/api/cianns");
+        const ciannRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns`);
         const ciannData = await ciannRes.json();
         setCiannDataList(ciannData);
       } catch (err) {

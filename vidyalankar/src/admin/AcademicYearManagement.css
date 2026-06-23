@@ -1,0 +1,573 @@
+@import "./AdminTheme.css";
+
+.academic-year-management {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-bottom: var(--admin-space-2xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-xl);
+}
+
+/* Page Header Custom Layout */
+.academic-year-management .page-header {
+  background: linear-gradient(135deg, var(--admin-bg-card) 0%, var(--admin-bg-secondary) 100%);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-space-xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--admin-shadow-sm);
+  flex-wrap: wrap;
+  gap: var(--admin-space-lg);
+}
+
+.academic-year-management .page-header h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--admin-primary) 0%, #4f46e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 0 var(--admin-space-xs) 0;
+}
+
+.academic-year-management .page-header p {
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-text-sm);
+  margin: 0;
+}
+
+.ay-header-actions {
+  display: flex;
+  gap: var(--admin-space-md);
+}
+
+.ay-header-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: var(--admin-font-semibold);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+  transition: all 0.2s ease;
+}
+
+.ay-header-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.35);
+}
+
+/* Active Year Hero Card */
+.active-year-hero {
+  background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+  border-radius: var(--admin-radius-lg);
+  color: #ffffff;
+  padding: var(--admin-space-2xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--admin-shadow-xl), 0 10px 20px -5px rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.active-year-hero:hover {
+  transform: translateY(-2px);
+}
+
+.active-year-hero::after {
+  content: "";
+  position: absolute;
+  right: -50px;
+  bottom: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.active-year-info {
+  z-index: 1;
+}
+
+.active-year-info h3 {
+  margin: 0 0 var(--admin-space-sm) 0;
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.active-year-name {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.active-year-details {
+  display: flex;
+  gap: var(--admin-space-2xl);
+  margin-top: var(--admin-space-xl);
+  background: rgba(255, 255, 255, 0.08);
+  padding: var(--admin-space-md) var(--admin-space-xl);
+  border-radius: var(--admin-radius-md);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.active-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.active-detail-label {
+  font-size: 0.7rem;
+  font-weight: var(--admin-font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.active-detail-value {
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-font-semibold);
+  color: #ffffff;
+}
+
+.active-year-actions {
+  z-index: 1;
+}
+
+.active-year-actions button {
+  background: #ffffff;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+  transition: all 0.2s ease;
+}
+
+.active-year-actions button:hover {
+  background: #fef2f2;
+  color: #dc2626;
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.25);
+}
+
+/* Years Table Card & Formatting */
+.years-timeline-section.card {
+  padding: var(--admin-space-xl);
+  border-radius: var(--admin-radius-lg);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-card);
+  box-shadow: var(--admin-shadow-md);
+}
+
+.years-timeline-section .section-title {
+  font-size: 1.25rem;
+  font-weight: var(--admin-font-bold);
+  color: var(--admin-text-primary);
+  margin-bottom: var(--admin-space-lg);
+}
+
+.academic-year-management .table-wrapper {
+  border-radius: var(--admin-radius-md);
+  border: 1px solid var(--admin-border);
+  overflow: hidden;
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.academic-year-management .table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.academic-year-management .table th {
+  background: var(--admin-bg-secondary);
+  color: var(--admin-text-primary);
+  font-weight: 700;
+  padding: var(--admin-space-lg) var(--admin-space-xl);
+  border-bottom: 2px solid var(--admin-border);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* Specific table widths to prevent horizontal compression */
+.academic-year-management .table th:nth-child(1),
+.academic-year-management .table td:nth-child(1) {
+  width: 25%;
+}
+.academic-year-management .table th:nth-child(2),
+.academic-year-management .table td:nth-child(2) {
+  width: 15%;
+}
+.academic-year-management .table th:nth-child(3),
+.academic-year-management .table td:nth-child(3) {
+  width: 30%;
+  white-space: nowrap;
+}
+.academic-year-management .table th:nth-child(4),
+.academic-year-management .table td:nth-child(4) {
+  width: 15%;
+}
+.academic-year-management .table th:nth-child(5),
+.academic-year-management .table td:nth-child(5) {
+  width: 15%;
+}
+
+.academic-year-management .table td {
+  padding: var(--admin-space-lg) var(--admin-space-xl);
+  border-bottom: 1px solid var(--admin-border-light);
+  color: var(--admin-text-primary);
+  font-size: var(--admin-text-sm);
+  vertical-align: middle;
+}
+
+.academic-year-management .table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.academic-year-management .table tbody tr:hover {
+  background-color: var(--admin-bg-secondary) !important;
+}
+
+/* Badges */
+.ay-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: var(--admin-font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ay-badge-active {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.ay-badge-completed {
+  background-color: #f8fafc;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+/* Stats Dashboard Grid */
+.ay-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--admin-space-xl);
+}
+
+.ay-stat-card {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-space-xl);
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-xl);
+  box-shadow: var(--admin-shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ay-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-md);
+}
+
+.ay-stat-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  color: var(--admin-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: inset 0 2px 4px rgba(79, 70, 229, 0.05);
+}
+
+.ay-stat-icon.warning-theme {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+  color: #d97706;
+}
+
+.ay-stat-icon.info-theme {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.1) 100%);
+  color: #1d4ed8;
+}
+
+.ay-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.ay-stat-value {
+  font-size: 1.95rem;
+  font-weight: 800;
+  color: var(--admin-text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.ay-stat-label {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-secondary);
+  font-weight: 600;
+}
+
+/* Progress bar inside stats */
+.ay-progress-container {
+  width: 100%;
+  background-color: var(--admin-bg-secondary);
+  border-radius: 9999px;
+  height: 8px;
+  overflow: hidden;
+  margin-top: var(--admin-space-sm);
+  border: 1px solid var(--admin-border);
+}
+
+.ay-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--admin-primary) 0%, #4f46e5 100%);
+  border-radius: 9999px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Interactive Tabs for Stats Detail */
+.analytics-section {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-space-2xl);
+  box-shadow: var(--admin-shadow-md);
+}
+
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--admin-border);
+  padding-bottom: var(--admin-space-lg);
+  margin-bottom: var(--admin-space-2xl);
+  flex-wrap: wrap;
+  gap: var(--admin-space-lg);
+}
+
+.analytics-header .section-title {
+  font-size: 1.25rem;
+  font-weight: var(--admin-font-bold);
+  color: var(--admin-text-primary);
+  margin: 0;
+}
+
+.analytics-tabs {
+  display: flex;
+  background: var(--admin-bg-secondary);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border);
+}
+
+.analytics-tab-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  color: var(--admin-text-secondary);
+  font-weight: var(--admin-font-semibold);
+  font-size: var(--admin-text-sm);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.analytics-tab-btn:hover {
+  color: var(--admin-primary);
+}
+
+.analytics-tab-btn.active {
+  background-color: var(--admin-bg-card);
+  color: var(--admin-primary);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+/* Custom form additions */
+.inline-radio-group {
+  display: flex;
+  gap: var(--admin-space-xl);
+  margin-top: var(--admin-space-xs);
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-sm);
+  cursor: pointer;
+  font-weight: var(--admin-font-normal);
+}
+
+.custom-scheme-input {
+  margin-top: var(--admin-space-sm);
+  animation: fadeIn 0.2s ease;
+}
+
+/* Timeline specific layouts */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--admin-space-2xl);
+  text-align: center;
+  color: var(--admin-text-secondary);
+  background: var(--admin-bg-secondary);
+  border: 2px dashed var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+}
+
+.empty-state-icon {
+  font-size: 3.5rem;
+  margin-bottom: var(--admin-space-md);
+  color: var(--admin-text-tertiary);
+}
+
+.empty-state h3 {
+  margin: 0 0 var(--admin-space-xs) 0;
+  font-size: 1.2rem;
+  color: var(--admin-text-primary);
+  font-weight: var(--admin-font-bold);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: var(--admin-text-sm);
+  max-width: 400px;
+}
+
+/* Spinners & Loading States */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 0;
+  color: var(--admin-text-secondary);
+}
+
+.ay-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid var(--admin-border);
+  border-top-color: var(--admin-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: var(--admin-space-lg);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .ay-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--admin-space-lg);
+  }
+}
+
+@media (max-width: 768px) {
+  .academic-year-management .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--admin-space-lg);
+  }
+
+  .ay-header-actions {
+    width: 100%;
+  }
+
+  .ay-header-actions button {
+    width: 100%;
+  }
+
+  .active-year-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--admin-space-lg);
+    padding: var(--admin-space-xl);
+  }
+  
+  .active-year-actions {
+    width: 100%;
+  }
+  
+  .active-year-actions button {
+    width: 100%;
+  }
+  
+  .active-year-details {
+    flex-direction: column;
+    gap: var(--admin-space-sm);
+    width: 100%;
+  }
+  
+  .analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .analytics-tabs {
+    width: 100%;
+    overflow-x: auto;
+    padding: var(--admin-space-xs);
+  }
+
+  .academic-year-management .table th,
+  .academic-year-management .table td {
+    padding: var(--admin-space-md);
+  }
+}
+
+@media (max-width: 576px) {
+  .ay-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Selected row highlighted style */
+.academic-year-management .table tbody tr.selected-row {
+  background-color: var(--admin-primary-light) !important;
+}
+
+/* Balanced columns for analytics sub-tab tables */
+.analytics-section .table th,
+.analytics-section .table td {
+  width: 25%;
+}

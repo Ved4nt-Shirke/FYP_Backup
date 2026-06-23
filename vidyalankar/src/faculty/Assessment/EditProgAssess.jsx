@@ -47,7 +47,7 @@ function EditProgAssess() {
       setError(null);
 
       const response = await fetch(
-        `http://localhost:5000/api/assessments/assessed-experiments?batch=${batch}`
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}`
       );
       const data = await response.json();
 

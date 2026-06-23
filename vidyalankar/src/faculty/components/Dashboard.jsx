@@ -83,6 +83,7 @@ const toArray = (payload) => {
 const Dashboard = () => {
   const navigate = useNavigate();
   const [alertMessage, setAlertMessage] = useState("");
+  const [selectedYear, setSelectedYear] = useState(localStorage.getItem("selectedAcademicYear") || "all");
   const [ciannProgress, setCiannProgress] = useState({
     loading: true,
     total: 0,
@@ -90,6 +91,42 @@ const Dashboard = () => {
     percentage: 0,
   });
   const [activityStats, setActivityStats] = useState(initialActivityStats);
+
+  useEffect(() => {
+    const initSelectedYear = async () => {
+      const savedYear = localStorage.getItem("selectedAcademicYear");
+      if (savedYear && savedYear !== "all") {
+        setSelectedYear(savedYear);
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const activeRes = await fetch(config.academicYear.current, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const activeData = await activeRes.json();
+        if (activeData.success && activeData.academicYear) {
+          setSelectedYear(activeData.academicYear.yearName);
+          localStorage.setItem("selectedAcademicYear", activeData.academicYear.yearName);
+        }
+      } catch (err) {
+        console.error("Error fetching current year in Dashboard:", err);
+      }
+    };
+    initSelectedYear();
+  }, []);
+
+  useEffect(() => {
+    const handleYearChange = (e) => {
+      setSelectedYear(e.detail);
+    };
+    window.addEventListener("academicYearChanged", handleYearChange);
+    return () => {
+      window.removeEventListener("academicYearChanged", handleYearChange);
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -125,7 +162,11 @@ const Dashboard = () => {
         }
 
         const ciannList = await ciannResponse.json();
-        const cianns = Array.isArray(ciannList) ? ciannList : [];
+        let cianns = Array.isArray(ciannList) ? ciannList : [];
+
+        if (selectedYear && selectedYear !== "all") {
+          cianns = cianns.filter(c => c.academicYear === selectedYear);
+        }
 
         if (cianns.length === 0) {
           if (!isMounted) return;
@@ -226,10 +267,15 @@ const Dashboard = () => {
           }
         };
 
-        const [students, cianns] = await Promise.all([
+        const [students, rawCianns] = await Promise.all([
           fetchJson(config.students),
           fetchJson(config.cianns),
         ]);
+
+        let cianns = Array.isArray(rawCianns) ? rawCianns : [];
+        if (selectedYear && selectedYear !== "all") {
+          cianns = cianns.filter(c => c.academicYear === selectedYear);
+        }
 
         const attendanceBuckets = {
           theory: [],
@@ -359,7 +405,7 @@ const Dashboard = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [selectedYear]);
 
   const progressStatusText = useMemo(() => {
     if (ciannProgress.loading) return "Checking progress...";
@@ -425,6 +471,7 @@ const Dashboard = () => {
 
   return (
     <div className="scrollable-wrapper faculty-dashboard-shell">
+
       <section
         className="dashboard-hero-panel"
         aria-label="Dashboard highlights"

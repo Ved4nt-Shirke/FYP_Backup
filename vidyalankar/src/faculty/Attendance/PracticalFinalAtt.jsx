@@ -63,7 +63,7 @@ const PracticalFinalAtt = () => {
     }
 
     axios
-      .get("http://localhost:5000/api/students", { params })
+      .get(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`, { params })
       .then((res) => {
         const allStudents = Array.isArray(res.data)
           ? res.data
@@ -119,7 +119,7 @@ const PracticalFinalAtt = () => {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/practical-attendance",
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/practical-attendance`,
         attendanceData,
       );
       alert("Attendance submitted successfully!");

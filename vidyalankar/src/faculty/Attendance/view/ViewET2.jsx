@@ -69,7 +69,7 @@ const ViewExtraTheory2 = () => {
       try {
         // ✅ **CHANGE 1: Updated the API endpoint to fetch from the extra attendance route.**
         const response = await axios.get(
-          `http://localhost:5000/api/extra-attendance/ciann/${ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/extra-attendance/ciann/${ciannId}`,
         );
 
         // ✅ **CHANGE 2: Transformed the data to fit the table structure.**

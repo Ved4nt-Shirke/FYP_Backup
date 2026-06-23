@@ -33,6 +33,7 @@ const CreateCiann = ({
   const [courses, setCourses] = useState([]);
   const [divisions, setDivisions] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [academicYears, setAcademicYears] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -56,6 +57,32 @@ const CreateCiann = ({
 
   useEffect(() => {
     fetchDepartments();
+    fetchAcademicYears();
+  }, []);
+
+  const [activeAcademicYear, setActiveAcademicYear] = useState(null);
+
+  useEffect(() => {
+    const fetchActiveYear = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await fetch(config.academicYear.current, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && data.academicYear) {
+          setActiveAcademicYear(data.academicYear);
+          setFormData((prev) => ({
+            ...prev,
+            academicYear: data.academicYear.yearName,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch active academic year:", err);
+      }
+    };
+    fetchActiveYear();
   }, []);
 
   useEffect(() => {
@@ -170,27 +197,21 @@ const CreateCiann = ({
     }
   };
 
-  const generateAcademicYears = () => {
-    const d = new Date();
-    const currentYear = d.getFullYear();
-    const currentMonth = d.getMonth() + 1;
-    const activeStartYear = currentMonth >= 6 ? currentYear : currentYear - 1;
-
-    const years = [];
-    const endYearLimit = Math.max(currentYear + 8, 2035);
-
-    for (let year = 2023; year <= endYearLimit; year++) {
-      const endYearStr = String(year + 1).slice(-2);
-      const labelSuffix = year < activeStartYear ? " (Already Done)" : "";
-      years.push({
-        value: `${year}-${endYearStr}`,
-        label: `${year}-${endYearStr}${labelSuffix}`,
+  const fetchAcademicYears = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const res = await fetch(config.academicYear.all, {
+        headers: { Authorization: `Bearer ${token}` },
       });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.academicYears)) {
+        setAcademicYears(data.academicYears || []);
+      }
+    } catch (err) {
+      console.error("Error fetching academic years:", err);
     }
-    return years;
   };
-
-  const academicYears = generateAcademicYears();
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -359,6 +380,25 @@ const CreateCiann = ({
       <div className="create-ciann-header">
         <h2>Create CIAAN (Curriculum Implementation & Assessment Norms)</h2>
       </div>
+      {activeAcademicYear && (
+        <div className="info-banner" style={{
+          margin: "0 24px 20px 24px",
+          padding: "12px 16px",
+          backgroundColor: "rgba(16, 185, 129, 0.08)",
+          border: "1px solid rgba(16, 185, 129, 0.3)",
+          borderRadius: "8px",
+          color: "#047857",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          fontSize: "0.9rem"
+        }}>
+          <i className="bi bi-info-circle-fill"></i>
+          <span>
+            Academic Year auto-detected: <strong>{activeAcademicYear.yearName}</strong> (Scheme: {activeAcademicYear.scheme})
+          </span>
+        </div>
+      )}
       <div className="create-ciann-form">
         {error && <div className="error-message">{error}</div>}
         <div className="form-grid">
@@ -423,8 +463,8 @@ const CreateCiann = ({
             >
               <option value="">--- Select Academic Year ---</option>
               {academicYears.map((year) => (
-                <option key={year.value} value={year.value}>
-                  {year.label}
+                <option key={year._id} value={year.yearName}>
+                  {year.yearName} ({year.scheme}){year.status === "active" ? " (Active)" : ""}
                 </option>
               ))}
             </select>

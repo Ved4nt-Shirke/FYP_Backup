@@ -24,7 +24,7 @@ const ViewAttend2 = () => {
     const fetchAttendanceData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/attendance/${ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/attendance/${ciannId}`,
         );
         setAttendanceData(response.data);
       } catch (err) {

@@ -45,10 +45,10 @@ const StudentAttendancePage = () => {
     }
 
     axios
-      .get("http://localhost:5000/api/students", { params })
+      .get(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`, { params })
       .then((res) => {
         if (!res.data || res.data.length === 0) {
-          return axios.get("http://localhost:5000/api/students");
+          return axios.get(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`);
         }
 
         const studentList = res.data.map((student) => ({
@@ -148,7 +148,7 @@ const StudentAttendancePage = () => {
       setIsSubmitting(true);
       setMessage("");
 
-      await axios.post("http://localhost:5000/api/extra-pract", payload);
+      await axios.post(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/extra-pract`, payload);
 
       setIsSuccess(true);
       setMessage("Extra practical attendance submitted successfully.");

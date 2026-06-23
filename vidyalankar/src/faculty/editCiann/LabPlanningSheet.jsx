@@ -59,7 +59,90 @@ const LabPlanningSheet = () => {
   const [labPlans, setLabPlans] = useState([]);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
+  const [llHours, setLlHours] = useState(2);
 
+  useEffect(() => {
+    const fetchCiannSubjectDetails = async () => {
+      if (!ciannId) return;
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(
+          `${config.subjectDetails}/ciann-subject-details/${ciannId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.success && data.adminDetails && data.adminDetails.learningScheme) {
+          const ll = parseInt(data.adminDetails.learningScheme.ll);
+          if (!isNaN(ll)) {
+            setLlHours(ll);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching ciann subject details in LabPlanningSheet:", err);
+      }
+    };
+    fetchCiannSubjectDetails();
+  }, [ciannId]);
+
+  const [lloMap, setLloMap] = useState({});
+
+  // Fetch LLO details for mapping description to number
+  useEffect(() => {
+    if (!ciannData) return;
+    const fetchTloLlo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const subjectId = ciannData.subject?._id || ciannData.subjectId;
+        const res = await fetch(
+          `${config.subjectDetails}/tlo-llo/${ciannData.ciannId}/${subjectId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.success && data.data && Array.isArray(data.data.coData)) {
+          const mapping = {};
+          data.data.coData.forEach(c => {
+            const coNum = c.coNumber.replace(/\D/g, '') || '1';
+            (c.llos || []).forEach((lloText, lloIdx) => {
+              const trimmed = lloText.trim();
+              if (trimmed) {
+                mapping[trimmed] = `${coNum}.${lloIdx + 1}`;
+                mapping[trimmed.toLowerCase()] = `${coNum}.${lloIdx + 1}`;
+              }
+            });
+          });
+          setLloMap(mapping);
+        }
+      } catch (err) {
+        console.error("Error fetching TloLlo mappings in LabPlanningSheet:", err);
+      }
+    };
+    fetchTloLlo();
+  }, [ciannData]);
+
+  const formatLlo = (lloValue) => {
+    if (!lloValue) return "";
+    if (/^[0-9.,\s]+$/.test(lloValue)) {
+      return lloValue;
+    }
+    return lloValue
+      .split(",")
+      .map(part => {
+        const trimmed = part.trim();
+        const lower = trimmed.toLowerCase();
+        return lloMap[lower] || lloMap[trimmed] || trimmed;
+      })
+      .join(", ");
+  };
   useEffect(() => {
     const handleSecondaryToggle = () => {
       setIsSecondarySidebarVisible((prev) => !prev);
@@ -128,14 +211,9 @@ const LabPlanningSheet = () => {
     });
 
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(config.labPlanning, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          "x-bypass-freeze": "true"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ciannId, weekNo: numericWeek, plans }),
       });
 
@@ -285,6 +363,7 @@ const LabPlanningSheet = () => {
               }
               initialWeek={editWeekNo}
               ciannData={ciannData}
+              llHours={llHours}
             />
           ) : (
             <div className="plan-container">
@@ -332,64 +411,67 @@ const LabPlanningSheet = () => {
                 ))}
               </div>
               <div className="teaching" key={currentPage}>
-                {planningStarted &&
-                  Object.entries(weekData).map(([weekNo, weekPlans]) => {
-                    return (
-                      <div key={weekNo} className="week-planning-card" style={{ marginBottom: "30px", border: "1px solid var(--card-border, #e2eaf5)", borderRadius: "12px", background: "var(--card-bg, #ffffff)", padding: "20px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)" }}>
-                        <h4 style={{ margin: "0 0 15px 0", color: "var(--app-header-bg, #2e7d32)", fontSize: "18px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
-                          <span style={{ display: "inline-block", width: "6px", height: "18px", background: "var(--app-header-bg, #2e7d32)", borderRadius: "3px" }}></span>
-                          Week {weekNo}
-                        </h4>
-                        <div className="table-container" style={{ overflowX: "auto", border: "1px solid var(--card-border, #d6e2f0)", borderRadius: "8px", margin: 0, padding: 0 }}>
-                          <table className="lab-table" style={{ width: "100%", margin: 0, border: "none" }}>
-                            <thead>
-                              <tr>
-                                <th style={{ width: "8%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px", padding: "12px 8px" }}>Week No.</th>
-                                <th style={{ width: "8%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px", padding: "12px 8px" }}>Batch</th>
-                                <th style={{ width: "12%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px", padding: "12px 8px" }}>CO</th>
-                                <th style={{ width: "20%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px", padding: "12px 8px" }}>LLO</th>
-                                <th style={{ width: "10%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px", padding: "12px 8px" }}>Expt. No.</th>
-                                <th style={{ width: "22%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px", padding: "12px 8px" }}>Name of Experiment</th>
-                                <th style={{ width: "10%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px", padding: "12px 8px" }}>Date (Planned)</th>
-                                <th style={{ width: "10%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px", padding: "12px 8px" }}>Date (Actual)</th>
+                <div className="table-container">
+                  <table className="lab-table">
+                    <thead>
+                      <tr>
+                        <th>Week No.</th>
+                        <th>Batch</th>
+                        <th>CO</th>
+                        <th>LLO</th>
+                        <th>Expt. No.</th>
+                        <th>Name of Experiment</th>
+                        <th>Date of Performance (Planned)</th>
+                        <th>Date of Completion (Actual)</th>
+                      </tr>
+                    </thead>
+                    {planningStarted && (
+                      <tbody>
+                        {Object.entries(weekData).map(([weekNo, weekPlans]) =>
+                          weekPlans.length > 0
+                            ? weekPlans.map((p, i) => (
+                              <tr
+                                key={`${weekNo}-${i}`}
+                                className={`week-group ${i === 0
+                                    ? "first"
+                                    : i === weekPlans.length - 1
+                                      ? "last"
+                                      : ""
+                                  }`}
+                              >
+                                {i === 0 && (
+                                  <td rowSpan={weekPlans.length}>{weekNo}</td>
+                                )}
+                                <td>{p.batch}</td>
+                                <td>{p.co || ""}</td>
+                                <td>{formatLlo(p.llo)}</td>
+                                <td>{p.exptNo}</td>
+                                <td className="expt-name-cell">{p.exptName}</td>
+                                <td>{p.date}</td>
+                                <td>{p.actualDate || "--"}</td>
                               </tr>
-                            </thead>
-                            <tbody>
-                              {weekPlans.length > 0
-                                ? weekPlans.map((p, i) => (
-                                  <tr key={`${weekNo}-${i}`}>
-                                    {i === 0 && (
-                                      <td rowSpan={weekPlans.length} style={{ textAlign: "center", verticalAlign: "middle" }}>{weekNo}</td>
-                                    )}
-                                    <td>{p.batch}</td>
-                                    <td>{p.co || ""}</td>
-                                    <td>{p.llo || ""}</td>
-                                    <td>{p.exptNo}</td>
-                                    <td>{p.exptName}</td>
-                                    <td>{p.date}</td>
-                                    <td>{p.actualDate || "--"}</td>
-                                  </tr>
-                                ))
-                                : ["B1", "B2", "B3"].map((batch, i) => (
-                                  <tr key={`${weekNo}-empty-${i}`}>
-                                    {i === 0 && <td rowSpan={3} style={{ textAlign: "center", verticalAlign: "middle" }}>{weekNo}</td>}
-                                    <td>{batch}</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>--</td>
-                                  </tr>
-                                ))
-                              }
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    );
-                  })
-                }
+                            ))
+                            : (llHours >= 4 ? ["B1", "B1", "B2", "B2", "B3", "B3"] : ["B1", "B2", "B3"]).map((batch, i, arr) => (
+                              <tr
+                                key={`${weekNo}-empty-${i}`}
+                                className={`week-group ${i === 0 ? "first" : i === arr.length - 1 ? "last" : ""
+                                  }`}
+                              >
+                                {i === 0 && <td rowSpan={arr.length}>{weekNo}</td>}
+                                <td>{batch}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td className="expt-name-cell"></td>
+                                <td></td>
+                                <td>--</td>
+                              </tr>
+                            )),
+                        )}
+                      </tbody>
+                    )}
+                  </table>
+                </div>
               </div>
               <div className="pagination">
                 <button className="prev-btn">← Previous</button>

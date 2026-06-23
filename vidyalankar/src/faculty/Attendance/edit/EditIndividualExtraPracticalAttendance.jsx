@@ -74,7 +74,7 @@ const EditIndividualExtraPracticalAttendance = () => {
       };
 
       // Update extra practical attendance record
-      const url = `http://localhost:5000/api/extra-pract/${formData._id}`;
+      const url = `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/extra-pract/${formData._id}`;
       console.log("Sending PUT request to:", url, "with payload:", payloadForBackend);
 
       const response = await axios.put(url, payloadForBackend);

@@ -81,7 +81,7 @@ export default function AssessPA() {
           className: effectiveClass || '',
           course: effectiveCourse,
         });
-        const response = await fetch(`http://localhost:5000/api/assessments/get-experiments?${params.toString()}`);
+        const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments?${params.toString()}`);
         const data = await response.json();
         console.log('AssessPA - API Response:', data);
 
@@ -98,7 +98,7 @@ export default function AssessPA() {
 
       // Fetch assessed experiments for this batch
       try {
-        const assessedResponse = await fetch(`http://localhost:5000/api/assessments/assessed-experiments?batch=${batch}`);
+        const assessedResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}`);
         const assessedData = await assessedResponse.json();
 
         if (assessedData.success) {

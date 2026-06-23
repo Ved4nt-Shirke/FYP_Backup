@@ -62,17 +62,17 @@ body {
 }
 
 /* =================== TABLE STYLES =================== */
-.table {
+.studentlist-container .table {
   border-collapse: collapse;
   border-spacing: 0;
   width: 100%;
 }
 
-.table th {
+.studentlist-container .table th {
   text-align: center;
 }
 
-.table td {
+.studentlist-container .table td {
   border: 0.5px solid #cccccc;
   padding: 8px 6px;
   vertical-align: middle;
@@ -80,7 +80,7 @@ body {
   font-size: 12px !important;
 }
 
-.table thead th {
+.studentlist-container .table thead th {
   font-weight: 600;
   background-color: #e9edf2;
   font-size: 13px !important;
@@ -115,10 +115,10 @@ body {
 }
 
 /* ==== Desktop specific widths ==== */
-.table td:first-child,
-.table td:nth-child(2),
-.table td:nth-child(3),
-.table td:nth-child(4) {
+.studentlist-container .table td:first-child,
+.studentlist-container .table td:nth-child(2),
+.studentlist-container .table td:nth-child(3),
+.studentlist-container .table td:nth-child(4) {
   min-width: 140px;
   text-align: center;
   background-color: #ffffff;
@@ -174,20 +174,20 @@ body {
   }
 
   /* --- Table transforms into card layout --- */
-  .table thead {
+  .studentlist-container .table thead {
     display: none;
   }
 
-  .table,
-  .table tbody,
-  .table tr,
-  .table td {
+  .studentlist-container .table,
+  .studentlist-container .table tbody,
+  .studentlist-container .table tr,
+  .studentlist-container .table td {
     display: block;
     width: 100% !important; /* prevent horizontal scroll */
     min-width: auto !important;
   }
 
-  .table tr {
+  .studentlist-container .table tr {
     margin-bottom: 1rem;
     border: 1px solid #ddd;
     border-radius: 10px;
@@ -197,7 +197,7 @@ body {
     overflow: hidden;
   }
 
-  .table td {
+  .studentlist-container .table td {
     display: flex;
     flex-wrap: wrap; /* allow wrapping to prevent overlap */
     justify-content: flex-start;
@@ -210,12 +210,12 @@ body {
     width: 100% !important;
   }
 
-  .table tr td:last-child {
+  .studentlist-container .table tr td:last-child {
     border-bottom: none;
   }
 
   /* Label (before) */
-  .table td::before {
+  .studentlist-container .table td::before {
     content: attr(data-label) ": ";
     font-weight: 600;
     color: #222;
@@ -226,7 +226,7 @@ body {
   }
 
   /* Value (span) */
-  .table td span {
+  .studentlist-container .table td span {
     flex: 1 1 60%;
     font-weight: 400;
     color: #000;

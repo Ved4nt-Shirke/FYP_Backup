@@ -32,7 +32,7 @@ export default function EditAssessedStudentList() {
       console.log('Fetching assessed data for experiment:', experiment.id, 'batch:', batch);
 
       // Fetch existing assessment data for this experiment and batch
-      const response = await fetch(`http://localhost:5000/api/assessments/edit-data/${experiment.id}?batch=${batch}`);
+      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}`);
       const data = await response.json();
 
       console.log('Edit data response:', data);
@@ -110,7 +110,7 @@ export default function EditAssessedStudentList() {
         marks: student.marks || 0
       }));
 
-      const response = await fetch('http://localhost:5000/api/assessments/save-marks', {
+      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/save-marks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ export default function EditAssessedStudentList() {
   return (
     <>
       <Header />
-      <div className="container mt-4">
+      <div className="container mt-4 assess-pa-studentlist-page">
         <h4><strong>Edit Assessment Marks</strong></h4>
         {experiment && (
           <p><strong>Experiment {experiment.id}:</strong> {experiment.name}</p>

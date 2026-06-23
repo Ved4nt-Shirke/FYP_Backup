@@ -317,28 +317,42 @@
   justify-content: center;
 }
 
-.faculty-logout-button {
+.header-year-select-container {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: #ffffff;
-  color: #2e7d32;
-  border: none;
-  border-radius: 6px;
-  padding: 7px 12px;
+  gap: 8px;
+  color: #ffffff;
+  margin-right: 8px;
+}
+
+.header-year-select-container span {
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.header-year-select {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  outline: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.faculty-logout-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+.header-year-select:hover,
+.header-year-select:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
-.faculty-logout-button i {
-  font-size: 14px;
+.header-year-select option {
+  color: #333333;
+  background-color: #ffffff;
 }
 
 .user-section {
@@ -378,8 +392,28 @@
   flex-shrink: 1;
 }
 
-.dropdown-arrow {
+.user-button .user-name,
+.user-button:hover .user-name,
+.user-button:focus .user-name,
+.user-button:active .user-name {
+  color: #ffffff !important;
+}
+
+.dropdown-arrow,
+.user-button .dropdown-arrow,
+.user-button:hover .dropdown-arrow,
+.user-button:focus .dropdown-arrow,
+.user-button:active .dropdown-arrow {
+  color: #ffffff !important;
   font-size: 10px;
+}
+
+.user-icon,
+.user-button .user-icon,
+.user-button:hover .user-icon,
+.user-button:focus .user-icon,
+.user-button:active .user-icon {
+  color: #ffffff !important;
 }
 
 /* Dropdown Menu */
@@ -413,7 +447,7 @@
   }
 }
 
-.dropdown-item {
+.user-dropdown-menu .dropdown-item {
   padding: 10px 15px;
   width: 100%;
   background-color: transparent;
@@ -421,22 +455,28 @@
   text-align: left;
   cursor: pointer;
   font-size: 14px;
-  color: #333333;
+  color: #333333 !important;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.dropdown-item:hover {
-  background-color: #f0f0f0;
+.user-dropdown-menu .dropdown-item:hover {
+  background-color: #f0f0f0 !important;
+  color: #111827 !important;
 }
 
-.logout {
-  color: #dc3545;
+.user-dropdown-menu .dropdown-item.logout {
+  color: #dc3545 !important;
 }
 
-.dropdown-item i {
+.user-dropdown-menu .dropdown-item.logout:hover {
+  color: #bd2130 !important;
+}
+
+.user-dropdown-menu .dropdown-item i {
   font-size: 14px;
+  color: inherit !important;
 }
 
 /* Responsive Styles */
@@ -518,8 +558,8 @@
     min-width: 120px;
   }
 
-  .faculty-logout-button {
-    padding: 6px 10px;
+  .header-year-select {
+    padding: 5px 8px;
     font-size: 12px;
   }
 
@@ -543,16 +583,12 @@
     display: none;
   }
 
-  .faculty-logout-button span {
+  .header-year-select-container span {
     display: none;
   }
 
-  .faculty-logout-button {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    padding: 0;
-    justify-content: center;
+  .header-year-select {
+    max-width: 120px;
   }
 
   .role-chip {

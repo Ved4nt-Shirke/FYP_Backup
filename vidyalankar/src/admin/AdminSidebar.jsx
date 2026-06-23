@@ -142,6 +142,12 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
       label: "View Subjects",
       available: true,
     },
+    {
+      path: "/admin/academic-year",
+      icon: "bi-calendar-range-fill",
+      label: "Academic Year",
+      available: true,
+    },
   ];
 
   const sidebarClasses = `admin-sidebar ${

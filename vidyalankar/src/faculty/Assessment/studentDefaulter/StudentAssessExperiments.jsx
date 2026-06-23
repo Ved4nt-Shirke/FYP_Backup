@@ -32,7 +32,7 @@ export default function StudentAssessExperiments() {
         setMarksByExp({});
         
         // 1) Fetch experiments for subject
-        const expRes = await fetch('http://localhost:5000/api/assessments/get-experiments', {
+        const expRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ program, className, course })
@@ -45,7 +45,7 @@ export default function StudentAssessExperiments() {
         // 2) Fetch this student's history to mark already assessed (filtered by subject context)
         const name = student?.studentName || student?.name || '';
         if (name) {
-          const histRes = await fetch(`http://localhost:5000/api/assessments/student-history/${encodeURIComponent(name)}`);
+          const histRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/student-history/${encodeURIComponent(name)}`);
           const histData = await histRes.json();
           if (histData.success && Array.isArray(histData.assessments)) {
             const byExp = {};
@@ -133,7 +133,7 @@ export default function StudentAssessExperiments() {
             { studentName: name, rollNo, marks: sm.marks }
           ]
         };
-        const res = await fetch('http://localhost:5000/api/assessments/save-marks', {
+        const res = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/save-marks`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
@@ -143,7 +143,7 @@ export default function StudentAssessExperiments() {
       }
 
       // refresh assessed list (filtered by subject context)
-      const histRes = await fetch(`http://localhost:5000/api/assessments/student-history/${encodeURIComponent(student?.studentName)}`);
+      const histRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/student-history/${encodeURIComponent(student?.studentName)}`);
       const histData = await histRes.json();
       if (histData.success) {
         const done = new Set();

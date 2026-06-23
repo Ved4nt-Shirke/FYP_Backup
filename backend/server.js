@@ -285,6 +285,9 @@ app.use("/api/ct-marks", require("./routes/ctMarks"));
 // MSBTE Formats Routes
 app.use("/api/msbte", require("./routes/msbteFormats"));
 
+// Academic Year Routes
+app.use("/api/academic-year", require("./routes/academicYear"));
+
 // Admin Routes
 const { authenticate, authorizeAdmin } = require("./middleware/auth");
 app.use("/api/admin", authenticate, authorizeAdmin, require("./routes/admin"));

@@ -18,7 +18,7 @@ export default function AssessmentDashboard() {
       setError(null);
 
       const response = await fetch(
-        `http://localhost:5000/api/assessments/statistics/${batch}`
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/statistics/${batch}`
       );
       const data = await response.json();
 

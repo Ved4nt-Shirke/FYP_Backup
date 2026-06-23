@@ -29,7 +29,7 @@ export default function PTConfiguration() {
         const subjectId = subject._id || subject.subjectId || ciann.subject?._id;
 
         const res = await fetch(
-          `http://localhost:5000/api/pt-microproject/new/course-details/${subjectId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/pt-microproject/new/course-details/${subjectId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -69,7 +69,7 @@ export default function PTConfiguration() {
         } else {
           // Double check if there's an existing configuration in DB anyway
           const configRes = await fetch(
-            `http://localhost:5000/api/pt-microproject/new/config/${ciann.ciannId}/${subjectId}`,
+            `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/pt-microproject/new/config/${ciann.ciannId}/${subjectId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -170,7 +170,7 @@ export default function PTConfiguration() {
         })),
       };
 
-      const res = await fetch("http://localhost:5000/api/pt-microproject/new/config", {
+      const res = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/pt-microproject/new/config`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

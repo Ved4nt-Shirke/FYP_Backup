@@ -25,7 +25,7 @@ const ViewPractical2 = () => {
     const fetchPracticalAttendanceData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/view-practical-attendance/${ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/view-practical-attendance/${ciannId}`,
         );
         setPracticalAttendanceData(response.data);
         // Set first batch as default if available

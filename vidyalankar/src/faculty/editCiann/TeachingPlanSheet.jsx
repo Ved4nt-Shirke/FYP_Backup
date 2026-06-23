@@ -23,9 +23,9 @@ const modalStyles = {
   content: {
     background: "white",
     borderRadius: "16px", // More rounded corners
-    width: "98%",
-    maxWidth: "1550px", // Increased to cover screen and prevent scrolling
-    maxHeight: "92vh", // Sized to fit screen nicely
+    width: "90%",
+    maxWidth: "1280px", // Increased to fit the teaching plan table in a single frame without scroll
+    maxHeight: "90vh", // Increased from 84vh
     animation: "fadeIn 0.3s ease-in-out", // Added animation
     display: "flex",
     flexDirection: "column",
@@ -46,6 +46,174 @@ const modalStyles = {
     right: 20,
     zIndex: 10, // Ensure it's above other elements
   },
+};
+
+const TloMultiSelect = ({
+  plan,
+  index,
+  coData,
+  plans,
+  setPlans,
+  openDropdownIndex,
+  setOpenDropdownIndex,
+  disabled
+}) => {
+  const isOpen = openDropdownIndex === index;
+  const coObj = coData.find((c) => c.coNumber === plan.co);
+  const tlos = coObj ? coObj.tlos || [] : [];
+  const coNum = plan.co ? plan.co.replace(/\D/g, "") : "";
+
+  const selectedNumbers = plan.tlo
+    ? plan.tlo.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  const handleToggle = (tloNumber) => {
+    let updatedNumbers;
+    if (selectedNumbers.includes(tloNumber)) {
+      updatedNumbers = selectedNumbers.filter((num) => num !== tloNumber);
+    } else {
+      updatedNumbers = [...selectedNumbers, tloNumber];
+    }
+    updatedNumbers.sort((a, b) => {
+      const aParts = a.split(".").map(Number);
+      const bParts = b.split(".").map(Number);
+      if (aParts[0] !== bParts[0]) return aParts[0] - bParts[0];
+      return aParts[1] - bParts[1];
+    });
+
+    const updated = [...plans];
+    updated[index].tlo = updatedNumbers.join(", ");
+    setPlans(updated);
+  };
+
+  if (disabled) {
+    return (
+      <div
+        style={{
+          border: "1px solid #dde3ea",
+          borderRadius: "8px",
+          padding: "6px 12px",
+          backgroundColor: "#e9ecef",
+          cursor: "not-allowed",
+          minHeight: "36px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontSize: "14px",
+          color: "#6c757d",
+          userSelect: "none"
+        }}
+      >
+        <span>{!plan.co ? "Select CO first" : "Select TLOs"}</span>
+        <span style={{ fontSize: "10px", marginLeft: "8px" }}>▼</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="tlo-multiselect-container" style={{ position: "relative" }}>
+      <div
+        className="tlo-multiselect-trigger"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isOpen) {
+            setOpenDropdownIndex(null);
+          } else {
+            setOpenDropdownIndex(index);
+          }
+        }}
+        style={{
+          border: "1px solid #dde3ea",
+          borderRadius: "8px",
+          padding: "6px 12px",
+          backgroundColor: "#fff",
+          cursor: "pointer",
+          minHeight: "36px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontSize: "14px",
+          color: plan.tlo ? "#212529" : "#6c757d",
+          userSelect: "none"
+        }}
+      >
+        <span style={{
+          maxWidth: "180px",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          display: "inline-block"
+        }}>
+          {plan.tlo || "Select TLOs"}
+        </span>
+        <span style={{ fontSize: "10px", marginLeft: "8px" }}>▼</span>
+      </div>
+
+      {isOpen && (
+        <div
+          className="tlo-multiselect-dropdown"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            bottom: "100%",
+            left: 0,
+            zIndex: 1000,
+            width: "320px",
+            maxHeight: "220px",
+            overflowY: "auto",
+            backgroundColor: "#fff",
+            border: "1px solid #dde3ea",
+            borderRadius: "8px",
+            boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.15)",
+            padding: "8px",
+            marginBottom: "4px"
+          }}
+        >
+          {tlos.length === 0 ? (
+            <div style={{ padding: "8px", color: "#6c757d", fontSize: "13px" }}>
+              No TLOs available for {plan.co || "this CO"}
+            </div>
+          ) : (
+            tlos.map((tloText, tloIdx) => {
+              const tloNum = `${coNum}.${tloIdx + 1}`;
+              const isChecked = selectedNumbers.includes(tloNum);
+              return (
+                <label
+                  key={tloIdx}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "8px",
+                    padding: "6px 8px",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s",
+                    marginBottom: "2px",
+                    userSelect: "none",
+                    fontSize: "13px",
+                    textAlign: "left"
+                  }}
+                  className="tlo-option-label"
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => handleToggle(tloNum)}
+                    style={{ marginTop: "3px", cursor: "pointer" }}
+                  />
+                  <span style={{ color: "#212529", lineHeight: "1.4" }}>
+                    <strong>{tloNum}:</strong> {tloText}
+                  </span>
+                </label>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const TeachingPlan = () => {
@@ -104,6 +272,45 @@ const TeachingPlan = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
+
+  const [openDropdownIndex, setOpenDropdownIndex] = useState(null);
+
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setOpenDropdownIndex(null);
+    };
+    window.addEventListener("click", handleOutsideClick);
+    return () => {
+      window.removeEventListener("click", handleOutsideClick);
+    };
+  }, []);
+
+  const getTloNumbers = (coNumber, tloValue) => {
+    if (!tloValue) return "";
+    
+    // If it is already a comma-separated list of numbers like "1.1, 1.2", return it.
+    if (/^\d+\.\d+(?:\s*,\s*\d+\.\d+)*$/.test(tloValue.trim())) {
+      return tloValue;
+    }
+
+    // Otherwise, match descriptions to numbers using coData
+    const coObj = coData.find((c) => c.coNumber === coNumber);
+    if (coObj && Array.isArray(coObj.tlos)) {
+      const coNum = coNumber.replace(/\D/g, "");
+      const parts = tloValue.split(",").map(s => s.trim()).filter(Boolean);
+      const matched = [];
+      parts.forEach(part => {
+        const idx = coObj.tlos.indexOf(part);
+        if (idx !== -1) {
+          matched.push(`${coNum}.${idx + 1}`);
+        } else {
+          matched.push(part);
+        }
+      });
+      if (matched.length > 0) return matched.join(", ");
+    }
+    return tloValue;
+  };
 
   useEffect(() => {
     const handleSecondaryToggle = () => {
@@ -329,7 +536,7 @@ const TeachingPlan = () => {
             const att = attendanceRecords.find((a) => a.topic === p.subTopic);
             return {
               co: p.co || "",
-              tlo: p.tlo || "",
+              tlo: getTloNumbers(p.co, p.tlo),
               chapter: p.chapter || "",
               subTopic: p.subTopic || "",
               startDate: p.startDate || "",
@@ -416,7 +623,7 @@ const TeachingPlan = () => {
 
     if (filteredPlans.length === 0) {
       setMessage(
-        "⚠️ Please fill in all fields (Chapter, Sub-Topic, Date, Teaching Method) for at least one row.",
+        "⚠️ Please fill in all fields (Chapter, Sub-Topic, Start Date, Teaching Method) for at least one row.",
       );
       return;
     }
@@ -430,8 +637,7 @@ const TeachingPlan = () => {
           method: "PUT",
           headers: { 
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "x-bypass-freeze": "true"
+            Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({ plans: filteredPlans }),
         },
@@ -485,9 +691,15 @@ const TeachingPlan = () => {
           )}
           <td data-label="CO">{p.co || ""}</td>
           <td data-label="Chapter">{p.chapter || ""}</td>
-          <td data-label="TLO">{p.tlo || ""}</td>
+          <td data-label="TLO">{getTloNumbers(p.co, p.tlo)}</td>
           <td data-label="Sub-Topic">{p.subTopic || ""}</td>
-          <td data-label="Date">{p.startDate || ""}</td>
+          <td data-label="Start Date">{p.startDate || ""}</td>
+          <td data-label="End Date">
+            {(() => {
+              const att = attendanceRecords.find((a) => a.topic === p.subTopic);
+              return att && att.date ? att.date : (p.endDate || "");
+            })()}
+          </td>
           <td data-label="Teaching Method">{p.teachingMethod || ""}</td>
         </tr>
       ));
@@ -509,7 +721,8 @@ const TeachingPlan = () => {
           <td data-label="Chapter"></td>
           <td data-label="TLO"></td>
           <td data-label="Sub-Topic"></td>
-          <td data-label="Date"></td>
+          <td data-label="Start Date"></td>
+          <td data-label="End Date"></td>
           <td data-label="Teaching Method"></td>
         </tr>
       );
@@ -595,12 +808,13 @@ const TeachingPlan = () => {
               <thead>
                 <tr>
                   <th style={{ width: "8%" }}>CO</th>
-                  <th style={{ width: "18%" }}>Chapter</th>
-                  <th style={{ width: "18%" }}>TLO</th>
-                  <th style={{ width: "22%" }}>Sub-Topic</th>
-                  <th style={{ width: "16%" }}>Date</th>
-                  <th style={{ width: "14%" }}>Teaching Method</th>
-                  <th style={{ width: "4%" }}>Action</th>
+                  <th style={{ width: "14%" }}>Chapter</th>
+                  <th style={{ width: "12%" }}>TLO</th>
+                  <th style={{ width: "14%" }}>Sub-Topic</th>
+                  <th style={{ width: "18%" }}>Start Date</th>
+                  <th style={{ width: "18%" }}>End Date</th>
+                  <th style={{ width: "11%" }}>Teaching Method</th>
+                  <th style={{ width: "5%" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -648,24 +862,16 @@ const TeachingPlan = () => {
                       </select>
                     </td>
                     <td>
-                      <select
-                        value={plan.tlo || ""}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const updated = [...plans];
-                          updated[index].tlo = val;
-                          setPlans(updated);
-                        }}
+                      <TloMultiSelect
+                        plan={plan}
+                        index={index}
+                        coData={coData}
+                        plans={plans}
+                        setPlans={setPlans}
+                        openDropdownIndex={openDropdownIndex}
+                        setOpenDropdownIndex={setOpenDropdownIndex}
                         disabled={!modalWeek || !plan.co}
-                        className="form-input"
-                      >
-                        <option value="">Select TLO</option>
-                        {(coData.find((c) => c.coNumber === plan.co)?.tlos || []).map((tloText, tloIdx) => (
-                          <option key={tloIdx} value={tloText}>
-                            {tloText}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     </td>
                     <td>
                       <input
@@ -685,6 +891,17 @@ const TeachingPlan = () => {
                         onFocus={(e) => e.target.showPicker()}
                         disabled={!modalWeek}
                         className="form-input"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="date"
+                        value={plan.endDate || ""}
+                        readOnly={true}
+                        disabled={true}
+                        className="form-input"
+                        title="End Date is automatically loaded after attendance is successfully recorded"
+                        style={{ backgroundColor: "#f1f3f5", cursor: "not-allowed", border: "1px dashed #ccc" }}
                       />
                     </td>
                     <td>
@@ -900,38 +1117,26 @@ const TeachingPlan = () => {
                 {loading ? (
                   <div className="loading">Loading...</div>
                 ) : (
-                  planningStarted &&
-                  [...Array(4)].map((_, i) => {
-                    const weekNo = (currentPage - 1) * 4 + i + 1;
-                    const weekRows = renderWeekRow(weekNo);
-                    if (!weekRows) return null;
-                    return (
-                      <div key={weekNo} className="week-planning-card" style={{ marginBottom: "30px", border: "1px solid var(--card-border, #e2eaf5)", borderRadius: "12px", background: "var(--card-bg, #ffffff)", padding: "20px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)" }}>
-                        <h4 style={{ margin: "0 0 15px 0", color: "var(--app-header-bg, #2e7d32)", fontSize: "18px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
-                          <span style={{ display: "inline-block", width: "6px", height: "18px", background: "var(--app-header-bg, #2e7d32)", borderRadius: "3px" }}></span>
-                          Week {weekNo}
-                        </h4>
-                        <div className="table-container" style={{ overflowX: "auto", border: "1px solid var(--card-border, #d6e2f0)", borderRadius: "8px", margin: 0, padding: 0 }}>
-                          <table className="teaching-table" style={{ width: "100%", margin: 0, border: "none" }}>
-                            <thead>
-                              <tr>
-                                <th style={{ width: "8%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>Entry No.</th>
-                                <th style={{ width: "8%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>CO</th>
-                                <th style={{ width: "20%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>Chapter</th>
-                                <th style={{ width: "20%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>TLO</th>
-                                <th style={{ width: "22%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>Sub-Topic</th>
-                                <th style={{ width: "12%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>Date</th>
-                                <th style={{ width: "12%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>Teaching Method</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {weekRows}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    );
-                  })
+                  <table className="teaching-table">
+                    <thead>
+                      <tr>
+                        <th>Entry No.</th>
+                        <th>CO</th>
+                        <th>Chapter</th>
+                        <th>TLO</th>
+                        <th>Sub-Topic</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Teaching Method</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {planningStarted &&
+                        [...Array(4)].flatMap((_, i) =>
+                          renderWeekRow((currentPage - 1) * 4 + i + 1),
+                        )}
+                    </tbody>
+                  </table>
                 )}
               </div>
             </div>

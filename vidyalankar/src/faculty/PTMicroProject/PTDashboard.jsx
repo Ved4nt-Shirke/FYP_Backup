@@ -18,7 +18,7 @@ export default function PTDashboard() {
           return;
         }
 
-        const response = await fetch("http://localhost:5000/api/cianns", {
+        const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -59,7 +59,7 @@ export default function PTDashboard() {
 
       // Check if config exists
       const configRes = await fetch(
-        `http://localhost:5000/api/pt-microproject/new/config/${ciann.ciannId}/${subjectId}`,
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/pt-microproject/new/config/${ciann.ciannId}/${subjectId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

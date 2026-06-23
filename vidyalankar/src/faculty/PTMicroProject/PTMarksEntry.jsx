@@ -29,7 +29,7 @@ export default function PTMarksEntry() {
 
         // Fetch CIANN Students
         const studentsRes = await fetch(
-          `http://localhost:5000/api/pt-microproject/new/students/${ciann.ciannId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/pt-microproject/new/students/${ciann.ciannId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -47,7 +47,7 @@ export default function PTMarksEntry() {
 
         // Fetch Saved Marks
         const marksRes = await fetch(
-          `http://localhost:5000/api/pt-microproject/new/marks/${ciann.ciannId}/${subjectId}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/pt-microproject/new/marks/${ciann.ciannId}/${subjectId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -228,7 +228,7 @@ export default function PTMarksEntry() {
         studentsMarks: studentsMarksPayload,
       };
 
-      const res = await fetch("http://localhost:5000/api/pt-microproject/new/marks", {
+      const res = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/pt-microproject/new/marks`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

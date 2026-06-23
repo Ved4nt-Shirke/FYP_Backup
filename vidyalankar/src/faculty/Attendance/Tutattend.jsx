@@ -32,7 +32,7 @@ const StudentAttendance = () => {
     }
 
     axios
-      .get("http://localhost:5000/api/students", { params })
+      .get(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`, { params })
       .then((res) => {
         const studentList = res.data.map((student) => ({
           rollId: student.rollNo,
@@ -88,7 +88,7 @@ const StudentAttendance = () => {
       setMessage("");
 
       await axios.post(
-        "http://localhost:5000/api/tutorial-attendance",
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/tutorial-attendance`,
         payload,
       );
 
