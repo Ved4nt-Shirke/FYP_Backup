@@ -304,9 +304,9 @@ export default function Tlo() {
                 <div className="col-12">
                   <div className="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                     {/* Header */}
-                    <div className="card-header border-0 bg-dark text-white p-3 d-flex align-items-center justify-content-between">
-                      <h5 className="mb-0 fw-semibold text-white">TLO Management</h5>
-                      <span className="badge bg-primary px-3 py-2 rounded-pill fs-7">
+                    <div className="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+                      <h5 className="mb-0 fw-bold text-dark">TLO Management</h5>
+                      <span className="badge bg-light text-secondary border px-3 py-2 rounded-pill fs-7">
                         Subject: {ciannData?.subject?.name || "Active subject"}
                       </span>
                     </div>
@@ -316,41 +316,46 @@ export default function Tlo() {
                       <div className="row g-4">
                         {/* CO Dropdown Selection */}
                         <div className="col-md-4 border-end-md">
-                          <label className="form-label fw-bold text-dark mb-2">Select Course Outcome (CO)</label>
-                          <select
-                            value={selectedCo}
-                            onChange={(e) => setSelectedCo(e.target.value)}
-                            className="form-select form-select-lg border-2 shadow-sm rounded-3 bg-light text-dark fw-semibold"
-                            style={{ cursor: "pointer" }}
-                          >
-                            {courseOutcomes.map((co) => (
-                              <option key={co.coNumber} value={co.coNumber}>
-                                {co.coNumber}
-                              </option>
-                            ))}
-                          </select>
-
-                          <div className="d-flex gap-2 mt-3">
-                            <button
-                              type="button"
-                              onClick={handleAddCo}
-                              className="btn btn-sm btn-outline-primary w-100 fw-bold"
+                          <div className="mb-3">
+                            <div className="d-flex align-items-start justify-content-between mb-2">
+                              <label className="form-label fw-bold text-dark mb-0 mt-1">Course Outcome (CO)</label>
+                              <div className="d-flex flex-column align-items-end gap-1">
+                                <button
+                                  type="button"
+                                  onClick={handleAddCo}
+                                  className="btn btn-sm btn-outline-secondary py-1 px-2 fw-semibold d-flex align-items-center gap-1"
+                                  title="Add Course Outcome"
+                                >
+                                  <i className="bi bi-plus-lg"></i> Add
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleDeleteCo}
+                                  disabled={courseOutcomes.length <= 1}
+                                  className="btn btn-sm btn-outline-danger py-1 px-2 fw-semibold d-flex align-items-center gap-1"
+                                  title="Delete Selected Course Outcome"
+                                >
+                                  <i className="bi bi-trash"></i> Delete
+                                </button>
+                              </div>
+                            </div>
+                            <select
+                              value={selectedCo}
+                              onChange={(e) => setSelectedCo(e.target.value)}
+                              className="form-select border shadow-sm rounded-3 text-dark fw-semibold"
+                              style={{ cursor: "pointer" }}
                             >
-                              + Add CO
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleDeleteCo}
-                              disabled={courseOutcomes.length <= 1}
-                              className="btn btn-sm btn-outline-danger w-100 fw-bold"
-                            >
-                              Delete CO
-                            </button>
+                              {courseOutcomes.map((co) => (
+                                <option key={co.coNumber} value={co.coNumber}>
+                                  {co.coNumber}
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           {selectedCoObj && (
-                            <div className="mt-4 p-3 bg-light rounded-3 border-start border-4 border-primary">
-                              <span className="text-primary fw-bold text-uppercase fs-7 block mb-2 d-block">
+                            <div className="mt-3 p-3 bg-light rounded-3 border">
+                              <span className="text-secondary fw-bold text-uppercase fs-8 mb-2 d-block">
                                 Description
                               </span>
                               <textarea
@@ -365,7 +370,7 @@ export default function Tlo() {
                                     )
                                   );
                                 }}
-                                className="form-control form-control-sm bg-white text-dark"
+                                className="form-control form-control-sm border bg-white text-dark"
                                 placeholder="Enter Course Outcome Description..."
                                 rows="4"
                               />
@@ -377,13 +382,13 @@ export default function Tlo() {
                         <div className="col-md-8">
                           <div className="d-flex align-items-center justify-content-between mb-3">
                             <h6 className="fw-bold text-dark d-flex align-items-center gap-2 mb-0">
-                              <i className="bi bi-journal-text text-primary"></i>
+                              <i className="bi bi-journal-text text-secondary"></i>
                               Mapped Topic Learning Outcomes for {selectedCo}
                             </h6>
                             <button
                               type="button"
                               onClick={handleAddTloField}
-                              className="btn btn-sm btn-primary rounded-pill px-3 py-1 d-flex align-items-center gap-1 shadow-sm"
+                              className="btn btn-sm btn-outline-secondary fw-semibold px-3 py-1 d-flex align-items-center gap-1"
                             >
                               <i className="bi bi-plus-lg"></i> Add TLO
                             </button>
@@ -399,9 +404,9 @@ export default function Tlo() {
                                   gap: "10px",
                                   marginBottom: "10px",
                                   background: "#f8f9fa",
-                                  borderRadius: "10px",
-                                  padding: "10px 14px",
-                                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                                  borderRadius: "8px",
+                                  padding: "8px 12px",
+                                  border: "1px solid #e9ecef"
                                 }}
                               >
                                 <span
@@ -440,14 +445,14 @@ export default function Tlo() {
                                     border: "none",
                                     color: "#dc3545",
                                     cursor: "pointer",
-                                    fontSize: "1.15rem",
+                                    fontSize: "1rem",
                                     lineHeight: 1,
-                                    padding: "0 2px",
+                                    padding: "4px",
                                     display: "flex",
                                     alignItems: "center",
                                   }}
                                 >
-                                  <i className="bi bi-dash-circle-fill"></i>
+                                  <i className="bi bi-trash"></i>
                                 </button>
                               </div>
                             ))}
@@ -465,7 +470,7 @@ export default function Tlo() {
                         <button
                           onClick={handleSave}
                           disabled={saving || loading || !ciannData}
-                          className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+                          className="btn btn-primary rounded-3 px-4 fw-bold shadow-sm"
                         >
                           {saving ? (
                             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -486,7 +491,7 @@ export default function Tlo() {
                     <h5 className="fw-bold text-dark mb-3">TLO Mapping Summary</h5>
                     <div className="table-responsive">
                       <table className="table table-bordered align-middle">
-                        <thead className="table-dark">
+                        <thead className="table-light text-secondary">
                           <tr>
                             <th style={{ width: "10%" }}>CO</th>
                             <th style={{ width: "35%" }}>Course Outcome Description</th>
@@ -502,7 +507,7 @@ export default function Tlo() {
                             return (
                               <tr key={co.coNumber}>
                                 <td>
-                                  <span className="badge bg-primary fs-7 rounded-pill">{co.coNumber}</span>
+                                  <span className="badge bg-light text-dark border fs-7 rounded-pill">{co.coNumber}</span>
                                 </td>
                                 <td className="text-secondary small fw-semibold">{co.description}</td>
                                 <td>

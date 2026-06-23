@@ -18,19 +18,7 @@ body {
   align-items: stretch;
 }
 
-.sidebar {
-  width: 220px;
-  min-width: 180px;
-  max-width: 240px;
-  flex-shrink: 0;
-  background: var(--app-header-bg) !important;
-  color: #fff;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 100;
-}
+
 
 .timetable-secondary-sidebar-wrapper {
   width: 220px;

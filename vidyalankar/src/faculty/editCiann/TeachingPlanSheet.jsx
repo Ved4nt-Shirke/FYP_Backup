@@ -585,6 +585,10 @@ const TeachingPlan = () => {
 
     updated[index][field] = value;
 
+    if (field === "startDate") {
+      updated[index].endDate = value;
+    }
+
     if (field === "subTopic") {
       const att = attendanceRecords.find((a) => a.topic === value);
       if (att && att.date) {
@@ -608,18 +612,23 @@ const TeachingPlan = () => {
 
     const numericWeek = parseInt(modalWeek.replace("Week ", ""));
 
-    const filteredPlans = plans.filter(
-      (p) =>
-        p.chapter &&
-        p.chapter.trim() !== "" &&
-        p.chapter !== chapterOptions[0] &&
-        p.subTopic &&
-        p.subTopic.trim() !== "" &&
-        p.startDate &&
-        p.startDate.trim() !== "" &&
-        p.teachingMethod &&
-        p.teachingMethod.trim() !== "",
-    );
+    const filteredPlans = plans
+      .filter(
+        (p) =>
+          p.chapter &&
+          p.chapter.trim() !== "" &&
+          p.chapter !== chapterOptions[0] &&
+          p.subTopic &&
+          p.subTopic.trim() !== "" &&
+          p.startDate &&
+          p.startDate.trim() !== "" &&
+          p.teachingMethod &&
+          p.teachingMethod.trim() !== "",
+      )
+      .map((p) => ({
+        ...p,
+        endDate: p.endDate || p.startDate,
+      }));
 
     if (filteredPlans.length === 0) {
       setMessage(
@@ -682,7 +691,7 @@ const TeachingPlan = () => {
           {i === 0 && (
             <td
               rowSpan={plansForWeek.length}
-              style={{ textAlign: "center", verticalAlign: "middle" }}
+              style={{ textAlign: "left", verticalAlign: "middle" }}
               data-label="Entry No."
               className="entry-no"
             >
@@ -693,13 +702,7 @@ const TeachingPlan = () => {
           <td data-label="Chapter">{p.chapter || ""}</td>
           <td data-label="TLO">{getTloNumbers(p.co, p.tlo)}</td>
           <td data-label="Sub-Topic">{p.subTopic || ""}</td>
-          <td data-label="Start Date">{p.startDate || ""}</td>
-          <td data-label="End Date">
-            {(() => {
-              const att = attendanceRecords.find((a) => a.topic === p.subTopic);
-              return att && att.date ? att.date : (p.endDate || "");
-            })()}
-          </td>
+          <td data-label="Date">{p.startDate || ""}</td>
           <td data-label="Teaching Method">{p.teachingMethod || ""}</td>
         </tr>
       ));
@@ -711,7 +714,7 @@ const TeachingPlan = () => {
           className="table-row"
         >
           <td
-            style={{ textAlign: "center", verticalAlign: "middle" }}
+            style={{ textAlign: "left", verticalAlign: "middle" }}
             data-label="Entry No."
             className="entry-no"
           >
@@ -721,8 +724,7 @@ const TeachingPlan = () => {
           <td data-label="Chapter"></td>
           <td data-label="TLO"></td>
           <td data-label="Sub-Topic"></td>
-          <td data-label="Start Date"></td>
-          <td data-label="End Date"></td>
+          <td data-label="Date"></td>
           <td data-label="Teaching Method"></td>
         </tr>
       );
@@ -807,20 +809,19 @@ const TeachingPlan = () => {
             <table className="plan-table">
               <thead>
                 <tr>
-                  <th style={{ width: "8%" }}>CO</th>
-                  <th style={{ width: "14%" }}>Chapter</th>
-                  <th style={{ width: "12%" }}>TLO</th>
-                  <th style={{ width: "14%" }}>Sub-Topic</th>
-                  <th style={{ width: "18%" }}>Start Date</th>
-                  <th style={{ width: "18%" }}>End Date</th>
-                  <th style={{ width: "11%" }}>Teaching Method</th>
-                  <th style={{ width: "5%" }}>Action</th>
+                  <th style={{ width: "8%", minWidth: "70px" }}>CO</th>
+                  <th style={{ width: "16%", minWidth: "140px" }}>Chapter</th>
+                  <th style={{ width: "12%", minWidth: "100px" }}>TLO</th>
+                  <th style={{ width: "20%", minWidth: "160px" }}>Sub-Topic</th>
+                  <th style={{ width: "24%", minWidth: "180px" }}>Date</th>
+                  <th style={{ width: "16%", minWidth: "130px" }}>Teaching Method</th>
+                  <th style={{ width: "4%", minWidth: "50px" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {plans.map((plan, index) => (
                   <tr key={index}>
-                    <td>
+                    <td style={{ width: "8%", minWidth: "70px" }}>
                       <select
                         value={plan.co || ""}
                         onChange={(e) => {
@@ -841,7 +842,7 @@ const TeachingPlan = () => {
                         ))}
                       </select>
                     </td>
-                    <td>
+                    <td style={{ width: "16%", minWidth: "140px" }}>
                       <select
                         value={plan.chapter || ""}
                         onChange={(e) => {
@@ -861,7 +862,7 @@ const TeachingPlan = () => {
                         ))}
                       </select>
                     </td>
-                    <td>
+                    <td style={{ width: "12%", minWidth: "100px" }}>
                       <TloMultiSelect
                         plan={plan}
                         index={index}
@@ -873,7 +874,7 @@ const TeachingPlan = () => {
                         disabled={!modalWeek || !plan.co}
                       />
                     </td>
-                    <td>
+                    <td style={{ width: "20%", minWidth: "160px" }}>
                       <input
                         type="text"
                         placeholder="Sub-Topic"
@@ -883,7 +884,7 @@ const TeachingPlan = () => {
                         className="form-input"
                       />
                     </td>
-                    <td>
+                    <td style={{ width: "24%", minWidth: "180px" }}>
                       <input
                         type="date"
                         value={plan.startDate || ""}
@@ -891,20 +892,10 @@ const TeachingPlan = () => {
                         onFocus={(e) => e.target.showPicker()}
                         disabled={!modalWeek}
                         className="form-input"
+                        style={{ width: "100%", minWidth: "160px" }}
                       />
                     </td>
-                    <td>
-                      <input
-                        type="date"
-                        value={plan.endDate || ""}
-                        readOnly={true}
-                        disabled={true}
-                        className="form-input"
-                        title="End Date is automatically loaded after attendance is successfully recorded"
-                        style={{ backgroundColor: "#f1f3f5", cursor: "not-allowed", border: "1px dashed #ccc" }}
-                      />
-                    </td>
-                    <td>
+                    <td style={{ width: "16%", minWidth: "130px" }}>
                       <input
                         type="text"
                         placeholder="Teaching Method"
@@ -914,7 +905,7 @@ const TeachingPlan = () => {
                         className="form-input"
                       />
                     </td>
-                    <td>
+                    <td style={{ width: "4%", minWidth: "50px" }}>
                       <button
                         type="button"
                         onClick={() => {
@@ -1125,8 +1116,7 @@ const TeachingPlan = () => {
                         <th>Chapter</th>
                         <th>TLO</th>
                         <th>Sub-Topic</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
+                        <th>Date</th>
                         <th>Teaching Method</th>
                       </tr>
                     </thead>

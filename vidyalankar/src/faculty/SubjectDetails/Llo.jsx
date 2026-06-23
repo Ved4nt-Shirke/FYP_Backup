@@ -272,40 +272,20 @@ export default function Llo() {
 
         {/* Right Column: Main Content */}
         <div className="student-main-content">
-          <div className="container-fluid py-2 px-md-3">
+          <div className="container-fluid py-4 px-md-4">
             {/* Header / Title */}
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <div>
-                <h5 className="fw-bold text-dark mb-0">Lab Learning Outcomes (LLO)</h5>
-                <p className="text-secondary mb-0 small">
-                  Select a CO and define its Lab Learning Outcomes.
-                </p>
-              </div>
-              <div className="d-flex align-items-center gap-2">
-                {success && (
-                  <span className="text-success fw-semibold d-flex align-items-center gap-1 small">
-                    <i className="bi bi-check-circle-fill"></i> Saved!
-                  </span>
-                )}
-                <button
-                  onClick={handleSave}
-                  disabled={saving || loading || !ciannData}
-                  className="btn btn-info btn-sm rounded-pill px-3 fw-bold text-white shadow-sm"
-                >
-                  {saving ? (
-                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                  ) : (
-                    <><i className="bi bi-cloud-arrow-up-fill me-1"></i> Save</>
-                  )}
-                </button>
-              </div>
+            <div className="mb-4">
+              <h2 className="fw-bold text-dark mb-1">Lab Learning Outcomes (LLO)</h2>
+              <p className="text-secondary mb-0">
+                Select a Course Outcome (CO) from Admin Subject Course Details and define its corresponding Lab Learning Outcomes.
+              </p>
             </div>
 
             {/* Alerts */}
             {error && (
-              <div className="alert alert-danger border-0 rounded-3 shadow-sm d-flex align-items-center gap-2 mb-2 py-2">
-                <i className="bi bi-exclamation-octagon-fill text-danger"></i>
-                <span className="small">{error}</span>
+              <div className="alert alert-danger border-0 rounded-3 shadow-sm d-flex align-items-center gap-2 mb-4">
+                <i className="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
+                <span>{error}</span>
               </div>
             )}
 
@@ -317,175 +297,203 @@ export default function Llo() {
                 <p className="mt-3 text-muted">Loading Course Outcomes & mappings...</p>
               </div>
             ) : (
-              <div className="row g-3" style={{ height: "calc(100vh - 140px)" }}>
-                {/* Left: CO selector + LLO inputs */}
-                <div className="col-md-5 d-flex flex-column">
-                  <div className="card border-0 shadow-sm rounded-3 flex-fill overflow-hidden">
-                    <div className="card-header border-0 bg-dark text-white py-2 px-3 d-flex align-items-center justify-content-between">
-                      <h6 className="mb-0 fw-semibold text-white small">LLO Management</h6>
-                      <span className="badge bg-info text-white px-2 py-1 rounded-pill" style={{ fontSize: "11px" }}>
-                        {ciannData?.subject?.name || "Active subject"}
+              <div className="row g-4">
+                {/* Selector and Editing Card */}
+                <div className="col-12">
+                  <div className="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                    {/* Header */}
+                    <div className="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+                      <h5 className="mb-0 fw-bold text-dark">LLO Management</h5>
+                      <span className="badge bg-light text-secondary border px-3 py-2 rounded-pill fs-7">
+                        Subject: {ciannData?.subject?.name || "Active subject"}
                       </span>
                     </div>
-                    <div className="card-body p-3 bg-white d-flex flex-column" style={{ overflow: "hidden" }}>
-                      {/* CO Selection row */}
-                      <div className="d-flex align-items-center gap-2 mb-2">
-                        <label className="fw-bold text-dark mb-0 small text-nowrap">CO:</label>
-                        <select
-                          value={selectedCo}
-                          onChange={(e) => setSelectedCo(e.target.value)}
-                          className="form-select form-select-sm border-2 shadow-sm rounded-3 bg-light text-dark fw-semibold"
-                          style={{ cursor: "pointer", minWidth: 0, flex: 1 }}
-                        >
-                          {courseOutcomes.map((co) => (
-                            <option key={co.coNumber} value={co.coNumber}>
-                              {co.coNumber}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          type="button"
-                          onClick={handleAddCo}
-                          className="btn btn-sm btn-outline-info fw-bold text-nowrap"
-                          style={{ fontSize: "12px", padding: "3px 8px" }}
-                        >
-                          + CO
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleDeleteCo}
-                          disabled={courseOutcomes.length <= 1}
-                          className="btn btn-sm btn-outline-danger fw-bold text-nowrap"
-                          style={{ fontSize: "12px", padding: "3px 8px" }}
-                        >
-                          - CO
-                        </button>
-                      </div>
 
-                      {selectedCoObj && (
-                        <div className="mb-2 p-2 bg-light rounded-3 border-start border-3 border-info">
-                          <span className="text-info fw-bold text-uppercase d-block mb-1" style={{ fontSize: "11px" }}>
-                            CO Description
-                          </span>
-                          <textarea
-                            value={selectedCoObj.description || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setCourseOutcomes((prev) =>
-                                prev.map((c) =>
-                                  c.coNumber === selectedCo
-                                    ? { ...c, description: val }
-                                    : c
-                                )
-                              );
-                            }}
-                            className="form-control form-control-sm bg-white text-dark"
-                            placeholder="Enter Course Outcome Description..."
-                            rows="2"
-                            style={{ fontSize: "12px" }}
-                          />
-                        </div>
-                      )}
-
-                      {/* LLO Inputs */}
-                      <div className="d-flex align-items-center justify-content-between mb-2">
-                        <h6 className="fw-bold text-dark d-flex align-items-center gap-1 mb-0 small">
-                          <i className="bi bi-flask text-info"></i>
-                          LLOs for {selectedCo}
-                        </h6>
-                        <button
-                          type="button"
-                          onClick={handleAddLloField}
-                          className="btn btn-info btn-sm text-white rounded-pill px-2 py-0 d-flex align-items-center gap-1 shadow-sm"
-                          style={{ fontSize: "12px" }}
-                        >
-                          <i className="bi bi-plus-lg"></i> Add LLO
-                        </button>
-                      </div>
-
-                      <div className="outcome-inputs-list flex-fill" style={{ overflowY: "auto" }}>
-                        {activeLlos.map((llo, idx) => (
-                          <div
-                            key={idx}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              marginBottom: "6px",
-                              background: "#f8f9fa",
-                              borderRadius: "8px",
-                              padding: "6px 10px",
-                              boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                            }}
-                          >
-                            <span
-                              style={{
-                                minWidth: "40px",
-                                fontSize: "11px",
-                                fontWeight: "700",
-                                color: "#0ea5e9",
-                                flexShrink: 0,
-                                background: "#e0f2fe",
-                                padding: "2px 6px",
-                                borderRadius: "4px",
-                              }}
+                    {/* Body */}
+                    <div className="card-body p-4 bg-white">
+                      <div className="row g-4">
+                        {/* CO Dropdown Selection */}
+                        <div className="col-md-4 border-end-md">
+                          <div className="mb-3">
+                            <div className="d-flex align-items-start justify-content-between mb-2">
+                              <label className="form-label fw-bold text-dark mb-0 mt-1">Course Outcome (CO)</label>
+                              <div className="d-flex flex-column align-items-end gap-1">
+                                <button
+                                  type="button"
+                                  onClick={handleAddCo}
+                                  className="btn btn-sm btn-outline-secondary py-1 px-2 fw-semibold d-flex align-items-center gap-1"
+                                  title="Add Course Outcome"
+                                >
+                                  <i className="bi bi-plus-lg"></i> Add
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleDeleteCo}
+                                  disabled={courseOutcomes.length <= 1}
+                                  className="btn btn-sm btn-outline-danger py-1 px-2 fw-semibold d-flex align-items-center gap-1"
+                                  title="Delete Selected Course Outcome"
+                                >
+                                  <i className="bi bi-trash"></i> Delete
+                                </button>
+                              </div>
+                            </div>
+                            <select
+                              value={selectedCo}
+                              onChange={(e) => setSelectedCo(e.target.value)}
+                              className="form-select border shadow-sm rounded-3 text-dark fw-semibold"
+                              style={{ cursor: "pointer" }}
                             >
-                              {(selectedCo.replace(/\D/g, "") || "1")}.{idx + 1}
-                            </span>
-                            <input
-                              type="text"
-                              value={llo}
-                              onChange={(e) => handleLloFieldChange(idx, e.target.value)}
-                              placeholder="Describe laboratory outcome..."
-                              style={{
-                                flex: 1,
-                                border: "none",
-                                background: "transparent",
-                                outline: "none",
-                                fontSize: "13px",
-                                color: "#212529",
-                                padding: "2px 0",
-                              }}
-                            />
+                              {courseOutcomes.map((co) => (
+                                <option key={co.coNumber} value={co.coNumber}>
+                                  {co.coNumber}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {selectedCoObj && (
+                            <div className="mt-3 p-3 bg-light rounded-3 border">
+                              <span className="text-secondary fw-bold text-uppercase fs-8 mb-2 d-block">
+                                Description
+                              </span>
+                              <textarea
+                                value={selectedCoObj.description || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setCourseOutcomes((prev) =>
+                                    prev.map((c) =>
+                                      c.coNumber === selectedCo
+                                        ? { ...c, description: val }
+                                        : c
+                                    )
+                                  );
+                                }}
+                                className="form-control form-control-sm border bg-white text-dark"
+                                placeholder="Enter Course Outcome Description..."
+                                rows="4"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Outcomes Inputs */}
+                        <div className="col-md-8">
+                          <div className="d-flex align-items-center justify-content-between mb-3">
+                            <h6 className="fw-bold text-dark d-flex align-items-center gap-2 mb-0">
+                              <i className="bi bi-flask text-secondary"></i>
+                              Mapped Lab Learning Outcomes for {selectedCo}
+                            </h6>
                             <button
                               type="button"
-                              onClick={() => handleRemoveLloField(idx)}
-                              title="Delete LLO"
-                              style={{
-                                flexShrink: 0,
-                                background: "none",
-                                border: "none",
-                                color: "#dc3545",
-                                cursor: "pointer",
-                                fontSize: "1rem",
-                                lineHeight: 1,
-                                padding: "0 2px",
-                                display: "flex",
-                                alignItems: "center",
-                              }}
+                              onClick={handleAddLloField}
+                              className="btn btn-sm btn-outline-secondary fw-semibold px-3 py-1 d-flex align-items-center gap-1"
                             >
-                              <i className="bi bi-dash-circle-fill"></i>
+                              <i className="bi bi-plus-lg"></i> Add LLO
                             </button>
                           </div>
-                        ))}
+
+                          <div className="outcome-inputs-list" style={{ minHeight: "150px" }}>
+                            {activeLlos.map((llo, idx) => (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                  marginBottom: "10px",
+                                  background: "#f8f9fa",
+                                  borderRadius: "8px",
+                                  padding: "8px 12px",
+                                  border: "1px solid #e9ecef"
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    minWidth: "52px",
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                    color: "#6c757d",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  LLO {idx + 1}
+                                </span>
+                                <input
+                                  type="text"
+                                  value={llo}
+                                  onChange={(e) => handleLloFieldChange(idx, e.target.value)}
+                                  placeholder="Describe laboratory outcome..."
+                                  style={{
+                                    flex: 1,
+                                    border: "none",
+                                    background: "transparent",
+                                    outline: "none",
+                                    fontSize: "14px",
+                                    color: "#212529",
+                                    padding: "2px 0",
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveLloField(idx)}
+                                  title="Delete LLO"
+                                  style={{
+                                    flexShrink: 0,
+                                    background: "none",
+                                    border: "none",
+                                    color: "#dc3545",
+                                    cursor: "pointer",
+                                    fontSize: "1rem",
+                                    lineHeight: 1,
+                                    padding: "4px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <i className="bi bi-trash"></i>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Save Button Footer */}
+                      <div className="border-top pt-3 mt-2 d-flex align-items-center justify-content-end gap-3">
+                        {success && (
+                          <span className="text-success fw-semibold d-flex align-items-center gap-1">
+                            <i className="bi bi-check-circle-fill"></i> Saved successfully!
+                          </span>
+                        )}
+                        <button
+                          onClick={handleSave}
+                          disabled={saving || loading || !ciannData}
+                          className="btn btn-info rounded-3 px-4 fw-bold text-white shadow-sm"
+                        >
+                          {saving ? (
+                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          ) : (
+                            <>
+                              <i className="bi bi-cloud-arrow-up-fill me-2"></i> Save LLO Details
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Right: Summary Table */}
-                <div className="col-md-7 d-flex flex-column">
-                  <div className="card border-0 shadow-sm rounded-3 flex-fill overflow-hidden">
-                    <div className="card-header border-0 bg-dark text-white py-2 px-3">
-                      <h6 className="fw-bold text-white mb-0 small">LLO Mapping Summary</h6>
-                    </div>
-                    <div className="card-body p-0 bg-white" style={{ overflowY: "auto" }}>
-                      <table className="table table-bordered table-sm align-middle mb-0">
-                        <thead className="table-dark sticky-top">
+                {/* Summary Section */}
+                <div className="col-12">
+                  <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
+                    <h5 className="fw-bold text-dark mb-3">LLO Mapping Summary</h5>
+                    <div className="table-responsive">
+                      <table className="table table-bordered align-middle">
+                        <thead className="table-light text-secondary">
                           <tr>
-                            <th style={{ width: "8%", textAlign: "center" }}>CO</th>
-                            <th style={{ width: "40%", fontSize: "12px" }}>Course Outcome Description</th>
-                            <th style={{ fontSize: "12px" }}>Mapped LLOs</th>
+                            <th style={{ width: "10%" }}>CO</th>
+                            <th style={{ width: "35%" }}>Course Outcome Description</th>
+                            <th>Mapped Lab Learning Outcomes</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -496,29 +504,23 @@ export default function Llo() {
 
                             return (
                               <tr key={co.coNumber}>
-                                <td className="text-center">
-                                  <span className="badge bg-info text-white rounded-pill" style={{ fontSize: "11px" }}>{co.coNumber}</span>
+                                <td>
+                                  <span className="badge bg-light text-dark border fs-7 rounded-pill">{co.coNumber}</span>
                                 </td>
-                                <td className="text-secondary small">{co.description}</td>
+                                <td className="text-secondary small fw-semibold">{co.description}</td>
                                 <td>
                                   {nonEmpties.length === 0 ? (
-                                    <span className="text-muted small fst-italic">No LLOs mapped yet</span>
+                                    <span className="text-muted italic small">No LLOs mapped yet</span>
                                   ) : (
-                                    <div className="d-flex flex-wrap gap-1">
+                                    <div className="d-flex flex-column gap-1">
                                       {nonEmpties.map((l, idx) => (
-                                        <span
-                                          key={idx}
-                                          className="badge text-white fw-semibold"
-                                          style={{
-                                            background: "#0ea5e9",
-                                            fontSize: "11px",
-                                            padding: "3px 8px",
-                                            borderRadius: "4px",
-                                          }}
-                                          title={l}
+                                        <div 
+                                          key={idx} 
+                                          className="small text-dark fw-semibold py-1"
+                                          style={idx < nonEmpties.length - 1 ? { borderBottom: "1px solid #e9ecef" } : {}}
                                         >
-                                          {coNum}.{idx + 1}
-                                        </span>
+                                          {coNum}.{idx + 1} {l}
+                                        </div>
                                       ))}
                                     </div>
                                   )}

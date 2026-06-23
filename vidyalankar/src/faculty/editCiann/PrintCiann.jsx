@@ -855,10 +855,10 @@ const PrintCiann = () => {
           className="btn btn-outline-secondary"
           onClick={() => window.history.back()}
         >
-          Go back
+          ← Go Back
         </button>
         <button className="btn btn-success" onClick={printNow}>
-          Print
+          🖨️ Print CIANN
         </button>
       </div>
 
@@ -1185,7 +1185,7 @@ const PrintCiann = () => {
                     <th>Name of Chapter</th>
                     <th>Topics / Sub-topics</th>
                     <th>Entry No.</th>
-                    <th>Start Date</th>
+                    <th>Date</th>
                     <th>Teaching Methods</th>
                   </tr>
                 </thead>

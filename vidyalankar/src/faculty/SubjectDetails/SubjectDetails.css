@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
 .subject-details-container {
   --sd-surface: #ffffff;
   --sd-border: #dbe5f2;
@@ -16,12 +18,13 @@
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   background: linear-gradient(180deg, var(--sd-bg-1) 0%, var(--sd-bg-2) 100%);
 }
 
 .subject-details-container * {
   box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
 .details-sidebar-column {

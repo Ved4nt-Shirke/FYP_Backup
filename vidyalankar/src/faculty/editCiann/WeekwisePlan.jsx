@@ -9,7 +9,8 @@ const modalStyles = {
     left: 0,
     width: "100vw",
     height: "100vh",
-    background: "rgba(0, 0, 0, 0.7)",
+    background: "rgba(15, 23, 42, 0.45)",
+    backdropFilter: "blur(4px)",
     zIndex: 999999,
     display: "flex",
     alignItems: "center",
@@ -21,21 +22,28 @@ const modalStyles = {
     width: "95%",
     maxWidth: "1250px",
     maxHeight: "90vh", // Keep modal within viewport on mobile
-    animation: "fadeIn 0.3s ease-in-out",
+    animation: "slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
     display: "flex",
     flexDirection: "column",
-    boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4)",
+    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
     overflow: "hidden", // Ensure modal content doesn't overflow outside its rounded corners
     padding: "0",
     marginTop: "0",
+    border: "1px solid rgba(226, 232, 240, 0.8)",
   },
   closeBtn: {
     background: "none",
     border: "none",
-    color: "#999",
-    fontSize: "28px",
+    color: "#64748b",
+    fontSize: "24px",
     cursor: "pointer",
-    transition: "transform 0.2s ease, color 0.2s ease",
+    transition: "all 0.2s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
   },
 };
 
@@ -296,6 +304,11 @@ const WeekwisePlan = ({
           font-family: 'Inter', sans-serif;
         }
 
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(12px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
         .co-badges-container {
           display: flex;
           flex-wrap: wrap;
@@ -303,25 +316,25 @@ const WeekwisePlan = ({
           justify-content: center;
         }
         .co-badge-btn {
-          background-color: #f3f4f6;
-          color: #4b5563;
-          border: 1px solid #d1d5db;
-          border-radius: 4px;
-          padding: 3px 6px;
+          background-color: #f1f5f9;
+          color: #475569;
+          border: 1px solid #cbd5e1;
+          border-radius: 6px;
+          padding: 4px 8px;
           font-size: 11px;
-          font-weight: 600;
+          font-weight: 700;
           cursor: pointer;
           transition: all 0.2s ease;
           user-select: none;
         }
         .co-badge-btn:hover:not(:disabled) {
-          background-color: #e5e7eb;
-          color: #1f2937;
+          background-color: #e2e8f0;
+          color: #0f172a;
         }
         .co-badge-btn.active {
-          background-color: #e3f2fd;
-          color: #1565c0;
-          border-color: #90caf9;
+          background-color: #d1fae5;
+          color: #065f46;
+          border-color: #a7f3d0;
         }
         .co-badge-btn:disabled {
           opacity: 0.5;
@@ -334,20 +347,32 @@ const WeekwisePlan = ({
         }
         .llo-dropdown-trigger {
           width: 100%;
-          padding: 8px 10px;
+          padding: 8px 12px;
           background-color: white;
-          border: 1px solid #ddd;
+          border: 1px solid #cbd5e1;
           border-radius: 8px;
           text-align: left;
           font-size: 13px;
+          color: #0f172a;
           display: flex;
           justify-content: space-between;
           align-items: center;
           cursor: pointer;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          transition: all 0.2s ease;
+        }
+        .llo-dropdown-trigger:hover:not(:disabled) {
+          border-color: #94a3b8;
+        }
+        .llo-dropdown-trigger:focus {
+          outline: none;
+          border-color: #10b981;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
         .llo-dropdown-trigger:disabled {
-          background-color: #f5f5f5;
+          background-color: #f8fafc;
+          border-color: #e2e8f0;
+          color: #94a3b8;
           cursor: not-allowed;
           opacity: 0.7;
         }
@@ -358,7 +383,7 @@ const WeekwisePlan = ({
         }
         .llo-trigger-arrow {
           font-size: 10px;
-          color: #888;
+          color: #64748b;
           margin-left: 5px;
         }
         .llo-dropdown-menu {
@@ -367,79 +392,77 @@ const WeekwisePlan = ({
           left: 0;
           right: 0;
           background-color: white;
-          border: 1px solid #ccc;
+          border: 1px solid #e2e8f0;
           border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          max-height: 200px;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+          max-height: 220px;
           overflow-y: auto;
           z-index: 100;
           text-align: left;
           margin-top: 4px;
+          padding: 4px;
         }
         .llo-dropdown-item {
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           padding: 8px 12px;
           cursor: pointer;
           font-size: 12px;
           transition: background-color 0.2s ease;
           user-select: none;
-          border-bottom: 1px solid #f0f0f0;
-        }
-        .llo-dropdown-item:last-child {
-          border-bottom: none;
+          border-radius: 6px;
         }
         .llo-dropdown-item:hover {
-          background-color: #f5f7fa;
+          background-color: #f1f5f9;
         }
         .llo-dropdown-item input[type="checkbox"] {
           margin-right: 8px;
-          margin-top: 3px;
-          width: 14px;
-          height: 14px;
+          width: 15px;
+          height: 15px;
+          accent-color: #10b981;
           cursor: pointer;
           flex-shrink: 0;
         }
         .llo-item-text {
           line-height: 1.4;
-          color: #333;
+          color: #334155;
         }
         .llo-dropdown-empty {
           padding: 12px;
-          color: #888;
+          color: #64748b;
           font-size: 12px;
           text-align: center;
         }
         
         .add-row-btn {
-          background-color: #28a745 !important;
+          background-color: #3b82f6 !important;
           color: white !important;
           border: none;
           padding: 8px 16px;
-          border-radius: 6px;
-          font-weight: 600;
+          border-radius: 8px;
+          font-weight: 700;
           font-size: 13px;
           cursor: pointer;
-          transition: background-color 0.2s ease;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          transition: all 0.2s ease;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         .add-row-btn:hover:not(:disabled) {
-          background-color: #218838 !important;
+          background-color: #2563eb !important;
         }
         .add-row-btn:disabled {
-          background-color: #e9ecef !important;
-          color: #6c757d !important;
+          background-color: #f1f5f9 !important;
+          color: #94a3b8 !important;
           cursor: not-allowed;
           box-shadow: none;
         }
         
         .delete-row-btn {
-          background-color: #f8d7da !important;
-          color: #842029 !important;
-          border: 1px solid #f5c2c7;
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
+          background-color: #fee2e2 !important;
+          color: #ef4444 !important;
+          border: 1px solid #fecaca;
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -449,9 +472,9 @@ const WeekwisePlan = ({
           transition: all 0.2s ease;
         }
         .delete-row-btn:hover:not(:disabled) {
-          background-color: #ea868f !important;
+          background-color: #ef4444 !important;
           color: white !important;
-          border-color: #ea868f;
+          border-color: #ef4444;
         }
         .delete-row-btn:disabled {
           opacity: 0.5;
@@ -461,113 +484,116 @@ const WeekwisePlan = ({
         .batch-select {
           width: 100%;
           padding: 8px 10px;
-          border: 1px solid #ddd;
+          border: 1px solid #cbd5e1;
           border-radius: 8px;
           font-size: 14px;
         }
 
-        @keyframes fadeIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-
         .modal-header-weekwise {
-          background: #fff;
-          color: #333;
-          padding: 15px 25px;
-          font-size: 20px;
-          font-weight: 600;
+          background: #f8fafc;
+          color: #0f172a;
+          padding: 16px 24px;
+          font-size: 18px;
+          font-weight: 700;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 1px solid #eee;
-          flex-shrink: 0; /* Prevent header from shrinking */
+          border-bottom: 1px solid #e2e8f0;
+          flex-shrink: 0;
+        }
+        
+        .modal-header-weekwise button:hover {
+          background-color: #f1f5f9;
+          color: #0f172a !important;
         }
 
         .weekwise-container {
-          padding: 12px 15px;
-          /* Calculate max-height to fit between header (60px) and footer buttons (64px) */
-          max-height: calc(90vh - 60px - 64px); 
-          overflow-y: auto; /* Vertical scroll inside modal */
-          -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
+          padding: 24px;
+          max-height: calc(90vh - 64px - 72px); 
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
           background-color: #fff;
           font-family: 'Inter', sans-serif;
-          flex-grow: 1; /* Allow content to grow and fill available space */
+          flex-grow: 1;
         }
         
         .plan-table-wrapper {
-          overflow-x: auto; /* Horizontal scroll for the table */
-          -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
-          margin-top: 20px;
-          padding-bottom: 0; /* Remove bottom gap so grid lines meet border */
-          border: 1px solid #cfd4da; /* Slightly darker grey for clearer lines */
-          border-radius: 10px; /* Rounded corners */
-          background: #fff; /* Ensure solid background under sticky header */
-          overflow: hidden; /* Clip table to rounded corners */
+          overflow-x: auto;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+          margin-top: 16px;
+          padding-bottom: 0;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+          background: #fff;
         }
 
         .plan-table {
           width: 100%;
-          border-collapse: collapse; /* Ensure header/body borders meet */
-          min-width: 1150px; /* Minimum width to force horizontal scroll on small screens */
-          table-layout: fixed; /* Ensures column widths are respected */
-          border: 0; /* Use wrapper for outer border */
+          border-collapse: collapse;
+          min-width: 1200px;
+          table-layout: fixed;
+          border: 0;
         }
 
         .plan-table th,
         .plan-table td {
-          border: 1px solid #e0e0e0;
-          padding: 6px 4px;
+          border: 1px solid #f1f5f9;
+          padding: 12px 10px;
           text-align: center;
           vertical-align: middle;
-          font-size: 12.5px;
-          /* word-wrap: break-word; /* Allow long words to break within cell */
-          white-space: normal; /* Allow text to wrap naturally */
+          font-size: 13px;
+          color: #334155;
+          white-space: normal;
         }
 
         .plan-table th {
-          background-color: #f0f2f5;
-          font-weight: 600;
-          color: #495057;
-          position: sticky; /* Make headers sticky for vertical scroll */
+          background-color: #f8fafc;
+          font-weight: 700;
+          color: #475569;
+          text-transform: uppercase;
+          font-size: 11px;
+          letter-spacing: 0.05em;
+          position: sticky;
           top: 0;
-          z-index: 10; /* Ensure header is above scrolling content */
+          z-index: 10;
+          border-bottom: 2px solid #e2e8f0;
         }
         
-        /* Column widths */
-        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 8%; }  /* Week No */
-        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 8%; }  /* Batch No */
-        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 8%; }  /* CO */
-        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 22%; } /* LLO */
-        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 8%; }  /* Experiment No */
-        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 32%; } /* Experiment Name */
-        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 10%; } /* Planned Date */
-        .plan-table th:nth-child(8), .plan-table td:nth-child(8) { width: 4%; }  /* Action */
+        /* Column widths are set via <colgroup> in JSX */
 
         .plan-table input,
         .plan-table select,
         .plan-table textarea {
           width: 100%;
           padding: 6px 8px;
-          border: 1px solid #ddd;
+          border: 1px solid #cbd5e1;
           border-radius: 8px;
           font-size: 13px;
           box-sizing: border-box;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
-          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          transition: all 0.2s ease;
           background-color: white;
+          color: #0f172a;
         }
         .plan-table input:focus,
         .plan-table select:focus,
         .plan-table textarea:focus {
           outline: none;
-          border-color: #81c784;
-          box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
+          border-color: #10b981;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
         
         .plan-table textarea[readonly] {
-          background-color: #f5f5f5;
-          cursor: default;
+          background-color: #f8fafc;
+          color: #64748b;
+          border-color: #e2e8f0;
+          box-shadow: none;
+          cursor: not-allowed;
+          resize: none;
+          height: 38px;
+          line-height: 1.4;
         }
         
         .plan-table select {
@@ -577,7 +603,9 @@ const WeekwisePlan = ({
         .plan-table select:disabled,
         .plan-table input:disabled,
         .plan-table textarea:disabled {
-          background-color: #f5f5f5;
+          background-color: #f8fafc;
+          border-color: #e2e8f0;
+          color: #94a3b8;
           cursor: not-allowed;
           opacity: 0.7;
         }
@@ -588,42 +616,47 @@ const WeekwisePlan = ({
         
         .action-buttons-container {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
-            padding: 15px 25px;
-            background: #f8f9fa;
-            border-top: 1px solid #eee;
-            flex-shrink: 0; /* Prevent footer from shrinking */
+            gap: 12px;
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            flex-shrink: 0;
         }
 
         .action-buttons-container button {
-          padding: 10px 24px;
-          font-weight: 600;
-          border: none;
+          padding: 10px 20px;
+          font-weight: 700;
+          font-size: 14px;
           border-radius: 8px;
           cursor: pointer;
-          transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          transition: all 0.2s ease;
+          border: none;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         
         .action-buttons-container button:first-child {
-            background-color: #4CAF50;
+            background-color: #10b981;
             color: white;
         }
         
         .action-buttons-container button:first-child:hover {
-            background-color: #43A047;
-            transform: translateY(-1px);
+            background-color: #059669;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2), 0 2px 4px -1px rgba(16, 185, 129, 0.1);
         }
         
         .action-buttons-container button.cancel {
-            background-color: #d22e2eff;
-            color: white;
+            background-color: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         
         .action-buttons-container button.cancel:hover {
-            background-color: #ab8686ff;
-            transform: translateY(-1px);
+            background-color: #f1f5f9;
+            color: #0f172a;
+            border-color: #cbd5e1;
         }
         
         .submission-message {
@@ -631,29 +664,25 @@ const WeekwisePlan = ({
             font-size: 14px;
             text-align: center;
             padding: 10px;
-            background-color: #e6f7e6;
-            border: 1px solid #28a745;
-            color: #28a745;
-            border-radius: 5px;
+            background-color: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            border-radius: 8px;
         }
 
         /* Mobile adjustments: Keep table as table for horizontal scroll */
         @media (max-width: 768px) {
             .weekwise-container {
               padding: 15px;
-              /* Adjusted max-height slightly for mobile to account for smaller header/footer if needed,
-                 but calc(90vh - 124px) should be good if header/footer heights are consistent */
               max-height: calc(90vh - 120px); 
               overflow-y: auto;
             }
             .plan-table-wrapper {
-              overflow-x: auto; /* Ensure horizontal scroll remains for the table */
+              overflow-x: auto;
             }
             .plan-table {
-              min-width: 600px; /* Crucial: Keep minimum width to force horizontal scroll */
+              min-width: 600px;
             }
-            /* Do NOT change table display properties to block on mobile,
-               to maintain horizontal scrolling. */
             
             .action-buttons-container {
                 flex-direction: column;
@@ -699,13 +728,23 @@ const WeekwisePlan = ({
           )}
           <div className="plan-table-wrapper">
             <table className="plan-table">
+              <colgroup>
+                <col style={{ width: "9%" }} />
+                <col style={{ width: "9%" }} />
+                <col style={{ width: "10%" }} />
+                <col style={{ width: "18%" }} />
+                <col style={{ width: "11%" }} />
+                <col style={{ width: "24%" }} />
+                <col style={{ width: "14%" }} />
+                <col style={{ width: "5%" }} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>Week No</th>
                   <th>Batch No</th>
                   <th>CO</th>
                   <th>LLO</th>
-                  <th>Experiment No</th>
+                  <th>Expt No</th>
                   <th>Experiment Name</th>
                   <th>Planned Date</th>
                   <th>Action</th>
@@ -883,7 +922,7 @@ const WeekwisePlan = ({
                         }
                         disabled={!week || loadingExperiments}
                       >
-                        <option value="">Select Experiment</option>
+                        <option value="">Select</option>
                         {experiments.map((exp) => (
                           <option key={exp.practicalNo} value={String(exp.practicalNo)}>
                             {exp.practicalNo}

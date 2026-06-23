@@ -492,7 +492,7 @@
 .tps-modal .plan-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 100%;
+  min-width: 1150px !important;
   table-layout: fixed;
   border: 0;
 }
@@ -519,50 +519,44 @@
 /* Explicit widths and min-widths to prevent squeezing and optimize vacant space */
 .tps-modal .plan-table th:nth-child(1),
 .tps-modal .plan-table td:nth-child(1) {
-  width: 6% !important;
-  min-width: 50px !important;
+  width: 8% !important;
+  min-width: 70px !important;
 }
 
 .tps-modal .plan-table th:nth-child(2),
 .tps-modal .plan-table td:nth-child(2) {
-  width: 18% !important;
+  width: 16% !important;
   min-width: 130px !important;
 }
 
 .tps-modal .plan-table th:nth-child(3),
 .tps-modal .plan-table td:nth-child(3) {
   width: 10% !important;
-  min-width: 80px !important;
+  min-width: 85px !important;
 }
 
 .tps-modal .plan-table th:nth-child(4),
 .tps-modal .plan-table td:nth-child(4) {
-  width: 24% !important;
-  min-width: 150px !important;
+  width: 18% !important;
+  min-width: 140px !important;
 }
 
 .tps-modal .plan-table th:nth-child(5),
 .tps-modal .plan-table td:nth-child(5) {
-  width: 12% !important;
-  min-width: 100px !important;
+  width: 24% !important;
+  min-width: 180px !important;
 }
 
 .tps-modal .plan-table th:nth-child(6),
 .tps-modal .plan-table td:nth-child(6) {
-  width: 12% !important;
-  min-width: 100px !important;
+  width: 18% !important;
+  min-width: 140px !important;
 }
 
 .tps-modal .plan-table th:nth-child(7),
 .tps-modal .plan-table td:nth-child(7) {
-  width: 13% !important;
-  min-width: 100px !important;
-}
-
-.tps-modal .plan-table th:nth-child(8),
-.tps-modal .plan-table td:nth-child(8) {
-  width: 5% !important;
-  min-width: 40px !important;
+  width: 6% !important;
+  min-width: 50px !important;
 }
 
 .tps-modal .plan-table select,
