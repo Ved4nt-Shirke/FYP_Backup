@@ -25,6 +25,8 @@ const K4MarksForm = () => {
   const isEdit = mode === "edit";
 
   const facultyName = useMemo(() => {
+    const cachedName = localStorage.getItem("facultyName");
+    if (cachedName) return cachedName;
     const username = localStorage.getItem("username") || "";
     if (!username) {
       return "Faculty";
@@ -138,7 +140,7 @@ const K4MarksForm = () => {
         ciannId: ciannData.ciannId,
         subjectName: ciannData.subject?.name || "",
         subjectCode: ciannData.subject?.code || "",
-        courseCode: ciannData.class || "",
+        courseCode: ciannData.courseCode || ciannData.class || "",
         academicYear: ciannData.academicYear || "",
         division,
         examDate: examDate || null,
@@ -209,7 +211,7 @@ const K4MarksForm = () => {
                 <strong>Academic Year:</strong> {ciannData.academicYear || ""}
               </div>
               <div>
-                <strong>Course and Code:</strong> {ciannData.class || ""}
+                <strong>Course and Code:</strong> {ciannData.courseCode || ciannData.class || ""}
               </div>
               <div>
                 <strong>Subject and Code:</strong> {ciannData.subject?.name} (

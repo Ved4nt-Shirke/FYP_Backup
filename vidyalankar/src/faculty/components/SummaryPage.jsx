@@ -59,7 +59,7 @@ const SummaryPage = () => {
 
   const getAcademicContext = (data) => {
     const program = data?.department?.label || data?.department?.name || data?.department || '';
-    const className = data?.class || data?.className || '';
+    const className = data?.courseCode || data?.class || data?.className || '';
     const course = data?.subject?.name || data?.subjectName || '';
     return {
       program: String(program || '').trim(),
@@ -249,7 +249,7 @@ const SummaryPage = () => {
             <p><strong>Division:</strong> {ciannData.division}</p>
             <p><strong>CIANN ID:</strong> {ciannData.ciannId}</p>
             <p><strong>Academic Year:</strong> {ciannData.academicYear || '-'}</p>
-            <p><strong>Class:</strong> {ciannData.class || '-'}</p>
+            <p><strong>Class:</strong> {ciannData.courseCode || ciannData.class || '-'}</p>
             <p><strong>Semester:</strong> {ciannData.semester || '-'}</p>
           </div>
         </div>

@@ -35,6 +35,8 @@ const FAPRK3Print = () => {
   const [loading, setLoading] = useState(true);
 
   const facultyName = useMemo(() => {
+    const cachedName = localStorage.getItem("facultyName");
+    if (cachedName) return cachedName;
     const username = localStorage.getItem("username") || "";
     return formatUsername(username) || "Faculty";
   }, []);
@@ -81,7 +83,7 @@ const FAPRK3Print = () => {
         }
 
         const program = ciannData?.department?.name || "";
-        const className = ciannData?.class || ciannData?.division || "";
+        const className = ciannData?.courseCode || ciannData?.class || ciannData?.division || "";
         const course = ciannData?.subject?.name || "";
 
         const experimentsQuery = new URLSearchParams();
@@ -188,7 +190,7 @@ const FAPRK3Print = () => {
 
         <div className="k3-meta">
           <div><strong>Academic Year:</strong> {ciannData?.academicYear || "2025 - 2026"}</div>
-          <div><strong>Course and Code:</strong> {ciannData?.class || "C05K-A"}</div>
+          <div><strong>Course and Code:</strong> {ciannData?.courseCode || ciannData?.class || "C05K-A"}</div>
           <div><strong>Subject and Code:</strong> {ciannData?.subject?.name || "CLOUD COMPUTING"} ({ciannData?.subject?.code || "315325"})</div>
           <div><strong>Name of Faculty:</strong> {facultyName}</div>
           <div><strong>Batch:</strong> {batch || "-"}</div>

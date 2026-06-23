@@ -274,28 +274,11 @@ export default function Tlo() {
         <div className="student-main-content">
           <div className="container-fluid py-4 px-md-4">
             {/* Header / Title */}
-            <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-              <div>
-                <h2 className="fw-bold text-dark mb-1">Topic Learning Outcomes (TLO)</h2>
-                <p className="text-secondary mb-0">
-                  Select a Course Outcome (CO) from Admin Subject Course Details and define its corresponding Topic Learning Outcomes.
-                </p>
-              </div>
-              <div>
-                <button
-                  onClick={handleSave}
-                  disabled={saving || loading || !ciannData}
-                  className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
-                >
-                  {saving ? (
-                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                  ) : (
-                    <>
-                      <i className="bi bi-cloud-arrow-up-fill me-2"></i> Save TLO Details
-                    </>
-                  )}
-                </button>
-              </div>
+            <div className="mb-4">
+              <h2 className="fw-bold text-dark mb-1">Topic Learning Outcomes (TLO)</h2>
+              <p className="text-secondary mb-0">
+                Select a Course Outcome (CO) from Admin Subject Course Details and define its corresponding Topic Learning Outcomes.
+              </p>
             </div>
 
             {/* Alerts */}
@@ -306,12 +289,7 @@ export default function Tlo() {
               </div>
             )}
 
-            {success && (
-              <div className="alert alert-success border-0 rounded-3 shadow-sm d-flex align-items-center gap-2 mb-4">
-                <i className="bi bi-check-circle-fill text-success fs-5"></i>
-                <span>{success}</span>
-              </div>
-            )}
+
 
             {loading ? (
               <div className="text-center py-5 bg-white rounded-3 shadow-sm my-4">
@@ -413,8 +391,28 @@ export default function Tlo() {
 
                           <div className="outcome-inputs-list" style={{ minHeight: "150px" }}>
                             {activeTlos.map((tlo, idx) => (
-                              <div key={idx} className="input-group mb-2 shadow-sm rounded-3 overflow-hidden">
-                                <span className="input-group-text border-0 bg-light text-secondary small fw-semibold">
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                  marginBottom: "10px",
+                                  background: "#f8f9fa",
+                                  borderRadius: "10px",
+                                  padding: "10px 14px",
+                                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    minWidth: "52px",
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                    color: "#6c757d",
+                                    flexShrink: 0,
+                                  }}
+                                >
                                   TLO {idx + 1}
                                 </span>
                                 <input
@@ -422,13 +420,32 @@ export default function Tlo() {
                                   value={tlo}
                                   onChange={(e) => handleTloFieldChange(idx, e.target.value)}
                                   placeholder="Describe topic learning outcome..."
-                                  className="form-control border-0 px-3 bg-light text-dark"
+                                  style={{
+                                    flex: 1,
+                                    border: "none",
+                                    background: "transparent",
+                                    outline: "none",
+                                    fontSize: "14px",
+                                    color: "#212529",
+                                    padding: "2px 0",
+                                  }}
                                 />
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveTloField(idx)}
-                                  className="btn btn-outline-danger border-0 bg-light"
-                                  title="Delete Field"
+                                  title="Delete TLO"
+                                  style={{
+                                    flexShrink: 0,
+                                    background: "none",
+                                    border: "none",
+                                    color: "#dc3545",
+                                    cursor: "pointer",
+                                    fontSize: "1.15rem",
+                                    lineHeight: 1,
+                                    padding: "0 2px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
                                 >
                                   <i className="bi bi-dash-circle-fill"></i>
                                 </button>
@@ -436,6 +453,28 @@ export default function Tlo() {
                             ))}
                           </div>
                         </div>
+                      </div>
+
+                      {/* Save Button Footer */}
+                      <div className="border-top pt-3 mt-2 d-flex align-items-center justify-content-end gap-3">
+                        {success && (
+                          <span className="text-success fw-semibold d-flex align-items-center gap-1">
+                            <i className="bi bi-check-circle-fill"></i> Saved successfully!
+                          </span>
+                        )}
+                        <button
+                          onClick={handleSave}
+                          disabled={saving || loading || !ciannData}
+                          className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+                        >
+                          {saving ? (
+                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          ) : (
+                            <>
+                              <i className="bi bi-cloud-arrow-up-fill me-2"></i> Save TLO Details
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -458,6 +497,7 @@ export default function Tlo() {
                           {courseOutcomes.map((co) => {
                             const mapping = coMappings[co.coNumber] || { tlos: [] };
                             const nonEmpties = mapping.tlos.filter(Boolean);
+                            const coNum = co.coNumber.replace(/\D/g, "") || "1";
 
                             return (
                               <tr key={co.coNumber}>
@@ -469,13 +509,13 @@ export default function Tlo() {
                                   {nonEmpties.length === 0 ? (
                                     <span className="text-muted italic small">No TLOs mapped yet</span>
                                   ) : (
-                                    <ul className="mb-0 ps-3">
+                                    <div className="d-flex flex-column gap-1">
                                       {nonEmpties.map((t, idx) => (
-                                        <li key={idx} className="small text-dark fw-semibold mb-1">
-                                          {t}
-                                        </li>
+                                        <div key={idx} className="small text-dark fw-semibold">
+                                          {coNum}.{idx + 1} {t}
+                                        </div>
                                       ))}
-                                    </ul>
+                                    </div>
                                   )}
                                 </td>
                               </tr>

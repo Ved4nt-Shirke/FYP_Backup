@@ -569,14 +569,14 @@ router.get("/", async (req, res) => {
     cianns = await Promise.all(
       cianns.map(async (ciann) => {
         const ciannObj = ciann.toObject();
-        if (!ciannObj.courseCode) {
+        if (!ciannObj.courseCode || !ciannObj.scheme) {
           try {
             let course = null;
 
             // Try to find by courseId first (for new CIANNs)
             if (ciannObj.courseId) {
               course = await Course.findById(ciannObj.courseId).select(
-                "courseCode",
+                "courseCode scheme",
               );
             }
 
@@ -586,7 +586,7 @@ router.get("/", async (req, res) => {
               course = await Course.findOne({
                 semester: parseInt(ciannObj.semester),
                 departmentId: deptId,
-              }).select("courseCode _id");
+              }).select("courseCode scheme _id");
 
               // Store the courseId for future use
               if (course) {
@@ -596,8 +596,9 @@ router.get("/", async (req, res) => {
 
             if (course) {
               ciannObj.courseCode = course.courseCode;
+              ciannObj.scheme = course.scheme;
               console.log(
-                `✓ CIANN ${ciannObj.ciannId}: Found courseCode ${course.courseCode}`,
+                `✓ CIANN ${ciannObj.ciannId}: Found courseCode ${course.courseCode} and scheme ${course.scheme}`,
               );
             } else {
               console.log(`✗ CIANN ${ciannObj.ciannId}: Could not find course`);
@@ -646,7 +647,7 @@ router.get("/:ciannId", async (req, res) => {
 
     // Populate courseCode if it doesn't exist
     const ciannObj = ciann.toObject();
-    if (!ciannObj.courseCode) {
+    if (!ciannObj.courseCode || !ciannObj.scheme) {
       try {
         const Course = require("../models/Course");
         let course = null;
@@ -654,7 +655,7 @@ router.get("/:ciannId", async (req, res) => {
         // Try to find by courseId first
         if (ciannObj.courseId) {
           course = await Course.findById(ciannObj.courseId).select(
-            "courseCode",
+            "courseCode scheme",
           );
         }
 
@@ -664,7 +665,7 @@ router.get("/:ciannId", async (req, res) => {
           course = await Course.findOne({
             semester: parseInt(ciannObj.semester),
             departmentId: deptId,
-          }).select("courseCode _id");
+          }).select("courseCode scheme _id");
 
           if (course) {
             ciannObj.courseId = course._id;
@@ -673,6 +674,7 @@ router.get("/:ciannId", async (req, res) => {
 
         if (course) {
           ciannObj.courseCode = course.courseCode;
+          ciannObj.scheme = course.scheme;
         }
       } catch (err) {
         console.error(

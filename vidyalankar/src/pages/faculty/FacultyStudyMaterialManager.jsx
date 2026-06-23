@@ -24,6 +24,7 @@ const FacultyStudyMaterialManager = () => {
   const [departments, setDepartments] = useState([]);
   const [courses, setCourses] = useState([]);
   const [divisions, setDivisions] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [materials, setMaterials] = useState([]);
 
   const [selectedDepartment, setSelectedDepartment] = useState("");
@@ -114,6 +115,36 @@ const FacultyStudyMaterialManager = () => {
     setDivisions(Array.isArray(data.divisions) ? data.divisions : []);
   };
 
+  const fetchSubjects = async (departmentId, courseId) => {
+    if (!departmentId) {
+      setSubjects([]);
+      return;
+    }
+
+    const params = new URLSearchParams();
+    params.append("departmentId", departmentId);
+    if (courseId) {
+      params.append("courseId", courseId);
+    }
+
+    const response = await fetch(
+      `${API_BASE}/catalog/subjects?${params.toString()}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch subjects");
+    }
+
+    const data = await response.json();
+    setSubjects(Array.isArray(data.subjects) ? data.subjects : []);
+  };
+
   const fetchMaterials = async () => {
     setListLoading(true);
     setError("");
@@ -157,8 +188,10 @@ const FacultyStudyMaterialManager = () => {
     if (!selectedDepartment) {
       setCourses([]);
       setDivisions([]);
+      setSubjects([]);
       setSelectedCourse("");
       setSelectedDivision("");
+      setSubject("");
       return;
     }
 
@@ -168,7 +201,10 @@ const FacultyStudyMaterialManager = () => {
         setSelectedCourse("");
         setSelectedDivision("");
         setDivisions([]);
+        setSubjects([]);
+        setSubject("");
         await fetchCourses(selectedDepartment);
+        await fetchSubjects(selectedDepartment, "");
       } catch (err) {
         setError(err.message || "Unable to fetch courses");
       }
@@ -181,6 +217,12 @@ const FacultyStudyMaterialManager = () => {
     if (!selectedCourse) {
       setSelectedDivision("");
       setDivisions([]);
+      setSubject("");
+      if (selectedDepartment) {
+        fetchSubjects(selectedDepartment, "");
+      } else {
+        setSubjects([]);
+      }
       return;
     }
 
@@ -188,14 +230,18 @@ const FacultyStudyMaterialManager = () => {
       try {
         setError("");
         setSelectedDivision("");
-        await fetchDivisions(selectedCourse);
+        setSubject("");
+        await Promise.all([
+          fetchDivisions(selectedCourse),
+          fetchSubjects(selectedDepartment, selectedCourse),
+        ]);
       } catch (err) {
-        setError(err.message || "Unable to fetch divisions");
+        setError(err.message || "Unable to fetch divisions or subjects");
       }
     };
 
     run();
-  }, [selectedCourse]);
+  }, [selectedCourse, selectedDepartment]);
 
   const resetForm = () => {
     setTitle("");
@@ -216,9 +262,10 @@ const FacultyStudyMaterialManager = () => {
       !selectedDepartment ||
       !selectedCourse ||
       !selectedDivision ||
+      !subject ||
       !title.trim()
     ) {
-      setError("Please select department/course/division and enter title");
+      setError("Please select department, course, division, subject and enter title");
       return;
     }
 
@@ -455,13 +502,19 @@ const FacultyStudyMaterialManager = () => {
 
           <label className="fsm-field">
             <span>Subject</span>
-            <input
-              type="text"
+            <select
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g. Data Structures"
-              maxLength={120}
-            />
+              required
+              disabled={!selectedCourse}
+            >
+              <option value="">Select subject</option>
+              {subjects.map((sub) => (
+                <option key={sub._id} value={sub.name}>
+                  {sub.name} ({sub.code})
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="fsm-field fsm-field-wide">

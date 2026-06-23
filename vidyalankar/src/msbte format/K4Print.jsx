@@ -30,6 +30,8 @@ const K4Print = () => {
   const [error, setError] = useState("");
 
   const facultyName = useMemo(() => {
+    const cachedName = localStorage.getItem("facultyName");
+    if (cachedName) return cachedName;
     return formatUsername(localStorage.getItem("username") || "") || "Faculty";
   }, []);
 

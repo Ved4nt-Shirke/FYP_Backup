@@ -91,11 +91,22 @@ const CiannDetailPage = () => {
           <div className="ciann-details-grid">
             <div className="detail-row">
               <span className="label">Name of Subject Teacher</span>
-              <span className="value">{username}</span>
+              <span className="value">{localStorage.getItem("facultyName") || username}</span>
             </div>
             <div className="detail-row">
               <span className="label">Class & Div.</span>
-              <span className="value">{ciannData.division}</span>
+              <span className="value">
+                {(() => {
+                  const deptCode = ciannData.department?.code || "";
+                  const sem = ciannData.semester || "";
+                  const scheme = ciannData.scheme || "";
+                  const div = ciannData.division || "";
+                  if (deptCode || sem || scheme || div) {
+                    return `${deptCode}${sem}${scheme}${div}`.toUpperCase();
+                  }
+                  return "N/A";
+                })()}
+              </span>
             </div>
             <div className="detail-row">
               <span className="label">Subject & Subject Code</span>
@@ -103,7 +114,7 @@ const CiannDetailPage = () => {
             </div>
             <div className="detail-row">
               <span className="label">Department</span>
-              <span className="value">Computer Engineering</span>
+              <span className="value">{ciannData.department?.name || "Computer Engineering"}</span>
             </div>
           </div>
           <div className="ciann-detail-actions">

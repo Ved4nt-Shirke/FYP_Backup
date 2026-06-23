@@ -64,17 +64,18 @@
 /* This is likely where the gap is living. We force it to 0 margin-left. */
 .timetable-layout .plan-container,
 .teaching-layout .plan-container,
+.lab-layout .plan-container,
 .student-layout .plan-container {
   margin-left: 0 !important;
   margin-right: 20px !important;
   margin-top: 0 !important;
-  width: 100% !important; /* Force it to take the reclaimed space */
-  max-width: 1300px !important; /* Increased to allow it to grow */
+  width: calc(100% - 20px) !important; /* Force it to take the reclaimed space */
+  max-width: 100% !important; /* Covered full screen */
   min-width: 720px;
-  padding: 20px !important;
+  padding: 24px !important;
   background: #ffffff !important;
-  border-radius: 10px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
   box-sizing: border-box;
 }
 

@@ -1,24 +1,35 @@
 .ciann-print-page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
   background: #f4f6fb;
-  padding: 20px;
+  padding: 24px;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
 .ciann-print-toolbar {
-  max-width: 1000px;
-  margin: 0 auto 16px;
+  max-width: 1120px;
+  margin: 0 auto 20px;
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 14px 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(229, 231, 235, 0.5);
 }
 
 .ciann-print-sheet {
   background: #ffffff;
   color: #111827;
   max-width: 1120px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #d1d5db;
+  margin: 0 auto 40px;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
 }
 
 .print-block {
@@ -289,6 +300,8 @@
   .ciann-print-page {
     padding: 0;
     background: #fff;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .ciann-print-sheet {

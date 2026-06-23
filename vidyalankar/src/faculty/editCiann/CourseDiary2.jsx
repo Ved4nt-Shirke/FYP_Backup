@@ -83,131 +83,26 @@ const CourseDiary2 = () => {
     return null;
   };
 
-  // Helper function to get class and division
+  // Helper function to get class and division (department scheme code e.g. CO3KA)
   const getClassAndDiv = () => {
     if (!ciannData) return "N/A";
-
-    // Try direct field access
-    const className = extractValue(
-      ciannData,
-      "className",
-      "class",
-      "classname",
-      "Class",
-      "ClassName",
-      "semester",
-      "year",
-    );
-    const division = extractValue(
-      ciannData,
-      "division",
-      "div",
-      "section",
-      "Division",
-      "Div",
-      "Section",
-    );
-    const classAndDiv = extractValue(
-      ciannData,
-      "classAndDiv",
-      "classDiv",
-      "class_div",
-      "classDivision",
-      "full_class",
-    );
-
-    // Check nested structures
-    const nestedClass =
-      ciannData?.classDetails?.className ||
-      ciannData?.class?.name ||
-      ciannData?.academicInfo?.class;
-    const nestedDiv =
-      ciannData?.classDetails?.division ||
-      ciannData?.class?.division ||
-      ciannData?.academicInfo?.division;
-
-    if (className && division) {
-      return `${className} - ${division}`;
-    } else if (nestedClass && nestedDiv) {
-      return `${nestedClass} - ${nestedDiv}`;
-    } else if (classAndDiv) {
-      return classAndDiv;
-    } else if (className) {
-      return className;
-    } else if (nestedClass) {
-      return nestedClass;
+    const deptCode = ciannData.department?.code || "";
+    const sem = ciannData.semester || "";
+    const scheme = ciannData.scheme || "";
+    const div = ciannData.division || "";
+    if (deptCode || sem || scheme || div) {
+      return `${deptCode}${sem}${scheme}${div}`.toUpperCase();
     }
-
-    console.log(
-      "Class/Division not found. Available fields:",
-      Object.keys(ciannData),
-    );
     return "N/A";
   };
 
   // Helper function to get subject and code
   const getSubjectAndCode = () => {
     if (!ciannData) return "N/A";
-
-    // Try various subject name fields
-    const subjectName = extractValue(
-      ciannData,
-      "subjectName",
-      "subject",
-      "subjectname",
-      "Subject",
-      "SubjectName",
-      "title",
-      "courseName",
-      "name",
-    );
-
-    // Try various subject code fields
-    const subjectCode = extractValue(
-      ciannData,
-      "subjectCode",
-      "code",
-      "subject_code",
-      "SubjectCode",
-      "Code",
-      "courseCode",
-      "subjectId",
-      "id",
-    );
-
-    // Check nested structures
-    const nestedSubject =
-      ciannData?.subjectDetails?.name ||
-      ciannData?.subject?.name ||
-      ciannData?.courseInfo?.subject;
-    const nestedCode =
-      ciannData?.subjectDetails?.code ||
-      ciannData?.subject?.code ||
-      ciannData?.courseInfo?.code;
-
-    // Special handling for various code structures
-    const codeValue =
-      ciannData?.subjectCode?.code ||
-      ciannData?.subjectCode ||
-      ciannData?.code?.code ||
-      ciannData?.code ||
-      ciannData?.subject?.code ||
-      nestedCode;
-
-    const nameValue = subjectName || nestedSubject;
-    const finalCode = subjectCode || codeValue;
-
-    if (nameValue && finalCode) {
-      return `${nameValue} (${finalCode})`;
-    } else if (nameValue) {
-      return nameValue;
-    }
-
-    console.log(
-      "Subject/Code not found. Available fields:",
-      Object.keys(ciannData),
-    );
-    return "N/A";
+    const name = ciannData.subject?.name || extractValue(ciannData, "subjectName", "subject");
+    const code = ciannData.subject?.code || extractValue(ciannData, "subjectCode", "code");
+    if (name && code) return `${name} (${code})`;
+    return name || "N/A";
   };
 
   // Helper function to get department
@@ -318,6 +213,62 @@ const CourseDiary2 = () => {
 
   const handleForward = () => {
     navigate("/timetable", { state: { ciannData } });
+  };
+
+  const formatUsername = (rawUsername) => {
+    if (!rawUsername) return "";
+    const localUser = localStorage.getItem("username");
+    const facultyName = localStorage.getItem("facultyName");
+    if (localUser && rawUsername && localUser.trim().toLowerCase() === rawUsername.trim().toLowerCase() && facultyName) {
+      return facultyName;
+    }
+    if (rawUsername.includes(".")) {
+      return rawUsername
+        .split(".")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
+    }
+    return rawUsername.charAt(0).toUpperCase() + rawUsername.slice(1);
+  };
+
+  const getTeacherNames = () => {
+    if (!ciannData) return formatUsername(username);
+
+    const primaryOwner = formatUsername(ciannData.ownerUsername || ciannData.owner?.username || ciannData.owner || "N/A");
+    const coFaculty = [];
+    const contributors = [];
+
+    if (Array.isArray(ciannData.sharedWith)) {
+      ciannData.sharedWith.forEach((share) => {
+        const name = share.user?.username || share.username || (typeof share.user === 'string' ? share.user : null);
+        if (name) {
+          const formatted = formatUsername(name);
+          if (share.permission === "edit") {
+            coFaculty.push(formatted);
+          } else {
+            contributors.push(formatted);
+          }
+        }
+      });
+    }
+
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div>
+          <strong>{primaryOwner}</strong> <span style={{ fontSize: "0.8rem", color: "#22c55e", marginLeft: "6px" }}>(Primary Owner)</span>
+        </div>
+        {coFaculty.map((name, i) => (
+          <div key={`co-${i}`} style={{ fontSize: "0.9rem" }}>
+            {name} <span style={{ fontSize: "0.75rem", color: "#3b82f6", marginLeft: "6px" }}>(Co-Faculty)</span>
+          </div>
+        ))}
+        {contributors.map((name, i) => (
+          <div key={`cont-${i}`} style={{ fontSize: "0.9rem" }}>
+            {name} <span style={{ fontSize: "0.75rem", color: "#64748b", marginLeft: "6px" }}>(Contributor)</span>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   // --- All CSS Styles are now defined here as JavaScript objects ---
@@ -489,15 +440,12 @@ const CourseDiary2 = () => {
                 <p style={styles.ciannSubtitleP}>
                   <strong>INST. CODE:</strong> 0568
                 </p>
-                <p style={styles.ciannSubtitleP}>
-                  <strong>Date:</strong> {new Date().toLocaleString()}
-                </p>
               </div>
             </div>
             <div style={styles.infoBlock}>
               <div style={styles.infoRow}>
                 <span style={styles.infoLabel}>Name of Subject Teacher</span>
-                <span style={styles.infoValue}>{username}</span>
+                <span style={styles.infoValue}>{getTeacherNames()}</span>
               </div>
               <div style={styles.infoRow}>
                 <span style={styles.infoLabel}>Class & Div.</span>

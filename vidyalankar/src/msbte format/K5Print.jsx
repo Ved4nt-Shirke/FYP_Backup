@@ -40,6 +40,9 @@ const K5Print = () => {
   const [error, setError] = useState("");
 
   const facultyName = useMemo(() => {
+    const cachedName = localStorage.getItem("facultyName");
+    if (cachedName) return cachedName;
+
     const raw = localStorage.getItem("username") || "";
     if (!raw) {
       return "";
@@ -204,7 +207,7 @@ const K5Print = () => {
             <strong>Subject and Code:</strong> {ciannData.subject?.name || ""} ({ciannData.subject?.code || ""})
           </div>
           <div>
-            <strong>Course and Code:</strong> {ciannData.class || ""}
+            <strong>Course and Code:</strong> {ciannData.courseCode || ciannData.class || ""}
           </div>
           <div>
             <strong>Date of Examination:</strong>

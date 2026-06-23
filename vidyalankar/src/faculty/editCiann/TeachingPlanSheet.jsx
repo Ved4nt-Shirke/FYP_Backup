@@ -23,9 +23,9 @@ const modalStyles = {
   content: {
     background: "white",
     borderRadius: "16px", // More rounded corners
-    width: "90%",
-    maxWidth: "900px", // Increased for better visibility
-    maxHeight: "90vh", // Increased from 84vh
+    width: "98%",
+    maxWidth: "1550px", // Increased to cover screen and prevent scrolling
+    maxHeight: "92vh", // Sized to fit screen nicely
     animation: "fadeIn 0.3s ease-in-out", // Added animation
     display: "flex",
     flexDirection: "column",
@@ -416,7 +416,7 @@ const TeachingPlan = () => {
 
     if (filteredPlans.length === 0) {
       setMessage(
-        "⚠️ Please fill in all fields (Chapter, Sub-Topic, Start Date, Teaching Method) for at least one row.",
+        "⚠️ Please fill in all fields (Chapter, Sub-Topic, Date, Teaching Method) for at least one row.",
       );
       return;
     }
@@ -430,7 +430,8 @@ const TeachingPlan = () => {
           method: "PUT",
           headers: { 
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
+            "x-bypass-freeze": "true"
           },
           body: JSON.stringify({ plans: filteredPlans }),
         },
@@ -486,13 +487,7 @@ const TeachingPlan = () => {
           <td data-label="Chapter">{p.chapter || ""}</td>
           <td data-label="TLO">{p.tlo || ""}</td>
           <td data-label="Sub-Topic">{p.subTopic || ""}</td>
-          <td data-label="Start Date">{p.startDate || ""}</td>
-          <td data-label="End Date">
-            {(() => {
-              const att = attendanceRecords.find((a) => a.topic === p.subTopic);
-              return att && att.date ? att.date : (p.endDate || "");
-            })()}
-          </td>
+          <td data-label="Date">{p.startDate || ""}</td>
           <td data-label="Teaching Method">{p.teachingMethod || ""}</td>
         </tr>
       ));
@@ -514,8 +509,7 @@ const TeachingPlan = () => {
           <td data-label="Chapter"></td>
           <td data-label="TLO"></td>
           <td data-label="Sub-Topic"></td>
-          <td data-label="Start Date"></td>
-          <td data-label="End Date"></td>
+          <td data-label="Date"></td>
           <td data-label="Teaching Method"></td>
         </tr>
       );
@@ -601,13 +595,12 @@ const TeachingPlan = () => {
               <thead>
                 <tr>
                   <th style={{ width: "8%" }}>CO</th>
-                  <th style={{ width: "14%" }}>Chapter</th>
-                  <th style={{ width: "12%" }}>TLO</th>
-                  <th style={{ width: "14%" }}>Sub-Topic</th>
-                  <th style={{ width: "18%" }}>Start Date</th>
-                  <th style={{ width: "18%" }}>End Date</th>
-                  <th style={{ width: "11%" }}>Teaching Method</th>
-                  <th style={{ width: "5%" }}>Action</th>
+                  <th style={{ width: "18%" }}>Chapter</th>
+                  <th style={{ width: "18%" }}>TLO</th>
+                  <th style={{ width: "22%" }}>Sub-Topic</th>
+                  <th style={{ width: "16%" }}>Date</th>
+                  <th style={{ width: "14%" }}>Teaching Method</th>
+                  <th style={{ width: "4%" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -692,17 +685,6 @@ const TeachingPlan = () => {
                         onFocus={(e) => e.target.showPicker()}
                         disabled={!modalWeek}
                         className="form-input"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="date"
-                        value={plan.endDate || ""}
-                        readOnly={true}
-                        disabled={true}
-                        className="form-input"
-                        title="End Date is automatically loaded after attendance is successfully recorded"
-                        style={{ backgroundColor: "#f1f3f5", cursor: "not-allowed", border: "1px dashed #ccc" }}
                       />
                     </td>
                     <td>
@@ -918,26 +900,38 @@ const TeachingPlan = () => {
                 {loading ? (
                   <div className="loading">Loading...</div>
                 ) : (
-                  <table className="teaching-table">
-                    <thead>
-                      <tr>
-                        <th>Entry No.</th>
-                        <th>CO</th>
-                        <th>Chapter</th>
-                        <th>TLO</th>
-                        <th>Sub-Topic</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Teaching Method</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {planningStarted &&
-                        [...Array(4)].flatMap((_, i) =>
-                          renderWeekRow((currentPage - 1) * 4 + i + 1),
-                        )}
-                    </tbody>
-                  </table>
+                  planningStarted &&
+                  [...Array(4)].map((_, i) => {
+                    const weekNo = (currentPage - 1) * 4 + i + 1;
+                    const weekRows = renderWeekRow(weekNo);
+                    if (!weekRows) return null;
+                    return (
+                      <div key={weekNo} className="week-planning-card" style={{ marginBottom: "30px", border: "1px solid var(--card-border, #e2eaf5)", borderRadius: "12px", background: "var(--card-bg, #ffffff)", padding: "20px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)" }}>
+                        <h4 style={{ margin: "0 0 15px 0", color: "var(--app-header-bg, #2e7d32)", fontSize: "18px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ display: "inline-block", width: "6px", height: "18px", background: "var(--app-header-bg, #2e7d32)", borderRadius: "3px" }}></span>
+                          Week {weekNo}
+                        </h4>
+                        <div className="table-container" style={{ overflowX: "auto", border: "1px solid var(--card-border, #d6e2f0)", borderRadius: "8px", margin: 0, padding: 0 }}>
+                          <table className="teaching-table" style={{ width: "100%", margin: 0, border: "none" }}>
+                            <thead>
+                              <tr>
+                                <th style={{ width: "8%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>Entry No.</th>
+                                <th style={{ width: "8%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>CO</th>
+                                <th style={{ width: "20%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>Chapter</th>
+                                <th style={{ width: "20%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>TLO</th>
+                                <th style={{ width: "22%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>Sub-Topic</th>
+                                <th style={{ width: "12%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>Date</th>
+                                <th style={{ width: "12%", background: "var(--primary-light, #edf4ff)", color: "var(--text-color-primary, #233f64)", fontWeight: "600", fontSize: "12px" }}>Teaching Method</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {weekRows}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>

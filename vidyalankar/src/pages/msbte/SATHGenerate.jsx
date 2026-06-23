@@ -151,7 +151,7 @@ const SATHGenerate = () => {
         ciannId: Number(ciannData.ciannId),
         subjectName: ciannData.subject?.name || "",
         subjectCode: ciannData.subject?.code || "",
-        courseCode: ciannData.class || "",
+        courseCode: ciannData.courseCode || ciannData.class || "",
         academicYear: ciannData.academicYear || "",
         division: ciannData.division,
         maxMarks: Number(maxLimit),

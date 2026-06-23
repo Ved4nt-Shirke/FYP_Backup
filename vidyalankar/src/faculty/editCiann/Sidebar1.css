@@ -13,12 +13,12 @@
 @media (min-width: 769px) {
   .ciann-secondary-sidebar-wrapper {
     position: fixed;
-    top: var(--header-height, 60px) !important;
+    top: 52px !important;
     left: calc(var(--sidebar-width, 280px) + 8px) !important;
     width: 274px !important;
-    height: calc(100dvh - var(--header-height, 60px)) !important;
-    max-height: calc(100dvh - var(--header-height, 60px)) !important;
-    padding: 10px;
+    height: calc(100dvh - 52px) !important;
+    max-height: calc(100dvh - 52px) !important;
+    padding: 6px 10px 10px 10px;
     box-sizing: border-box;
     overflow: hidden;
     z-index: 1110;
@@ -31,17 +31,16 @@
 }
 
 .secondary-sidebar {
+  box-sizing: border-box;
   width: 100%;
   color: var(--text-color-primary, #173c70);
-  background: linear-gradient(
-    180deg,
-    var(--primary-light, #f4f8ff) 0%,
-    var(--primary-light, #edf3ff) 100%
-  );
+  background: linear-gradient(180deg,
+      var(--primary-light, #f4f8ff) 0%,
+      var(--primary-light, #edf3ff) 100%);
   border: 1px solid var(--card-border, rgba(132, 160, 214, 0.22));
   border-radius: 16px;
   box-shadow: 0 10px 24px rgba(22, 58, 120, 0.09);
-  padding: 12px;
+  padding: 8px;
   margin: 0;
   position: relative;
   z-index: 1002;
@@ -54,8 +53,8 @@
 }
 
 .secondary-sidebar-header {
-  padding: 10px 10px 12px;
-  margin: 0 0 8px;
+  padding: 6px 6px 8px;
+  margin: 0 0 4px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -84,14 +83,16 @@
 }
 
 .secondary-nav-list {
+  box-sizing: border-box;
   list-style: none;
   padding: 0;
   margin: 0;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .secondary-nav-list::-webkit-scrollbar {
@@ -105,8 +106,7 @@
 
 .secondary-nav-list {
   scrollbar-width: thin;
-  scrollbar-color: var(--primary-accent-light, rgba(147, 173, 219, 0.4))
-    transparent;
+  scrollbar-color: var(--primary-accent-light, rgba(147, 173, 219, 0.4)) transparent;
 }
 
 .secondary-nav-item {
@@ -122,9 +122,9 @@
   background: var(--card-bg, rgba(255, 255, 255, 0.68));
   border: 1px solid transparent;
   border-radius: 12px;
-  min-height: 44px;
+  min-height: 38px;
   box-sizing: border-box;
-  padding: 10px 10px;
+  padding: 6px 10px;
 }
 
 .secondary-nav-index {
@@ -158,11 +158,9 @@
 }
 
 .secondary-nav-item.active {
-  background: linear-gradient(
-    90deg,
-    var(--primary-accent-light, rgba(41, 95, 197, 0.2)) 0%,
-    var(--primary-accent-light, rgba(41, 95, 197, 0.08)) 100%
-  );
+  background: linear-gradient(90deg,
+      var(--primary-accent-light, rgba(41, 95, 197, 0.2)) 0%,
+      var(--primary-accent-light, rgba(41, 95, 197, 0.08)) 100%);
   border-color: var(--primary-accent, rgba(41, 95, 197, 0.36));
   color: var(--primary-color, #1f4d98);
 }
@@ -183,7 +181,7 @@
     opacity: 1 !important;
     visibility: visible !important;
     display: flex !important;
-    height: auto !important;
+    height: 100% !important;
   }
 }
 
@@ -268,7 +266,7 @@
     border-bottom: 1px solid rgba(133, 159, 206, 0.3);
   }
 
-  .secondary-sidebar-header + .secondary-nav-list {
+  .secondary-sidebar-header+.secondary-nav-list {
     margin-top: 4px;
   }
 
@@ -683,13 +681,16 @@ body.ciann-view-only a.btn:not(.ciann-comments-toggle-btn) {
 body.ciann-view-only .header {
   top: 38px !important;
 }
+
 body.ciann-view-only .main-content-wrapper {
   margin-top: calc(var(--header-height, 60px) + 38px) !important;
 }
+
 body.ciann-view-only .sidebar.main-sidebar {
   top: calc(var(--header-height, 60px) + 38px) !important;
   height: calc(100dvh - var(--header-height, 60px) - 38px) !important;
 }
+
 body.ciann-view-only .ciann-secondary-sidebar-wrapper {
   top: calc(var(--header-height, 60px) + 38px) !important;
   height: calc(100dvh - var(--header-height, 60px) - 38px) !important;
@@ -699,20 +700,23 @@ body.ciann-view-only .ciann-secondary-sidebar-wrapper {
   body.ciann-view-only .header {
     top: 38px !important;
   }
+
   body.ciann-view-only .main-content-wrapper {
     padding-top: calc(50px + 38px) !important;
     margin-top: 0 !important;
   }
+
   body.ciann-view-only .sidebar.main-sidebar {
     top: 38px !important;
     height: calc(100dvh - 38px) !important;
   }
+
   body.ciann-view-only .secondary-sidebar {
     top: 38px !important;
     height: calc(100dvh - 38px) !important;
   }
+
   body.ciann-view-only .secondary-sidebar-header {
     top: 38px !important;
   }
 }
-

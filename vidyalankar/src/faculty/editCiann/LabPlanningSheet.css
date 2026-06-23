@@ -27,11 +27,15 @@
 }
 
 .main-content-wrapper {
-  margin-left: 420px; /* Main sidebar (220px) + secondary sidebar (200px) */
-  width: calc(100% - 420px); /* Ensure content fills remaining space */
+  margin-left: 420px;
+  /* Main sidebar (220px) + secondary sidebar (200px) */
+  width: calc(100% - 420px);
+  /* Ensure content fills remaining space */
   margin: 0;
-  padding: 10px; /* Reduced padding to minimize vacant space */
-  margin-top: 60px; /* Clear the 60px header */
+  padding: 10px;
+  /* Reduced padding to minimize vacant space */
+  margin-top: 60px;
+  /* Clear the 60px header */
   background: var(--card-bg, #fff);
   min-height: calc(100vh - 60px);
 }
@@ -50,7 +54,8 @@
   align-items: flex-start;
   z-index: 101;
   position: fixed;
-  left: 220px; /* Next to main sidebar */
+  left: 220px;
+  /* Next to main sidebar */
   top: 0;
   height: 100vh;
   margin-top: 60px;
@@ -75,7 +80,8 @@
 /* Teaching Main Content (Laboratory Plan) */
 .teaching-main-content.syllabus-main-content {
   width: 100%;
-  padding: 0; /* Let plan-container handle padding */
+  padding: 0;
+  /* Let plan-container handle padding */
 }
 
 .lab-layout {
@@ -104,56 +110,74 @@
   padding-left: 2px;
   padding-right: 8px;
 }
+
 .labplanning-main-content .plan-container {
-  padding: 18px; /* Reduced padding for compact look */
+  padding: 18px;
+  /* Reduced padding for compact look */
   background-color: var(--card-bg, #fefefe);
   border: 1px solid var(--card-border, #ccc);
   border-radius: 12px;
   margin: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: min(100%, 1100px);
-  max-width: 1100px;
+  width: 100%;
+  max-width: 100%;
   /* The container no longer scrolls; the table area will handle vertical scrolling */
 }
 
 /* Header and Button Group */
 .labplanning-main-content .header-row {
-  display: flex; /* Added to make it a flex container */
-  justify-content: space-between; /* Pushes content to edges, h3 left, button-group right */
-  align-items: center; /* Vertically aligns the h3 and button group */
+  display: flex;
+  /* Added to make it a flex container */
+  justify-content: space-between;
+  /* Pushes content to edges, h3 left, button-group right */
+  align-items: center;
+  /* Vertically aligns the h3 and button group */
   margin-top: -30px;
-  flex-wrap: wrap; /* Allows wrapping on smaller screens */
-  gap: 16px; /* Space between items if they wrap */
+  flex-wrap: wrap;
+  /* Allows wrapping on smaller screens */
+  gap: 16px;
+  /* Space between items if they wrap */
 }
 
 .labplanning-main-content .header-row h3 {
   margin: 0;
-  font-size: 28px; /* Slightly smaller title */
+  font-size: 28px;
+  /* Slightly smaller title */
   font-weight: 700;
-  white-space: nowrap; /* Prevents the title from wrapping prematurely */
-  color: var(--text-color-primary, #000); /* Set color to text primary */
+  white-space: nowrap;
+  /* Prevents the title from wrapping prematurely */
+  color: var(--text-color-primary, #000);
+  /* Set color to text primary */
   line-height: 1.2;
-  margin-left: -8px; /* shift a bit more left as per feedback */
+  margin-left: -8px;
+  /* shift a bit more left as per feedback */
 }
 
 .labplanning-main-content .button-group {
-  display: flex; /* align buttons within the group */
-  gap: 10px; /* Match Teaching Plan spacing */
-  align-items: center; /* Vertically centers the buttons */
-  margin-top: 16px; /* keep alignment with title */
+  display: flex;
+  /* align buttons within the group */
+  gap: 10px;
+  /* Match Teaching Plan spacing */
+  align-items: center;
+  /* Vertically centers the buttons */
+  margin-top: 16px;
+  /* keep alignment with title */
   margin-right: 18px;
 }
 
 .labplanning-main-content .button-group .start-btn {
   background-color: var(--primary-color, green);
   color: var(--text-on-primary, white);
-  padding: 10px 14px; /* Match Teaching Plan button padding */
+  padding: 10px 14px;
+  /* Match Teaching Plan button padding */
   font-weight: 600;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  margin: 0; /* remove extra spacing between buttons */
-  font-size: 16px; /* Match Teaching Plan button font size */
+  margin: 0;
+  /* remove extra spacing between buttons */
+  font-size: 16px;
+  /* Match Teaching Plan button font size */
   display: inline-flex;
   /* allow flex centering */
   align-items: center;
@@ -169,12 +193,14 @@
     box-shadow 0.15s ease,
     transform 0.02s ease;
 }
+
 /* Hover/active like TP buttons (scoped to LP) */
 .labplanning-main-content .button-group .start-btn:hover {
   background-color: var(--primary-accent-dark, #0f7a0f) !important;
   color: var(--text-on-primary, #fff) !important;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
 }
+
 .labplanning-main-content .button-group .start-btn:active {
   transform: translateY(1px);
 }
@@ -187,15 +213,18 @@
     box-shadow 0.2s ease,
     transform 0.02s ease;
 }
+
 .labplanning-main-content .tabs button:hover {
   background-color: var(--primary-color, green) !important;
   color: var(--text-on-primary, #fff) !important;
   border-color: var(--primary-color, green) !important;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
 }
+
 .labplanning-main-content .tabs button:active {
   transform: translateY(1px);
 }
+
 .labplanning-main-content .tabs .active {
   background: var(--primary-color, green) !important;
   color: var(--text-on-primary, #fff) !important;
@@ -213,6 +242,7 @@
     box-shadow 0.15s ease,
     transform 0.02s ease;
 }
+
 .labplanning-main-content .pagination .prev-btn:hover:not(:disabled),
 .labplanning-main-content .pagination .forward-btn:hover:not(:disabled) {
   background-color: var(--primary-color, green) !important;
@@ -220,6 +250,7 @@
   border-color: var(--primary-color, green) !important;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
 }
+
 .labplanning-main-content .pagination .prev-btn:active,
 .labplanning-main-content .pagination .forward-btn:active {
   transform: translateY(1px);
@@ -239,34 +270,35 @@
 }
 
 .labplanning-main-content .ciann-details:hover {
-  background-color: var(
-    --primary-color,
-    green
-  ); /* Darker green background on hover */
-  color: var(--text-on-primary, #ffffff); /* White text color on hover */
+  background-color: var(--primary-color,
+      green);
+  /* Darker green background on hover */
+  color: var(--text-on-primary, #ffffff);
+  /* White text color on hover */
 }
 
 .labplanning-main-content .ciann-details strong {
-  color: var(
-    --text-color-primary,
-    #000000
-  ); /* Default black color for strong text */
-  transition: color 0.3s ease; /* Smooth transition for strong text color */
+  color: var(--text-color-primary,
+      #000000);
+  /* Default black color for strong text */
+  transition: color 0.3s ease;
+  /* Smooth transition for strong text color */
 }
 
 .labplanning-main-content .ciann-details:hover strong {
-  color: var(
-    --text-on-primary,
-    #fff0f0
-  ); /* Off-white color for strong text on hover */
+  color: var(--text-on-primary,
+      #fff0f0);
+  /* Off-white color for strong text on hover */
 }
 
 /* Table Styling to Stretch and Fit */
 /* Make the table area scroll vertically within the container */
 .labplanning-main-content .teaching .table-container {
   overflow-x: auto;
-  overflow-y: auto; /* vertical scroll */
-  max-height: calc(100vh - 360px); /* header + buttons + margins */
+  overflow-y: auto;
+  /* vertical scroll */
+  max-height: calc(100vh - 360px);
+  /* header + buttons + margins */
   padding-bottom: 24px;
 }
 
@@ -280,12 +312,15 @@
 .labplanning-main-content .lab-table th,
 .labplanning-main-content .lab-table td {
   border: 1px solid var(--card-border, #ccc);
-  padding: 10px; /* slightly tighter */
+  padding: 10px;
+  /* slightly tighter */
   text-align: center;
-  font-size: 13.5px; /* slightly smaller text */
+  font-size: 13.5px;
+  /* slightly smaller text */
   color: var(--text-color-primary, #000);
   white-space: normal;
-  min-width: 110px; /* narrower cells */
+  min-width: 110px;
+  /* narrower cells */
 }
 
 .labplanning-main-content .lab-table thead th {
@@ -354,11 +389,13 @@
 .labplanning-main-content .tabs button {
   background-color: var(--primary-light, #f5f5f5);
   border: 1px solid var(--card-border, #ccc);
-  padding: 10px 14px; /* slightly smaller */
+  padding: 10px 14px;
+  /* slightly smaller */
   margin-right: 8px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 15px; /* slightly smaller label */
+  font-size: 15px;
+  /* slightly smaller label */
   line-height: 1.1;
   cursor: pointer;
   transition:
@@ -391,7 +428,8 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 12px;
-  margin-bottom: 16px; /* prevent clipping at the bottom */
+  margin-bottom: 16px;
+  /* prevent clipping at the bottom */
 }
 
 .labplanning-main-content .prev-btn {
@@ -399,7 +437,8 @@
   color: var(--text-color-primary, black);
   padding: 6px 14px;
   font-weight: 700;
-  border: 1px solid var(--card-border, #ccc); /* light gray border */
+  border: 1px solid var(--card-border, #ccc);
+  /* light gray border */
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
@@ -416,7 +455,8 @@
   color: var(--text-color-primary, black);
   padding: 6px 14px;
   font-weight: 700;
-  border: 1px solid var(--card-border, #ccc); /* light gray border */
+  border: 1px solid var(--card-border, #ccc);
+  /* light gray border */
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
@@ -451,21 +491,25 @@
   .sidebar {
     width: 200px;
   }
+
   .secondary-sidebar-wrapper {
     left: 200px;
     width: 200px;
   }
+
   .main-content-wrapper {
     margin-left: 400px;
     width: calc(100% - 400px);
     padding: 8px;
   }
+
   .labplanning-main-content .plan-container {
-    margin: -10px 0 15px 240px;
+    margin: 0 !important;
     padding: 15px;
-    width: 95%;
-    max-width: 1000px;
+    width: 100% !important;
+    max-width: 100% !important;
   }
+
   .labplanning-main-content .lab-table th,
   .labplanning-main-content .lab-table td {
     padding: 10px;
@@ -479,6 +523,7 @@
     transform: translateX(-100%);
     padding-top: 10px;
   }
+
   .secondary-sidebar-wrapper {
     position: fixed;
     left: 0;
@@ -488,9 +533,11 @@
     margin-top: 0px;
     background: transparent;
   }
+
   .secondary-sidebar-wrapper.visible {
     transform: translateX(0);
   }
+
   .secondary-sidebar {
     width: 100%;
     max-width: 80vw;
@@ -498,19 +545,23 @@
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
     background: #fff;
   }
+
   .main-content-wrapper {
     margin-left: 0;
     width: 100%;
     margin-top: 60px;
     padding: 5px;
   }
+
   .labplanning-main-content .plan-container {
-    margin: -52px auto 0 auto !important; /* match TP mobile pull-up */
+    margin: -52px auto 0 auto !important;
+    /* match TP mobile pull-up */
     max-width: 100vw !important;
     width: 100% !important;
     padding: 12px !important;
     height: auto !important;
   }
+
   /* Mobile header and actions parity with Teaching Plan (scoped to Lab Planning only) */
   .labplanning-main-content .header-row {
     flex-direction: column !important;
@@ -519,8 +570,10 @@
     text-align: left !important;
     margin-top: 0 !important;
     margin-bottom: 10px !important;
-    border-bottom: none !important; /* Fix for the extra line */
+    border-bottom: none !important;
+    /* Fix for the extra line */
   }
+
   .labplanning-main-content .header-row h3 {
     font-size: 26px !important;
     line-height: 1.2 !important;
@@ -530,9 +583,11 @@
     padding-bottom: 6px !important;
     margin: 0 0 10px 0 !important;
   }
+
   .labplanning-main-content .header-row h3::after {
     content: none;
   }
+
   .labplanning-main-content .button-group {
     gap: 10px !important;
     margin-top: 0 !important;
@@ -542,6 +597,7 @@
     justify-content: flex-start !important;
     width: 100% !important;
   }
+
   .labplanning-main-content .button-group .start-btn {
     font-size: 14px !important;
     padding: 8px 14px !important;
@@ -552,31 +608,38 @@
     flex: 1 1 auto !important;
     min-width: auto !important;
   }
+
   /* Keep real table on mobile; enable horizontal scroll instead of card layout */
   .labplanning-main-content .table-container {
     overflow-x: auto;
     /* allow horizontal scroll */
     overflow-y: auto;
     /* like TP */
-    max-height: calc(100% - 220px); /* similar breathing room as TP */
+    max-height: calc(100% - 220px);
+    /* similar breathing room as TP */
     padding-bottom: 8px;
     border: 2px solid #000 !important;
     border-radius: 8px;
   }
+
   .labplanning-main-content .lab-table {
-    min-width: 1250px; /* mirror TP min width */
+    min-width: 1250px;
+    /* mirror TP min width */
     width: 100%;
     border-collapse: collapse;
     border: 2px solid #000;
     border-bottom: 2px solid #000 !important;
     table-layout: fixed;
   }
+
   .labplanning-main-content .lab-table thead {
     display: table-header-group !important;
   }
+
   .labplanning-main-content .lab-table tbody {
     display: table-row-group !important;
   }
+
   .labplanning-main-content .lab-table tr {
     display: table-row !important;
     margin-bottom: 0 !important;
@@ -585,6 +648,7 @@
     border-radius: 0 !important;
     background: transparent !important;
   }
+
   .labplanning-main-content .lab-table th,
   .labplanning-main-content .lab-table td {
     display: table-cell !important;
@@ -597,34 +661,42 @@
     position: static !important;
     white-space: normal !important;
   }
+
   .labplanning-main-content .lab-table thead th {
     border-top: 2px solid #000 !important;
     border-bottom: 2px solid #000 !important;
   }
+
   .labplanning-main-content .lab-table thead th:first-child,
   .labplanning-main-content .lab-table tbody td:first-child {
     border-left: 2px solid #000 !important;
   }
+
   .labplanning-main-content .lab-table thead th:last-child,
   .labplanning-main-content .lab-table tbody td:last-child {
     border-right: 2px solid #000 !important;
   }
+
   .labplanning-main-content .lab-table tbody tr:last-child td {
     border-bottom: 2px solid #000 !important;
   }
+
   .labplanning-main-content .lab-table td::before {
     content: none !important;
   }
+
   /* Ensure box sizing and container spacing */
   .labplanning-main-content .plan-container {
     box-sizing: border-box;
   }
+
   /* Make header and buttons stack, left aligned */
   .labplanning-main-content .header-row {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 8px !important;
   }
+
   .labplanning-main-content .header-row h3 {
     font-size: 26px !important;
     line-height: 1.2 !important;
@@ -634,16 +706,19 @@
     padding-bottom: 6px !important;
     margin: 0 0 8px 0 !important;
   }
+
   /* Place buttons below title and left aligned */
   .labplanning-main-content .button-group {
     width: 100% !important;
     justify-content: flex-start !important;
     margin-top: 20px !important;
-    margin-bottom: 8px !important; /* avoid pushing next section under viewport */
+    margin-bottom: 8px !important;
+    /* avoid pushing next section under viewport */
     margin-left: -16px !important;
     gap: 8px !important;
     flex-wrap: wrap !important;
   }
+
   .labplanning-main-content .button-group .start-btn {
     padding: 8px 14px !important;
     font-size: 12px !important;
@@ -654,6 +729,7 @@
     flex: 1 1 auto !important;
     min-width: 120px !important;
   }
+
   /* Pagination: single line, scrollable, compact buttons */
   .labplanning-main-content .pagination {
     display: flex !important;
@@ -663,9 +739,11 @@
     overflow-x: auto !important;
     scrollbar-width: none;
   }
+
   .labplanning-main-content .pagination::-webkit-scrollbar {
     display: none;
   }
+
   .labplanning-main-content .prev-btn,
   .labplanning-main-content .forward-btn {
     flex: 0 0 auto !important;
@@ -673,16 +751,20 @@
     padding: 6px 10px !important;
     font-size: 12px !important;
   }
+
   /* Keep tabs (Page 1-4) in one line on mobile */
   .labplanning-main-content .tabs {
     display: flex !important;
-    flex-wrap: wrap !important; /* Changed to wrap */
+    flex-wrap: wrap !important;
+    /* Changed to wrap */
     gap: 6px !important;
     justify-content: center !important;
     align-items: center !important;
-    margin-top: 20px !important; /* Added margin for spacing */
+    margin-top: 20px !important;
+    /* Added margin for spacing */
     margin-bottom: 10px !important;
   }
+
   .labplanning-main-content .tabs button {
     flex: 0 1 auto !important;
     padding: 6px 10px !important;
@@ -695,23 +777,28 @@
   .secondary-sidebar {
     padding: 6px 2px;
   }
+
   .secondary-sidebar-header {
     font-size: 13px;
     padding: 7px;
   }
+
   .secondary-sidebar ul li {
     font-size: 11px;
     padding: 6px;
   }
+
   .sidebar.mobile.visible {
     width: 260px;
   }
+
   .labplanning-main-content .plan-container {
     margin: 5px 0;
     padding: 8px;
     width: 100%;
     margin-left: 0;
   }
+
   .labplanning-main-content .lab-table td {
     padding: 6px;
   }
@@ -837,10 +924,12 @@
   margin-bottom: 20px;
   margin-top: 20px;
 }
+
 .labplanning-main-content .tabs button:hover {
   background-color: green;
   color: white;
 }
+
 .labplanning-main-content .tabs .active {
   background: green;
   color: #fff;
@@ -857,6 +946,7 @@
   border: 2px solid #000 !important;
   border-radius: 8px;
 }
+
 .labplanning-main-content .lab-table {
   min-width: 1250px;
   width: 100%;
@@ -865,6 +955,7 @@
   border-bottom: 2px solid #000 !important;
   table-layout: fixed;
 }
+
 .labplanning-main-content .lab-table th,
 .labplanning-main-content .lab-table td {
   padding: 8px 4px;
@@ -873,6 +964,7 @@
   border: 1px solid #ccc;
   word-wrap: break-word;
 }
+
 .labplanning-main-content .lab-table thead th {
   position: sticky;
   top: 0;
@@ -883,18 +975,22 @@
   border-right: 2px solid black;
   padding: 12px;
 }
+
 .labplanning-main-content .lab-table thead th:first-child {
   border-left: 2px solid black;
 }
+
 .labplanning-main-content .lab-table thead th:last-child {
   border-right: 2px solid black;
 }
+
 .labplanning-main-content .lab-table tbody td {
   border-left: 2px solid #000;
   border-right: 2px solid #000;
   border-bottom: 1px solid #ccc;
   vertical-align: top;
 }
+
 .labplanning-main-content .lab-table tbody tr:last-child td {
   border-bottom: 2px solid #000 !important;
 }
@@ -904,24 +1000,29 @@
 .labplanning-main-content .lab-table td:nth-child(1) {
   min-width: 90px;
 }
+
 .labplanning-main-content .lab-table th:nth-child(2),
 .labplanning-main-content .lab-table td:nth-child(2) {
   min-width: 170px;
 }
+
 .labplanning-main-content .lab-table th:nth-child(3),
 .labplanning-main-content .lab-table td:nth-child(3) {
   min-width: 250px;
   white-space: normal;
 }
+
 .labplanning-main-content .lab-table th:nth-child(4),
 .labplanning-main-content .lab-table td:nth-child(4) {
   min-width: 80px;
 }
+
 .labplanning-main-content .lab-table th:nth-child(5),
 .labplanning-main-content .lab-table td:nth-child(5) {
   min-width: 140px;
   white-space: normal;
 }
+
 .labplanning-main-content .lab-table th:nth-child(6),
 .labplanning-main-content .lab-table td:nth-child(6) {
   min-width: 140px;
@@ -933,43 +1034,55 @@
   .labplanning-main-content .lab-table {
     min-width: 950px;
   }
+
   .labplanning-main-content .lab-table th,
   .labplanning-main-content .lab-table td {
     font-size: 11px;
     padding: 6px 3px;
   }
+
   .labplanning-main-content .lab-table th:nth-child(1),
   .labplanning-main-content .lab-table td:nth-child(1) {
     min-width: 80px;
   }
+
   .labplanning-main-content .lab-table th:nth-child(2),
   .labplanning-main-content .lab-table td:nth-child(2) {
     min-width: 140px;
   }
+
   .labplanning-main-content .lab-table th:nth-child(3),
   .labplanning-main-content .lab-table td:nth-child(3) {
     min-width: 200px;
   }
+
   .labplanning-main-content .lab-table th:nth-child(4),
   .labplanning-main-content .lab-table td:nth-child(4) {
     min-width: 70px;
   }
+
   .labplanning-main-content .lab-table th:nth-child(5),
   .labplanning-main-content .lab-table td:nth-child(5) {
     min-width: 110px;
   }
+
   .labplanning-main-content .lab-table th:nth-child(6),
   .labplanning-main-content .lab-table td:nth-child(6) {
     min-width: 110px;
   }
 }
+
 @media (max-width: 768px) {
+
   /* Adjust top spacing for header overlap and keep desktop-like table */
   .labplanning-main-content {
-    padding-top: 60px; /* smaller top spacing on mobile */
+    padding-top: 60px;
+    /* smaller top spacing on mobile */
   }
+
   .labplanning-main-content .plan-container {
-    margin: -52px auto 0 auto !important; /* pull content further up on mobile */
+    margin: -52px auto 0 auto !important;
+    /* pull content further up on mobile */
     max-width: 100vw !important;
     width: 100% !important;
     padding: 12px !important;
@@ -980,8 +1093,10 @@
     text-align: center !important;
     display: inline-block !important;
     width: auto !important;
-    margin: 0 auto !important; /* keep title centered without full-width underline */
-    align-self: center !important; /* center within flex column layout */
+    margin: 0 auto !important;
+    /* keep title centered without full-width underline */
+    align-self: center !important;
+    /* center within flex column layout */
   }
 
   /* Keep real table on mobile; enable horizontal scroll instead of card layout */
@@ -990,25 +1105,31 @@
     /* allow horizontal scroll */
     overflow-y: auto;
     /* like TP */
-    max-height: calc(100% - 220px); /* similar breathing room as TP */
+    max-height: calc(100% - 220px);
+    /* similar breathing room as TP */
     padding-bottom: 8px;
     border: 2px solid #000 !important;
     border-radius: 8px;
   }
+
   .labplanning-main-content .lab-table {
-    min-width: 1250px; /* mirror TP min width */
+    min-width: 1250px;
+    /* mirror TP min width */
     width: 100%;
     border-collapse: collapse;
     border: 2px solid #000;
     border-bottom: 2px solid #000 !important;
     table-layout: fixed;
   }
+
   .labplanning-main-content .lab-table thead {
     display: table-header-group !important;
   }
+
   .labplanning-main-content .lab-table tbody {
     display: table-row-group !important;
   }
+
   .labplanning-main-content .lab-table tr {
     display: table-row !important;
     margin-bottom: 0 !important;
@@ -1017,6 +1138,7 @@
     border-radius: 0 !important;
     background: transparent !important;
   }
+
   .labplanning-main-content .lab-table th,
   .labplanning-main-content .lab-table td {
     display: table-cell !important;
@@ -1029,28 +1151,35 @@
     position: static !important;
     white-space: normal !important;
   }
+
   .labplanning-main-content .lab-table thead th {
     border-top: 2px solid #000 !important;
     border-bottom: 2px solid #000 !important;
   }
+
   .labplanning-main-content .lab-table thead th:first-child,
   .labplanning-main-content .lab-table tbody td:first-child {
     border-left: 2px solid #000 !important;
   }
+
   .labplanning-main-content .lab-table thead th:last-child,
   .labplanning-main-content .lab-table tbody td:last-child {
     border-right: 2px solid #000 !important;
   }
+
   .labplanning-main-content .lab-table tbody tr:last-child td {
     border-bottom: 2px solid #000 !important;
   }
+
   .labplanning-main-content .lab-table td::before {
     content: none !important;
   }
+
   /* Ensure box sizing and container spacing */
   .labplanning-main-content .plan-container {
     box-sizing: border-box;
   }
+
   /* Make header and buttons stack, left aligned */
   .labplanning-main-content .header-row {
     flex-direction: column !important;
@@ -1061,6 +1190,7 @@
     margin-bottom: 10px !important;
     border-bottom: none !important;
   }
+
   .labplanning-main-content .header-row h3 {
     font-size: 26px !important;
     line-height: 1.2 !important;
@@ -1070,9 +1200,11 @@
     padding-bottom: 6px !important;
     margin: 0 0 10px 0 !important;
   }
+
   .labplanning-main-content .header-row h3::after {
     content: none;
   }
+
   .labplanning-main-content .button-group {
     /* Remove the negative margin */
     margin-left: 0 !important;
@@ -1086,15 +1218,19 @@
 
   .labplanning-main-content .button-group .start-btn {
     /* Allow buttons to grow and shrink, but with a flexible basis */
-    flex: 1 1 45% !important; /* This is the key change to control wrapping */
-    min-width: 120px !important; /* You can adjust this value */
+    flex: 1 1 45% !important;
+    /* This is the key change to control wrapping */
+    min-width: 120px !important;
+    /* You can adjust this value */
     /* Add a small margin to create space between wrapped items */
     margin-bottom: 8px !important;
   }
 }
+
 .labplanning-main-content .pagination::-webkit-scrollbar {
   display: none;
 }
+
 .labplanning-main-content .prev-btn,
 .labplanning-main-content .forward-btn {
   flex: 0 0 auto !important;
@@ -1102,17 +1238,21 @@
   padding: 6px 10px !important;
   font-size: 12px !important;
 }
+
 /* Keep tabs (Page 1-4) in one line on mobile */
 @media (max-width: 768px) {
   .labplanning-main-content .tabs {
     display: flex !important;
     flex-wrap: wrap !important;
     gap: 8px !important;
-    justify-content: flex-start !important; /* Aligned to left */
+    justify-content: flex-start !important;
+    /* Aligned to left */
     align-items: center !important;
-    margin-top: 12px !important; /* Added margin for spacing */
+    margin-top: 12px !important;
+    /* Added margin for spacing */
     margin-bottom: 10px !important;
   }
+
   .labplanning-main-content .tabs button {
     flex: 0 1 auto !important;
     padding: 10px 14px !important;
@@ -1124,17 +1264,22 @@
 /* Center buttons under the title on mobile */
 @media (max-width: 768px) {
   .labplanning-main-content .header-row {
-    align-items: center !important; /* center children in the column */
-    position: relative; /* allow ::after separator */
+    align-items: center !important;
+    /* center children in the column */
+    position: relative;
+    /* allow ::after separator */
   }
+
   /* Subtle full-width grey separator under the header on mobile */
   .labplanning-main-content .header-row::after {
     content: "";
     display: block;
     width: 100%;
-    border-bottom: 1px solid #e0e0e0; /* light grey divider */
+    border-bottom: 1px solid #e0e0e0;
+    /* light grey divider */
     margin-top: 8px;
   }
+
   .labplanning-main-content .button-group {
     width: 100% !important;
     justify-content: center !important;
@@ -1143,13 +1288,16 @@
     gap: 10px !important;
     flex-wrap: wrap !important;
   }
+
   .labplanning-main-content .button-group .start-btn {
-    flex: 0 0 auto !important; /* keep natural width, allow wrapping */
+    flex: 0 0 auto !important;
+    /* keep natural width, allow wrapping */
   }
 }
 
 /* Desktop boost for pagination buttons */
 @media (min-width: 769px) {
+
   .labplanning-main-content .prev-btn,
   .labplanning-main-content .forward-btn {
     padding: 10px 16px !important;

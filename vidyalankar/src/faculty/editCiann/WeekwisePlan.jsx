@@ -18,9 +18,9 @@ const modalStyles = {
   content: {
     background: "white",
     borderRadius: "16px",
-    width: "95%",
-    maxWidth: "950px",
-    maxHeight: "90vh", // Keep modal within viewport on mobile
+    width: "98%",
+    maxWidth: "1550px", // Sized for cover full screen
+    maxHeight: "92vh", // Keep modal within viewport on mobile
     animation: "fadeIn 0.3s ease-in-out",
     display: "flex",
     flexDirection: "column",
@@ -111,7 +111,7 @@ const WeekwisePlan = ({
       try {
         const payload = {
           program: ciannData.department?.name || ciannData.department,
-          className: ciannData.class || "",
+          className: ciannData.courseCode || ciannData.class || "",
           course: ciannData.subject?.name || ciannData.subject,
         };
 
@@ -460,14 +460,14 @@ const WeekwisePlan = ({
         }
         
         /* Column widths */
-        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 12%; } /* Week No */
-        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 10%; } /* Batch No */
-        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 14%; } /* CO */
+        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 8%; } /* Week No */
+        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 6%; } /* Batch No */
+        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 10%; } /* CO */
         .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 20%; } /* LLO */
-        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 12%; } /* Experiment No */
-        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 16%; } /* Experiment Name */
-        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 10%; } /* Planned Date */
-        .plan-table th:nth-child(8), .plan-table td:nth-child(8) { width: 6%; }  /* Action */
+        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 16%; } /* Experiment No */
+        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 26%; } /* Experiment Name */
+        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 10%; } /* Date */
+        .plan-table th:nth-child(8), .plan-table td:nth-child(8) { width: 4%; }  /* Action */
 
         .plan-table input,
         .plan-table select,
@@ -632,7 +632,7 @@ const WeekwisePlan = ({
                   <th>LLO</th>
                   <th>Experiment No</th>
                   <th>Experiment Name</th>
-                  <th>Planned Date</th>
+                  <th>Date</th>
                   <th>Action</th>
                 </tr>
               </thead>

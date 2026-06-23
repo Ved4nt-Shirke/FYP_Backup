@@ -23,7 +23,7 @@ router.post('/', checkCiannFreeze, async (req, res) => {
   }
 });
 
-// Your existing GET route for fetching attendance records
+// GET route for fetching attendance records — returns [] if no CIAAN or no records
 router.get('/', async (req, res) => {
   try {
     const { ciannId } = req.query;
@@ -32,13 +32,11 @@ router.get('/', async (req, res) => {
     }
     const ciann = await Ciann.findOne({ ciannId: parseInt(ciannId) });
     if (!ciann) {
-      return res.status(404).json({ error: 'No CIAAN found for the provided ID' });
+      // Return empty array instead of 404 — CIAAN may exist but have no records yet
+      return res.status(200).json([]);
     }
     const records = await TheoryAttendance.find({ ciannId });
-    if (records.length === 0) {
-      return res.status(404).json({ message: 'No attendance records found for this CIAAN ID' });
-    }
-    res.json(records);
+    res.status(200).json(records);
   } catch (err) {
     console.error('Error fetching attendance:', err);
     res.status(500).json({ error: 'Server error.' });

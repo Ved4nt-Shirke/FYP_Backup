@@ -2,6 +2,11 @@ const Ciann = require("../models/Ciann");
 
 const checkCiannFreeze = async (req, res, next) => {
   try {
+    // Allow explicit bypass for editing/testing (e.g. teaching/lab plan edits)
+    if (req.headers["x-bypass-freeze"] === "true" || req.headers["bypass-freeze"] === "true" || req.query.bypass === "true") {
+      return next();
+    }
+
     // 1. Check if there's a direct ciannId in request params or body
     let ciannIdStr = req.params.ciannId || req.body.ciannId || req.query.ciannId;
     

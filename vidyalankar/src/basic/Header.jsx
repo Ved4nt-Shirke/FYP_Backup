@@ -234,6 +234,9 @@ const Header = ({
         const data = await response.json();
         if (data.success && data.profile) {
           setProfile(data.profile);
+          if (data.profile.fullName) {
+            localStorage.setItem("facultyName", data.profile.fullName);
+          }
         }
       }
     } catch (err) {
@@ -325,8 +328,18 @@ const Header = ({
       className={`header ${onSecondaryMenuToggle ? "has-secondary-toggle" : ""}`}
     >
       <div className="header-left">
-        {/* This button's onClick calls the function passed from App.jsx */}
-        <button className="menu-toggle" onClick={onMenuToggle}>
+        {/* This button's onClick calls the function passed from App.jsx or falls back to custom event dispatch */}
+        <button
+          className="menu-toggle"
+          onClick={
+            onMenuToggle ||
+            (() => {
+              window.dispatchEvent(
+                new CustomEvent("faculty:toggle-main-sidebar"),
+              );
+            })
+          }
+        >
           <i className="bi bi-list"></i>
         </button>
         {/* Secondary menu toggle button for CIANN sidebar */}

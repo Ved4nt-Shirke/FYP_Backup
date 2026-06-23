@@ -1,7 +1,7 @@
 /* ---------- Plan Container MAIN ---------- */
 .teaching-main-content.syllabus-main-content .plan-container {
-  width: min(100%, 1100px) !important;
-  max-width: 1100px !important;
+  width: 100% !important;
+  max-width: 100% !important;
   margin: 0 !important;
   overflow-x: hidden; /* hide horizontal scroll on outer container */
   background-color: var(--card-bg, #fefefe);
