@@ -196,7 +196,7 @@ export default function EditAssessedStudentList() {
   return (
     <>
       <Header />
-      <div className="container mt-4">
+      <div className="container mt-4 assess-pa-studentlist-page">
         <h4><strong>Edit Assessment Marks</strong></h4>
         {experiment && (
           <p><strong>Experiment {experiment.id}:</strong> {experiment.name}</p>

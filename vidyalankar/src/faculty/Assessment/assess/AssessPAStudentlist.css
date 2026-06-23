@@ -1,10 +1,12 @@
-/* Body background for better contrast */
-body {
+/* Scoped to prevent global style leakage */
+.assess-pa-studentlist-page {
   background-color: #f5f6fa;
+  min-height: 100vh;
 }
 
 /* Container styling - more focused layout like batch selection */
-.container {
+.assess-pa-studentlist-page.container,
+.assess-pa-studentlist-page .container {
   max-width: 1200px;
   margin: 0.5rem auto !important;
   padding: 15px;
@@ -15,14 +17,15 @@ body {
 
 /* Desktop-specific improvements */
 @media (min-width: 1200px) {
-  .container {
+  .assess-pa-studentlist-page.container,
+  .assess-pa-studentlist-page .container {
     max-width: 1400px;
     padding: 30px;
   }
 }
 
 /* Page header styling - matching batch selection design */
-.page-header {
+.assess-pa-studentlist-page .page-header {
   background-color: #28a745;
   color: white;
   padding: 15px 20px;
@@ -35,13 +38,13 @@ body {
 }
 
 /* Heading styles */
-h4 {
+.assess-pa-studentlist-page h4 {
   font-weight: bold;
   color: #333;
 }
 
 /* Experiment description */
-p {
+.assess-pa-studentlist-page p {
   font-size: 1.05rem;
   margin-top: 10px;
   margin-bottom: 15px;
@@ -49,23 +52,23 @@ p {
 
 /* Desktop heading and content improvements */
 @media (min-width: 992px) {
-  h4 {
+  .assess-pa-studentlist-page h4 {
     font-size: 1.8rem;
     margin-bottom: 20px;
   }
   
-  p {
+  .assess-pa-studentlist-page p {
     font-size: 1.1rem;
     margin-bottom: 20px;
   }
   
-  .mt-4 {
+  .assess-pa-studentlist-page .mt-4 {
     margin-top: 2rem !important;
   }
 }
 
 /* Alert section for batch and CIAAN info - matching batch selection design */
-.alert-info {
+.assess-pa-studentlist-page .alert-info {
   background-color: #d9edf7;
   border: 1px solid #bce8f1;
   padding: 15px 20px;
@@ -75,12 +78,12 @@ p {
   font-size: 15px;
 }
 
-.alert-info strong {
+.assess-pa-studentlist-page .alert-info strong {
   color: #2c5aa0;
 }
 
 /* Experiment info alert */
-.alert-secondary {
+.assess-pa-studentlist-page .alert-secondary {
   background-color: #f8f9fa;
   border: 1px solid #dee2e6;
   color: #495057;
@@ -91,20 +94,20 @@ p {
 
 /* Desktop alert improvements */
 @media (min-width: 992px) {
-  .alert-info {
+  .assess-pa-studentlist-page .alert-info {
     padding: 20px 25px;
     font-size: 1rem;
     margin-bottom: 25px;
   }
   
-  .alert-info strong {
+  .assess-pa-studentlist-page .alert-info strong {
     display: inline-block;
     min-width: 120px;
   }
 }
 
 /* Table styling - cleaner professional look */
-.table-container {
+.assess-pa-studentlist-page .table-container {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -112,20 +115,20 @@ p {
   border: 1px solid #e9ecef;
 }
 
-.table {
+.assess-pa-studentlist-page .table {
   margin-bottom: 0;
   font-size: 0.95rem;
 }
 
-.table th,
-.table td {
+.assess-pa-studentlist-page .table th,
+.assess-pa-studentlist-page .table td {
   text-align: center;
   vertical-align: middle;
   padding: 12px 15px;
   border-color: #e9ecef;
 }
 
-.table th {
+.assess-pa-studentlist-page .table th {
   background-color: #f8f9fa;
   font-weight: 600;
   color: #495057;
@@ -137,33 +140,33 @@ p {
 
 /* Desktop table improvements */
 @media (min-width: 992px) {
-  .table {
+  .assess-pa-studentlist-page .table {
     font-size: 1rem;
   }
   
-  .table th,
-  .table td {
+  .assess-pa-studentlist-page .table th,
+  .assess-pa-studentlist-page .table td {
     padding: 15px 20px;
   }
   
-  .table th:first-child,
-  .table td:first-child {
+  .assess-pa-studentlist-page .table th:first-child,
+  .assess-pa-studentlist-page .table td:first-child {
     width: 20%;
   }
   
-  .table th:nth-child(2),
-  .table td:nth-child(2) {
+  .assess-pa-studentlist-page .table th:nth-child(2),
+  .assess-pa-studentlist-page .table td:nth-child(2) {
     width: 55%;
     text-align: left;
     padding-left: 25px;
   }
   
-  .table th:last-child,
-  .table td:last-child {
+  .assess-pa-studentlist-page .table th:last-child,
+  .assess-pa-studentlist-page .table td:last-child {
     width: 25%;
   }
   
-  .table input.form-control {
+  .assess-pa-studentlist-page .table input.form-control {
     max-width: 120px;
     margin: 0 auto;
     font-size: 1rem;
@@ -173,7 +176,7 @@ p {
 }
 
 /* Search and action buttons - more compact design */
-.search-controls {
+.assess-pa-studentlist-page .search-controls {
   background-color: #f8f9fa;
   padding: 15px 20px;
   border-radius: 8px;
@@ -181,14 +184,14 @@ p {
   border: 1px solid #e9ecef;
 }
 
-.d-flex input.form-control {
+.assess-pa-studentlist-page .d-flex input.form-control {
   min-width: 250px;
   font-size: 14px;
   padding: 8px 12px;
   border-radius: 6px;
 }
 
-.btn {
+.assess-pa-studentlist-page .btn {
   font-size: 0.9rem;
   padding: 8px 15px;
   border-radius: 6px;
@@ -196,33 +199,33 @@ p {
 
 /* Desktop search and button improvements */
 @media (min-width: 992px) {
-  .page-header {
+  .assess-pa-studentlist-page .page-header {
     font-size: 1.6rem;
     padding: 20px 25px;
   }
   
-  .search-controls {
+  .assess-pa-studentlist-page .search-controls {
     padding: 20px 25px;
   }
   
-  .d-flex input.form-control {
+  .assess-pa-studentlist-page .d-flex input.form-control {
     min-width: 350px;
     font-size: 1rem;
     padding: 10px 15px;
   }
   
-  .btn {
+  .assess-pa-studentlist-page .btn {
     font-size: 0.95rem;
     padding: 10px 18px;
   }
   
-  .d-flex.justify-content-between {
+  .assess-pa-studentlist-page .d-flex.justify-content-between {
     align-items: center;
   }
 }
 
 /* Submit button - matching batch selection design */
-.submit-section {
+.assess-pa-studentlist-page .submit-section {
   background-color: #f8f9fa;
   padding: 20px;
   border-radius: 8px;
@@ -231,7 +234,7 @@ p {
   text-align: center;
 }
 
-button.btn-success {
+.assess-pa-studentlist-page button.btn-success {
   font-size: 1rem;
   padding: 12px 30px;
   border-radius: 6px;
@@ -241,19 +244,19 @@ button.btn-success {
 
 /* Desktop submit button and form improvements */
 @media (min-width: 992px) {
-  .submit-section {
+  .assess-pa-studentlist-page .submit-section {
     padding: 25px 30px;
     margin-top: 30px;
   }
   
-  button.btn-success {
+  .assess-pa-studentlist-page button.btn-success {
     font-size: 1.1rem;
     padding: 15px 40px;
     border-radius: 8px;
     min-width: 180px;
   }
   
-  .alert-warning {
+  .assess-pa-studentlist-page .alert-warning {
     font-size: 1rem;
     padding: 15px 20px;
     margin-bottom: 20px;
@@ -262,24 +265,22 @@ button.btn-success {
 
 /* Additional desktop enhancements */
 @media (min-width: 992px) {
-  .table-hover tbody tr:hover {
+  .assess-pa-studentlist-page .table-hover tbody tr:hover {
     background-color: #f8f9fa;
     transition: background-color 0.2s ease;
   }
-  
-  /* Container already styled above */
 }
 
 /* Responsive tweaks */
 @media (max-width: 768px) {
-  .d-flex {
+  .assess-pa-studentlist-page .d-flex {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
   }
 
-  .d-flex input.form-control,
-  .d-flex .btn {
+  .assess-pa-studentlist-page .d-flex input.form-control,
+  .assess-pa-studentlist-page .d-flex .btn {
     width: 100% !important;
   }
 }

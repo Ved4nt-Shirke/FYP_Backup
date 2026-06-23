@@ -23,7 +23,7 @@
 }
 
 /* Table styling */
-.table {
+.assess-container .table {
   width: 100%;
   max-width: 100%;
   border-collapse: separate;
@@ -33,23 +33,23 @@
   table-layout: fixed;
 }
 
-.table th,
-.table td {
+.assess-container .table th,
+.assess-container .table td {
   padding: 0.4rem;
   vertical-align: middle;
   background-color: #f0f0f0;
   border: 1px solid #ccc;
 }
 
-.table th:first-child,
-.table td:first-child {
+.assess-container .table th:first-child,
+.assess-container .table td:first-child {
   text-align: center;
   width: 8%;
   min-width: 40px;
 }
 
-.table th:nth-child(2),
-.table td:nth-child(2) {
+.assess-container .table th:nth-child(2),
+.assess-container .table td:nth-child(2) {
   text-align: left;
   width: 78%;
   word-wrap: break-word;
@@ -58,20 +58,20 @@
   hyphens: auto;
 }
 
-.table th:last-child,
-.table td:last-child {
+.assess-container .table th:last-child,
+.assess-container .table td:last-child {
   text-align: center;
   width: 14%;
   min-width: 60px;
 }
 
 /* Alternate row color */
-.table-striped tbody tr:nth-of-type(odd) {
+.assess-container .table-striped tbody tr:nth-of-type(odd) {
   background-color: #e9e9e9;
 }
 
 /* Header style */
-.table thead th {
+.assess-container .table thead th {
   background-color: #f8f9fa;
   font-weight: bold;
 }
@@ -98,29 +98,32 @@
 
 /* Make table responsive on smaller screens */
 @media (max-width: 768px) {
-  .table thead {
+  .assess-container .table thead {
     display: none;
   }
 
-  .table, .table tbody, .table tr, .table td {
+  .assess-container .table, 
+  .assess-container .table tbody, 
+  .assess-container .table tr, 
+  .assess-container .table td {
     display: block;
     width: 100%;
   }
 
-  .table tr {
+  .assess-container .table tr {
     margin-bottom: 1rem;
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 1rem;
   }
 
-  .table td {
+  .assess-container .table td {
     text-align: left;
     position: relative;
     padding-left: 50%;
   }
 
-  .table td::before {
+  .assess-container .table td::before {
     position: absolute;
     top: 0.5rem;
     left: 1rem;

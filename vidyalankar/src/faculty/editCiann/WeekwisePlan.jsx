@@ -19,7 +19,7 @@ const modalStyles = {
     background: "white",
     borderRadius: "16px",
     width: "95%",
-    maxWidth: "950px",
+    maxWidth: "1250px",
     maxHeight: "90vh", // Keep modal within viewport on mobile
     animation: "fadeIn 0.3s ease-in-out",
     display: "flex",
@@ -45,6 +45,7 @@ const WeekwisePlan = ({
   existingData = [],
   onCancel,
   ciannData,
+  llHours = 2,
 }) => {
   const [week, setWeek] = useState(initialWeek ? `Week ${initialWeek}` : "");
   const [plans, setPlans] = useState([
@@ -156,14 +157,25 @@ const WeekwisePlan = ({
           }))
         );
       } else {
-        setPlans([
-          { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-          { batch: "B2", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-          { batch: "B3", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-        ]);
+        if (llHours >= 4) {
+          setPlans([
+            { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+            { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+            { batch: "B2", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+            { batch: "B2", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+            { batch: "B3", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+            { batch: "B3", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+          ]);
+        } else {
+          setPlans([
+            { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+            { batch: "B2", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+            { batch: "B3", co: "", llo: "", exptNo: "", exptName: "", date: "" },
+          ]);
+        }
       }
     }
-  }, [week, initialWeek, existingData]);
+  }, [week, initialWeek, existingData, llHours]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -434,7 +446,7 @@ const WeekwisePlan = ({
         .plan-table {
           width: 100%;
           border-collapse: collapse; /* Ensure header/body borders meet */
-          min-width: 600px; /* Minimum width to force horizontal scroll on small screens */
+          min-width: 1150px; /* Minimum width to force horizontal scroll on small screens */
           table-layout: fixed; /* Ensures column widths are respected */
           border: 0; /* Use wrapper for outer border */
         }
@@ -460,14 +472,14 @@ const WeekwisePlan = ({
         }
         
         /* Column widths */
-        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 12%; } /* Week No */
-        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 10%; } /* Batch No */
-        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 14%; } /* CO */
-        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 20%; } /* LLO */
-        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 12%; } /* Experiment No */
-        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 16%; } /* Experiment Name */
+        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 8%; }  /* Week No */
+        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 8%; }  /* Batch No */
+        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 8%; }  /* CO */
+        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 22%; } /* LLO */
+        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 8%; }  /* Experiment No */
+        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 32%; } /* Experiment Name */
         .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 10%; } /* Planned Date */
-        .plan-table th:nth-child(8), .plan-table td:nth-child(8) { width: 6%; }  /* Action */
+        .plan-table th:nth-child(8), .plan-table td:nth-child(8) { width: 4%; }  /* Action */
 
         .plan-table input,
         .plan-table select,
@@ -692,14 +704,18 @@ const WeekwisePlan = ({
                                 const updated = [...plans];
                                 updated[i].co = nextCOs.join(", ");
                                 
-                                // Also clear LLOs that do not belong to any of the remaining selected COs
-                                const remainingCOsLlos = coData
+                                // Build valid LLO labels for remaining selected COs
+                                const validLloLabels = new Set();
+                                coData
                                   .filter((c) => nextCOs.includes(c.coNumber))
-                                  .flatMap((c) => [...(c.llos || []), ...(c.tlos || [])])
-                                  .map(item => item.trim())
-                                  .filter(Boolean);
+                                  .forEach((c) => {
+                                    const coNum = c.coNumber.replace(/\D/g, '') || '1';
+                                    (c.llos || []).forEach((_, idx) => {
+                                      validLloLabels.add(`${coNum}.${idx + 1}`);
+                                    });
+                                  });
                                 const currentLlos = plan.llo ? plan.llo.split(",").map(l => l.trim()) : [];
-                                const validLlos = currentLlos.filter(lloVal => remainingCOsLlos.includes(lloVal));
+                                const validLlos = currentLlos.filter(label => validLloLabels.has(label));
                                 updated[i].llo = validLlos.join(", ");
                                 
                                 setPlans(updated);
@@ -726,7 +742,7 @@ const WeekwisePlan = ({
                         >
                           <span className="llo-trigger-text">
                             {plan.llo && plan.llo.split(",").map(l => l.trim()).filter(Boolean).length > 0
-                              ? `${plan.llo.split(",").map(l => l.trim()).filter(Boolean).length} selected`
+                              ? plan.llo.split(",").map(l => l.trim()).filter(Boolean).join(", ")
                               : "Select LLOs"}
                           </span>
                           <span className="llo-trigger-arrow">▼</span>
@@ -736,20 +752,38 @@ const WeekwisePlan = ({
                           <div className="llo-dropdown-menu">
                             {(() => {
                               const selectedCOs = plan.co ? plan.co.split(",").map(c => c.trim()) : [];
-                              const availableLlos = [...new Set(coData
+                              // Build LLO list with numbers (coNum.idx) and full text
+                              const availableLlosWithNums = [];
+                              coData
                                 .filter(c => selectedCOs.includes(c.coNumber))
-                                .flatMap(c => [...(c.llos || []), ...(c.tlos || [])]))]
-                                .map(item => item.trim())
-                                .filter(Boolean);
+                                .forEach(c => {
+                                  const coNum = c.coNumber.replace(/\D/g, '') || '1';
+                                  (c.llos || []).forEach((lloText, lloIdx) => {
+                                    const trimmed = lloText.trim();
+                                    if (trimmed) {
+                                      availableLlosWithNums.push({
+                                        label: `${coNum}.${lloIdx + 1}`,
+                                        value: trimmed,
+                                      });
+                                    }
+                                  });
+                                });
+                              // Deduplicate by value
+                              const seen = new Set();
+                              const uniqueLlos = availableLlosWithNums.filter(item => {
+                                if (seen.has(item.value)) return false;
+                                seen.add(item.value);
+                                return true;
+                              });
                               
-                              if (availableLlos.length === 0) {
+                              if (uniqueLlos.length === 0) {
                                 return <div className="llo-dropdown-empty">No LLOs available for selected COs</div>;
                               }
                               
                               const selectedLlos = plan.llo ? plan.llo.split(",").map(l => l.trim()) : [];
                               
-                              return availableLlos.map((lloText, lloIdx) => {
-                                const isLloSelected = selectedLlos.includes(lloText);
+                              return uniqueLlos.map((lloItem, lloIdx) => {
+                                const isLloSelected = selectedLlos.includes(lloItem.label);
                                 return (
                                   <label key={lloIdx} className="llo-dropdown-item">
                                     <input
@@ -757,18 +791,19 @@ const WeekwisePlan = ({
                                       checked={isLloSelected}
                                       onChange={() => {
                                         let nextLlos;
+                                        const currentLlos = plan.llo ? plan.llo.split(",").map(l => l.trim()) : [];
                                         if (isLloSelected) {
-                                          nextLlos = selectedLlos.filter((l) => l !== lloText);
+                                          nextLlos = currentLlos.filter((l) => l !== lloItem.label);
                                         } else {
-                                          nextLlos = [...selectedLlos, lloText];
+                                          nextLlos = [...currentLlos, lloItem.label];
                                         }
                                         const updated = [...plans];
                                         updated[i].llo = nextLlos.join(", ");
                                         setPlans(updated);
                                       }}
                                     />
-                                    <span className="llo-item-text" title={lloText}>
-                                      {lloText}
+                                    <span className="llo-item-text" title={lloItem.value}>
+                                      <strong>{lloItem.label}</strong>
                                     </span>
                                   </label>
                                 );

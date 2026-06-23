@@ -37,7 +37,7 @@ export default function ViewAssessmentBatchSelect() {
     <>
       <Header showSearch={false} />
       <div 
-        className="container-fluid"
+        className="container-fluid assess-batch-select-page"
         style={{ padding: '15px', maxWidth: 'none' }}
       >
         <h3 className="text-center bg-success text-white p-2 rounded">

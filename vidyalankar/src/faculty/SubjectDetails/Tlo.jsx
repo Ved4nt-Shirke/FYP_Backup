@@ -511,7 +511,11 @@ export default function Tlo() {
                                   ) : (
                                     <div className="d-flex flex-column gap-1">
                                       {nonEmpties.map((t, idx) => (
-                                        <div key={idx} className="small text-dark fw-semibold">
+                                        <div 
+                                          key={idx} 
+                                          className="small text-dark fw-semibold py-1"
+                                          style={idx < nonEmpties.length - 1 ? { borderBottom: "1px solid #e9ecef" } : {}}
+                                        >
                                           {coNum}.{idx + 1} {t}
                                         </div>
                                       ))}

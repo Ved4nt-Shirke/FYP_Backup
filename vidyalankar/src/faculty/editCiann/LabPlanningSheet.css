@@ -119,8 +119,8 @@
   border-radius: 12px;
   margin: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: min(100%, 1100px);
-  max-width: 1100px;
+  width: 100%;
+  max-width: 100%;
   /* The container no longer scrolls; the table area will handle vertical scrolling */
 }
 
@@ -319,9 +319,58 @@
   /* slightly smaller text */
   color: var(--text-color-primary, #000);
   white-space: normal;
-  min-width: 110px;
-  /* narrower cells */
 }
+
+/* Explicit Column Widths and Alignments for LP Table */
+.labplanning-main-content .lab-table th:nth-child(1),
+.labplanning-main-content .lab-table td:nth-child(1) {
+  width: 6%;
+  min-width: 50px;
+} /* Week No */
+
+.labplanning-main-content .lab-table th:nth-child(2),
+.labplanning-main-content .lab-table td:nth-child(2) {
+  width: 6%;
+  min-width: 50px;
+} /* Batch */
+
+.labplanning-main-content .lab-table th:nth-child(3),
+.labplanning-main-content .lab-table td:nth-child(3) {
+  width: 8%;
+  min-width: 60px;
+} /* CO */
+
+.labplanning-main-content .lab-table th:nth-child(4),
+.labplanning-main-content .lab-table td:nth-child(4) {
+  width: 25%;
+  min-width: 200px;
+  text-align: left;
+} /* LLO */
+
+.labplanning-main-content .lab-table th:nth-child(5),
+.labplanning-main-content .lab-table td:nth-child(5) {
+  width: 8%;
+  min-width: 60px;
+} /* Expt No */
+
+.labplanning-main-content .lab-table th:nth-child(6),
+.labplanning-main-content .lab-table td:nth-child(6) {
+  width: 27%;
+  min-width: 200px;
+  text-align: left;
+} /* Experiment Name */
+
+.labplanning-main-content .lab-table th:nth-child(7),
+.labplanning-main-content .lab-table td:nth-child(7) {
+  width: 10%;
+  min-width: 100px;
+} /* Planned Date */
+
+.labplanning-main-content .lab-table th:nth-child(8),
+.labplanning-main-content .lab-table td:nth-child(8) {
+  width: 10%;
+  min-width: 100px;
+} /* Actual Date */
 
 .labplanning-main-content .lab-table thead th {
   font-weight: bold;
@@ -506,8 +555,8 @@
   .labplanning-main-content .plan-container {
     margin: -10px 0 15px 240px;
     padding: 15px;
-    width: 95%;
-    max-width: 1000px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .labplanning-main-content .lab-table th,

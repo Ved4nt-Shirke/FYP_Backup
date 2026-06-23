@@ -10,6 +10,9 @@ const EditCiann = () => {
   const [ciannDataList, setCiannDataList] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // Academic years state
+  const [selectedYear, setSelectedYear] = useState(localStorage.getItem("selectedAcademicYear") || "all");
+  
   // Tabs state
   const [activeTab, setActiveTab] = useState('my-cianns'); // 'my-cianns', 'shared-with-me', 'shared-by-me', 'requests'
 
@@ -61,6 +64,25 @@ const EditCiann = () => {
       const data = await response.json();
       setCiannDataList(data);
 
+      // Initialize selected year from localStorage
+      const savedYear = localStorage.getItem("selectedAcademicYear");
+      if (savedYear && savedYear !== "all") {
+        setSelectedYear(savedYear);
+      } else {
+        try {
+          const activeRes = await fetch(config.academicYear.current, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const activeData = await activeRes.json();
+          if (activeData.success && activeData.academicYear) {
+            setSelectedYear(activeData.academicYear.yearName);
+            localStorage.setItem("selectedAcademicYear", activeData.academicYear.yearName);
+          }
+        } catch (err) {
+          console.error("Error fetching current year in EditCiann:", err);
+        }
+      }
+
       // Fetch incoming requests
       const incomingRes = await ciannUtils.getIncomingShareRequests();
       setIncomingRequests(incomingRes?.incoming || []);
@@ -77,6 +99,16 @@ const EditCiann = () => {
 
   useEffect(() => {
     fetchDashboardData();
+  }, []);
+
+  useEffect(() => {
+    const handleYearChange = (e) => {
+      setSelectedYear(e.detail);
+    };
+    window.addEventListener("academicYearChanged", handleYearChange);
+    return () => {
+      window.removeEventListener("academicYearChanged", handleYearChange);
+    };
   }, []);
 
   // Search faculty directory debounced
@@ -284,15 +316,21 @@ const EditCiann = () => {
   };
 
   // Group CIANNs
-  const myCianns = ciannDataList.filter(
+  // Filter by selected academic year
+  const getFilteredCianns = (list) => {
+    if (!selectedYear || selectedYear === "all") return list;
+    return list.filter((c) => c.academicYear === selectedYear);
+  };
+
+  const myCianns = getFilteredCianns(ciannDataList).filter(
     (c) => c.accessLevel === 'owner' || (c.ownerUsername && c.ownerUsername.trim().toLowerCase() === currentUsername)
   );
 
-  const sharedWithMe = ciannDataList.filter(
+  const sharedWithMe = getFilteredCianns(ciannDataList).filter(
     (c) => c.accessLevel === 'read' || c.accessLevel === 'edit'
   );
 
-  const sharedByMe = ciannDataList.filter(
+  const sharedByMe = getFilteredCianns(ciannDataList).filter(
     (c) => (c.accessLevel === 'owner' || (c.ownerUsername && c.ownerUsername.trim().toLowerCase() === currentUsername)) &&
            c.sharedWith && c.sharedWith.length > 0
   );
@@ -336,7 +374,7 @@ const EditCiann = () => {
               Manage your Curriculum Implementation and Assessment Norms, co-faculty, and shared collaborative access.
             </p>
           </div>
-          <div className="banner-actions">
+          <div className="banner-actions" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <button
               type="button"
               className="btn-premium-request"
@@ -456,14 +494,14 @@ const EditCiann = () => {
                         <div className="request-card-actions">
                           <button
                             type="button"
-                            className="btn btn-sm btn-success px-3 fw-semibold"
+                            className="btn-premium-accept"
                             onClick={() => respondToRequest(req, 'accept')}
                           >
                             Accept
                           </button>
                           <button
                             type="button"
-                            className="btn btn-sm btn-outline-danger px-3 fw-semibold"
+                            className="btn-premium-reject"
                             onClick={() => respondToRequest(req, 'reject')}
                           >
                             Reject

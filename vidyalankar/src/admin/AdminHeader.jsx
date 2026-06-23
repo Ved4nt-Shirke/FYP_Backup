@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
 } from "../utils/institutionBranding";
+import config from "../config/api";
 import "./AdminHeader.css";
 
 const AdminHeader = ({ onMenuToggle }) => {
   const navigate = useNavigate();
+  const [activeYear, setActiveYear] = useState(null);
 
   // Get admin info from localStorage
   const adminInstitution = (localStorage.getItem("college") || "VP").toUpperCase();
@@ -24,6 +26,27 @@ const AdminHeader = ({ onMenuToggle }) => {
     institutionCode,
   );
   const username = localStorage.getItem("username") || "Admin";
+
+  useEffect(() => {
+    const fetchActiveYear = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await fetch(config.academicYear.current, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (data.success && data.academicYear) {
+          setActiveYear(data.academicYear);
+        }
+      } catch (err) {
+        console.error("Error fetching active academic year:", err);
+      }
+    };
+    fetchActiveYear();
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -56,6 +79,24 @@ const AdminHeader = ({ onMenuToggle }) => {
                 <span className="institution-brand-fallback">{institutionFallback}</span>
               )}
               {institutionCode} Admin Panel
+              {activeYear && (
+                <span className="active-ay-badge" style={{
+                  marginLeft: '12px',
+                  fontSize: '0.75rem',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  color: '#fff',
+                  fontWeight: '500',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <i className="bi bi-calendar3" style={{ fontSize: '0.7rem' }}></i>
+                  AY: {activeYear.yearName} ({activeYear.scheme})
+                </span>
+              )}
             </span>
           </h1>
           <p className="admin-page-subtitle">{institutionName}</p>

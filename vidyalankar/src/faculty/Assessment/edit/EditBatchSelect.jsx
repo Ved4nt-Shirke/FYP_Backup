@@ -92,7 +92,7 @@ export default function EditBatchSelect() {
   return (
     <>
       <Header showSearch={false} />
-      <div className="container my-4">
+      <div className="container my-4 assess-batch-select-page">
         <h3 className="text-center bg-success text-white p-2 rounded">
           Course Diary - Batch Selection
         </h3>

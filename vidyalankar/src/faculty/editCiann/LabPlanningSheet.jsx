@@ -59,6 +59,36 @@ const LabPlanningSheet = () => {
   const [labPlans, setLabPlans] = useState([]);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
+  const [llHours, setLlHours] = useState(2);
+
+  useEffect(() => {
+    const fetchCiannSubjectDetails = async () => {
+      if (!ciannId) return;
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(
+          `${config.subjectDetails}/ciann-subject-details/${ciannId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.success && data.adminDetails && data.adminDetails.learningScheme) {
+          const ll = parseInt(data.adminDetails.learningScheme.ll);
+          if (!isNaN(ll)) {
+            setLlHours(ll);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching ciann subject details in LabPlanningSheet:", err);
+      }
+    };
+    fetchCiannSubjectDetails();
+  }, [ciannId]);
+
 
   useEffect(() => {
     const handleSecondaryToggle = () => {
@@ -280,6 +310,7 @@ const LabPlanningSheet = () => {
               }
               initialWeek={editWeekNo}
               ciannData={ciannData}
+              llHours={llHours}
             />
           ) : (
             <div className="plan-container">
@@ -367,13 +398,13 @@ const LabPlanningSheet = () => {
                                 <td>{p.actualDate || "--"}</td>
                               </tr>
                             ))
-                            : ["B1", "B2", "B3"].map((batch, i) => (
+                            : (llHours >= 4 ? ["B1", "B1", "B2", "B2", "B3", "B3"] : ["B1", "B2", "B3"]).map((batch, i, arr) => (
                               <tr
                                 key={`${weekNo}-empty-${i}`}
-                                className={`week-group ${i === 0 ? "first" : i === 2 ? "last" : ""
+                                className={`week-group ${i === 0 ? "first" : i === arr.length - 1 ? "last" : ""
                                   }`}
                               >
-                                {i === 0 && <td rowSpan={3}>{weekNo}</td>}
+                                {i === 0 && <td rowSpan={arr.length}>{weekNo}</td>}
                                 <td>{batch}</td>
                                 <td></td>
                                 <td></td>

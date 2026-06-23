@@ -395,12 +395,19 @@ textarea {
   backdrop-filter: blur(2px);
 }
 
-.modal {
+.modal-overlay .modal {
+  display: block !important;
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: auto !important;
+  width: 90% !important;
+  height: auto !important;
+  overflow-x: visible !important;
   background: var(--admin-bg-card);
   border-radius: var(--admin-radius-lg);
   box-shadow: var(--admin-shadow-xl);
   max-width: 500px;
-  width: 90%;
   max-height: 90vh;
   overflow-y: auto;
   animation: slideUp 0.3s ease;

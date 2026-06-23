@@ -321,7 +321,7 @@ export default function AssessPAStudentlist() {
     <>
       <Header />
       <div
-        className="container-fluid"
+        className="container-fluid assess-pa-studentlist-page"
         style={{ margin: "0", padding: "15px", maxWidth: "none" }}
       >
         <div className="page-header">
