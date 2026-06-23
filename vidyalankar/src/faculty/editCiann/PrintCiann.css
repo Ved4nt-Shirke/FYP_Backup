@@ -907,3 +907,213 @@
   }
 }
 
+/* ─── Section 14: Landscape Attendance Ledger Sheets ─── */
+
+.attendance-sheet-landscape {
+  background: #fff;
+  padding: 10px 6px;
+  margin-top: 30px;
+  overflow-x: auto;
+}
+
+.ledger-header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  padding: 0 2px;
+  color: #000;
+}
+
+.ledger-left {
+  text-align: left;
+  font-size: 12px;
+}
+
+.ledger-center {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex: 1;
+}
+
+.ledger-right {
+  text-align: right;
+  font-size: 11px;
+  color: #555;
+}
+
+.ledger-value {
+  text-decoration: underline;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8px;
+  table-layout: fixed;
+  border: 1.5px solid #000;
+}
+
+.ledger-table th,
+.ledger-table td {
+  border: 1px solid #000;
+  padding: 1px 2px;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.2;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ledger-table thead th {
+  background: #f8f8f8;
+  font-weight: 700;
+  font-size: 7.5px;
+}
+
+.ledger-sr-col {
+  width: 28px !important;
+  min-width: 28px;
+  max-width: 28px;
+  font-size: 7px !important;
+}
+
+.ledger-roll-col {
+  width: 40px !important;
+  min-width: 40px;
+  max-width: 40px;
+  font-size: 7px !important;
+}
+
+.ledger-sig-col {
+  width: 60px !important;
+  min-width: 60px;
+  max-width: 60px;
+  font-size: 6.5px !important;
+}
+
+.ledger-month-header {
+  font-size: 7.5px !important;
+  font-weight: 700 !important;
+  background: #eee !important;
+  letter-spacing: 0.3px;
+  padding: 2px 1px !important;
+}
+
+.ledger-month-header.empty-header {
+  background: #fafafa !important;
+  color: #bbb;
+}
+
+.ledger-date-header {
+  font-size: 7px !important;
+  font-weight: 600 !important;
+  padding: 1px !important;
+}
+
+.ledger-index-header {
+  font-size: 6.5px !important;
+  font-weight: 500 !important;
+  color: #666;
+  padding: 1px !important;
+}
+
+.ledger-sr-cell {
+  font-size: 7px;
+  font-weight: 600;
+  background: #fafafa;
+}
+
+.ledger-roll-cell {
+  font-size: 7px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.ledger-mark-cell {
+  font-size: 7.5px;
+  font-weight: 600;
+  min-width: 14px;
+}
+
+.ledger-sig-cell {
+  min-width: 50px;
+}
+
+/* On-screen scrollable wrapper */
+@media screen {
+  .attendance-sheet-landscape {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .ledger-table {
+    min-width: 900px;
+  }
+}
+
+/* ─── Print: Rotate each ledger sheet 90° to force landscape on portrait page ─── */
+@media print {
+  .attendance-sheet-landscape {
+    page-break-before: always !important;
+    page-break-after: always !important;
+    break-before: page !important;
+    break-after: page !important;
+    /* Layout content in LANDSCAPE proportions first (wide, short) */
+    width: 277mm;
+    height: 190mm;
+    /* Then rotate 90° CW → visual output = 190mm wide × 277mm tall = portrait page */
+    transform-origin: top left;
+    transform: rotate(90deg) translateY(-190mm);
+    /* Reset screen styles */
+    margin: 0 !important;
+    padding: 4mm !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
+  }
+
+  .ledger-table {
+    min-width: unset !important;
+    width: 100% !important;
+    font-size: 7px !important;
+  }
+
+  .ledger-table th,
+  .ledger-table td {
+    padding: 1px !important;
+  }
+
+  .ledger-header-info {
+    margin-bottom: 2mm;
+  }
+
+  .ledger-center {
+    font-size: 11px;
+  }
+
+  .ledger-sr-col {
+    width: 22px !important;
+    min-width: 22px !important;
+  }
+
+  .ledger-roll-col {
+    width: 34px !important;
+    min-width: 34px !important;
+  }
+
+  .ledger-sig-col {
+    width: 50px !important;
+    min-width: 50px !important;
+  }
+}

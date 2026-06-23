@@ -233,6 +233,8 @@ const PrintCiann = () => {
   const [k5CtMarksMap, setK5CtMarksMap] = useState({});
   const [theoryAttendance, setTheoryAttendance] = useState([]);
   const [practicalAttendance, setPracticalAttendance] = useState([]);
+  const [tutorialAttendance, setTutorialAttendance] = useState([]);
+  const [extraTheoryAttendance, setExtraTheoryAttendance] = useState([]);
 
   useEffect(() => {
     const storedCiannData = localStorage.getItem("ciannData");
@@ -569,9 +571,11 @@ const PrintCiann = () => {
         }
       }
 
-      // Fetch Theory and Practical Attendance
+      // Fetch Theory, Practical, Tutorial, and Extra Theory Attendance
       let theoryList = [];
       let practicalList = [];
+      let tutorialList = [];
+      let extraList = [];
       try {
         const theoryRes = await fetch(
           `${config.apiBaseUrl}/theory-attendance?ciannId=${encodeURIComponent(ciannId)}`,
@@ -597,8 +601,37 @@ const PrintCiann = () => {
       } catch (err) {
         console.error("Failed to fetch practical attendance:", err);
       }
+
+      try {
+        const tutorialRes = await fetch(
+          `${config.attendance.tutorial}?ciannId=${encodeURIComponent(ciannId)}`,
+          { headers: requestHeaders }
+        );
+        if (tutorialRes.ok) {
+          const tutData = await tutorialRes.json();
+          tutorialList = Array.isArray(tutData) ? tutData : [];
+        }
+      } catch (err) {
+        console.error("Failed to fetch tutorial attendance:", err);
+      }
+
+      try {
+        const extraRes = await fetch(
+          `${config.attendance.extraTheory}/ciann/${encodeURIComponent(ciannId)}`,
+          { headers: requestHeaders }
+        );
+        if (extraRes.ok) {
+          const extData = await extraRes.json();
+          extraList = Array.isArray(extData) ? extData : [];
+        }
+      } catch (err) {
+        console.error("Failed to fetch extra theory attendance:", err);
+      }
+
       setTheoryAttendance(theoryList);
       setPracticalAttendance(practicalList);
+      setTutorialAttendance(tutorialList);
+      setExtraTheoryAttendance(extraList);
     } catch (error) {
       console.error("Error fetching print CIANN data:", error);
     } finally {
@@ -836,6 +869,221 @@ const PrintCiann = () => {
       };
     });
   }, [students, theoryAttendance, practicalAttendance]);
+
+  const sortedStudents = useMemo(() => {
+    return [...students].sort((a, b) => {
+      const rollA = a.rollNo || a.rollId || "";
+      const rollB = b.rollNo || b.rollId || "";
+      const numA = parseInt(rollA.replace(/\D/g, ""), 10);
+      const numB = parseInt(rollB.replace(/\D/g, ""), 10);
+      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return rollA.localeCompare(rollB, undefined, { numeric: true, sensitivity: 'base' });
+    });
+  }, [students]);
+
+  const getRecordDateStr = (record, type) => {
+    let d = "";
+    if (type === "theory") d = record.date || record.startDate || "";
+    else if (type === "practical") d = record.actualDate || record.date || "";
+    else if (type === "tutorial") d = record.actualDate || record.date || "";
+    else if (type === "extra") d = record.date || record.actualDate || "";
+    return typeof d === "string" ? d.split("T")[0] : "";
+  };
+
+  const getDayNumber = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    return d.getDate();
+  };
+
+  const getMonthName = (dateStr) => {
+    if (!dateStr) return "Month";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "Month";
+    return d.toLocaleString("default", { month: "short" });
+  };
+
+  const getMonthHeaders = (sessions, type) => {
+    const groups = [];
+    let currentMonth = null;
+    let currentCount = 0;
+
+    sessions.forEach((session) => {
+      const dateStr = getRecordDateStr(session, type);
+      const month = getMonthName(dateStr);
+      if (month === currentMonth) {
+        currentCount++;
+      } else {
+        if (currentMonth !== null) {
+          groups.push({ month: currentMonth, span: currentCount });
+        }
+        currentMonth = month;
+        currentCount = 1;
+      }
+    });
+
+    if (currentMonth !== null) {
+      groups.push({ month: currentMonth, span: currentCount });
+    }
+
+    return groups;
+  };
+
+  const getStudentAttendanceMark = (student, session, type) => {
+    const sName = (student.studentName || student.name || "").trim().toLowerCase();
+    const sRoll = (student.rollNo || student.rollId || "").trim().toLowerCase();
+
+    const studentsList = session.students || [];
+
+    if (type === "theory" || type === "practical") {
+      const match = studentsList.find((s) => {
+        const nameMatch = s.studentName && s.studentName.trim().toLowerCase() === sName;
+        const rollMatch = s.rollNo && s.rollNo.trim().toLowerCase() === sRoll;
+        return nameMatch || rollMatch;
+      });
+      if (match) {
+        return match.status === "Present" ? "P" : match.status === "Absent" ? "A" : "";
+      }
+    } else {
+      const match = studentsList.find((s) => {
+        const nameMatch = s.name && s.name.trim().toLowerCase() === sName;
+        const rollMatch = s.rollId && s.rollId.trim().toLowerCase() === sRoll;
+        return nameMatch || rollMatch;
+      });
+      if (match) {
+        return match.attendance === "Present" ? "P" : match.attendance === "Absent" ? "A" : "";
+      }
+    }
+    return "";
+  };
+
+  const practicalBatches = useMemo(() => {
+    const batches = new Set();
+    practicalAttendance.forEach((record) => {
+      if (record.batch) {
+        batches.add(record.batch.trim().toUpperCase());
+      }
+    });
+    if (batches.size === 0) return ["B1", "B2", "B3"];
+    return Array.from(batches).sort();
+  }, [practicalAttendance]);
+
+  const tutorialGroups = useMemo(() => {
+    const groups = new Set();
+    tutorialAttendance.forEach((record) => {
+      if (record.division) {
+        groups.add(record.division.trim());
+      }
+    });
+    if (groups.size === 0) return [null];
+    return Array.from(groups).sort();
+  }, [tutorialAttendance]);
+
+  const renderAttendanceLedgerPage = (type, title, sessions, pageIndex, batchName = null) => {
+    const startSr = pageIndex * 30 + 1;
+    const endSr = (pageIndex + 1) * 30;
+    
+    // Sort sessions chronologically
+    const sortedSessions = [...sessions].sort((a, b) => {
+      const da = getRecordDateStr(a, type);
+      const db = getRecordDateStr(b, type);
+      return new Date(da) - new Date(db);
+    });
+
+    const monthGroups = getMonthHeaders(sortedSessions, type);
+    
+    // Day numbers header row
+    const dayCells = sortedSessions.map(s => getDayNumber(getRecordDateStr(s, type)));
+    while (dayCells.length < 32) {
+      dayCells.push("");
+    }
+    
+    // Row data
+    const rows = [];
+    for (let sr = startSr; sr <= endSr; sr++) {
+      const student = sortedStudents[sr - 1] || null;
+      rows.push({ sr, student });
+    }
+
+    return (
+      <div className="attendance-sheet-landscape page-break-before" key={`${type}-${batchName || ""}-page-${pageIndex}`}>
+        <div className="ledger-header-info">
+          <div className="ledger-left">
+            Class & Div. : <span className="ledger-value">{getClassAndDiv(ciannData)}</span>
+          </div>
+          <div className="ledger-center">
+            {title}{batchName ? ` - ${batchName}` : ""}
+          </div>
+          <div className="ledger-right">
+            Page {pageIndex + 1}
+          </div>
+        </div>
+
+        <table className="ledger-table">
+          <thead>
+            {/* Month Row */}
+            <tr>
+              <th rowSpan={3} className="ledger-sr-col">Sr. No.</th>
+              <th rowSpan={3} className="ledger-roll-col">Roll ID</th>
+              {monthGroups.map((g, idx) => (
+                <th key={`m-${idx}`} colSpan={g.span} className="ledger-month-header">
+                  {g.month}
+                </th>
+              ))}
+              {sortedSessions.length < 32 && (
+                <th colSpan={32 - sortedSessions.length} className="ledger-month-header empty-header">Month</th>
+              )}
+              <th rowSpan={3} className="ledger-sig-col">Signature of Student</th>
+              <th rowSpan={3} className="ledger-sr-col">Sr. No.</th>
+            </tr>
+            {/* Date Row */}
+            <tr>
+              {dayCells.map((day, idx) => (
+                <th key={`day-${idx}`} className="ledger-date-header">
+                  {day}
+                </th>
+              ))}
+            </tr>
+            {/* Column Index Row */}
+            <tr>
+              {[...Array(32)].map((_, idx) => (
+                <th key={`index-${idx}`} className="ledger-index-header">
+                  {idx + 1}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(({ sr, student }) => {
+              return (
+                <tr key={`row-${sr}`}>
+                  <td className="ledger-sr-cell">{sr}</td>
+                  <td className="ledger-roll-cell">
+                    {student ? (student.rollNo || student.rollId || student.regNumber || "-") : ""}
+                  </td>
+                  {[...Array(32)].map((_, colIdx) => {
+                    const session = sortedSessions[colIdx];
+                    let mark = "";
+                    if (student && session) {
+                      mark = getStudentAttendanceMark(student, session, type);
+                    }
+                    return (
+                      <td key={`mark-${sr}-${colIdx}`} className="ledger-mark-cell">
+                        {mark}
+                      </td>
+                    );
+                  })}
+                  <td className="ledger-sig-cell"></td>
+                  <td className="ledger-sr-cell">{sr}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   const printNow = () => window.print();
 
@@ -1640,6 +1888,61 @@ const PrintCiann = () => {
             </div>
           </div>
         </section>
+
+        {/* Section 14. Landscape Attendance Ledger Sheets */}
+        {/* 14.1 Theory Attendance Ledger */}
+        {[0, 1, 2].map((pageIdx) =>
+          renderAttendanceLedgerPage(
+            "theory",
+            "Theory Lectures Attendance Ledger",
+            theoryAttendance,
+            pageIdx
+          )
+        )}
+
+        {/* 14.2 Practical Attendance Ledger (per batch) */}
+        {practicalBatches.flatMap((batch) =>
+          [0, 1, 2].map((pageIdx) =>
+            renderAttendanceLedgerPage(
+              "practical",
+              "Practical Lab Attendance Ledger",
+              practicalAttendance.filter(
+                (r) =>
+                  r.batch &&
+                  r.batch.trim().toUpperCase() === batch
+              ),
+              pageIdx,
+              `Batch ${batch}`
+            )
+          )
+        )}
+
+        {/* 14.3 Tutorial Attendance Ledger (per group) */}
+        {tutorialGroups.flatMap((group) =>
+          [0, 1, 2].map((pageIdx) =>
+            renderAttendanceLedgerPage(
+              "tutorial",
+              "Tutorial Session Attendance Ledger",
+              group
+                ? tutorialAttendance.filter(
+                    (r) => r.division && r.division.trim() === group
+                  )
+                : tutorialAttendance,
+              pageIdx,
+              group || "All"
+            )
+          )
+        )}
+
+        {/* 14.4 Extra Theory Attendance Ledger */}
+        {[0, 1, 2].map((pageIdx) =>
+          renderAttendanceLedgerPage(
+            "extra",
+            "Extra Theory Lectures Attendance Ledger",
+            extraTheoryAttendance,
+            pageIdx
+          )
+        )}
 
         {loading && (
           <p className="ciann-print-loading">Loading complete CIANN content...</p>
