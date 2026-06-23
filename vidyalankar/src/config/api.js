@@ -33,7 +33,9 @@ export const config = {
     complete: (id) => `${API_BASE_URL}/academic-year/complete/${id}`,
     activate: (id) => `${API_BASE_URL}/academic-year/activate/${id}`,
     stats: (id) => `${API_BASE_URL}/academic-year/${id}/stats`,
+    delete: (id) => `${API_BASE_URL}/academic-year/${id}`,
   },
+
 
   // Student endpoints
   students: `${API_BASE_URL}/students`,

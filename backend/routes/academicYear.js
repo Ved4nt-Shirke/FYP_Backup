@@ -396,4 +396,43 @@ router.get("/:id/stats", authorizeAdmin, async (req, res) => {
   }
 });
 
+// ──────────────────────────────────────────────
+// DELETE /api/academic-year/:id
+// Permanently delete an academic year.
+// Admin only. Cannot delete an active academic year.
+// ──────────────────────────────────────────────
+router.delete("/:id", authorizeAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const college = req.user.college;
+
+    const year = await AcademicYear.findById(id);
+    if (!year) {
+      return res.status(404).json({ success: false, message: "Academic year not found" });
+    }
+
+    if (college && college !== "ALL" && year.college !== college) {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+
+    if (year.status === "active") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete an active academic year. Please archive it first before deleting.",
+      });
+    }
+
+    await AcademicYear.findByIdAndDelete(id);
+
+    return res.json({
+      success: true,
+      message: `Academic Year "${year.yearName}" has been permanently deleted.`,
+    });
+  } catch (err) {
+    console.error("Error deleting academic year:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;
+

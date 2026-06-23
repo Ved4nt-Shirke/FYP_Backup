@@ -29,7 +29,7 @@ const AcademicYearManagement = () => {
   // Confirmation Modal State
   const [confirmDialog, setConfirmDialog] = useState({
     show: false,
-    type: "", // "complete" or "activate"
+    type: "", // "complete", "activate", or "delete"
     yearId: null,
     yearName: "",
   });
@@ -175,6 +175,30 @@ const AcademicYearManagement = () => {
     setError("");
     setSuccess("");
     const token = localStorage.getItem("token");
+
+    if (type === "delete") {
+      try {
+        const res = await fetch(config.academicYear.delete(yearId), {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) {
+          setSuccess(data.message);
+          if (selectedYearId === yearId) {
+            setSelectedYearId(null);
+            setSelectedYearStats(null);
+          }
+          fetchData();
+        } else {
+          setError(data.message || "Failed to delete academic year.");
+        }
+      } catch (err) {
+        setError("Network error during deletion.");
+        console.error(err);
+      }
+      return;
+    }
 
     const endpoint =
       type === "complete"
@@ -362,7 +386,7 @@ const AcademicYearManagement = () => {
                           </span>
                         </td>
                         <td onClick={(e) => e.stopPropagation()}>
-                          <div style={{ display: "flex", gap: "8px" }}>
+                          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                             <button
                               className="btn btn-secondary btn-sm"
                               onClick={() => setSelectedYearId(year._id)}
@@ -379,6 +403,15 @@ const AcademicYearManagement = () => {
                                 Activate
                               </button>
                             )}
+                            <button
+                              className="btn btn-danger btn-sm"
+                              disabled={isActive}
+                              title={isActive ? "Cannot delete an active academic year" : "Delete academic year"}
+                              onClick={() => openConfirmDialog("delete", year)}
+                            >
+                              <i className="bi bi-trash3-fill" style={{ marginRight: "4px" }}></i>
+                              Delete
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -758,7 +791,14 @@ const AcademicYearManagement = () => {
           <div className="modal-overlay">
             <div className="modal" style={{ maxWidth: "450px" }}>
               <div className="modal-header">
-                <h3>Confirm Action</h3>
+                <h3>
+                  {confirmDialog.type === "delete" ? (
+                    <span style={{ color: "var(--admin-danger)" }}>
+                      <i className="bi bi-trash3-fill" style={{ marginRight: "8px" }}></i>
+                      Delete Academic Year
+                    </span>
+                  ) : "Confirm Action"}
+                </h3>
                 <button
                   onClick={() => setConfirmDialog({ show: false, type: "", yearId: null, yearName: "" })}
                   style={{ background: "none", border: "none", fontSize: "1.2rem", cursor: "pointer" }}
@@ -774,6 +814,16 @@ const AcademicYearManagement = () => {
                     <br />
                     <span style={{ color: "var(--admin-danger)", fontWeight: "600" }}>
                       WARNING: This action makes all CIANNs associated with this year READ-ONLY. Faculty will not be able to edit their logbooks, attendance, or planning sheets.
+                    </span>
+                  </p>
+                ) : confirmDialog.type === "delete" ? (
+                  <p>
+                    Are you sure you want to <strong>permanently delete</strong> academic year{" "}
+                    <strong>{confirmDialog.yearName}</strong>?
+                    <br />
+                    <br />
+                    <span style={{ color: "var(--admin-danger)", fontWeight: "600" }}>
+                      ⚠️ WARNING: This action is irreversible. The academic year record will be permanently removed. Any CIANNs already linked to this year will remain intact but will no longer be associated with a year record.
                     </span>
                   </p>
                 ) : (
@@ -797,10 +847,14 @@ const AcademicYearManagement = () => {
                 </button>
                 <button
                   type="button"
-                  className={`btn ${confirmDialog.type === "complete" ? "btn-danger" : "btn-primary"}`}
+                  className={`btn ${
+                    confirmDialog.type === "complete" || confirmDialog.type === "delete"
+                      ? "btn-danger"
+                      : "btn-primary"
+                  }`}
                   onClick={handleYearActionConfirm}
                 >
-                  Confirm
+                  {confirmDialog.type === "delete" ? "Delete Permanently" : "Confirm"}
                 </button>
               </div>
             </div>
