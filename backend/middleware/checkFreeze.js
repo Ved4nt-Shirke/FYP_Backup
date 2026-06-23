@@ -62,6 +62,26 @@ const checkCiannFreeze = async (req, res, next) => {
       });
     }
 
+    if (ciann) {
+      const AcademicYear = require("../models/AcademicYear");
+      let academicYearDoc = null;
+      if (ciann.academicYearRef) {
+        academicYearDoc = await AcademicYear.findById(ciann.academicYearRef);
+      } else if (ciann.academicYear && ciann.college) {
+        academicYearDoc = await AcademicYear.findOne({
+          college: ciann.college,
+          yearName: ciann.academicYear
+        });
+      }
+      if (academicYearDoc && academicYearDoc.status === "completed") {
+        return res.status(403).json({
+          success: false,
+          message: `The academic year ${academicYearDoc.yearName} has been completed/archived. Editing is locked.`,
+          isFrozen: true
+        });
+      }
+    }
+
     next();
   } catch (error) {
     console.error("Check freeze middleware error:", error);

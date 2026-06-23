@@ -59,6 +59,8 @@ const WeekwisePlan = ({
   const [coData, setCoData] = useState([]);
   const [openLloDropdownIndex, setOpenLloDropdownIndex] = useState(null);
   const dropdownRefs = React.useRef([]);
+  const [batches, setBatches] = useState([]);
+  const [loadingBatches, setLoadingBatches] = useState(false);
 
   // Fetch TloLlo details for CO and LLO dropdowns
   useEffect(() => {
@@ -102,6 +104,66 @@ const WeekwisePlan = ({
     };
     fetchTloLlo();
   }, [ciannData]);
+
+  // Fetch batches allocated by office staff
+  useEffect(() => {
+    const fetchBatches = async () => {
+      if (!ciannData) return;
+      setLoadingBatches(true);
+      try {
+        const token = localStorage.getItem("token");
+        const ciannId = ciannData.ciannId;
+        const division = ciannData.division;
+        const response = await axios.get(`${config.assessments}/batches`, {
+          params: { ciannId, division }
+        });
+        
+        if (response.data && response.data.success && Array.isArray(response.data.batches)) {
+          setBatches(response.data.batches);
+        } else {
+          setBatches(["B1", "B2", "B3", "B4", "B5", "B6"]);
+        }
+      } catch (err) {
+        console.error("Error fetching batches in WeekwisePlan:", err);
+        setBatches(["B1", "B2", "B3", "B4", "B5", "B6"]);
+      } finally {
+        setLoadingBatches(false);
+      }
+    };
+    fetchBatches();
+  }, [ciannData]);
+
+  const getLloLabelMap = () => {
+    const map = {};
+    coData.forEach(c => {
+      const coNum = c.coNumber.replace(/\D/g, '') || '1';
+      (c.llos || []).forEach((lloText, lloIdx) => {
+        const trimmed = lloText.trim();
+        if (trimmed) {
+          map[trimmed] = `${coNum}.${lloIdx + 1}`;
+          map[trimmed.toLowerCase()] = `${coNum}.${lloIdx + 1}`;
+        }
+      });
+    });
+    return map;
+  };
+
+  const lloLabelMap = getLloLabelMap();
+
+  const getNormalizedLlo = (lloValue) => {
+    if (!lloValue) return "";
+    if (/^[0-9.,\s]+$/.test(lloValue)) {
+      return lloValue;
+    }
+    return lloValue
+      .split(",")
+      .map(part => {
+        const trimmed = part.trim();
+        const lower = trimmed.toLowerCase();
+        return lloLabelMap[lower] || lloLabelMap[trimmed] || trimmed;
+      })
+      .join(", ");
+  };
 
   // Fetch experiments based on ciann data
   useEffect(() => {
@@ -148,34 +210,31 @@ const WeekwisePlan = ({
       if (filtered.length > 0) {
         setPlans(
           filtered.map((item) => ({
-            batch: item.batch || "B1",
+            batch: item.batch || (batches[0] || "B1"),
             co: item.co || "",
-            llo: item.llo || "",
+            llo: item.llo ? getNormalizedLlo(item.llo) : "",
             exptNo: item.exptNo || "",
             exptName: item.exptName || "",
             date: item.date || "",
           }))
         );
       } else {
+        const batchList = batches.length > 0 ? batches : ["B1", "B2", "B3"];
         if (llHours >= 4) {
-          setPlans([
-            { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-            { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-            { batch: "B2", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-            { batch: "B2", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-            { batch: "B3", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-            { batch: "B3", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-          ]);
+          const defaultPlans = [];
+          batchList.forEach(b => {
+            defaultPlans.push({ batch: b, co: "", llo: "", exptNo: "", exptName: "", date: "" });
+            defaultPlans.push({ batch: b, co: "", llo: "", exptNo: "", exptName: "", date: "" });
+          });
+          setPlans(defaultPlans);
         } else {
-          setPlans([
-            { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-            { batch: "B2", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-            { batch: "B3", co: "", llo: "", exptNo: "", exptName: "", date: "" },
-          ]);
+          setPlans(
+            batchList.map(b => ({ batch: b, co: "", llo: "", exptNo: "", exptName: "", date: "" }))
+          );
         }
       }
     }
-  }, [week, initialWeek, existingData, llHours]);
+  }, [week, initialWeek, existingData, llHours, batches]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -220,7 +279,11 @@ const WeekwisePlan = ({
         return;
       }
     }
-    onSubmitPlan(week, plans);
+    const normalizedPlans = plans.map(p => ({
+      ...p,
+      llo: getNormalizedLlo(p.llo)
+    }));
+    onSubmitPlan(week, normalizedPlans);
     setMessage("✅ Data submitted successfully!");
     setTimeout(() => setMessage(""), 2000);
   };
@@ -422,7 +485,7 @@ const WeekwisePlan = ({
         }
 
         .weekwise-container {
-          padding: 25px;
+          padding: 12px 15px;
           /* Calculate max-height to fit between header (60px) and footer buttons (64px) */
           max-height: calc(90vh - 60px - 64px); 
           overflow-y: auto; /* Vertical scroll inside modal */
@@ -454,10 +517,10 @@ const WeekwisePlan = ({
         .plan-table th,
         .plan-table td {
           border: 1px solid #e0e0e0;
-          padding: 10px 8px;
+          padding: 6px 4px;
           text-align: center;
           vertical-align: middle;
-          font-size: 13px;
+          font-size: 12.5px;
           /* word-wrap: break-word; /* Allow long words to break within cell */
           white-space: normal; /* Allow text to wrap naturally */
         }
@@ -485,10 +548,10 @@ const WeekwisePlan = ({
         .plan-table select,
         .plan-table textarea {
           width: 100%;
-          padding: 10px 12px;
+          padding: 6px 8px;
           border: 1px solid #ddd;
           border-radius: 8px;
-          font-size: 14px;
+          font-size: 13px;
           box-sizing: border-box;
           box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -674,12 +737,11 @@ const WeekwisePlan = ({
                         disabled={!week}
                         className="batch-select"
                       >
-                        <option value="B1">B1</option>
-                        <option value="B2">B2</option>
-                        <option value="B3">B3</option>
-                        <option value="B4">B4</option>
-                        <option value="B5">B5</option>
-                        <option value="B6">B6</option>
+                        {(batches.length > 0 ? batches : ["B1", "B2", "B3", "B4", "B5", "B6"]).map((b) => (
+                          <option key={b} value={b}>
+                            {b}
+                          </option>
+                        ))}
                       </select>
                     </td>
                     <td>
@@ -741,8 +803,8 @@ const WeekwisePlan = ({
                           disabled={!week || !plan.co}
                         >
                           <span className="llo-trigger-text">
-                            {plan.llo && plan.llo.split(",").map(l => l.trim()).filter(Boolean).length > 0
-                              ? plan.llo.split(",").map(l => l.trim()).filter(Boolean).join(", ")
+                            {plan.llo && getNormalizedLlo(plan.llo).split(",").map(l => l.trim()).filter(Boolean).length > 0
+                              ? getNormalizedLlo(plan.llo).split(",").map(l => l.trim()).filter(Boolean).join(", ")
                               : "Select LLOs"}
                           </span>
                           <span className="llo-trigger-arrow">▼</span>
@@ -780,7 +842,7 @@ const WeekwisePlan = ({
                                 return <div className="llo-dropdown-empty">No LLOs available for selected COs</div>;
                               }
                               
-                              const selectedLlos = plan.llo ? plan.llo.split(",").map(l => l.trim()) : [];
+                              const selectedLlos = plan.llo ? getNormalizedLlo(plan.llo).split(",").map(l => l.trim()) : [];
                               
                               return uniqueLlos.map((lloItem, lloIdx) => {
                                 const isLloSelected = selectedLlos.includes(lloItem.label);
@@ -874,9 +936,10 @@ const WeekwisePlan = ({
               type="button"
               className="add-row-btn"
               onClick={() => {
+                const defaultBatch = batches.length > 0 ? batches[0] : "B1";
                 setPlans([
                   ...plans,
-                  { batch: "B1", co: "", llo: "", exptNo: "", exptName: "", date: "" }
+                  { batch: defaultBatch, co: "", llo: "", exptNo: "", exptName: "", date: "" }
                 ]);
               }}
               disabled={!week}

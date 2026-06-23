@@ -13,6 +13,11 @@ const CiannSchema = new mongoose.Schema(
     division: { type: String, required: true, trim: true },
     class: { type: String, required: true, trim: true },
     academicYear: { type: String, required: true, trim: true },
+    academicYearRef: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AcademicYear",
+    },
+    scheme: { type: String, trim: true },
     subject: { type: Object, required: true },
     semester: { type: String, required: true, trim: true },
     semesterType: { type: String, trim: true },

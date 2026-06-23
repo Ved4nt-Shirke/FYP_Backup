@@ -547,6 +547,23 @@ router.post("/", async (req, res) => {
       faculty: facultyRef?._id || undefined,
     };
 
+    // Auto-link to active academic year
+    try {
+      const AcademicYear = require("../models/AcademicYear");
+      const activeYear = await AcademicYear.findOne({
+        college: req.user.college,
+        status: "active",
+      });
+      if (activeYear) {
+        payload.academicYearRef = activeYear._id;
+        if (!payload.scheme) {
+          payload.scheme = activeYear.scheme;
+        }
+      }
+    } catch (ayErr) {
+      console.error("Failed to auto-link academic year:", ayErr.message);
+    }
+
     const saved = await Ciann.create(payload);
     res.status(201).json(saved);
   } catch (err) {

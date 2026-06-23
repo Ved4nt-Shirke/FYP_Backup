@@ -89,7 +89,60 @@ const LabPlanningSheet = () => {
     fetchCiannSubjectDetails();
   }, [ciannId]);
 
+  const [lloMap, setLloMap] = useState({});
 
+  // Fetch LLO details for mapping description to number
+  useEffect(() => {
+    if (!ciannData) return;
+    const fetchTloLlo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const subjectId = ciannData.subject?._id || ciannData.subjectId;
+        const res = await fetch(
+          `${config.subjectDetails}/tlo-llo/${ciannData.ciannId}/${subjectId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.success && data.data && Array.isArray(data.data.coData)) {
+          const mapping = {};
+          data.data.coData.forEach(c => {
+            const coNum = c.coNumber.replace(/\D/g, '') || '1';
+            (c.llos || []).forEach((lloText, lloIdx) => {
+              const trimmed = lloText.trim();
+              if (trimmed) {
+                mapping[trimmed] = `${coNum}.${lloIdx + 1}`;
+                mapping[trimmed.toLowerCase()] = `${coNum}.${lloIdx + 1}`;
+              }
+            });
+          });
+          setLloMap(mapping);
+        }
+      } catch (err) {
+        console.error("Error fetching TloLlo mappings in LabPlanningSheet:", err);
+      }
+    };
+    fetchTloLlo();
+  }, [ciannData]);
+
+  const formatLlo = (lloValue) => {
+    if (!lloValue) return "";
+    if (/^[0-9.,\s]+$/.test(lloValue)) {
+      return lloValue;
+    }
+    return lloValue
+      .split(",")
+      .map(part => {
+        const trimmed = part.trim();
+        const lower = trimmed.toLowerCase();
+        return lloMap[lower] || lloMap[trimmed] || trimmed;
+      })
+      .join(", ");
+  };
   useEffect(() => {
     const handleSecondaryToggle = () => {
       setIsSecondarySidebarVisible((prev) => !prev);
@@ -391,9 +444,9 @@ const LabPlanningSheet = () => {
                                 )}
                                 <td>{p.batch}</td>
                                 <td>{p.co || ""}</td>
-                                <td>{p.llo || ""}</td>
+                                <td>{formatLlo(p.llo)}</td>
                                 <td>{p.exptNo}</td>
-                                <td>{p.exptName}</td>
+                                <td className="expt-name-cell">{p.exptName}</td>
                                 <td>{p.date}</td>
                                 <td>{p.actualDate || "--"}</td>
                               </tr>
@@ -409,7 +462,7 @@ const LabPlanningSheet = () => {
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td></td>
+                                <td className="expt-name-cell"></td>
                                 <td></td>
                                 <td>--</td>
                               </tr>
