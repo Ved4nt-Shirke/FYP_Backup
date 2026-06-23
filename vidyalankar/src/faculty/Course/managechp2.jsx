@@ -106,7 +106,7 @@ const ManageChapters2 = () => {
           });
           const data = await response.json();
           if (data.success) {
-            setChapters(data.chp);
+            setChapters((data.chp || []).sort((a, b) => Number(a.chapterNo) - Number(b.chapterNo)));
           } else {
             console.error("Failed to fetch chapters:", data.message);
           }
@@ -141,7 +141,7 @@ const ManageChapters2 = () => {
       const data = await response.json();
 
       if (data.success) {
-        setChapters(data.chp);
+        setChapters((data.chp || []).sort((a, b) => Number(a.chapterNo) - Number(b.chapterNo)));
         setIsModalOpen(false);
         setNewChapterNo("");
         setNewChapterName("");
@@ -190,7 +190,7 @@ const ManageChapters2 = () => {
       const data = await response.json();
 
       if (data.success) {
-        setChapters(data.chp);
+        setChapters((data.chp || []).sort((a, b) => Number(a.chapterNo) - Number(b.chapterNo)));
         alert("Chapter deleted successfully!");
       } else {
         alert(`Failed to delete chapter: ${data.message}`);
@@ -232,8 +232,8 @@ const ManageChapters2 = () => {
               <table className="chapters-table table table-hover align-middle mb-0">
                 <thead className="table-dark">
                   <tr>
-                    <th style={{ width: "20%" }}>Chapter No.</th>
-                    <th style={{ width: "60%" }}>Chapter Name</th>
+                    <th style={{ width: "20%", textAlign: "center" }}>Chapter No.</th>
+                    <th style={{ width: "60%", textAlign: "left" }}>Chapter Name</th>
                     <th style={{ width: "20%" }} className="setting-header">Actions</th>
                   </tr>
                 </thead>
@@ -241,8 +241,8 @@ const ManageChapters2 = () => {
                   {chapters.length > 0 ? (
                     chapters.map((chapter) => (
                       <tr key={chapter.chapterNo}>
-                        <td className="fw-semibold text-dark ps-4">{chapter.chapterNo}</td>
-                        <td className="text-secondary fw-semibold">{chapter.chapterName}</td>
+                        <td className="fw-semibold text-dark text-center">{chapter.chapterNo}</td>
+                        <td className="text-secondary fw-semibold text-start" style={{ textAlign: "left" }}>{chapter.chapterName}</td>
                         <td className="setting-cell">
                           <button
                             className="edit-btn btn btn-sm btn-outline-primary border-0 me-2"

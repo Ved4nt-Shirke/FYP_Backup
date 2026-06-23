@@ -376,6 +376,12 @@ const WeekwisePlan = ({
           text-align: left;
           margin-top: 4px;
         }
+        .llo-dropdown-menu.open-up {
+          top: auto;
+          bottom: 100%;
+          margin-top: 0;
+          margin-bottom: 4px;
+        }
         .llo-dropdown-item {
           display: flex;
           align-items: flex-start;
@@ -504,6 +510,7 @@ const WeekwisePlan = ({
           border-radius: 10px; /* Rounded corners */
           background: #fff; /* Ensure solid background under sticky header */
           overflow: hidden; /* Clip table to rounded corners */
+          min-height: 280px; /* Prevent clipping of dropdown options */
         }
 
         .plan-table {
@@ -606,12 +613,12 @@ const WeekwisePlan = ({
           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
-        .action-buttons-container button:first-child {
+        .action-buttons-container button.submit-btn {
             background-color: #4CAF50;
             color: white;
         }
         
-        .action-buttons-container button:first-child:hover {
+        .action-buttons-container button.submit-btn:hover {
             background-color: #43A047;
             transform: translateY(-1px);
         }
@@ -656,7 +663,7 @@ const WeekwisePlan = ({
                to maintain horizontal scrolling. */
             
             .action-buttons-container {
-                flex-direction: column;
+                flex-direction: column-reverse;
                 align-items: center;
                 gap: 10px;
             }
@@ -811,7 +818,7 @@ const WeekwisePlan = ({
                         </button>
                         
                         {openLloDropdownIndex === i && (
-                          <div className="llo-dropdown-menu">
+                          <div className={`llo-dropdown-menu ${plans.length > 2 && i >= plans.length - 2 ? "open-up" : ""}`}>
                             {(() => {
                               const selectedCOs = plan.co ? plan.co.split(",").map(c => c.trim()) : [];
                               // Build LLO list with numbers (coNum.idx) and full text
@@ -950,11 +957,11 @@ const WeekwisePlan = ({
           {message && <div className="submission-message">{message}</div>}
         </div>
         <div className="action-buttons-container">
-          <button onClick={handleSubmit}>
-            {initialWeek ? "Update" : "Submit"}
-          </button>
           <button className="cancel" onClick={onCancel}>
             Cancel
+          </button>
+          <button className="submit-btn" onClick={handleSubmit}>
+            {initialWeek ? "Update" : "Submit"}
           </button>
         </div>
       </div>

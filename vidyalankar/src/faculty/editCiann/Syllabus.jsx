@@ -4,6 +4,8 @@ import SecondarySidebar from "./SecondarySidebar";
 import "./Syllabus.css";
 import EditSyllabusForm from "./EditSyllabusForm";
 import "./EditCiannModern.css";
+import axios from "../../utils/axiosConfig";
+import { config } from "../../config/api";
 
 function Syllabus() {
   const location = useLocation();
@@ -66,21 +68,35 @@ function Syllabus() {
 
   useEffect(() => {
     if (!ciannData?.ciannId) return;
-    try {
-      const stored = localStorage.getItem(
-        `syllabusImages:${ciannData.ciannId}`,
-      );
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setImages(parsed);
+    const fetchSyllabus = async () => {
+      try {
+        const res = await axios.get(`${config.subjectDetails}/syllabus/${ciannData.ciannId}`);
+        if (res.data.success && Array.isArray(res.data.images) && res.data.images.length > 0) {
+          setImages(res.data.images);
           setSelectedPage(0);
-          setCurrentImage(parsed[0] || null);
+          setCurrentImage(res.data.images[0] || null);
+          return;
         }
+      } catch (error) {
+        console.error("Error fetching syllabus images from database:", error);
       }
-    } catch (error) {
-      console.error("Error loading syllabus images from storage:", error);
-    }
+
+      // Fallback to localStorage
+      try {
+        const stored = localStorage.getItem(`syllabusImages:${ciannData.ciannId}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setImages(parsed);
+            setSelectedPage(0);
+            setCurrentImage(parsed[0] || null);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading syllabus images from storage:", error);
+      }
+    };
+    fetchSyllabus();
   }, [ciannData?.ciannId]);
 
   const convertFileToDataUrl = (file) =>
@@ -114,10 +130,18 @@ function Syllabus() {
     setCurrentImage(updatedImages[0] || null);
 
     if (ciannData?.ciannId) {
-      localStorage.setItem(
-        `syllabusImages:${ciannData.ciannId}`,
-        JSON.stringify(updatedImages),
-      );
+      try {
+        await axios.post(`${config.subjectDetails}/syllabus`, {
+          ciannId: ciannData.ciannId,
+          images: updatedImages
+        });
+        localStorage.setItem(
+          `syllabusImages:${ciannData.ciannId}`,
+          JSON.stringify(updatedImages),
+        );
+      } catch (error) {
+        console.error("Error saving syllabus images to database:", error);
+      }
     }
 
     setShowEditForm(false);

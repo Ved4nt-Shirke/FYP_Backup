@@ -249,18 +249,6 @@ const PrintCiann = () => {
       }
 
       setCiannData(parsedData);
-      const syllabusKey = `syllabusImages:${parsedData.ciannId}`;
-      const storedSyllabus = localStorage.getItem(syllabusKey);
-      if (storedSyllabus) {
-        try {
-          const parsed = JSON.parse(storedSyllabus);
-          if (Array.isArray(parsed)) {
-            setSyllabusImages(parsed.filter(Boolean));
-          }
-        } catch {
-          setSyllabusImages([]);
-        }
-      }
       fetchPrintData(parsedData);
     } catch (error) {
       console.error("Failed to parse ciannData for printing:", error);
@@ -329,6 +317,10 @@ const PrintCiann = () => {
           headers: requestHeaders,
           credentials: "include",
         }),
+        fetch(`${config.subjectDetails}/syllabus/${ciannId}`, {
+          headers: requestHeaders,
+          credentials: "include",
+        }),
       ]);
 
       const toJson = async (result, fallback) => {
@@ -353,6 +345,7 @@ const PrintCiann = () => {
         books,
         web,
         moocs,
+        syllabusRes,
       ] = await Promise.all([
         toJson(responses[0], []),
         toJson(responses[1], []),
@@ -365,6 +358,7 @@ const PrintCiann = () => {
         toJson(responses[8], []),
         toJson(responses[9], []),
         toJson(responses[10], []),
+        toJson(responses[11], { images: [] }),
       ]);
 
       const slotMap = {};
@@ -387,6 +381,23 @@ const PrintCiann = () => {
       setBookResources(Array.isArray(books) ? books : []);
       setWebResources(Array.isArray(web) ? web : []);
       setMoocCourses(Array.isArray(moocs) ? moocs : []);
+
+      if (Array.isArray(syllabusRes?.images) && syllabusRes.images.length > 0) {
+        setSyllabusImages(syllabusRes.images.filter(Boolean));
+      } else {
+        const syllabusKey = `syllabusImages:${ciannId}`;
+        const storedSyllabus = localStorage.getItem(syllabusKey);
+        if (storedSyllabus) {
+          try {
+            const parsed = JSON.parse(storedSyllabus);
+            if (Array.isArray(parsed)) {
+              setSyllabusImages(parsed.filter(Boolean));
+            }
+          } catch {
+            setSyllabusImages([]);
+          }
+        }
+      }
 
       // Fetch Vision & Mission separately to ensure it doesn't fail silently
       try {
@@ -1088,8 +1099,8 @@ const PrintCiann = () => {
 
         <section className="print-block page-break-before">
           <h2 className="section-title">6. Syllabus Contents</h2>
-          {syllabusImages.length > 0 ? (
-            <div className="syllabus-image-grid">
+          {syllabusImages.length > 0 && (
+            <div className="syllabus-image-grid" style={{ marginBottom: "24px" }}>
               {syllabusImages.map((image, index) => (
                 <div key={`syllabus-${index}`} className="syllabus-image-block">
                   <div className="syllabus-page-label">Page {index + 1}</div>
@@ -1101,45 +1112,44 @@ const PrintCiann = () => {
                 </div>
               ))}
             </div>
-          ) : (
-            <>
-              <p className="small-note">
-                Syllabus images not found. Showing chapter/experiment content.
-              </p>
-              <div className="two-col-grid">
-                <div>
-                  <h4>Course Chapters</h4>
-                  <ol>
-                    {chapters.length > 0 ? (
-                      chapters.map((item, index) => (
-                        <li key={`ch-${item.chapterNo || index}`}>
-                          {item.chapterNo ? `${item.chapterNo}. ` : ""}
-                          {item.chapterName || "-"}
-                        </li>
-                      ))
-                    ) : (
-                      <li>No chapter data available.</li>
-                    )}
-                  </ol>
-                </div>
-                <div>
-                  <h4>Experiments / Practicals</h4>
-                  <ol>
-                    {experiments.length > 0 ? (
-                      experiments.map((item, index) => (
-                        <li key={`ex-${item.practicalNo || index}`}>
-                          {item.practicalNo ? `${item.practicalNo}. ` : ""}
-                          {item.practicalName || "-"}
-                        </li>
-                      ))
-                    ) : (
-                      <li>No experiment data available.</li>
-                    )}
-                  </ol>
-                </div>
-              </div>
-            </>
           )}
+          {syllabusImages.length === 0 && (
+            <p className="small-note">
+              Syllabus images not found. Showing chapter/experiment content.
+            </p>
+          )}
+          <div className="two-col-grid">
+            <div>
+              <h4>Course Chapters</h4>
+              <ol>
+                {chapters.length > 0 ? (
+                  chapters.map((item, index) => (
+                    <li key={`ch-${item.chapterNo || index}`}>
+                      {item.chapterNo ? `${item.chapterNo}. ` : ""}
+                      {item.chapterName || "-"}
+                    </li>
+                  ))
+                ) : (
+                  <li>No chapter data available.</li>
+                )}
+              </ol>
+            </div>
+            <div>
+              <h4>Experiments / Practicals</h4>
+              <ol>
+                {experiments.length > 0 ? (
+                  experiments.map((item, index) => (
+                    <li key={`ex-${item.practicalNo || index}`}>
+                      {item.practicalNo ? `${item.practicalNo}. ` : ""}
+                      {item.practicalName || "-"}
+                    </li>
+                  ))
+                ) : (
+                  <li>No experiment data available.</li>
+                )}
+              </ol>
+            </div>
+          </div>
         </section>
 
         <section className="print-block page-break-before">

@@ -102,7 +102,7 @@ const PracticalTable = () => {
       );
 
       if (response.data.success) {
-        setPracticals((prev) => [...prev, newPracticalData]);
+        setPracticals((prev) => [...prev, newPracticalData].sort((a, b) => Number(a.practicalNo) - Number(b.practicalNo)));
         setIsModalOpen(false);
         alert("Practical added successfully!");
       } else {
@@ -125,7 +125,7 @@ const PracticalTable = () => {
           });
 
           if (response.data.success) {
-            setPracticals(response.data.experiments);
+            setPracticals((response.data.experiments || []).sort((a, b) => Number(a.practicalNo) - Number(b.practicalNo)));
           } else {
             setPracticals([]);
           }
@@ -210,8 +210,8 @@ const PracticalTable = () => {
               <table className="practical-table table table-hover align-middle mb-0">
                 <thead className="table-dark">
                   <tr>
-                    <th style={{ width: "20%" }}>Practical No.</th>
-                    <th style={{ width: "60%" }}>Practical Name</th>
+                    <th style={{ width: "20%", textAlign: "center" }}>Practical No.</th>
+                    <th style={{ width: "60%", textAlign: "left" }}>Practical Name</th>
                     <th style={{ width: "20%" }} className="setting-header">Actions</th>
                   </tr>
                 </thead>
@@ -225,8 +225,8 @@ const PracticalTable = () => {
                   ) : (
                     practicals.map((practical, index) => (
                       <tr key={index}>
-                        <td className="fw-semibold text-dark ps-4">{practical.practicalNo}</td>
-                        <td className="text-secondary fw-semibold">{practical.practicalName}</td>
+                        <td className="fw-semibold text-dark text-center">{practical.practicalNo}</td>
+                        <td className="text-secondary fw-semibold text-start" style={{ textAlign: "left" }}>{practical.practicalName}</td>
                         <td className="setting-cell">
                           <button
                             className="edit-btn btn btn-sm btn-outline-primary border-0"
