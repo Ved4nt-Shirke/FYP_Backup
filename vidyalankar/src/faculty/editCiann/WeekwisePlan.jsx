@@ -329,10 +329,12 @@ const WeekwisePlan = ({
         }
 
         .expt-badges-container {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 4px;
-          justify-content: center;
+          display: grid;
+          grid-auto-flow: column;
+          grid-template-rows: repeat(4, auto);
+          gap: 4px 6px;
+          justify-content: start;
+          padding: 4px;
         }
         .expt-badge-btn {
           background-color: #f3f4f6;
@@ -345,6 +347,9 @@ const WeekwisePlan = ({
           cursor: pointer;
           transition: all 0.2s ease;
           user-select: none;
+          min-width: 28px;
+          text-align: center;
+          box-sizing: border-box;
         }
         .expt-badge-btn:hover:not(:disabled) {
           background-color: #e5e7eb;
@@ -533,7 +538,7 @@ const WeekwisePlan = ({
           flex-grow: 1; /* Allow content to grow and fill available space */
         }
         
-        .plan-table-wrapper {
+        .weekwise-plan-table-wrapper {
           overflow-x: auto; /* Horizontal scroll for the table */
           -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
           margin-top: 20px;
@@ -545,7 +550,7 @@ const WeekwisePlan = ({
           min-height: 280px; /* Prevent clipping of dropdown options */
         }
 
-        .plan-table {
+        .weekwise-plan-table {
           width: 100%;
           border-collapse: collapse; /* Ensure header/body borders meet */
           min-width: 1150px; /* Minimum width to force horizontal scroll on small screens */
@@ -553,8 +558,8 @@ const WeekwisePlan = ({
           border: 0; /* Use wrapper for outer border */
         }
 
-        .plan-table th,
-        .plan-table td {
+        .weekwise-plan-table th,
+        .weekwise-plan-table td {
           border: 1px solid #e0e0e0;
           padding: 6px 4px;
           text-align: center;
@@ -564,7 +569,7 @@ const WeekwisePlan = ({
           white-space: normal; /* Allow text to wrap naturally */
         }
 
-        .plan-table th {
+        .weekwise-plan-table th {
           background-color: #f0f2f5;
           font-weight: 600;
           color: #495057;
@@ -573,19 +578,18 @@ const WeekwisePlan = ({
           z-index: 10; /* Ensure header is above scrolling content */
         }
         
-        /* Column widths */
-        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 5%; }  /* Week No */
-        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 6%; }  /* Batch No */
-        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 8%; }  /* CO */
-        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 20%; } /* LLO */
-        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 18%; } /* Experiment No */
-        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 31%; } /* Experiment Name */
-        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 8%; }  /* Planned Date */
-        .plan-table th:nth-child(8), .plan-table td:nth-child(8) { width: 4%; }  /* Action */
+        .weekwise-plan-table th:nth-child(1), .weekwise-plan-table td:nth-child(1) { width: 7% !important; min-width: 105px !important; }  /* Week No */
+        .weekwise-plan-table th:nth-child(2), .weekwise-plan-table td:nth-child(2) { width: 7% !important; min-width: 95px !important; }  /* Batch No */
+        .weekwise-plan-table th:nth-child(3), .weekwise-plan-table td:nth-child(3) { width: 7% !important; min-width: 80px !important; }  /* CO */
+        .weekwise-plan-table th:nth-child(4), .weekwise-plan-table td:nth-child(4) { width: 15% !important; min-width: 130px !important; } /* LLO */
+        .weekwise-plan-table th:nth-child(5), .weekwise-plan-table td:nth-child(5) { width: 16% !important; min-width: 170px !important; } /* Experiment No */
+        .weekwise-plan-table th:nth-child(6), .weekwise-plan-table td:nth-child(6) { width: 27% !important; min-width: 250px !important; } /* Experiment Name */
+        .weekwise-plan-table th:nth-child(7), .weekwise-plan-table td:nth-child(7) { width: 17% !important; min-width: 155px !important; } /* Planned Date */
+        .weekwise-plan-table th:nth-child(8), .weekwise-plan-table td:nth-child(8) { width: 4% !important; min-width: 48px !important; }  /* Action */
 
-        .plan-table input,
-        .plan-table select,
-        .plan-table textarea {
+        .weekwise-plan-table input,
+        .weekwise-plan-table select,
+        .weekwise-plan-table textarea {
           width: 100%;
           padding: 6px 8px;
           border: 1px solid #ddd;
@@ -596,15 +600,15 @@ const WeekwisePlan = ({
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
           background-color: white;
         }
-        .plan-table input:focus,
-        .plan-table select:focus,
-        .plan-table textarea:focus {
+        .weekwise-plan-table input:focus,
+        .weekwise-plan-table select:focus,
+        .weekwise-plan-table textarea:focus {
           outline: none;
           border-color: #81c784;
           box-shadow: 0 0 0 3px rgba(76,175,80,0.2);
         }
         
-        .plan-table textarea[readonly] {
+        .weekwise-plan-table textarea[readonly] {
           background-color: #f5f5f5;
           cursor: default;
         }
@@ -736,8 +740,8 @@ const WeekwisePlan = ({
               No experiments found for this subject. Please add experiments first.
             </div>
           )}
-          <div className="plan-table-wrapper">
-            <table className="plan-table">
+          <div className="weekwise-plan-table-wrapper">
+            <table className="weekwise-plan-table">
               <thead>
                 <tr>
                   <th>Week No</th>
