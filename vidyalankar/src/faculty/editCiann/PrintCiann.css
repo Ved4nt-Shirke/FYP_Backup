@@ -115,6 +115,7 @@
   border-collapse: separate;
   border-spacing: 0 8px;
   display: table;
+  margin-top: 75px;
 }
 
 .diary-row {

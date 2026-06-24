@@ -30,6 +30,7 @@ import StudentPracticalExamList from "./student/StudentPracticalExamList";
 import StudentPracticalExamUpload from "./student/StudentPracticalExamUpload";
 import StudentTimetable from "./student/StudentTimetable";
 import ChatPage from "./faculty/chat/ChatPage";
+import FacultyNotices from "./faculty/components/Notices";
 
 // CIANN / Edit CIANN Components
 import CreateCiann from "./faculty/components/CreateCiann";
@@ -721,6 +722,7 @@ const AppContent = () => {
             <Route path="/faculty/mock-exams/edit/:examId" element={<MockExamForm />} />
             <Route path="/faculty/mock-exams/manage" element={<MockExamManage />} />
             <Route path="/faculty/mock-exams/results" element={<MockExamResults />} />
+            <Route path="/faculty/notices" element={<FacultyNotices />} />
             <Route path="/messages" element={<ChatPage />} />
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/laboratory-plan" element={<LabPlanningSheet />} />

@@ -1361,7 +1361,7 @@
 }
 
 .lab-layout .labplanning-main-content {
-  margin-left: 310px !important;
+  margin-left: 290px !important;
   margin-top: 0 !important;
   min-height: calc(100dvh - var(--header-height, 60px)) !important;
   overflow-y: auto !important;

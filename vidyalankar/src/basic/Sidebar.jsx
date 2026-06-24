@@ -268,6 +268,8 @@ const Sidebar = ({
       navigateAndClose("/faculty/study-material");
     } else if (action === "student-timetable") {
       navigateAndClose("/faculty/student-timetable");
+    } else if (action === "faculty-notices") {
+      navigateAndClose("/faculty/notices");
     } else {
       alert(`${action} clicked`);
     }
@@ -332,6 +334,15 @@ const Sidebar = ({
           >
             <i className="bi bi-journal-bookmark"></i>
             <span>Study Material</span>
+          </li>
+          <li
+            className={`sidebar-item sidebar-link-item ${
+              isRouteActive(["/faculty/notices"]) ? "active" : ""
+            }`}
+            onClick={() => handleItemClick("faculty-notices")}
+          >
+            <i className="bi bi-megaphone"></i>
+            <span>Notice Board</span>
           </li>
           <li className="sidebar-section-label">ACADEMIC</li>
           <li className="sidebar-item">
