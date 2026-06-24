@@ -166,13 +166,13 @@
 }
 .teaching-main-content.syllabus-main-content .teaching th:nth-child(1),
 .teaching-main-content.syllabus-main-content .teaching td:nth-child(1) {
-  width: 6% !important;
-  min-width: 45px !important;
+  width: 8% !important;
+  min-width: 65px !important;
 }
 .teaching-main-content.syllabus-main-content .teaching th:nth-child(2),
 .teaching-main-content.syllabus-main-content .teaching td:nth-child(2) {
-  width: 7% !important;
-  min-width: 50px !important;
+  width: 8% !important;
+  min-width: 55px !important;
 }
 .teaching-main-content.syllabus-main-content .teaching th:nth-child(3),
 .teaching-main-content.syllabus-main-content .teaching td:nth-child(3) {
@@ -182,25 +182,31 @@
 }
 .teaching-main-content.syllabus-main-content .teaching th:nth-child(4),
 .teaching-main-content.syllabus-main-content .teaching td:nth-child(4) {
-  width: 9% !important;
-  min-width: 60px !important;
+  width: 8% !important;
+  min-width: 55px !important;
 }
 .teaching-main-content.syllabus-main-content .teaching th:nth-child(5),
 .teaching-main-content.syllabus-main-content .teaching td:nth-child(5) {
-  width: 25% !important;
+  width: 20% !important;
   min-width: 150px !important;
   white-space: normal;
 }
 .teaching-main-content.syllabus-main-content .teaching th:nth-child(6),
 .teaching-main-content.syllabus-main-content .teaching td:nth-child(6) {
-  width: 14% !important;
-  min-width: 100px !important;
+  width: 10% !important;
+  min-width: 90px !important;
   white-space: normal;
 }
 .teaching-main-content.syllabus-main-content .teaching th:nth-child(7),
 .teaching-main-content.syllabus-main-content .teaching td:nth-child(7) {
-  width: 14% !important;
-  min-width: 100px !important;
+  width: 10% !important;
+  min-width: 90px !important;
+  white-space: normal;
+}
+.teaching-main-content.syllabus-main-content .teaching th:nth-child(8),
+.teaching-main-content.syllabus-main-content .teaching td:nth-child(8) {
+  width: 11% !important;
+  min-width: 90px !important;
   white-space: normal;
 }
 .teaching-main-content.syllabus-main-content .teaching thead th {
@@ -806,7 +812,7 @@
 }
 
 .teaching-main-content.syllabus-main-content {
-  margin-left: 310px !important;
+  margin-left: 290px !important;
   margin-top: 0 !important;
   min-height: calc(100dvh - var(--header-height, 60px)) !important;
   overflow-y: auto !important;

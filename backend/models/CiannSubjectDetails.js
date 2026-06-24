@@ -4,7 +4,9 @@ const mongoose = require("mongoose");
 
 const ciannSubjectDetailsSchema = new mongoose.Schema(
   {
-    ciannId: { type: Number, required: true, unique: true },
+    ciannId: { type: Number, required: true },
+    subjectId: { type: mongoose.Schema.Types.ObjectId, ref: "Subject", unique: true, sparse: true },
+    syllabusImages: { type: [String], default: [] },
     lectureSchedule: {
       clusterMentor: {
         name: { type: String, default: "" },

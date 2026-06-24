@@ -8,22 +8,52 @@ const NoticesPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [noticeTitle, setNoticeTitle] = useState("");
   const [noticeContent, setNoticeContent] = useState("");
-  const [selectedDivision, setSelectedDivision] = useState("");
-  const [divisions, setDivisions] = useState([]);
+  const [noticeType, setNoticeType] = useState("general");
+  const [targetType, setTargetType] = useState("all");
+  
+  // Targeted selection states
+  const [targetFaculties, setTargetFaculties] = useState([]);
+  const [targetStudents, setTargetStudents] = useState([]);
+  const [targetDepartments, setTargetDepartments] = useState([]);
+  const [targetDivisions, setTargetDivisions] = useState([]);
+  const [targetAcademicYears, setTargetAcademicYears] = useState([]);
+
+  // Schedule & Expiry
+  const [sendInstantly, setSendInstantly] = useState(true);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
+
+  // Attachments
+  const [attachments, setAttachments] = useState([]);
+  const [existingAttachments, setExistingAttachments] = useState([]);
+
+  // Dropdown target options from catalog/notices API
+  const [targetOptions, setTargetOptions] = useState({
+    departments: [],
+    divisions: [],
+    divisionNames: [],
+    academicYears: []
+  });
+
+  // Searching for faculty / students
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   
-  // Filters & Search
+  // Filters & Search for notices list
   const [filterSearch, setFilterSearch] = useState("");
-  const [filterDivision, setFilterDivision] = useState("");
+  const [filterType, setFilterType] = useState("all");
 
   const editorRef = useRef(null);
   const token = localStorage.getItem("token");
   const facultyUsername = localStorage.getItem("username") || "office";
 
-  // Fetch divisions and notices on mount
+  // Fetch target options and notices on mount
   useEffect(() => {
-    fetchDivisions();
+    fetchTargetOptions();
     fetchNotices();
   }, []);
 
@@ -37,26 +67,31 @@ const NoticesPage = () => {
     }
   }, [showForm, noticeContent, editingId]);
 
-  const fetchDivisions = async () => {
+  const fetchTargetOptions = async () => {
     try {
-      const url = getApiUrl("/students/divisions");
+      const url = getApiUrl("/office/notices/target-options");
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
         const data = await response.json();
-        setDivisions(data.divisions || []);
+        setTargetOptions({
+          departments: data.departments || [],
+          divisions: data.divisions || [],
+          divisionNames: data.divisionNames || [],
+          academicYears: data.academicYears || []
+        });
       }
     } catch (error) {
-      console.error("Error fetching divisions:", error);
+      console.error("Error fetching target options:", error);
     }
   };
 
   const fetchNotices = async () => {
     try {
       setLoading(true);
-      const url = getApiUrl(`/office/notices?faculty=${facultyUsername}`);
+      const url = getApiUrl("/office/notices");
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -72,9 +107,111 @@ const NoticesPage = () => {
     }
   };
 
+  const handleSearchTarget = async (query) => {
+    setSearchQuery(query);
+    if (!query || query.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      setSearchLoading(true);
+      if (targetType === "particular-faculty") {
+        const url = getApiUrl(`/faculty/directory?search=${encodeURIComponent(query)}`);
+        const response = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setSearchResults(data.faculty || []);
+        }
+      } else if (targetType === "particular-student") {
+        const url = getApiUrl(`/office/students?studentName=${encodeURIComponent(query)}`);
+        const response = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setSearchResults(data.students || []);
+        }
+      }
+    } catch (error) {
+      console.error("Error searching target audience:", error);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleAddTargetTag = (item) => {
+    if (targetType === "particular-faculty") {
+      const username = item.generatedUsername;
+      if (!targetFaculties.some(f => f.username === username)) {
+        setTargetFaculties([...targetFaculties, { username, name: item.fullName }]);
+      }
+    } else if (targetType === "particular-student") {
+      const enrollmentNo = item.enrollmentNo;
+      if (!targetStudents.some(s => s.enrollmentNo === enrollmentNo)) {
+        setTargetStudents([...targetStudents, { enrollmentNo, name: item.studentName }]);
+      }
+    }
+    setSearchQuery("");
+    setSearchResults([]);
+  };
+
+  const handleRemoveTargetTag = (key, field) => {
+    if (field === "faculty") {
+      setTargetFaculties(targetFaculties.filter(f => f.username !== key));
+    } else if (field === "student") {
+      setTargetStudents(targetStudents.filter(s => s.enrollmentNo !== key));
+    }
+  };
+
+  const handleCheckboxToggle = (id, targetState, setTargetState) => {
+    if (targetState.includes(id)) {
+      setTargetState(targetState.filter(item => item !== id));
+    } else {
+      setTargetState([...targetState, id]);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    setAttachments([...attachments, ...files]);
+  };
+
+  const handleRemoveFile = (index) => {
+    setAttachments(attachments.filter((_, idx) => idx !== index));
+  };
+
+  const handleRemoveExistingAttachment = (index) => {
+    setExistingAttachments(existingAttachments.filter((_, idx) => idx !== index));
+  };
+
   const handleSaveNotice = async () => {
-    if (!noticeTitle.trim() || !noticeContent.trim() || !selectedDivision) {
-      alert("Please fill all required fields: Title, Division, and Content.");
+    if (!noticeTitle.trim() || !noticeContent.trim()) {
+      alert("Please fill all required fields: Title and Content.");
+      return;
+    }
+
+    // Validation for specific targets
+    if (targetType === "particular-faculty" && targetFaculties.length === 0) {
+      alert("Please select at least one Faculty member.");
+      return;
+    }
+    if (targetType === "particular-student" && targetStudents.length === 0) {
+      alert("Please select at least one Student.");
+      return;
+    }
+    if (targetType === "departments" && targetDepartments.length === 0) {
+      alert("Please select at least one Department.");
+      return;
+    }
+    if (targetType === "divisions" && targetDivisions.length === 0) {
+      alert("Please select at least one Division.");
+      return;
+    }
+    if (targetType === "academic-year" && targetAcademicYears.length === 0) {
+      alert("Please select at least one Academic Year.");
       return;
     }
 
@@ -85,29 +222,58 @@ const NoticesPage = () => {
         ? getApiUrl(`/office/notices/${editingId}`)
         : getApiUrl("/office/notices");
 
+      // Use FormData to support multiple file uploads
+      const formData = new FormData();
+      formData.append("title", noticeTitle.trim());
+      formData.append("content", noticeContent.trim());
+      formData.append("noticeType", noticeType);
+      formData.append("targetType", targetType);
+      formData.append("faculty", facultyUsername);
+
+      // Serialize targeting collections
+      if (targetType === "particular-faculty") {
+        formData.append("targetFaculties", JSON.stringify(targetFaculties.map(f => f.username)));
+      } else if (targetType === "particular-student") {
+        formData.append("targetStudents", JSON.stringify(targetStudents.map(s => s.enrollmentNo)));
+      } else if (targetType === "departments") {
+        formData.append("targetDepartments", JSON.stringify(targetDepartments));
+      } else if (targetType === "divisions") {
+        formData.append("targetDivisions", JSON.stringify(targetDivisions));
+      } else if (targetType === "academic-year") {
+        formData.append("targetAcademicYears", JSON.stringify(targetAcademicYears));
+      }
+
+      // Schedule inputs
+      const scheduledVal = sendInstantly ? new Date().toISOString() : new Date(scheduledAt).toISOString();
+      formData.append("scheduledAt", scheduledVal);
+      if (expiresAt) {
+        formData.append("expiresAt", new Date(expiresAt).toISOString());
+      }
+
+      // Existing attachments (for edit mode)
+      if (editingId) {
+        formData.append("existingAttachments", JSON.stringify(existingAttachments));
+      }
+
+      // New files
+      attachments.forEach(file => {
+        formData.append("attachments", file);
+      });
+
       const response = await fetch(endpoint, {
         method,
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          title: noticeTitle.trim(),
-          content: noticeContent.trim(),
-          faculty: facultyUsername,
-          division: selectedDivision,
-        }),
+        body: formData,
       });
 
       if (response.ok) {
         fetchNotices();
-        setNoticeTitle("");
-        setNoticeContent("");
-        setSelectedDivision("");
-        setShowForm(false);
-        setEditingId(null);
+        handleCancel();
       } else {
-        alert("Error saving notice. Please try again.");
+        const errorData = await response.json();
+        alert(errorData.message || "Error saving notice. Please try again.");
       }
     } catch (error) {
       console.error("Error saving notice:", error);
@@ -147,7 +313,44 @@ const NoticesPage = () => {
     setEditingId(notice._id);
     setNoticeTitle(notice.title);
     setNoticeContent(notice.content);
-    setSelectedDivision(notice.division);
+    setNoticeType(notice.noticeType || "general");
+    setTargetType(notice.targetType || "all");
+    
+    // Resolve target arrays
+    if (notice.targetType === "particular-faculty") {
+      setTargetFaculties((notice.targetFaculties || []).map(username => ({ username, name: username })));
+    } else if (notice.targetType === "particular-student") {
+      setTargetStudents((notice.targetStudents || []).map(enrollmentNo => ({ enrollmentNo, name: enrollmentNo })));
+    } else if (notice.targetType === "departments") {
+      setTargetDepartments((notice.targetDepartments || []).map(d => typeof d === "object" ? d._id : d));
+    } else if (notice.targetType === "divisions") {
+      setTargetDivisions((notice.targetDivisions || []).map(d => typeof d === "object" ? d._id : d));
+    } else if (notice.targetType === "academic-year") {
+      setTargetAcademicYears(notice.targetAcademicYears || []);
+    }
+
+    // Resolve schedule/expiry
+    const sDate = notice.scheduledAt ? new Date(notice.scheduledAt) : new Date(notice.createdAt);
+    // Convert to timezone offset format matching datetime-local input (YYYY-MM-DDThh:mm)
+    const offset = sDate.getTimezoneOffset() * 60000;
+    const localScheduled = new Date(sDate.getTime() - offset).toISOString().slice(0, 16);
+    setScheduledAt(localScheduled);
+    
+    const now = new Date();
+    setSendInstantly(sDate <= now);
+
+    if (notice.expiresAt) {
+      const eDate = new Date(notice.expiresAt);
+      const localExpiry = new Date(eDate.getTime() - offset).toISOString().slice(0, 16);
+      setExpiresAt(localExpiry);
+    } else {
+      setExpiresAt("");
+    }
+
+    // Attachments
+    setAttachments([]);
+    setExistingAttachments(notice.attachments || []);
+
     setShowForm(true);
   };
 
@@ -155,7 +358,20 @@ const NoticesPage = () => {
     setShowForm(false);
     setNoticeTitle("");
     setNoticeContent("");
-    setSelectedDivision("");
+    setNoticeType("general");
+    setTargetType("all");
+    setTargetFaculties([]);
+    setTargetStudents([]);
+    setTargetDepartments([]);
+    setTargetDivisions([]);
+    setTargetAcademicYears([]);
+    setSendInstantly(true);
+    setScheduledAt("");
+    setExpiresAt("");
+    setAttachments([]);
+    setExistingAttachments([]);
+    setSearchQuery("");
+    setSearchResults([]);
     setEditingId(null);
   };
 
@@ -178,15 +394,42 @@ const NoticesPage = () => {
     applyFormat("foreColor", e.target.value);
   };
 
-  // Client side notice filtering
+  // Filter notice board listings
   const filteredNotices = notices.filter((notice) => {
     const search = filterSearch.toLowerCase().trim();
     const titleMatch = (notice.title || "").toLowerCase().includes(search);
     const contentMatch = (notice.content || "").toLowerCase().includes(search);
-    const divMatch = filterDivision ? notice.division === filterDivision : true;
+    const typeMatch = filterType === "all" ? true : notice.noticeType === filterType;
 
-    return (titleMatch || contentMatch) && divMatch;
+    return (titleMatch || contentMatch) && typeMatch;
   });
+
+  const getNoticeBadgeClass = (type) => {
+    switch (type) {
+      case "urgent": return "feed-badge urgent";
+      case "exam": return "feed-badge exam";
+      case "fee": return "feed-badge fee";
+      case "event": return "feed-badge event";
+      case "holiday": return "feed-badge holiday";
+      case "scholarship": return "feed-badge scholarship";
+      case "circular": return "feed-badge circular";
+      default: return "feed-badge general";
+    }
+  };
+
+  const renderAudienceSummary = (notice) => {
+    switch (notice.targetType) {
+      case "all": return "Entire College";
+      case "all-faculty": return "All Faculty";
+      case "all-students": return "All Students";
+      case "particular-faculty": return `Faculty: ${notice.targetFaculties?.join(", ") || "Selected"}`;
+      case "particular-student": return `Students: ${notice.targetStudents?.join(", ") || "Selected"}`;
+      case "departments": return `Departments: ${(notice.targetDepartments || []).map(d => d.name || d).join(", ")}`;
+      case "divisions": return `Divisions: ${(notice.targetDivisions || []).map(d => d.name || d).join(", ")}`;
+      case "academic-year": return `Years: ${(notice.targetAcademicYears || []).join(", ")}`;
+      default: return "All";
+    }
+  };
 
   return (
     <ErrorBoundary>
@@ -204,9 +447,6 @@ const NoticesPage = () => {
             onClick={() => {
               setShowForm(true);
               setEditingId(null);
-              setNoticeTitle("");
-              setNoticeContent("");
-              setSelectedDivision("");
             }}
             disabled={loading}
           >
@@ -219,13 +459,18 @@ const NoticesPage = () => {
           <div className="filters-card-inner">
             <div className="filter-select-group">
               <select 
-                value={filterDivision} 
-                onChange={(e) => setFilterDivision(e.target.value)}
+                value={filterType} 
+                onChange={(e) => setFilterType(e.target.value)}
               >
-                <option value="">All Divisions</option>
-                {divisions.map((d) => (
-                  <option key={d} value={d}>Division {d}</option>
-                ))}
+                <option value="all">All Types</option>
+                <option value="general">General</option>
+                <option value="urgent">Urgent</option>
+                <option value="exam">Exam</option>
+                <option value="fee">Fee</option>
+                <option value="event">Event</option>
+                <option value="holiday">Holiday</option>
+                <option value="scholarship">Scholarship</option>
+                <option value="circular">Circular</option>
               </select>
             </div>
 
@@ -256,16 +501,16 @@ const NoticesPage = () => {
             <div className="table-empty-state">
               <div className="empty-state-icon">📢</div>
               <h4>No notices published</h4>
-              <p>Post announcements to keep students informed of updates.</p>
+              <p>Post announcements to keep students and faculty informed of updates.</p>
             </div>
           ) : (
             <div className="notices-cards-grid">
               {filteredNotices.map((notice) => (
                 <div key={notice._id} className="notice-announcement-card animate-fadeIn">
                   <div className="notice-card-top-row">
-                    <span className="notice-audience-tag">Division {notice.division}</span>
+                    <span className={getNoticeBadgeClass(notice.noticeType)}>{notice.noticeType || "general"}</span>
                     <span className="notice-timestamp-label">
-                      {new Date(notice.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                      {new Date(notice.scheduledAt || notice.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                     </span>
                   </div>
 
@@ -276,10 +521,63 @@ const NoticesPage = () => {
                     dangerouslySetInnerHTML={{ __html: notice.content }}
                   />
 
+                  {/* Render Attachments */}
+                  {notice.attachments && notice.attachments.length > 0 && (
+                    <div className="card-attachments-list">
+                      <div className="attachments-label-row">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="attachment-svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 0l-3.536 3.536m3.536-3.536L6.5 14.5m11.864-8.864a9 9 0 11-12.728 12.728 9 9 0 0112.728-12.728z" />
+                        </svg>
+                        <span>Attachments ({notice.attachments.length})</span>
+                      </div>
+                      <div className="attachments-links">
+                        {notice.attachments.map((att, idx) => (
+                          <a 
+                            key={idx}
+                            href={getApiUrl(`/office/notices/file/${notice._id}/${idx}`)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="card-attachment-link"
+                            title={`${att.filename} (${(att.size / 1024).toFixed(1)} KB)`}
+                            onClick={(e) => {
+                              // Ensure authenticated download
+                              e.preventDefault();
+                              const headers = { Authorization: `Bearer ${token}` };
+                              fetch(e.currentTarget.href, { headers })
+                                .then(res => {
+                                  if (!res.ok) throw new Error("Failed file access");
+                                  return res.blob();
+                                })
+                                .then(blob => {
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement("a");
+                                  a.href = url;
+                                  a.download = att.filename;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  window.URL.revokeObjectURL(url);
+                                  a.remove();
+                                })
+                                .catch(err => {
+                                  console.error(err);
+                                  alert("Error accessing this file attachment. You may not be in its targeted list.");
+                                });
+                            }}
+                          >
+                            📎 {att.filename.length > 20 ? att.filename.substring(0, 17) + "..." : att.filename}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="notice-announcement-footer">
                     <div className="notice-author-initials">
-                      <span className="author-icon">👤</span>
-                      <span className="author-name">{notice.faculty || "Office Staff"}</span>
+                      <div className="notice-meta-details">
+                        <div className="target-summary-label">Target: <strong>{renderAudienceSummary(notice)}</strong></div>
+                        <div className="author-summary-label">By: <strong>{notice.faculty || "Office Staff"}</strong></div>
+                        <div className="read-count-label">Reads: <strong>{notice.readBy?.length || 0}</strong></div>
+                      </div>
                     </div>
 
                     <div className="notice-card-action-triggers">
@@ -313,7 +611,7 @@ const NoticesPage = () => {
             <div className="modal-dialog-box size-large animate-modalScaleIn" onClick={(e) => e.stopPropagation()}>
               <div className="modal-dialog-header">
                 <h3>{editingId ? "Edit Notice Announcement" : "Publish Notice Announcement"}</h3>
-                <p>Broadcast updates to student portals instantly.</p>
+                <p>Broadcast targeted updates to student and faculty portals.</p>
               </div>
 
               <div className="modal-dialog-body office-scrollable">
@@ -328,18 +626,241 @@ const NoticesPage = () => {
                   />
                 </div>
 
+                <div className="notice-form-row-2">
+                  <div className="form-input-control">
+                    <label>Notice Type <span className="req">*</span></label>
+                    <select
+                      value={noticeType}
+                      onChange={(e) => setNoticeType(e.target.value)}
+                      disabled={loading}
+                    >
+                      <option value="general">General Notice</option>
+                      <option value="urgent">Urgent Notice</option>
+                      <option value="exam">Exam Notice</option>
+                      <option value="fee">Fee Notice</option>
+                      <option value="event">Event Notice</option>
+                      <option value="holiday">Holiday Notice</option>
+                      <option value="scholarship">Scholarship Notice</option>
+                      <option value="circular">Circular / Official PDF</option>
+                    </select>
+                  </div>
+
+                  <div className="form-input-control">
+                    <label>Audience Targeting Scope <span className="req">*</span></label>
+                    <select
+                      value={targetType}
+                      onChange={(e) => {
+                        setTargetType(e.target.value);
+                        setTargetFaculties([]);
+                        setTargetStudents([]);
+                        setTargetDepartments([]);
+                        setTargetDivisions([]);
+                        setTargetAcademicYears([]);
+                        setSearchResults([]);
+                        setSearchQuery("");
+                      }}
+                      disabled={loading}
+                    >
+                      <option value="all">Entire College (All)</option>
+                      <option value="all-faculty">All Faculty members</option>
+                      <option value="all-students">All Students</option>
+                      <option value="particular-faculty">Particular Faculty</option>
+                      <option value="particular-student">Particular Student</option>
+                      <option value="departments">Particular Department(s)</option>
+                      <option value="divisions">Particular Division(s)</option>
+                      <option value="academic-year">Particular Academic Year(s)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Conditional Scope selection renderers */}
+                {(targetType === "particular-faculty" || targetType === "particular-student") && (
+                  <div className="form-input-control searchable-tags-wrapper">
+                    <label>Search and select {targetType === "particular-faculty" ? "Faculty" : "Student"}</label>
+                    <div className="tags-input-container">
+                      <div className="tags-list">
+                        {targetType === "particular-faculty" ? (
+                          targetFaculties.map(f => (
+                            <span key={f.username} className="tag-node">
+                              {f.name} <button type="button" onClick={() => handleRemoveTargetTag(f.username, "faculty")}>&times;</button>
+                            </span>
+                          ))
+                        ) : (
+                          targetStudents.map(s => (
+                            <span key={s.enrollmentNo} className="tag-node">
+                              {s.name} <button type="button" onClick={() => handleRemoveTargetTag(s.enrollmentNo, "student")}>&times;</button>
+                            </span>
+                          ))
+                        )}
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder={targetType === "particular-faculty" ? "Type faculty name..." : "Type student name..."}
+                        value={searchQuery}
+                        onChange={(e) => handleSearchTarget(e.target.value)}
+                        disabled={loading}
+                      />
+                    </div>
+                    {searchResults.length > 0 && (
+                      <div className="search-dropdown-menu office-scrollable">
+                        {searchResults.map((item, idx) => (
+                          <div 
+                            key={idx} 
+                            className="search-result-item"
+                            onClick={() => handleAddTargetTag(item)}
+                          >
+                            {targetType === "particular-faculty" ? (
+                              <span><strong>{item.fullName}</strong> ({item.employeeId}) - <small>{item.department?.name}</small></span>
+                            ) : (
+                              <span><strong>{item.studentName}</strong> ({item.enrollmentNo}) - <small>Div {item.division}</small></span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {searchLoading && <div className="searching-indicator">Searching...</div>}
+                  </div>
+                )}
+
+                {targetType === "departments" && (
+                  <div className="form-input-control">
+                    <label>Select Department(s)</label>
+                    <div className="checkboxes-selection-box office-scrollable">
+                      {targetOptions.departments.map(dept => (
+                        <label key={dept._id} className="checkbox-node">
+                          <input 
+                            type="checkbox"
+                            checked={targetDepartments.includes(dept._id)}
+                            onChange={() => handleCheckboxToggle(dept._id, targetDepartments, setTargetDepartments)}
+                            disabled={loading}
+                          />
+                          <span>{dept.name} ({dept.code})</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {targetType === "divisions" && (
+                  <div className="form-input-control">
+                    <label>Select Division(s)</label>
+                    <div className="checkboxes-selection-box office-scrollable">
+                      {targetOptions.divisions.map(div => (
+                        <label key={div._id} className="checkbox-node">
+                          <input 
+                            type="checkbox"
+                            checked={targetDivisions.includes(div._id)}
+                            onChange={() => handleCheckboxToggle(div._id, targetDivisions, setTargetDivisions)}
+                            disabled={loading}
+                          />
+                          <span>Division {div.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {targetType === "academic-year" && (
+                  <div className="form-input-control">
+                    <label>Select Academic Year(s)</label>
+                    <div className="checkboxes-selection-box office-scrollable">
+                      {targetOptions.academicYears.map(year => (
+                        <label key={year} className="checkbox-node">
+                          <input 
+                            type="checkbox"
+                            checked={targetAcademicYears.includes(year)}
+                            onChange={() => handleCheckboxToggle(year, targetAcademicYears, setTargetAcademicYears)}
+                            disabled={loading}
+                          />
+                          <span>Academic Year {year}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Scheduling Section */}
+                <div className="scheduling-section-wrapper">
+                  <div className="form-input-control checkbox-instant">
+                    <label className="checkbox-node">
+                      <input 
+                        type="checkbox"
+                        checked={sendInstantly}
+                        onChange={(e) => {
+                          setSendInstantly(e.target.checked);
+                          if (e.target.checked) setScheduledAt("");
+                        }}
+                        disabled={loading}
+                      />
+                      <span>Send Notice Instantly</span>
+                    </label>
+                  </div>
+
+                  {!sendInstantly && (
+                    <div className="form-input-control">
+                      <label>Schedule Publish Date & Time</label>
+                      <input 
+                        type="datetime-local"
+                        value={scheduledAt}
+                        onChange={(e) => setScheduledAt(e.target.value)}
+                        disabled={loading}
+                      />
+                    </div>
+                  )}
+
+                  <div className="form-input-control">
+                    <label>Notice Expiry Date & Time <span className="hint">(Optional)</span></label>
+                    <input 
+                      type="datetime-local"
+                      value={expiresAt}
+                      onChange={(e) => setExpiresAt(e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                {/* Attachments Section */}
                 <div className="form-input-control">
-                  <label>Division Target <span className="req">*</span></label>
-                  <select
-                    value={selectedDivision}
-                    onChange={(e) => setSelectedDivision(e.target.value)}
-                    disabled={loading}
-                  >
-                    <option value="">Select Division</option>
-                    {divisions.map((div) => (
-                      <option key={div} value={div}>Division {div}</option>
-                    ))}
-                  </select>
+                  <label>Add File Attachments <span className="hint">(PDF, Images, DOC, Excel. Max 10MB each)</span></label>
+                  <div className="attachments-drop-zone">
+                    <input 
+                      type="file"
+                      id="notice-attachments-selector"
+                      multiple
+                      onChange={handleFileChange}
+                      disabled={loading}
+                      style={{ display: "none" }}
+                    />
+                    <label htmlFor="notice-attachments-selector" className="drop-zone-label">
+                      <span>📥 Click here to select file attachments</span>
+                    </label>
+                  </div>
+
+                  {/* List of currently selected files */}
+                  {attachments.length > 0 && (
+                    <div className="uploading-files-list">
+                      <h5>Selected Files ({attachments.length}):</h5>
+                      {attachments.map((file, idx) => (
+                        <div key={idx} className="file-list-node">
+                          <span>📎 {file.name} <small>({(file.size / 1024).toFixed(1)} KB)</small></span>
+                          <button type="button" onClick={() => handleRemoveFile(idx)}>&times;</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* List of existing attachments (in edit mode) */}
+                  {editingId && existingAttachments.length > 0 && (
+                    <div className="uploading-files-list existing">
+                      <h5>Existing Files on Notice ({existingAttachments.length}):</h5>
+                      {existingAttachments.map((file, idx) => (
+                        <div key={idx} className="file-list-node existing">
+                          <span>📎 {file.filename} <small>({(file.size / 1024).toFixed(1)} KB)</small></span>
+                          <button type="button" onClick={() => handleRemoveExistingAttachment(idx)}>&times;</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Custom Rich Text Editor Block */}

@@ -15,6 +15,23 @@ const { authenticate } = require("../middleware/auth");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const mongoose = require("mongoose");
+
+// Drop old indexes to migrate schemas cleanly
+const dropOldIndexes = async () => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      mongoose.connection.once("open", dropOldIndexes);
+      return;
+    }
+    const db = mongoose.connection.db;
+    await db.collection("ciannsubjectdetails").dropIndex("ciannId_1").catch(() => {});
+    await db.collection("tlollos").dropIndex("facultyId_1_ciannId_1_subjectId_1").catch(() => {});
+  } catch (err) {
+    console.warn("Index drop ignored:", err.message);
+  }
+};
+dropOldIndexes();
 
 // ==================== BOOK RESOURCES ====================
 
@@ -298,14 +315,31 @@ router.put("/knowledge-map/:id", async (req, res) => {
 
 // ==================== CIANN SUBJECT DETAILS ====================
 
+const getSubjectIdByCiannId = async (ciannId) => {
+  const ciannDoc = await Ciann.findOne({ ciannId: Number(ciannId) });
+  return ciannDoc ? (ciannDoc.subject?._id || ciannDoc.subjectId) : null;
+};
+
 // Get all details for a CIANN
 router.get("/ciann/:ciannId", async (req, res) => {
   try {
     const { ciannId } = req.params;
-    let details = await CiannSubjectDetails.findOne({ ciannId: parseInt(ciannId) });
+    const subjectId = await getSubjectIdByCiannId(ciannId);
+    if (!subjectId) {
+      return res.status(404).json({ error: "CIANN or associated subject not found" });
+    }
+
+    let details = await CiannSubjectDetails.findOne({ subjectId });
     if (!details) {
-      details = new CiannSubjectDetails({ ciannId: parseInt(ciannId) });
-      await details.save();
+      // Fallback: check if there's an old one by ciannId
+      details = await CiannSubjectDetails.findOne({ ciannId: parseInt(ciannId) });
+      if (details) {
+        details.subjectId = subjectId;
+        await details.save();
+      } else {
+        details = new CiannSubjectDetails({ ciannId: parseInt(ciannId), subjectId });
+        await details.save();
+      }
     }
     res.json(details);
   } catch (error) {
@@ -319,11 +353,15 @@ router.post("/ciann/:ciannId", async (req, res) => {
   try {
     const { ciannId } = req.params;
     const updateData = req.body;
+    const subjectId = await getSubjectIdByCiannId(ciannId);
+    if (!subjectId) {
+      return res.status(404).json({ error: "CIANN or associated subject not found" });
+    }
     
     // Find and update or insert if not exists
     const updatedDetails = await CiannSubjectDetails.findOneAndUpdate(
-      { ciannId: parseInt(ciannId) },
-      { $set: updateData },
+      { subjectId },
+      { $set: { ...updateData, subjectId } },
       { new: true, upsert: true, runValidators: true }
     );
     
@@ -342,9 +380,8 @@ router.get("/tlo-llo/:ciannId/:subjectId", authenticate, async (req, res) => {
   try {
     const { ciannId, subjectId } = req.params;
 
-    // Find record by ciannId and subjectId so anyone with access can view the TLOs/LLOs
+    // Find record by subjectId so anyone with access can view the TLOs/LLOs
     const record = await TloLlo.findOne({
-      ciannId: parseInt(ciannId),
       subjectId
     });
 
@@ -368,10 +405,10 @@ router.post("/tlo-llo", authenticate, async (req, res) => {
       return res.status(400).json({ success: false, error: "Missing required fields" });
     }
 
-    // Find and update based on ciannId and subjectId so we keep one master record per CIANN/Subject
+    // Find and update based on subjectId so we keep one master record per Subject
     const updatedRecord = await TloLlo.findOneAndUpdate(
-      { ciannId: parseInt(ciannId), subjectId },
-      { coData, facultyId }, // Save/update the facultyId of the user who last edited
+      { subjectId },
+      { coData, facultyId, ciannId: parseInt(ciannId) }, // Save/update the facultyId of the user who last edited, and ciannId
       { new: true, upsert: true, runValidators: true }
     );
 
@@ -417,19 +454,31 @@ router.get("/ciann-subject-details/:ciannId", authenticate, async (req, res) => 
       return res.status(404).json({ success: false, error: "CIANN workbook not found" });
     }
 
-    // Find the faculty worksheet details
-    let details = await CiannSubjectDetails.findOne({ ciannId: Number(ciannId) });
+    const subjectId = ciannDoc.subject?._id || ciannDoc.subjectId;
+    if (!subjectId) {
+      return res.status(400).json({ success: false, error: "Subject ID not found on CIANN" });
+    }
+
+    // Find the faculty worksheet details by subjectId
+    let details = await CiannSubjectDetails.findOne({ subjectId });
+    if (!details) {
+      // Fallback: check if there's an old one by ciannId
+      details = await CiannSubjectDetails.findOne({ ciannId: Number(ciannId) });
+      if (details) {
+        details.subjectId = subjectId;
+        await details.save();
+      } else {
+        details = new CiannSubjectDetails({ ciannId: Number(ciannId), subjectId });
+        await details.save();
+      }
+    }
     
     // Find the Admin-defined CourseDetails for the subject
-    const subjectId = ciannDoc.subject?._id || ciannDoc.subjectId;
-    let adminDetails = null;
-    if (subjectId) {
-      adminDetails = await CourseDetails.findOne({ subjectId }).populate("subjectId");
-    }
+    let adminDetails = await CourseDetails.findOne({ subjectId }).populate("subjectId");
 
     res.json({
       success: true,
-      details: details || { ciannId: Number(ciannId) },
+      details: details,
       adminDetails
     });
   } catch (error) {
@@ -446,9 +495,19 @@ router.post("/ciann-subject-details", authenticate, async (req, res) => {
       return res.status(400).json({ success: false, error: "ciannId is required" });
     }
 
+    const ciannDoc = await Ciann.findOne({ ciannId: Number(ciannId) });
+    if (!ciannDoc) {
+      return res.status(404).json({ success: false, error: "CIANN workbook not found" });
+    }
+
+    const subjectId = ciannDoc.subject?._id || ciannDoc.subjectId;
+    if (!subjectId) {
+      return res.status(400).json({ success: false, error: "Subject ID not found on CIANN" });
+    }
+
     const updatedDetails = await CiannSubjectDetails.findOneAndUpdate(
-      { ciannId: Number(ciannId) },
-      req.body,
+      { subjectId },
+      { ...req.body, subjectId },
       { new: true, upsert: true, runValidators: true }
     );
 
@@ -460,6 +519,63 @@ router.post("/ciann-subject-details", authenticate, async (req, res) => {
   } catch (error) {
     console.error("Error saving unified subject details:", error);
     res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// GET: Fetch Syllabus images for a CIANN/Subject
+router.get("/syllabus/:ciannId", authenticate, async (req, res) => {
+  try {
+    const { ciannId } = req.params;
+    const ciannDoc = await Ciann.findOne({ ciannId: Number(ciannId) });
+    if (!ciannDoc) {
+      return res.status(404).json({ success: false, error: "CIANN workbook not found" });
+    }
+    const subjectId = ciannDoc.subject?._id || ciannDoc.subjectId;
+    if (!subjectId) {
+      return res.status(400).json({ success: false, error: "Subject ID not found on CIANN" });
+    }
+
+    let details = await CiannSubjectDetails.findOne({ subjectId });
+    res.json({
+      success: true,
+      images: details?.syllabusImages || []
+    });
+  } catch (error) {
+    console.error("Error fetching syllabus images:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch syllabus images" });
+  }
+});
+
+// POST: Save Syllabus images for a CIANN/Subject
+router.post("/syllabus", authenticate, async (req, res) => {
+  try {
+    const { ciannId, images } = req.body;
+    if (!ciannId) {
+      return res.status(400).json({ success: false, error: "ciannId is required" });
+    }
+    const ciannDoc = await Ciann.findOne({ ciannId: Number(ciannId) });
+    if (!ciannDoc) {
+      return res.status(404).json({ success: false, error: "CIANN workbook not found" });
+    }
+    const subjectId = ciannDoc.subject?._id || ciannDoc.subjectId;
+    if (!subjectId) {
+      return res.status(400).json({ success: false, error: "Subject ID not found on CIANN" });
+    }
+
+    const updatedDetails = await CiannSubjectDetails.findOneAndUpdate(
+      { subjectId },
+      { syllabusImages: images },
+      { new: true, upsert: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Syllabus saved successfully",
+      images: updatedDetails.syllabusImages
+    });
+  } catch (error) {
+    console.error("Error saving syllabus images:", error);
+    res.status(500).json({ success: false, error: "Failed to save syllabus images" });
   }
 });
 

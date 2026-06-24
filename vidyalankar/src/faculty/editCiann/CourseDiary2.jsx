@@ -343,7 +343,7 @@ const CourseDiary2 = () => {
       display: isMobile ? "block" : "table",
       width: "100%",
       maxWidth: "750px",
-      margin: "40px auto",
+      margin: isMobile ? "40px auto" : "75px auto 40px auto",
       borderCollapse: "separate",
       borderSpacing: "0 8px",
     },

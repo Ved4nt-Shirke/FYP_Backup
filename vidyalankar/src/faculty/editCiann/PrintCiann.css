@@ -168,6 +168,7 @@
   border-collapse: separate;
   border-spacing: 0 8px;
   display: table;
+  margin-top: 75px;
 }
 
 .diary-row {
@@ -295,22 +296,32 @@
 .tp-table td:nth-child(1) {
   width: 12% !important;
 }
+
+
 .tp-table th:nth-child(2),
 .tp-table td:nth-child(2) {
   width: 25% !important;
 }
+
+
 .tp-table th:nth-child(3),
 .tp-table td:nth-child(3) {
   width: 30% !important;
 }
+
+
 .tp-table th:nth-child(4),
 .tp-table td:nth-child(4) {
   width: 8% !important;
 }
+
+
 .tp-table th:nth-child(5),
 .tp-table td:nth-child(5) {
   width: 12% !important;
 }
+
+
 .tp-table th:nth-child(6),
 .tp-table td:nth-child(6) {
   width: 13% !important;
@@ -337,6 +348,7 @@
 }
 
 @media (max-width: 768px) {
+
   .two-col-grid,
   .syllabus-image-grid {
     grid-template-columns: 1fr;
@@ -420,6 +432,7 @@
   padding: 14px;
   margin-bottom: 24px;
 }
+
 .k3-sheet-header {
   display: flex;
   justify-content: space-between;
@@ -428,24 +441,29 @@
   padding-bottom: 10px;
   margin-bottom: 10px;
 }
+
 .k3-sheet-title {
   text-align: center;
   flex: 1;
 }
+
 .k3-sheet-board {
   font-weight: 700;
   font-size: 14px;
 }
+
 .k3-sheet-subtitle {
   font-size: 12px;
   margin-top: 4px;
   font-weight: 700;
 }
+
 .k3-sheet-format {
   font-weight: 700;
   font-size: 12px;
   text-align: right;
 }
+
 .k3-meta {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -454,12 +472,14 @@
   margin-bottom: 12px;
   text-align: left;
 }
+
 .k3-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 9px;
   table-layout: auto;
 }
+
 .k3-table th,
 .k3-table td {
   border: 1px solid #000 !important;
@@ -469,24 +489,29 @@
   line-height: 1.1;
   word-wrap: break-word;
 }
+
 .k3-table thead th {
   background: #f1f3f5;
   font-weight: 700;
 }
+
 .k3-name {
   text-align: left !important;
   padding-left: 6px !important;
 }
+
 .k3-empty {
   text-align: center;
   padding: 16px 0;
 }
+
 .k3-signature-row {
   display: flex;
   justify-content: space-between;
   margin-top: 18px;
   font-size: 12px;
 }
+
 .k3-sign-label {
   font-size: 11px;
   color: #444;
@@ -499,23 +524,28 @@
   padding: 10px;
   margin-bottom: 24px;
 }
+
 .k4-print-sheet {
   background: #fff;
 }
+
 .k4-print-board {
   font-size: 13px;
   font-weight: 700;
 }
+
 .k4-print-subtitle {
   font-size: 13px;
   font-weight: 700;
 }
+
 .k4-print-format {
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   margin-left: 10px;
 }
+
 .k4-print-table {
   width: 100%;
   border-collapse: collapse;
@@ -524,6 +554,7 @@
   border: 1px solid #000;
   font-size: 9px;
 }
+
 .k4-print-table th,
 .k4-print-table td {
   border: 1px solid #000 !important;
@@ -535,24 +566,43 @@
   line-height: 1.1;
   word-wrap: break-word;
 }
+
 .k4-structure-table {
   table-layout: fixed;
   width: 100%;
 }
-.k4-col-roll { width: 10%; }
-.k4-col-enroll { width: 15%; }
-.k4-col-name { width: 40%; }
-.k4-col-seat { width: 15%; }
-.k4-col-marks { width: 20%; }
+
+.k4-col-roll {
+  width: 10%;
+}
+
+.k4-col-enroll {
+  width: 15%;
+}
+
+.k4-col-name {
+  width: 40%;
+}
+
+.k4-col-seat {
+  width: 15%;
+}
+
+.k4-col-marks {
+  width: 20%;
+}
+
 .k4-sheet-title-cell {
   padding: 4px 8px !important;
 }
+
 .k4-sheet-title-inner {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
 }
+
 .k4-meta-left,
 .k4-meta-right,
 .k4-meta-center {
@@ -561,8 +611,15 @@
   text-align: left !important;
   padding: 4px 8px !important;
 }
-.k4-meta-right { text-align: right !important; }
-.k4-meta-center { text-align: center !important; }
+
+.k4-meta-right {
+  text-align: right !important;
+}
+
+.k4-meta-center {
+  text-align: center !important;
+}
+
 .k4-print-signatures {
   border: 1px solid #000;
   border-top: none;
@@ -570,19 +627,23 @@
   grid-template-columns: 1fr 1fr;
   min-height: 110px;
 }
+
 .k4-sign-column {
   padding: 8px;
   font-size: 12px;
   text-align: left;
 }
+
 .k4-sign-title {
   font-weight: 700;
   margin-bottom: 6px;
 }
+
 .k4-print-table thead th {
   background: #f1f3f5 !important;
   font-weight: 700;
 }
+
 .k4-print-table td.text-start {
   text-align: left !important;
   padding-left: 6px !important;
@@ -595,14 +656,17 @@
   padding: 10px;
   margin-bottom: 24px;
 }
+
 .k5-sheet {
   background: #fff;
 }
+
 .k5-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 9px;
 }
+
 .k5-table th,
 .k5-table td {
   border: 1px solid #000 !important;
@@ -613,19 +677,23 @@
   line-height: 1.1;
   word-wrap: break-word;
 }
+
 .k5-title-cell {
   position: relative;
   text-align: center;
   padding: 8px 10px !important;
 }
+
 .k5-title-top {
   font-weight: 700;
   font-size: 13px;
 }
+
 .k5-title-sub {
   font-weight: 700;
   font-size: 12px;
 }
+
 .k5-format {
   position: absolute;
   top: 8px;
@@ -633,21 +701,26 @@
   font-weight: 700;
   font-size: 12px;
 }
+
 .k5-meta-left,
 .k5-meta-right {
   text-align: left;
   padding: 6px 8px !important;
 }
+
 .k5-meta-right {
   text-align: right !important;
 }
+
 .k5-name {
   text-align: left !important;
 }
+
 .k5-empty {
   text-align: center;
   padding: 16px 8px !important;
 }
+
 .k5-signatures {
   border: 1px solid #000;
   border-top: none;
@@ -657,7 +730,8 @@
   font-size: 13px;
   min-height: 78px;
 }
-.k5-signatures > div {
+
+.k5-signatures>div {
   text-align: left;
 }
 
@@ -668,6 +742,7 @@
   padding: 14px;
   margin-bottom: 24px;
 }
+
 .attendance-header-top {
   display: flex;
   justify-content: space-between;
@@ -676,24 +751,29 @@
   padding-bottom: 10px;
   margin-bottom: 10px;
 }
+
 .attendance-title-box {
   text-align: center;
   flex: 1;
 }
+
 .attendance-board {
   font-weight: 700;
   font-size: 14px;
 }
+
 .attendance-subtitle {
   font-size: 12px;
   margin-top: 4px;
   font-weight: 700;
 }
+
 .attendance-format-label {
   font-weight: 700;
   font-size: 12px;
   text-align: right;
 }
+
 .attendance-meta {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -702,6 +782,7 @@
   margin-bottom: 12px;
   text-align: left;
 }
+
 .attendance-table-title {
   font-size: 13px;
   font-weight: 700;
@@ -710,6 +791,7 @@
   border-bottom: 1px solid #000;
   padding-bottom: 4px;
 }
+
 .attendance-log-table,
 .attendance-summary-table {
   width: 100%;
@@ -717,6 +799,7 @@
   font-size: 9px;
   margin-bottom: 18px;
 }
+
 .attendance-log-table th,
 .attendance-log-table td,
 .attendance-summary-table th,
@@ -728,27 +811,32 @@
   line-height: 1.1;
   word-wrap: break-word;
 }
+
 .attendance-log-table thead th,
 .attendance-summary-table thead th {
   background: #f1f3f5;
   font-weight: 700;
 }
+
 .attendance-log-table td.text-start,
 .attendance-summary-table td.text-start {
   text-align: left !important;
   padding-left: 6px !important;
 }
+
 .attendance-empty {
   text-align: center;
   padding: 12px 0;
   color: #666;
 }
+
 .attendance-signatures {
   display: flex;
   justify-content: space-between;
   margin-top: 24px;
   font-size: 12px;
 }
+
 .attendance-signatures .sign-label {
   font-size: 11px;
   color: #444;
@@ -766,6 +854,7 @@
     page-break-before: always !important;
     break-before: page !important;
   }
+
   .k3-format-section,
   .k4-format-section,
   .k5-format-section,
@@ -1117,3 +1206,4 @@
     min-width: 50px !important;
   }
 }
+

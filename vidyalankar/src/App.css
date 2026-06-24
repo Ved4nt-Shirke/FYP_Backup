@@ -282,6 +282,10 @@ body {
   }
 }
 
+.app-container.sidebar-collapsed {
+  --sidebar-width: 0px !important;
+}
+
 @media (max-width: 768px) {
   .main-content-wrapper {
     margin-left: 0 !important;

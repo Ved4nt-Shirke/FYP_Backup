@@ -402,6 +402,12 @@ const WeekwisePlan = ({
           margin-top: 4px;
           padding: 4px;
         }
+        .llo-dropdown-menu.open-up {
+          top: auto;
+          bottom: 100%;
+          margin-top: 0;
+          margin-bottom: 4px;
+        }
         .llo-dropdown-item {
           display: flex;
           align-items: center;
@@ -508,44 +514,45 @@ const WeekwisePlan = ({
         }
 
         .weekwise-container {
-          padding: 24px;
-          max-height: calc(90vh - 64px - 72px); 
-          overflow-y: auto;
-          -webkit-overflow-scrolling: touch;
+          padding: 12px 15px;
+          /* Calculate max-height to fit between header (60px) and footer buttons (64px) */
+          max-height: calc(90vh - 60px - 64px); 
+          overflow-y: auto; /* Vertical scroll inside modal */
+          -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
           background-color: #fff;
           font-family: 'Inter', sans-serif;
           flex-grow: 1;
         }
         
         .plan-table-wrapper {
-          overflow-x: auto;
-          overflow-y: hidden;
-          -webkit-overflow-scrolling: touch;
-          margin-top: 16px;
-          padding-bottom: 0;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-          background: #fff;
+          overflow-x: auto; /* Horizontal scroll for the table */
+          -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
+          margin-top: 20px;
+          padding-bottom: 0; /* Remove bottom gap so grid lines meet border */
+          border: 1px solid #cfd4da; /* Slightly darker grey for clearer lines */
+          border-radius: 10px; /* Rounded corners */
+          background: #fff; /* Ensure solid background under sticky header */
+          overflow: hidden; /* Clip table to rounded corners */
+          min-height: 280px; /* Prevent clipping of dropdown options */
         }
 
         .plan-table {
           width: 100%;
-          border-collapse: collapse;
-          min-width: 1200px;
-          table-layout: fixed;
-          border: 0;
+          border-collapse: collapse; /* Ensure header/body borders meet */
+          min-width: 1150px; /* Minimum width to force horizontal scroll on small screens */
+          table-layout: fixed; /* Ensures column widths are respected */
+          border: 0; /* Use wrapper for outer border */
         }
 
         .plan-table th,
         .plan-table td {
-          border: 1px solid #f1f5f9;
-          padding: 12px 10px;
+          border: 1px solid #e0e0e0;
+          padding: 6px 4px;
           text-align: center;
           vertical-align: middle;
-          font-size: 13px;
-          color: #334155;
-          white-space: normal;
+          font-size: 12.5px;
+          /* word-wrap: break-word; /* Allow long words to break within cell */
+          white-space: normal; /* Allow text to wrap naturally */
         }
 
         .plan-table th {
@@ -561,14 +568,22 @@ const WeekwisePlan = ({
           border-bottom: 2px solid #e2e8f0;
         }
         
-        /* Column widths are set via <colgroup> in JSX */
+        /* Column widths */
+        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 8%; }  /* Week No */
+        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 8%; }  /* Batch No */
+        .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 8%; }  /* CO */
+        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 22%; } /* LLO */
+        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 8%; }  /* Experiment No */
+        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 32%; } /* Experiment Name */
+        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 10%; } /* Planned Date */
+        .plan-table th:nth-child(8), .plan-table td:nth-child(8) { width: 4%; }  /* Action */
 
         .plan-table input,
         .plan-table select,
         .plan-table textarea {
           width: 100%;
           padding: 6px 8px;
-          border: 1px solid #cbd5e1;
+          border: 1px solid #ddd;
           border-radius: 8px;
           font-size: 13px;
           box-sizing: border-box;
@@ -636,14 +651,14 @@ const WeekwisePlan = ({
           box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         
-        .action-buttons-container button:first-child {
-            background-color: #10b981;
+        .action-buttons-container button.submit-btn {
+            background-color: #4CAF50;
             color: white;
         }
         
-        .action-buttons-container button:first-child:hover {
-            background-color: #059669;
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2), 0 2px 4px -1px rgba(16, 185, 129, 0.1);
+        .action-buttons-container button.submit-btn:hover {
+            background-color: #43A047;
+            transform: translateY(-1px);
         }
         
         .action-buttons-container button.cancel {
@@ -685,7 +700,7 @@ const WeekwisePlan = ({
             }
             
             .action-buttons-container {
-                flex-direction: column;
+                flex-direction: column-reverse;
                 align-items: center;
                 gap: 10px;
             }
@@ -850,7 +865,7 @@ const WeekwisePlan = ({
                         </button>
                         
                         {openLloDropdownIndex === i && (
-                          <div className="llo-dropdown-menu">
+                          <div className={`llo-dropdown-menu ${plans.length > 2 && i >= plans.length - 2 ? "open-up" : ""}`}>
                             {(() => {
                               const selectedCOs = plan.co ? plan.co.split(",").map(c => c.trim()) : [];
                               // Build LLO list with numbers (coNum.idx) and full text
@@ -989,11 +1004,11 @@ const WeekwisePlan = ({
           {message && <div className="submission-message">{message}</div>}
         </div>
         <div className="action-buttons-container">
-          <button onClick={handleSubmit}>
-            {initialWeek ? "Update" : "Submit"}
-          </button>
           <button className="cancel" onClick={onCancel}>
             Cancel
+          </button>
+          <button className="submit-btn" onClick={handleSubmit}>
+            {initialWeek ? "Update" : "Submit"}
           </button>
         </div>
       </div>

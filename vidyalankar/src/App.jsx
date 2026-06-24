@@ -8,6 +8,8 @@ import {
   useNavigate,
 } from "react-router-dom";
 
+import { TokenManager, SessionManager } from "./utils/authUtils";
+
 // Layout & Basic Components
 import Header from "./basic/Header";
 import Sidebar from "./basic/Sidebar";
@@ -28,6 +30,7 @@ import StudentPracticalExamList from "./student/StudentPracticalExamList";
 import StudentPracticalExamUpload from "./student/StudentPracticalExamUpload";
 import StudentTimetable from "./student/StudentTimetable";
 import ChatPage from "./faculty/chat/ChatPage";
+import FacultyNotices from "./faculty/components/Notices";
 
 // CIANN / Edit CIANN Components
 import CreateCiann from "./faculty/components/CreateCiann";
@@ -328,7 +331,9 @@ const AppContent = () => {
     window.innerWidth >= 769,
   );
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [currentTab, setCurrentTab] = useState("upload");
+  const [currentTab, setCurrentTab] = useState(
+    localStorage.getItem("role") === "office" ? "dashboard" : "upload"
+  );
   const userDropdownRef = useRef(null);
 
   const userRole = localStorage.getItem("role") || "faculty";
@@ -337,9 +342,72 @@ const AppContent = () => {
     userRole === "admin" && location.pathname === "/admin-dashboard";
   const hasLeftSidebar = userRole !== "superadmin";
 
+  // Update last activity on user interaction
+  useEffect(() => {
+    const handleActivity = () => {
+      SessionManager.updateLastActivity();
+    };
+
+    // Throttle activity updates to once every 10 seconds to avoid performance degradation
+    let lastUpdate = 0;
+    const throttledActivity = () => {
+      const now = Date.now();
+      if (now - lastUpdate > 10000) {
+        lastUpdate = now;
+        handleActivity();
+      }
+    };
+
+    const events = ["mousedown", "keydown", "scroll", "touchstart", "click"];
+    events.forEach((event) => {
+      window.addEventListener(event, throttledActivity, { passive: true });
+    });
+
+    return () => {
+      events.forEach((event) => {
+        window.removeEventListener(event, throttledActivity);
+      });
+    };
+  }, []);
+
+  // Periodic check for session inactivity and token validity
+  useEffect(() => {
+    const checkSession = () => {
+      const token = TokenManager.getToken();
+      const isSessionActive = SessionManager.isSessionActive();
+      const isLoginPage = location.pathname === "/login";
+      const isPublicPage = [
+        "view-attend2",
+        "view-practical3",
+        "view-extra-practical3",
+        "view-extra-theory-attend2",
+        "view-tutorial-attendance2",
+        "summary-pages",
+        "edit-ciann-print",
+        "public/practical-exam",
+      ].some((p) => location.pathname.includes(p));
+
+      if (isPublicPage || isLoginPage) return;
+
+      if (!token || !isSessionActive) {
+        TokenManager.clearToken();
+        SessionManager.clearSession();
+        navigate("/login");
+      }
+    };
+
+    // Check immediately on mount/pathname change
+    checkSession();
+
+    // Set interval to check every 30 seconds
+    const interval = setInterval(checkSession, 30000);
+    return () => clearInterval(interval);
+  }, [location.pathname, navigate]);
+
   // Auth Guard
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = TokenManager.getToken();
+    const isSessionActive = SessionManager.isSessionActive();
     const role = localStorage.getItem("role") || "faculty";
     const isLoginPage = location.pathname === "/login";
     const isPublicPage = [
@@ -353,8 +421,10 @@ const AppContent = () => {
       "public/practical-exam",
     ].some((p) => location.pathname.includes(p));
 
-    if (!token) {
+    if (!token || !isSessionActive) {
       if (!isLoginPage && !isPublicPage) {
+        TokenManager.clearToken();
+        SessionManager.clearSession();
         navigate("/login");
       }
     } else {
@@ -449,7 +519,8 @@ const AppContent = () => {
   }, [college, userRole]);
 
   // Sync auth checks to prevent layout flash before redirect
-  const token = localStorage.getItem("token");
+  const token = TokenManager.getToken();
+  const isSessionActive = SessionManager.isSessionActive();
   const isLoginPage = location.pathname === "/login";
   const isPublicPage = [
     "view-attend2",
@@ -462,11 +533,11 @@ const AppContent = () => {
     "public/practical-exam",
   ].some((p) => location.pathname.includes(p));
 
-  if (!token && !isLoginPage && !isPublicPage) {
+  if ((!token || !isSessionActive) && !isLoginPage && !isPublicPage) {
     return <Navigate to="/login" replace />;
   }
 
-  if (token && isLoginPage) {
+  if (token && isSessionActive && isLoginPage) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -651,6 +722,7 @@ const AppContent = () => {
             <Route path="/faculty/mock-exams/edit/:examId" element={<MockExamForm />} />
             <Route path="/faculty/mock-exams/manage" element={<MockExamManage />} />
             <Route path="/faculty/mock-exams/results" element={<MockExamResults />} />
+            <Route path="/faculty/notices" element={<FacultyNotices />} />
             <Route path="/messages" element={<ChatPage />} />
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/laboratory-plan" element={<LabPlanningSheet />} />

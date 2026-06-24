@@ -31,20 +31,24 @@ const Notices = () => {
     ? notices 
     : notices.filter(notice => (notice.source || notice.category) === filter);
 
-  const getCategoryIcon = (category) => {
-    switch (category) {
-      case "office": return "bi-building";
+  const getCategoryIcon = (source) => {
+    switch (source) {
+      case "office": return "bi-building-fill";
       case "faculty": return "bi-person-workspace";
-      default: return "bi-info-circle";
+      default: return "bi-info-circle-fill";
     }
   };
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case "high": return "#ef4444";
-      case "medium": return "#f59e0b";
-      case "low": return "#10b981";
-      default: return "#6b7280";
+  const getNoticeBadgeClass = (category) => {
+    switch (category) {
+      case "urgent": return "student-badge urgent";
+      case "exam": return "student-badge exam";
+      case "fee": return "student-badge fee";
+      case "event": return "student-badge event";
+      case "holiday": return "student-badge holiday";
+      case "scholarship": return "student-badge scholarship";
+      case "circular": return "student-badge circular";
+      default: return "student-badge general";
     }
   };
 
@@ -64,6 +68,32 @@ const Notices = () => {
       );
     } catch (err) {
       console.error("Failed to mark notice as read:", err);
+    }
+  };
+
+  const handleDownloadAttachment = async (downloadUrl, filename) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(downloadUrl, {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` })
+        }
+      });
+      if (!response.ok) {
+        throw new Error("Access denied or file missing");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (err) {
+      console.error("Error downloading attachment:", err);
+      alert("Failed to download file attachment. You may not be in the targeted list for this notice.");
     }
   };
 
@@ -121,17 +151,19 @@ const Notices = () => {
       ) : (
         <div className="notices-list">
           {filteredNotices.map((notice) => (
-            <div key={notice._id || notice.id} className="notice-card">
+            <div key={notice._id || notice.id} className={`notice-card ${notice.read ? "read" : "unread"}`}>
               <div className="notice-header">
                 <div className="notice-meta">
-                  <i className={`bi ${getCategoryIcon(notice.source || notice.category)}`}></i>
-                  <span className="notice-category">{(notice.source || notice.category || "general").toUpperCase()}</span>
-                  <span 
-                    className="notice-priority" 
-                    style={{ color: getPriorityColor(notice.priority) }}
-                  >
-                    {notice.priority} priority
+                  <i className={`bi ${getCategoryIcon(notice.source)}`}></i>
+                  <span className="notice-source-tag">{(notice.source || 'faculty').toUpperCase()}</span>
+                  <span className={getNoticeBadgeClass(notice.category)}>
+                    {notice.category || "general"}
                   </span>
+                  {!notice.read && (
+                    <span className="notice-unread-dot" title="Unread Announcement">
+                      <span className="dot"></span> New
+                    </span>
+                  )}
                 </div>
                 <span className="notice-date">{formatDate(notice.date)}</span>
               </div>
@@ -140,6 +172,39 @@ const Notices = () => {
                 className="notice-content"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(notice.content || "") }}
               ></div>
+
+              {/* Render Secure Attachments */}
+              {notice.attachments && notice.attachments.length > 0 && (
+                <div className="student-notice-attachments">
+                  <div className="attachments-title">
+                    <i className="bi bi-paperclip"></i> Secure Attachments ({notice.attachments.length})
+                  </div>
+                  <div className="attachments-list">
+                    {notice.attachments.map((att, idx) => {
+                      let fileIcon = "bi-file-earmark-arrow-down";
+                      if (att.mimetype?.includes("pdf")) fileIcon = "bi-file-earmark-pdf-fill text-danger";
+                      else if (att.mimetype?.includes("image")) fileIcon = "bi-file-earmark-image-fill text-primary";
+                      else if (att.mimetype?.includes("word") || att.mimetype?.includes("msword")) fileIcon = "bi-file-earmark-word-fill text-info";
+                      else if (att.mimetype?.includes("excel") || att.mimetype?.includes("sheet")) fileIcon = "bi-file-earmark-excel-fill text-success";
+                      
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => handleDownloadAttachment(att.downloadUrl, att.filename)}
+                          className="attachment-download-btn"
+                          title={`Download ${att.filename}`}
+                        >
+                          <i className={`bi ${fileIcon}`}></i>
+                          <span className="filename-text">{att.filename}</span>
+                          <span className="filesize-text">({(att.size / 1024).toFixed(1)} KB)</span>
+                          <i className="bi bi-download download-arrow"></i>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="notice-footer">
                 <span className="notice-author">By: {notice.author}</span>
                 {!notice.read && (

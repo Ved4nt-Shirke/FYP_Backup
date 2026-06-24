@@ -88,7 +88,7 @@ const CiannDetailPage = () => {
             <p>INST. CODE: 0568</p>
           </div>
 
-          <div className="ciann-details-grid">
+          <div className="ciann-details-grid" style={{ marginTop: '75px' }}>
             <div className="detail-row">
               <span className="label">Name of Subject Teacher</span>
               <span className="value">{localStorage.getItem("facultyName") || username}</span>

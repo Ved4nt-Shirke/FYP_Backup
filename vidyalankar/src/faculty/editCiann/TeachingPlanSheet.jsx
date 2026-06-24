@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import SecondarySidebar from "./SecondarySidebar";
 import { config, getApiUrl } from "../../config/api";
 import "./WeekwisePlan1.css";
@@ -86,6 +87,37 @@ const TloMultiSelect = ({
     setPlans(updated);
   };
 
+  const triggerRef = useRef(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 320, openUpward: false });
+
+  const updateCoords = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const dropdownHeight = 220;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const openUpward = spaceBelow < dropdownHeight && rect.top > dropdownHeight;
+      setCoords({
+        top: openUpward ? rect.top - dropdownHeight - 4 : rect.bottom + 4,
+        left: rect.left,
+        width: Math.max(rect.width, 320),
+        openUpward,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updateCoords();
+      const handleResize = () => {
+        updateCoords();
+      };
+      window.addEventListener("resize", handleResize);
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      };
+    }
+  }, [isOpen]);
+
   if (disabled) {
     return (
       <div
@@ -113,6 +145,7 @@ const TloMultiSelect = ({
   return (
     <div className="tlo-multiselect-container" style={{ position: "relative" }}>
       <div
+        ref={triggerRef}
         className="tlo-multiselect-trigger"
         onClick={(e) => {
           e.stopPropagation();
@@ -149,24 +182,25 @@ const TloMultiSelect = ({
         <span style={{ fontSize: "10px", marginLeft: "8px" }}>▼</span>
       </div>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <div
           className="tlo-multiselect-dropdown"
           onClick={(e) => e.stopPropagation()}
           style={{
-            position: "absolute",
-            bottom: "100%",
-            left: 0,
-            zIndex: 1000,
-            width: "320px",
+            position: "fixed",
+            top: `${coords.top}px`,
+            left: `${coords.left}px`,
+            width: `${coords.width}px`,
+            zIndex: 9999,
             maxHeight: "220px",
             overflowY: "auto",
             backgroundColor: "#fff",
             border: "1px solid #dde3ea",
             borderRadius: "8px",
-            boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.15)",
-            padding: "8px",
-            marginBottom: "4px"
+            boxShadow: coords.openUpward
+              ? "0 -4px 12px rgba(0, 0, 0, 0.15)"
+              : "0 4px 12px rgba(0, 0, 0, 0.15)",
+            padding: "8px"
           }}
         >
           {tlos.length === 0 ? (
@@ -210,7 +244,8 @@ const TloMultiSelect = ({
               );
             })
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -279,9 +314,17 @@ const TeachingPlan = () => {
     const handleOutsideClick = () => {
       setOpenDropdownIndex(null);
     };
+    const handleScroll = (e) => {
+      if (e.target && e.target.closest && e.target.closest(".tlo-multiselect-dropdown")) {
+        return;
+      }
+      setOpenDropdownIndex(null);
+    };
     window.addEventListener("click", handleOutsideClick);
+    window.addEventListener("scroll", handleScroll, true);
     return () => {
       window.removeEventListener("click", handleOutsideClick);
+      window.removeEventListener("scroll", handleScroll, true);
     };
   }, []);
 
@@ -809,13 +852,13 @@ const TeachingPlan = () => {
             <table className="plan-table">
               <thead>
                 <tr>
-                  <th style={{ width: "8%", minWidth: "70px" }}>CO</th>
-                  <th style={{ width: "16%", minWidth: "140px" }}>Chapter</th>
-                  <th style={{ width: "12%", minWidth: "100px" }}>TLO</th>
-                  <th style={{ width: "20%", minWidth: "160px" }}>Sub-Topic</th>
-                  <th style={{ width: "24%", minWidth: "180px" }}>Date</th>
-                  <th style={{ width: "16%", minWidth: "130px" }}>Teaching Method</th>
-                  <th style={{ width: "4%", minWidth: "50px" }}>Action</th>
+                  <th style={{ width: "12%" }}>CO</th>
+                  <th style={{ width: "20%" }}>Chapter</th>
+                  <th style={{ width: "13%" }}>TLO</th>
+                  <th style={{ width: "20%" }}>Sub-Topic</th>
+                  <th style={{ width: "17%" }}>Start Date</th>
+                  <th style={{ width: "13%" }}>Teaching Method</th>
+                  <th style={{ width: "5%" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -832,12 +875,12 @@ const TeachingPlan = () => {
                           setPlans(updated);
                         }}
                         disabled={!modalWeek}
-                        className="form-input"
+                        className="form-input co-select"
                       >
                         <option value="">Select CO</option>
                         {coData.map((co) => (
                           <option key={co.coNumber} value={co.coNumber}>
-                            {co.coNumber}
+                            {co.coNumber}{co.coDescription ? ` - ${co.coDescription}` : ""}
                           </option>
                         ))}
                       </select>
@@ -852,7 +895,7 @@ const TeachingPlan = () => {
                           setPlans(updated);
                         }}
                         disabled={!modalWeek || chaptersLoading || chapterOptions.length <= 1}
-                        className="form-input"
+                        className="form-input chapter-select"
                       >
                         <option value="">Select Chapter</option>
                         {chapterOptions.slice(1).map((opt, optIndex) => (
@@ -862,7 +905,7 @@ const TeachingPlan = () => {
                         ))}
                       </select>
                     </td>
-                    <td style={{ width: "12%", minWidth: "100px" }}>
+                    <td>
                       <TloMultiSelect
                         plan={plan}
                         index={index}
@@ -895,7 +938,7 @@ const TeachingPlan = () => {
                         style={{ width: "100%", minWidth: "160px" }}
                       />
                     </td>
-                    <td style={{ width: "16%", minWidth: "130px" }}>
+                    <td>
                       <input
                         type="text"
                         placeholder="Teaching Method"

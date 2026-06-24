@@ -46,7 +46,7 @@ const tloLloSchema = new mongoose.Schema(
   }
 );
 
-// Unique index: one document per faculty, ciann, and subject
-tloLloSchema.index({ facultyId: 1, ciannId: 1, subjectId: 1 }, { unique: true });
+// Unique index: one document per subject
+tloLloSchema.index({ subjectId: 1 }, { unique: true });
 
 module.exports = mongoose.model("TloLlo", tloLloSchema);

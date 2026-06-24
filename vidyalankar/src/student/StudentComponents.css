@@ -495,3 +495,191 @@
 .mark-as-read-btn:hover {
   background-color: #4338ca;
 }
+
+/* Premium Student Notices Styling Upgrade */
+.notice-card.unread {
+  border-left: 4px solid #4f46e5;
+  background: linear-gradient(to right, #fcfdff, #ffffff);
+}
+
+.notice-source-tag {
+  background-color: #f1f5f9;
+  color: #334155;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid #e2e8f0;
+  margin-right: 4px;
+  display: inline-block;
+}
+
+/* Student Badges for Notice types */
+.student-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  text-transform: capitalize;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+}
+
+.student-badge.general {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.student-badge.urgent {
+  background-color: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
+  animation: noticePulse 2.5s infinite;
+}
+
+@keyframes noticePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.student-badge.exam {
+  background-color: #eef2ff;
+  color: #4f46e5;
+  border: 1px solid #c7d2fe;
+}
+
+.student-badge.fee {
+  background-color: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.student-badge.event {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.student-badge.holiday {
+  background-color: #fdf2f8;
+  color: #db2777;
+  border: 1px solid #fbcfe8;
+}
+
+.student-badge.scholarship {
+  background-color: #ecfeff;
+  color: #0891b2;
+  border: 1px solid #a5f3fc;
+}
+
+.student-badge.circular {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+}
+
+/* Notice unread badge dot */
+.notice-unread-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: #10b981;
+  font-weight: 700;
+  background-color: #ecfdf5;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #a7f3d0;
+}
+
+.notice-unread-dot .dot {
+  width: 6px;
+  height: 6px;
+  background-color: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
+}
+
+/* Student notice attachments styling */
+.student-notice-attachments {
+  margin: 1.2rem 0;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.student-notice-attachments .attachments-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.student-notice-attachments .attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.attachment-download-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 0.82rem;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.attachment-download-btn:hover {
+  border-color: #4f46e5;
+  background-color: #f5f3ff;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.08);
+}
+
+.attachment-download-btn i {
+  font-size: 1.15rem;
+}
+
+.attachment-download-btn .filename-text {
+  flex-grow: 1;
+  font-weight: 550;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #334155;
+}
+
+.attachment-download-btn .filesize-text {
+  color: #64748b;
+  font-size: 0.75rem;
+  margin-right: 0.5rem;
+}
+
+.attachment-download-btn .download-arrow {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.attachment-download-btn:hover .download-arrow {
+  color: #4f46e5;
+  transform: translateY(1.5px);
+}

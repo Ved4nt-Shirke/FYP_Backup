@@ -137,38 +137,51 @@ router.get('/notices', verifyStudent, async (req, res) => {
 
     const student = await Student.findOne({
       username: { $regex: new RegExp(`^${normalizedUsername}$`, 'i') },
-    }).select('division');
+    }).select('division departmentId divisionId academicYear enrollmentNo');
 
-    const studentDivision = String(student?.division || '').trim();
-    const college = String(req.user.college || '').toUpperCase();
-
-    const divisionScope = [
-      { division: { $exists: false } },
-      { division: null },
-      { division: '' },
-    ];
-
-    if (studentDivision) {
-      divisionScope.push({
-        division: { $regex: new RegExp(`^${studentDivision}$`, 'i') },
-      });
+    if (!student) {
+      return res.status(404).json({ message: 'Student record not found' });
     }
 
-    const notices = await Notice.find({
+    const college = String(req.user.college || '').toUpperCase();
+    const now = new Date();
+
+    const query = {
       college,
-      $or: divisionScope,
-    }).sort({ createdAt: -1 });
+      scheduledAt: { $lte: now },
+      $or: [
+        { expiresAt: { $exists: false } },
+        { expiresAt: null },
+        { expiresAt: { $gt: now } }
+      ],
+      $or: [
+        { targetType: "all" },
+        { targetType: "all-students" },
+        { targetType: "particular-student", targetStudents: { $in: [req.user.username, student.enrollmentNo] } },
+        ...(student.departmentId ? [{ targetType: "departments", targetDepartments: student.departmentId }] : []),
+        ...(student.divisionId ? [{ targetType: "divisions", targetDivisions: student.divisionId }] : []),
+        ...(student.academicYear ? [{ targetType: "academic-year", targetAcademicYears: student.academicYear }] : [])
+      ]
+    };
+
+    const notices = await Notice.find(query).sort({ scheduledAt: -1, createdAt: -1 });
 
     const formattedNotices = notices.map((notice) => ({
       _id: notice._id,
       title: notice.title,
       content: notice.content,
-      date: notice.createdAt,
-      category: notice.source || 'faculty',
+      date: notice.scheduledAt || notice.createdAt,
+      category: notice.noticeType || notice.source || 'general',
       source: notice.source || 'faculty',
-      priority: 'medium',
+      priority: notice.noticeType === 'urgent' ? 'high' : 'medium',
       author: notice.faculty,
-      read: false,
+      read: notice.readBy.some((r) => String(r.userId) === String(req.user._id)),
+      attachments: (notice.attachments || []).map((att, idx) => ({
+        filename: att.filename,
+        size: att.size,
+        mimetype: att.mimetype,
+        downloadUrl: `/api/office/notices/file/${notice._id}/${idx}`
+      }))
     }));
 
     res.json(formattedNotices);
@@ -181,8 +194,21 @@ router.get('/notices', verifyStudent, async (req, res) => {
 // POST mark notice as read
 router.post('/notices/:id/read', verifyStudent, async (req, res) => {
   try {
-    // In a real implementation, this would update the notice in the database
-    res.json({ message: 'Notice marked as read' });
+    const notice = await Notice.findById(req.params.id);
+    if (!notice) {
+      return res.status(404).json({ message: 'Notice not found' });
+    }
+
+    const alreadyRead = notice.readBy.some((r) => String(r.userId) === String(req.user._id));
+    if (!alreadyRead) {
+      notice.readBy.push({
+        userId: req.user._id,
+        readAt: new Date()
+      });
+      await notice.save();
+    }
+
+    res.json({ message: 'Notice marked as read', success: true });
   } catch (err) {
     console.error('Error marking notice as read:', err);
     res.status(500).json({ message: 'Failed to mark notice as read' });

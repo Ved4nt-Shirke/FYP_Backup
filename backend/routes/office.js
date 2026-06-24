@@ -1,5 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
 const Student = require("../models/Student");
 const { ensureStudentHistory, resolveStudents } = require("../utils/studentHistoryHelper");
 const { generateUniqueUsername } = require("../utils/usernameGenerator");
@@ -10,9 +13,11 @@ const Department = require("../models/Department");
 const Course = require("../models/Course");
 const Division = require("../models/Division");
 const Institution = require("../models/Institution");
+const Faculty = require("../models/Faculty");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { authenticate, authorizeOffice } = require("../middleware/auth");
+
 
 const generateSafePassword = () => {
   const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -934,21 +939,267 @@ router.delete(
   },
 );
 
+// ============================================
+// NOTICES MANAGEMENT & ANALYTICS (Office/Faculty)
+// ============================================
+
+const noticesUploadsDir = path.join(__dirname, "../uploads/notices");
+if (!fs.existsSync(noticesUploadsDir)) {
+  fs.mkdirSync(noticesUploadsDir, { recursive: true });
+}
+
+const noticeStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, noticesUploadsDir);
+  },
+  filename: (_req, file, cb) => {
+    const cleaned = String(file.originalname || "attachment")
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .slice(-100);
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${uniqueSuffix}-${cleaned}`);
+  },
+});
+
+const noticeUpload = multer({
+  storage: noticeStorage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit per file
+  fileFilter: (_req, file, cb) => {
+    const allowed = [
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ];
+
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Unsupported file type. Only PDF, Images, DOC, and Excel files are allowed."));
+    }
+  },
+});
+
+const parseJsonArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  try {
+    return JSON.parse(value);
+  } catch (e) {
+    if (typeof value === "string") {
+      return value.split(",").map(item => item.trim()).filter(Boolean);
+    }
+    return [value];
+  }
+};
+
+const checkStudentTargeted = (notice, student) => {
+  if (notice.targetType === "all" || notice.targetType === "all-students") {
+    return true;
+  }
+  if (notice.targetType === "particular-student") {
+    return (
+      (notice.targetStudents || []).includes(student.username) ||
+      (notice.targetStudents || []).includes(student.enrollmentNo)
+    );
+  }
+  if (notice.targetType === "departments") {
+    return (notice.targetDepartments || []).some(
+      (deptId) => String(deptId) === String(student.departmentId)
+    );
+  }
+  if (notice.targetType === "divisions") {
+    return (notice.targetDivisions || []).some(
+      (divId) => String(divId) === String(student.divisionId)
+    );
+  }
+  if (notice.targetType === "academic-year") {
+    return (notice.targetAcademicYears || []).includes(student.academicYear);
+  }
+  return false;
+};
+
+const checkFacultyTargeted = (notice, faculty) => {
+  if (notice.targetType === "all" || notice.targetType === "all-faculty") {
+    return true;
+  }
+  if (notice.targetType === "particular-faculty") {
+    return (
+      (notice.targetFaculties || []).includes(faculty.generatedUsername) ||
+      (notice.targetFaculties || []).includes(faculty.email)
+    );
+  }
+  if (notice.targetType === "departments") {
+    return (notice.targetDepartments || []).some(
+      (deptId) => String(deptId) === String(faculty.department)
+    );
+  }
+  return false;
+};
+
 /**
- * GET /api/faculty/notices
- * Get notices for faculty
+ * GET /api/office/notices/analytics
+ * Get statistics for the office notices dashboard
+ */
+router.get("/notices/analytics", authenticate, async (req, res) => {
+  try {
+    const college = req.user.college || "VP";
+    const now = new Date();
+
+    // 1. Total notices sent by office
+    const totalNoticesSent = await Notice.countDocuments({ college, source: "office" });
+
+    // 2. Today's notices
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const todayNotices = await Notice.countDocuments({
+      college,
+      source: "office",
+      createdAt: { $gte: startOfToday }
+    });
+
+    // 3. Department-wise notices count
+    const departments = await Department.find({ institution: college });
+    const departmentWiseCount = {};
+    for (const dept of departments) {
+      const count = await Notice.countDocuments({
+        college,
+        $or: [
+          { targetType: { $in: ["all", "all-students", "all-faculty"] } },
+          { targetType: "departments", targetDepartments: dept._id }
+        ]
+      });
+      departmentWiseCount[dept.name] = count;
+    }
+
+    // 4. Most active department (grouped by creator's department)
+    const facultyNotices = await Notice.find({ college, source: "faculty" });
+    const deptActivity = {};
+    for (const notice of facultyNotices) {
+      const facultyMember = await Faculty.findOne({ generatedUsername: notice.faculty });
+      if (facultyMember && facultyMember.department) {
+        const dept = await Department.findById(facultyMember.department);
+        if (dept) {
+          deptActivity[dept.name] = (deptActivity[dept.name] || 0) + 1;
+        }
+      }
+    }
+    let mostActiveDepartment = "N/A";
+    let maxCount = 0;
+    Object.entries(deptActivity).forEach(([name, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        mostActiveDepartment = name;
+      }
+    });
+
+    // 5. Pending unread notices (active notices unread by targeted students)
+    const activeOfficeNotices = await Notice.find({
+      college,
+      source: "office",
+      $or: [
+        { expiresAt: { $exists: false } },
+        { expiresAt: null },
+        { expiresAt: { $gt: now } }
+      ]
+    });
+
+    let pendingUnread = 0;
+    for (const notice of activeOfficeNotices) {
+      let targetedStudentsCount = 0;
+      if (notice.targetType === "all" || notice.targetType === "all-students") {
+        targetedStudentsCount = await Student.countDocuments({ institution: college });
+      } else if (notice.targetType === "particular-student") {
+        targetedStudentsCount = notice.targetStudents.length;
+      } else if (notice.targetType === "departments") {
+        targetedStudentsCount = await Student.countDocuments({
+          institution: college,
+          departmentId: { $in: notice.targetDepartments }
+        });
+      } else if (notice.targetType === "divisions") {
+        targetedStudentsCount = await Student.countDocuments({
+          institution: college,
+          divisionId: { $in: notice.targetDivisions }
+        });
+      } else if (notice.targetType === "academic-year") {
+        targetedStudentsCount = await Student.countDocuments({
+          institution: college,
+          academicYear: { $in: notice.targetAcademicYears }
+        });
+      }
+
+      const readCount = notice.readBy.length;
+      const unreadForThisNotice = Math.max(0, targetedStudentsCount - readCount);
+      pendingUnread += unreadForThisNotice;
+    }
+
+    res.json({
+      success: true,
+      analytics: {
+        totalNoticesSent,
+        todayNotices,
+        pendingUnread,
+        mostActiveDepartment,
+        departmentWiseCount
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching notices analytics:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * GET /api/office/notices/target-options
+ * Get lists of departments, divisions, and academic years for targeting
+ */
+router.get("/notices/target-options", authenticate, async (req, res) => {
+  try {
+    const college = req.user.college || "VP";
+
+    const [departments, divisions] = await Promise.all([
+      Department.find({ institution: college }).select("_id name code").sort({ name: 1 }),
+      Division.find({ institution: college }).select("_id name").sort({ name: 1 })
+    ]);
+
+    const divisionNames = [...new Set(divisions.map(d => d.name))].sort();
+
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 1;
+    const academicYears = Array.from({ length: 8 }, (_, index) => {
+      const year = startYear + index;
+      return `${year}-${String(year + 1).slice(-2)}`;
+    });
+
+    res.json({
+      success: true,
+      departments,
+      divisions,
+      divisionNames,
+      academicYears
+    });
+  } catch (error) {
+    console.error("Error fetching notice target options:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * GET /api/office/notices
+ * Get notices
  */
 router.get("/notices", authenticate, async (req, res) => {
   try {
-    const { faculty } = req.query;
-    const college = req.user.college || localStorage?.getItem("college") || "VP";
+    const college = req.user.college || "VP";
+    const notices = await Notice.find({ college })
+      .populate("targetDepartments", "name code")
+      .populate("targetDivisions", "name")
+      .sort({ createdAt: -1 });
 
-    let query = { college };
-    if (faculty) {
-      query.faculty = faculty;
-    }
-
-    const notices = await Notice.find(query).sort({ createdAt: -1 });
     res.json({ success: true, notices });
   } catch (error) {
     console.error("Error fetching notices:", error);
@@ -957,25 +1208,57 @@ router.get("/notices", authenticate, async (req, res) => {
 });
 
 /**
- * POST /api/faculty/notices
- * Create a new notice
+ * POST /api/office/notices
+ * Create a new notice with targeting options and attachments
  */
-router.post("/notices", authenticate, async (req, res) => {
+router.post("/notices", authenticate, noticeUpload.array("attachments", 10), async (req, res) => {
   try {
-    const { title, content, division, faculty } = req.body;
+    const {
+      title,
+      content,
+      noticeType,
+      targetType,
+      targetFaculties,
+      targetStudents,
+      targetDepartments,
+      targetDivisions,
+      targetAcademicYears,
+      scheduledAt,
+      expiresAt,
+      division,
+      faculty
+    } = req.body;
+
     const college = req.user.college || "VP";
 
     if (!title || !content) {
       return res.status(400).json({ success: false, message: "Title and content are required" });
     }
 
+    const attachments = (req.files || []).map(file => ({
+      filename: file.originalname,
+      path: file.path,
+      mimetype: file.mimetype,
+      size: file.size
+    }));
+
     const notice = new Notice({
-      title,
-      content,
-      division,
+      title: title.trim(),
+      content: content.trim(),
       faculty: faculty || req.user.username,
       source: "office",
       college,
+      noticeType: noticeType || "general",
+      targetType: targetType || "all",
+      targetFaculties: parseJsonArray(targetFaculties),
+      targetStudents: parseJsonArray(targetStudents),
+      targetDepartments: parseJsonArray(targetDepartments),
+      targetDivisions: parseJsonArray(targetDivisions),
+      targetAcademicYears: parseJsonArray(targetAcademicYears),
+      scheduledAt: scheduledAt ? new Date(scheduledAt) : new Date(),
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      division: division || "",
+      attachments
     });
 
     await notice.save();
@@ -987,29 +1270,73 @@ router.post("/notices", authenticate, async (req, res) => {
 });
 
 /**
- * PUT /api/faculty/notices/:id
- * Update a notice
+ * PUT /api/office/notices/:id
+ * Update a notice with targeting options and attachments
  */
-router.put("/notices/:id", authenticate, async (req, res) => {
+router.put("/notices/:id", authenticate, noticeUpload.array("attachments", 10), async (req, res) => {
   try {
-    const { title, content, division } = req.body;
+    const {
+      title,
+      content,
+      noticeType,
+      targetType,
+      targetFaculties,
+      targetStudents,
+      targetDepartments,
+      targetDivisions,
+      targetAcademicYears,
+      scheduledAt,
+      expiresAt,
+      division,
+      existingAttachments
+    } = req.body;
 
-    const notice = await Notice.findByIdAndUpdate(
-      req.params.id,
-      {
-        title,
-        content,
-        division,
-        source: "office",
-        updatedAt: new Date(),
-      },
-      { new: true }
-    );
-
+    const notice = await Notice.findById(req.params.id);
     if (!notice) {
       return res.status(404).json({ success: false, message: "Notice not found" });
     }
 
+    if (title) notice.title = title.trim();
+    if (content) notice.content = content.trim();
+    if (noticeType) notice.noticeType = noticeType;
+    if (targetType) notice.targetType = targetType;
+    
+    notice.targetFaculties = parseJsonArray(targetFaculties);
+    notice.targetStudents = parseJsonArray(targetStudents);
+    notice.targetDepartments = parseJsonArray(targetDepartments);
+    notice.targetDivisions = parseJsonArray(targetDivisions);
+    notice.targetAcademicYears = parseJsonArray(targetAcademicYears);
+    
+    if (scheduledAt) notice.scheduledAt = new Date(scheduledAt);
+    notice.expiresAt = expiresAt ? new Date(expiresAt) : null;
+    if (division !== undefined) notice.division = division;
+
+    const newAttachments = (req.files || []).map(file => ({
+      filename: file.originalname,
+      path: file.path,
+      mimetype: file.mimetype,
+      size: file.size
+    }));
+
+    let remainingAttachments = [];
+    if (existingAttachments) {
+      remainingAttachments = parseJsonArray(existingAttachments);
+    }
+
+    // Clean up deleted files from disk
+    const keptPaths = remainingAttachments.map(att => att.path);
+    const deletedAttachments = notice.attachments.filter(att => !keptPaths.includes(att.path));
+    for (const delAtt of deletedAttachments) {
+      const fullPath = path.resolve(delAtt.path);
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+      }
+    }
+
+    notice.attachments = remainingAttachments.concat(newAttachments);
+    notice.updatedAt = new Date();
+
+    await notice.save();
     res.json({ success: true, message: "Notice updated successfully", notice });
   } catch (error) {
     console.error("Error updating notice:", error);
@@ -1018,17 +1345,25 @@ router.put("/notices/:id", authenticate, async (req, res) => {
 });
 
 /**
- * DELETE /api/faculty/notices/:id
- * Delete a notice
+ * DELETE /api/office/notices/:id
+ * Delete a notice and its file attachments
  */
 router.delete("/notices/:id", authenticate, async (req, res) => {
   try {
-    const notice = await Notice.findByIdAndDelete(req.params.id);
-
+    const notice = await Notice.findById(req.params.id);
     if (!notice) {
       return res.status(404).json({ success: false, message: "Notice not found" });
     }
 
+    // Delete attached files from disk
+    for (const att of notice.attachments || []) {
+      const fullPath = path.resolve(att.path);
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+      }
+    }
+
+    await Notice.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: "Notice deleted successfully" });
   } catch (error) {
     console.error("Error deleting notice:", error);
@@ -1036,4 +1371,64 @@ router.delete("/notices/:id", authenticate, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/office/notices/file/:noticeId/:attachmentIndex
+ * Securely serve attachments to targeted users
+ */
+router.get("/notices/file/:noticeId/:attachmentIndex", authenticate, async (req, res) => {
+  try {
+    const { noticeId, attachmentIndex } = req.params;
+    const notice = await Notice.findById(noticeId);
+    if (!notice) {
+      return res.status(404).json({ success: false, message: "Notice not found" });
+    }
+
+    const userRole = req.user.role;
+    const userCollege = req.user.college.toUpperCase();
+
+    if (notice.college.toUpperCase() !== userCollege) {
+      return res.status(403).json({ success: false, message: "Unauthorized access" });
+    }
+
+    if (userRole === "student") {
+      const student = await Student.findOne({ username: req.user.username });
+      if (!student) {
+        return res.status(404).json({ success: false, message: "Student record not found" });
+      }
+      if (!checkStudentTargeted(notice, student)) {
+        return res.status(403).json({ success: false, message: "Access denied. You are not targeted by this notice." });
+      }
+    } else if (userRole === "faculty") {
+      const faculty = await Faculty.findOne({ generatedUsername: req.user.username });
+      if (!faculty) {
+        return res.status(404).json({ success: false, message: "Faculty record not found" });
+      }
+      if (!checkFacultyTargeted(notice, faculty)) {
+        return res.status(403).json({ success: false, message: "Access denied. You are not targeted by this notice." });
+      }
+    }
+
+    const attachment = notice.attachments[attachmentIndex];
+    if (!attachment) {
+      return res.status(404).json({ success: false, message: "Attachment not found" });
+    }
+
+    const absolutePath = path.resolve(attachment.path);
+    if (!fs.existsSync(absolutePath)) {
+      return res.status(404).json({ success: false, message: "Stored file missing" });
+    }
+
+    res.setHeader("Content-Type", attachment.mimetype || "application/octet-stream");
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${encodeURIComponent(attachment.filename || "attachment")}"`
+    );
+    return res.sendFile(absolutePath);
+  } catch (error) {
+    console.error("Error serving notice file:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;
+

@@ -492,7 +492,7 @@
 .tps-modal .plan-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1150px !important;
+  min-width: 980px !important;
   table-layout: fixed;
   border: 0;
 }
@@ -519,45 +519,54 @@
 /* Explicit widths and min-widths to prevent squeezing and optimize vacant space */
 .tps-modal .plan-table th:nth-child(1),
 .tps-modal .plan-table td:nth-child(1) {
-  width: 8% !important;
-  min-width: 70px !important;
+  width: 12% !important;
+  min-width: 110px !important;
+}
+
+.tps-modal select.co-select {
+  max-width: 120px !important;
 }
 
 .tps-modal .plan-table th:nth-child(2),
 .tps-modal .plan-table td:nth-child(2) {
-  width: 16% !important;
-  min-width: 130px !important;
+  width: 20% !important;
+  min-width: 180px !important;
+}
+
+.tps-modal select.chapter-select {
+  max-width: 180px !important;
 }
 
 .tps-modal .plan-table th:nth-child(3),
 .tps-modal .plan-table td:nth-child(3) {
-  width: 10% !important;
-  min-width: 85px !important;
+  width: 13% !important;
+  min-width: 120px !important;
 }
 
 .tps-modal .plan-table th:nth-child(4),
 .tps-modal .plan-table td:nth-child(4) {
-  width: 18% !important;
-  min-width: 140px !important;
+  width: 20% !important;
+  min-width: 180px !important;
 }
 
 .tps-modal .plan-table th:nth-child(5),
 .tps-modal .plan-table td:nth-child(5) {
-  width: 24% !important;
-  min-width: 180px !important;
+  width: 17% !important;
+  min-width: 155px !important;
 }
 
 .tps-modal .plan-table th:nth-child(6),
 .tps-modal .plan-table td:nth-child(6) {
-  width: 18% !important;
-  min-width: 140px !important;
+  width: 13% !important;
+  min-width: 120px !important;
 }
 
 .tps-modal .plan-table th:nth-child(7),
 .tps-modal .plan-table td:nth-child(7) {
-  width: 6% !important;
+  width: 5% !important;
   min-width: 50px !important;
 }
+
 
 .tps-modal .plan-table select,
 .tps-modal .plan-table input {
