@@ -196,6 +196,67 @@ const EditCiann = () => {
     }
   };
 
+  const getDepartment = (ciann) => {
+    if (!ciann) return "N/A";
+    const possibleFields = [
+      "department",
+      "dept",
+      "departmentName",
+      "Department",
+      "DEPARTMENT",
+      "branch",
+      "Branch",
+      "stream",
+      "Stream",
+      "course",
+      "Course",
+    ];
+
+    for (const field of possibleFields) {
+      const value = ciann[field];
+      if (value) {
+        if (typeof value === "object") {
+          if (value.name) return value.name;
+          if (value.departmentName) return value.departmentName;
+          if (value.department) return value.department;
+          if (value.value) return value.value;
+        } else if (typeof value === "string" && value.trim() !== "") {
+          return value;
+        }
+      }
+    }
+
+    const nestedPaths = [
+      ciann?.academicInfo?.department,
+      ciann?.courseDetails?.department,
+      ciann?.details?.department,
+      ciann?.info?.department,
+      ciann?.subjectDetails?.department,
+      ciann?.class?.department,
+      ciann?.subject?.department,
+    ];
+
+    for (const path of nestedPaths) {
+      if (path) {
+        if (typeof path === "object" && path.name) return path.name;
+        if (typeof path === "string" && path.trim() !== "") return path;
+      }
+    }
+    return "N/A";
+  };
+
+  const getClassAndDiv = (ciann) => {
+    if (!ciann) return "N/A";
+    const deptCode = ciann.department?.code || ciann.dept?.code || ciann.departmentCode || "";
+    const sem = ciann.semester || ciann.sem || "";
+    const scheme = ciann.scheme || "";
+    const div = ciann.division || ciann.div || "";
+    if (deptCode || sem || scheme || div) {
+      return `${deptCode}${sem}${scheme}${div}`.toUpperCase();
+    }
+    return "N/A";
+  };
+
   const renderCiannCard = (ciannData) => {
     const ownerUsername = (ciannData?.ownerUsername || '').trim().toLowerCase();
     const accessLevel = ciannData?.accessLevel;
@@ -245,14 +306,15 @@ const EditCiann = () => {
                   </span>
                 )}
               </div>
-              <div className="card-text">
+              <div className="card-text text-center">
                 <strong>{ciannData.subject?.name}</strong>
                 <span className="subject-code">({ciannData.subject?.code})</span>
               </div>
-              <div className="card-text">
-                <span className="division-label">Division:</span> <strong>{ciannData.division}</strong>
+              <div className="card-text text-center mt-2">
+                <span className="division-label">Class & Div:</span> <strong>{getClassAndDiv(ciannData)}</strong>
               </div>
-              <div className="card-text text-muted small">
+
+              <div className="card-text text-muted small mt-auto">
                 Academic Year: <strong>{ciannData.academicYear}</strong>
               </div>
               {ciannData.sharedWith && ciannData.sharedWith.length > 0 && !isArchived && (

@@ -16,6 +16,16 @@ const PracticalTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [ciannData, setCiannData] = useState(null);
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] = useState(false);
+
+  useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
   const [program, setProgram] = useState("");
   const [className, setClassName] = useState("");
   const [course, setCourse] = useState("");

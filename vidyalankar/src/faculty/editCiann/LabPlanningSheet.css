@@ -935,18 +935,10 @@
 /* --- TeachingPlan parity overrides for LabPlanning (no cross-linking) --- */
 /* Plan container to match TeachingPlan look */
 .labplanning-main-content .plan-container {
-  width: 95% !important;
-  max-width: 1110px !important;
-  margin: -5px 0 0 190px !important;
-  overflow-x: hidden;
-  background-color: #fefefe;
-  border: 1px solid #ccc;
-  border-radius: 0px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 18px;
-  height: auto !important;
-  min-height: auto !important;
-  padding-bottom: 12px;
+  border-radius: 16px !important;
+  border: 1px solid var(--card-border, #d8e3f2) !important;
+  box-shadow: 0 12px 30px rgba(13, 35, 72, 0.08) !important;
+  background: var(--card-bg, #ffffff) !important;
 }
 
 /* Nudge for internal layout previously centered */
@@ -1316,30 +1308,7 @@
   }
 }
 
-@media (min-width: 769px) {
-  .lab-layout .teaching-main-row {
-    margin-left: 0 !important;
-    gap: 4px !important;
-    padding: 8px 8px 12px 0 !important;
-  }
 
-  .lab-layout .syllabus-secondary-sidebar-wrapper {
-    width: 200px !important;
-    min-width: 200px !important;
-    margin-right: 0 !important;
-  }
-
-  .lab-layout .labplanning-main-content {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
-  }
-
-  .lab-layout .labplanning-main-content .plan-container {
-    margin: 0 !important;
-    width: min(100%, 1080px) !important;
-    max-width: 1080px !important;
-  }
-}
 
 /* Final header-safe override for Edit CIANN */
 .lab-layout {
@@ -1361,22 +1330,6 @@
 }
 
 .lab-layout .labplanning-main-content {
-  margin-left: 290px !important;
-  margin-top: 0 !important;
-  min-height: calc(100dvh - var(--header-height, 60px)) !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-}
-
-@media (max-width: 1024px) {
-  .lab-layout .labplanning-main-content {
-    margin-left: 300px !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .lab-layout .labplanning-main-content {
-    margin-left: 0 !important;
-    min-height: auto !important;
-  }
 }

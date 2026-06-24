@@ -283,22 +283,6 @@ body {
 }
 
 .student-main-content {
-  margin-left: 290px !important;
-  margin-top: 0 !important;
-  min-height: calc(100dvh - var(--header-height, 60px));
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-@media (max-width: 1024px) {
-  .student-main-content {
-    margin-left: 300px !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .student-main-content {
-    margin-left: 0 !important;
-    min-height: auto;
-  }
 }

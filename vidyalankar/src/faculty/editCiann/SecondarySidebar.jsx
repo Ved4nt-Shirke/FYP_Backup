@@ -69,7 +69,7 @@ const SecondarySidebar = ({
   const location = useLocation();
   const [showCiannSelector, setShowCiannSelector] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 769);
   const [openSubMenus, setOpenSubMenus] = useState({});
 
   // Collaboration and notifications states
@@ -359,15 +359,14 @@ const SecondarySidebar = ({
 
   const sidebarContent = (
     <>
-      {isMobile && isSecondarySidebarVisible && (
-        <div
-          className="secondary-sidebar-overlay"
-          onClick={() => setIsSecondarySidebarVisible(false)}
-        ></div>
-      )}
       <div
         className={`secondary-sidebar-wrapper ciann-secondary-sidebar-wrapper ${isMobile && isSecondarySidebarVisible ? "visible" : ""
           }`}
+        onClick={(e) => {
+          if (isMobile && e.target === e.currentTarget) {
+            setIsSecondarySidebarVisible(false);
+          }
+        }}
       >
         <div className={sidebarClasses}>
           <div className="secondary-sidebar-header">

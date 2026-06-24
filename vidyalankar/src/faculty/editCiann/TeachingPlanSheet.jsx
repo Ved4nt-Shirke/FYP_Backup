@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import SecondarySidebar from "./SecondarySidebar";
 import { config, getApiUrl } from "../../config/api";
+import { formatDateDdMmYyyy, toIsoDateString } from "../../utils/dateFormat";
 import "./WeekwisePlan1.css";
 import "./TeachingPlanSheet.css";
 import "./EditCiannModern.css";
@@ -47,6 +48,58 @@ const modalStyles = {
     right: 20,
     zIndex: 10, // Ensure it's above other elements
   },
+};
+
+const StartDateInput = ({ value, onChange, disabled, className = "form-input" }) => {
+  const pickerRef = useRef(null);
+  const isoValue = toIsoDateString(value);
+  const displayValue = formatDateDdMmYyyy(isoValue);
+
+  const openPicker = () => {
+    if (!disabled && pickerRef.current?.showPicker) {
+      pickerRef.current.showPicker();
+    } else if (!disabled) {
+      pickerRef.current?.focus();
+    }
+  };
+
+  return (
+    <div className="start-date-field">
+      <input
+        type="text"
+        className={`${className} start-date-text`}
+        value={displayValue}
+        readOnly
+        placeholder="dd-mm-yyyy"
+        disabled={disabled}
+        onClick={openPicker}
+        aria-label="Start date (dd-mm-yyyy)"
+      />
+      <button
+        type="button"
+        className="start-date-picker-btn"
+        onClick={openPicker}
+        disabled={disabled}
+        aria-label="Open date picker"
+        tabIndex={-1}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+          <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </button>
+      <input
+        ref={pickerRef}
+        type="date"
+        className="start-date-native-picker"
+        value={isoValue}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+    </div>
+  );
 };
 
 const TloMultiSelect = ({
@@ -736,11 +789,14 @@ const TeachingPlan = () => {
           <td data-label="Chapter">{p.chapter || ""}</td>
           <td data-label="TLO">{getTloNumbers(p.co, p.tlo)}</td>
           <td data-label="Sub-Topic">{p.subTopic || ""}</td>
-          <td data-label="Start Date">{p.startDate || ""}</td>
-          <td data-label="End Date">
+          <td data-label="Start Date" className="start-date-cell">
+            {formatDateDdMmYyyy(p.startDate)}
+          </td>
+          <td data-label="End Date" className="end-date-cell">
             {(() => {
               const att = attendanceRecords.find((a) => a.topic === p.subTopic);
-              return att && att.date ? att.date : (p.endDate || "");
+              const rawDate = att && att.date ? att.date : (p.endDate || "");
+              return formatDateDdMmYyyy(rawDate);
             })()}
           </td>
           <td data-label="Teaching Method">{p.teachingMethod || ""}</td>
@@ -848,21 +904,30 @@ const TeachingPlan = () => {
 
           <div className="plan-table-wrapper" style={{ overflowX: "auto" }}>
             <table className="plan-table">
+              <colgroup>
+                <col className="tp-col-co" />
+                <col className="tp-col-chapter" />
+                <col className="tp-col-tlo" />
+                <col className="tp-col-subtopic" />
+                <col className="tp-col-start-date" />
+                <col className="tp-col-method" />
+                <col className="tp-col-action" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th style={{ width: "12%" }}>CO</th>
-                  <th style={{ width: "20%" }}>Chapter</th>
-                  <th style={{ width: "13%" }}>TLO</th>
-                  <th style={{ width: "20%" }}>Sub-Topic</th>
-                  <th style={{ width: "17%" }}>Start Date</th>
-                  <th style={{ width: "13%" }}>Teaching Method</th>
-                  <th style={{ width: "5%" }}>Action</th>
+                  <th>CO</th>
+                  <th>Chapter</th>
+                  <th>TLO</th>
+                  <th>Sub-Topic</th>
+                  <th>Start Date</th>
+                  <th>Teaching Method</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {plans.map((plan, index) => (
                   <tr key={index}>
-                    <td>
+                    <td className="co-cell">
                       <select
                         value={plan.co || ""}
                         onChange={(e) => {
@@ -874,10 +939,15 @@ const TeachingPlan = () => {
                         }}
                         disabled={!modalWeek}
                         className="form-input co-select"
+                        title={plan.co || "Select CO"}
                       >
                         <option value="">Select CO</option>
                         {coData.map((co) => (
-                          <option key={co.coNumber} value={co.coNumber}>
+                          <option
+                            key={co.coNumber}
+                            value={co.coNumber}
+                            title={co.coDescription ? `${co.coNumber} - ${co.coDescription}` : co.coNumber}
+                          >
                             {co.coNumber}{co.coDescription ? ` - ${co.coDescription}` : ""}
                           </option>
                         ))}
@@ -925,12 +995,10 @@ const TeachingPlan = () => {
                         className="form-input"
                       />
                     </td>
-                    <td>
-                      <input
-                        type="date"
+                    <td className="start-date-cell">
+                      <StartDateInput
                         value={plan.startDate || ""}
-                        onChange={(e) => handleChange(index, "startDate", e.target.value)}
-                        onFocus={(e) => e.target.showPicker()}
+                        onChange={(val) => handleChange(index, "startDate", val)}
                         disabled={!modalWeek}
                         className="form-input"
                       />

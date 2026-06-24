@@ -24,9 +24,6 @@
 .timetable-main-content {
   flex: 1;
   min-width: 0;
-  margin-left: 290px;
-  padding: 18px 24px 28px;
-  min-height: calc(100dvh - var(--header-height, 60px));
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -273,11 +270,6 @@
 }
 
 @media (max-width: 1024px) {
-  .timetable-main-content {
-    margin-left: 300px;
-    padding: 14px;
-  }
-
   .button-group {
     min-width: 280px;
   }

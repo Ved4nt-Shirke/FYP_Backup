@@ -4,7 +4,7 @@
 .lab-layout,
 .student-layout {
   --main-sidebar-width: var(--sidebar-width, 280px);
-  --ciann-secondary-width: 220px;
+  --ciann-secondary-width: 260px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -28,13 +28,13 @@
 .syllabus-secondary-sidebar-wrapper,
 .student-secondary-sidebar-wrapper {
   position: fixed;
-  top: 60px;
-  left: var(--main-sidebar-width);
+  top: 50px;
+  left: calc(var(--sidebar-width, 240px) + 1rem);
   width: var(--ciann-secondary-width);
   min-width: var(--ciann-secondary-width);
   max-width: var(--ciann-secondary-width);
   height: calc(
-    100vh - 60px
+    100vh - 50px
   ); /* Fill height to prevent content bleeding under */
   overflow-y: auto;
   background: #fff; /* Ensure it covers background */
@@ -50,7 +50,7 @@
 .student-main-content {
   flex: 1;
   /* Pulls content right up against the secondary sidebar */
-  margin-left: calc(var(--main-sidebar-width) + var(--ciann-secondary-width));
+  margin-left: calc(var(--ciann-secondary-width) + 6px);
   margin-top: 60px;
   /* Removed padding-left entirely to eliminate the gap */
   padding: 20px 20px 20px 10px;
@@ -64,6 +64,7 @@
 /* This is likely where the gap is living. We force it to 0 margin-left. */
 .timetable-layout .plan-container,
 .teaching-layout .plan-container,
+.lab-layout .plan-container,
 .student-layout .plan-container {
   margin-left: 0 !important;
   margin-right: 20px !important;
@@ -120,7 +121,7 @@
   }
 
   .timetable-main-content {
-    margin-left: calc(var(--main-sidebar-width) + var(--ciann-secondary-width));
+    margin-left: calc(var(--ciann-secondary-width) + 1rem);
     padding: 15px 15px 15px 5px;
   }
 }

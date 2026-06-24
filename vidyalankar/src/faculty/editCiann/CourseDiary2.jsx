@@ -401,6 +401,7 @@ const CourseDiary2 = () => {
   return (
     <div className="ciann-diary-root" style={styles.layout}>
       <SecondarySidebar
+        ciannData={ciannData}
         isSecondarySidebarVisible={isSecondarySidebarVisible}
         setIsSecondarySidebarVisible={setIsSecondarySidebarVisible}
       />

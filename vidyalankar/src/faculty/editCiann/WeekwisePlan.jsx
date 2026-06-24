@@ -117,7 +117,7 @@ const WeekwisePlan = ({
         const response = await axios.get(`${config.assessments}/batches`, {
           params: { ciannId, division }
         });
-        
+
         if (response.data && response.data.success && Array.isArray(response.data.batches)) {
           setBatches(response.data.batches);
         } else {
@@ -181,7 +181,7 @@ const WeekwisePlan = ({
         console.log("Fetching experiments with payload:", payload);
 
         const response = await axios.post(config.course.experiments, payload);
-        
+
         if (response.data.success && response.data.experiments) {
           setExperiments(response.data.experiments);
           console.log("Fetched experiments:", response.data.experiments);
@@ -253,7 +253,7 @@ const WeekwisePlan = ({
 
   const handleChange = (index, field, value) => {
     const updatedPlans = [...plans];
-    
+
     if (field === "exptNo") {
       // When experiment number changes, auto-fill the experiment name
       const selectedExperiment = experiments.find(
@@ -264,7 +264,7 @@ const WeekwisePlan = ({
     } else {
       updatedPlans[index][field] = value;
     }
-    
+
     setPlans(updatedPlans);
   };
 
@@ -324,6 +324,38 @@ const WeekwisePlan = ({
           border-color: #90caf9;
         }
         .co-badge-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .expt-badges-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+          justify-content: center;
+        }
+        .expt-badge-btn {
+          background-color: #f3f4f6;
+          color: #4b5563;
+          border: 1px solid #d1d5db;
+          border-radius: 4px;
+          padding: 3px 6px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          user-select: none;
+        }
+        .expt-badge-btn:hover:not(:disabled) {
+          background-color: #e5e7eb;
+          color: #1f2937;
+        }
+        .expt-badge-btn.active {
+          background-color: #e8f5e9;
+          color: #2e7d32;
+          border-color: #a5d6a7;
+        }
+        .expt-badge-btn:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
@@ -542,13 +574,13 @@ const WeekwisePlan = ({
         }
         
         /* Column widths */
-        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 8%; }  /* Week No */
-        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 8%; }  /* Batch No */
+        .plan-table th:nth-child(1), .plan-table td:nth-child(1) { width: 5%; }  /* Week No */
+        .plan-table th:nth-child(2), .plan-table td:nth-child(2) { width: 6%; }  /* Batch No */
         .plan-table th:nth-child(3), .plan-table td:nth-child(3) { width: 8%; }  /* CO */
-        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 22%; } /* LLO */
-        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 8%; }  /* Experiment No */
-        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 32%; } /* Experiment Name */
-        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 10%; } /* Planned Date */
+        .plan-table th:nth-child(4), .plan-table td:nth-child(4) { width: 20%; } /* LLO */
+        .plan-table th:nth-child(5), .plan-table td:nth-child(5) { width: 18%; } /* Experiment No */
+        .plan-table th:nth-child(6), .plan-table td:nth-child(6) { width: 31%; } /* Experiment Name */
+        .plan-table th:nth-child(7), .plan-table td:nth-child(7) { width: 8%; }  /* Planned Date */
         .plan-table th:nth-child(8), .plan-table td:nth-child(8) { width: 4%; }  /* Action */
 
         .plan-table input,
@@ -681,10 +713,10 @@ const WeekwisePlan = ({
         </div>
         <div className="weekwise-container flip-animate">
           {loadingExperiments && (
-            <div style={{ 
-              padding: "10px", 
-              background: "#e3f2fd", 
-              borderRadius: "5px", 
+            <div style={{
+              padding: "10px",
+              background: "#e3f2fd",
+              borderRadius: "5px",
               marginBottom: "10px",
               textAlign: "center",
               color: "#1976d2"
@@ -693,10 +725,10 @@ const WeekwisePlan = ({
             </div>
           )}
           {!loadingExperiments && experiments.length === 0 && ciannData && (
-            <div style={{ 
-              padding: "10px", 
-              background: "#fff3cd", 
-              borderRadius: "5px", 
+            <div style={{
+              padding: "10px",
+              background: "#fff3cd",
+              borderRadius: "5px",
               marginBottom: "10px",
               textAlign: "center",
               color: "#856404"
@@ -769,10 +801,10 @@ const WeekwisePlan = ({
                                   nextCOs = [...selectedCOs, co.coNumber];
                                 }
                                 nextCOs.sort();
-                                
+
                                 const updated = [...plans];
                                 updated[i].co = nextCOs.join(", ");
-                                
+
                                 // Build valid LLO labels for remaining selected COs
                                 const validLloLabels = new Set();
                                 coData
@@ -786,7 +818,7 @@ const WeekwisePlan = ({
                                 const currentLlos = plan.llo ? plan.llo.split(",").map(l => l.trim()) : [];
                                 const validLlos = currentLlos.filter(label => validLloLabels.has(label));
                                 updated[i].llo = validLlos.join(", ");
-                                
+
                                 setPlans(updated);
                               }}
                               disabled={!week}
@@ -799,8 +831,8 @@ const WeekwisePlan = ({
                       </div>
                     </td>
                     <td>
-                      <div 
-                        className="llo-dropdown-container" 
+                      <div
+                        className="llo-dropdown-container"
                         ref={(el) => (dropdownRefs.current[i] = el)}
                       >
                         <button
@@ -816,7 +848,7 @@ const WeekwisePlan = ({
                           </span>
                           <span className="llo-trigger-arrow">▼</span>
                         </button>
-                        
+
                         {openLloDropdownIndex === i && (
                           <div className={`llo-dropdown-menu ${plans.length > 2 && i >= plans.length - 2 ? "open-up" : ""}`}>
                             {(() => {
@@ -844,13 +876,13 @@ const WeekwisePlan = ({
                                 seen.add(item.value);
                                 return true;
                               });
-                              
+
                               if (uniqueLlos.length === 0) {
                                 return <div className="llo-dropdown-empty">No LLOs available for selected COs</div>;
                               }
-                              
+
                               const selectedLlos = plan.llo ? getNormalizedLlo(plan.llo).split(",").map(l => l.trim()) : [];
-                              
+
                               return uniqueLlos.map((lloItem, lloIdx) => {
                                 const isLloSelected = selectedLlos.includes(lloItem.label);
                                 return (
@@ -883,20 +915,46 @@ const WeekwisePlan = ({
                       </div>
                     </td>
                     <td>
-                      <select
-                        value={plan.exptNo}
-                        onChange={(e) =>
-                          handleChange(i, "exptNo", e.target.value)
-                        }
-                        disabled={!week || loadingExperiments}
-                      >
-                        <option value="">Select Experiment</option>
-                        {experiments.map((exp) => (
-                          <option key={exp.practicalNo} value={String(exp.practicalNo)}>
-                            {exp.practicalNo}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="expt-badges-container">
+                        {experiments.map((exp) => {
+                          const selectedExpts = plan.exptNo
+                            ? plan.exptNo.split(",").map(e => e.trim()).filter(Boolean)
+                            : [];
+                          const isSelected = selectedExpts.includes(String(exp.practicalNo));
+                          return (
+                            <button
+                              key={exp.practicalNo}
+                              type="button"
+                              className={`expt-badge-btn ${isSelected ? "active" : ""}`}
+                              onClick={() => {
+                                let nextExpts;
+                                if (isSelected) {
+                                  nextExpts = selectedExpts.filter((e) => e !== String(exp.practicalNo));
+                                } else {
+                                  nextExpts = [...selectedExpts, String(exp.practicalNo)];
+                                }
+                                nextExpts.sort((a, b) => Number(a) - Number(b));
+
+                                const updated = [...plans];
+                                updated[i].exptNo = nextExpts.join(", ");
+
+                                // Auto-fill Experiment Name
+                                const names = nextExpts.map(no => {
+                                  const expObj = experiments.find(e => String(e.practicalNo) === String(no));
+                                  return expObj ? expObj.practicalName : "";
+                                }).filter(Boolean);
+                                updated[i].exptName = names.join(", ");
+
+                                setPlans(updated);
+                              }}
+                              disabled={!week}
+                              title={exp.practicalName}
+                            >
+                              {exp.practicalNo}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </td>
                     <td>
                       <textarea

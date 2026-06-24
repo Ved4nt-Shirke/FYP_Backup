@@ -12,21 +12,67 @@
 
 @media (min-width: 769px) {
   .ciann-secondary-sidebar-wrapper {
-    position: fixed;
-    top: 52px !important;
-    left: calc(var(--sidebar-width, 280px) + 8px) !important;
-    width: 274px !important;
-    height: calc(100dvh - 52px) !important;
-    max-height: calc(100dvh - 52px) !important;
-    padding: 6px 10px 10px 10px;
+    position: fixed !important;
+    top: 50px !important;
+    left: calc(var(--sidebar-width, 240px) + 1rem) !important;
+    width: 260px !important;
+    height: calc(100dvh - 50px) !important;
+    max-height: calc(100dvh - 50px) !important;
+    padding: 4px 0 10px 10px !important;
     box-sizing: border-box;
     overflow: hidden;
-    z-index: 1110;
+    z-index: 1010;
+    transition: left var(--transition-speed, 0.3s) ease;
   }
 
   .secondary-sidebar {
-    height: 100%;
-    max-height: 100%;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 16px !important;
+    border: 1px solid var(--card-border, rgba(132, 160, 214, 0.22)) !important;
+    background: linear-gradient(180deg,
+        var(--primary-light, #f4f8ff) 0%,
+        var(--primary-light, #edf3ff) 100%) !important;
+    box-shadow: 0 10px 24px rgba(22, 58, 120, 0.09) !important;
+    padding: 12px !important;
+    margin: 0 !important;
+  }
+
+  /* Reset any nested wrappers to width: 0 on desktop to prevent flex layout breaking */
+  .timetable-secondary-sidebar-wrapper,
+  .syllabus-secondary-sidebar-wrapper,
+  .student-secondary-sidebar-wrapper,
+  .details-sidebar-column {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    flex: 0 0 0 !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Main content shifts to accommodate the secondary sidebar exactly */
+  .timetable-main-content,
+  .teaching-main-content.syllabus-main-content,
+  .labplanning-main-content,
+  .student-main-content,
+  .ciann-diary-main,
+  .details-content-column {
+    margin-left: 266px !important; /* 260px sidebar + 6px gap */
+    transition: margin-left var(--transition-speed, 0.3s) ease;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .timetable-main-content,
+  .teaching-main-content.syllabus-main-content,
+  .labplanning-main-content,
+  .student-main-content,
+  .ciann-diary-main,
+  .details-content-column {
+    margin-left: calc(var(--ciann-secondary-width, 180px) + 6px) !important;
+    padding: 15px 15px 15px 6px !important;
   }
 }
 
@@ -355,6 +401,15 @@ body.ciann-view-only a.btn:not(.ciann-comments-toggle-btn) {
   flex-direction: column;
   overflow: hidden;
   margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .ciann-notif-dropdown {
+    width: calc(100vw - 32px) !important;
+    right: -10px !important;
+    left: auto !important;
+    max-width: 340px !important;
+  }
 }
 
 .ciann-notif-header {

@@ -485,8 +485,16 @@
     --header-height: 50px;
   }
   .header {
-    padding: 8px 12px;
+    padding: 8px 10px;
     height: var(--header-height);
+  }
+
+  .header-left {
+    gap: 8px;
+  }
+
+  .header-right {
+    gap: 6px;
   }
 
   .institution-logo-image {
@@ -529,7 +537,11 @@
   }
 
   .institution-name-text {
-    max-width: 180px;
+    display: none !important;
+  }
+
+  .role-chip {
+    display: none !important;
   }
 
   .menu-toggle {
@@ -551,21 +563,25 @@
 
   .user-button {
     font-size: 14px;
-    padding: 3px 8px;
+    padding: 3px 6px;
   }
 
   .user-dropdown-menu {
     min-width: 120px;
   }
 
+  .header-year-select-container span {
+    display: none !important;
+  }
+
   .header-year-select {
-    padding: 5px 8px;
+    padding: 5px 6px;
     font-size: 12px;
+    max-width: 130px;
   }
 
   .user-name {
-    max-width: 90px;
-    font-size: 13px;
+    display: none !important;
   }
 }
 

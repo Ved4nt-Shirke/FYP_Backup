@@ -497,6 +497,14 @@
   border: 0;
 }
 
+.tps-modal .plan-table col.tp-col-co { width: 180px; }
+.tps-modal .plan-table col.tp-col-chapter { width: 17%; }
+.tps-modal .plan-table col.tp-col-tlo { width: 12%; }
+.tps-modal .plan-table col.tp-col-subtopic { width: 17%; }
+.tps-modal .plan-table col.tp-col-start-date { width: 220px; }
+.tps-modal .plan-table col.tp-col-method { width: 14%; }
+.tps-modal .plan-table col.tp-col-action { width: 48px; }
+
 .tps-modal .plan-table th,
 .tps-modal .plan-table td {
   border: 1px solid #e0e0e0;
@@ -518,19 +526,30 @@
 
 /* Explicit widths and min-widths to prevent squeezing and optimize vacant space */
 .tps-modal .plan-table th:nth-child(1),
-.tps-modal .plan-table td:nth-child(1) {
-  width: 12% !important;
-  min-width: 110px !important;
+.tps-modal .plan-table td:nth-child(1),
+.tps-modal .plan-table td.co-cell {
+  width: 180px !important;
+  max-width: 180px !important;
+  min-width: 180px !important;
+  padding: 8px 4px !important;
+  overflow: hidden;
 }
 
 .tps-modal select.co-select {
-  max-width: 120px !important;
+  width: 100% !important;
+  max-width: 172px !important;
+  min-width: 0 !important;
+  padding: 6px 4px !important;
+  font-size: 13px !important;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .tps-modal .plan-table th:nth-child(2),
 .tps-modal .plan-table td:nth-child(2) {
-  width: 20% !important;
-  min-width: 180px !important;
+  width: 17% !important;
+  min-width: 150px !important;
 }
 
 .tps-modal select.chapter-select {
@@ -539,37 +558,132 @@
 
 .tps-modal .plan-table th:nth-child(3),
 .tps-modal .plan-table td:nth-child(3) {
-  width: 13% !important;
-  min-width: 120px !important;
+  width: 12% !important;
+  min-width: 110px !important;
 }
 
 .tps-modal .plan-table th:nth-child(4),
 .tps-modal .plan-table td:nth-child(4) {
-  width: 20% !important;
-  min-width: 180px !important;
+  width: 17% !important;
+  min-width: 150px !important;
 }
 
 .tps-modal .plan-table th:nth-child(5),
-.tps-modal .plan-table td:nth-child(5) {
-  width: 17% !important;
-  min-width: 155px !important;
+.tps-modal .plan-table td:nth-child(5),
+.tps-modal .plan-table td.start-date-cell {
+  width: 220px !important;
+  min-width: 220px !important;
+  max-width: 220px !important;
+  padding: 6px 10px !important;
+  vertical-align: middle;
+}
+
+.tps-modal .plan-table th:nth-child(5) {
+  white-space: nowrap;
+}
+
+.tps-modal .start-date-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 200px;
+  gap: 0;
+}
+
+.tps-modal .start-date-text {
+  flex: 1 1 auto;
+  width: 100% !important;
+  min-width: 160px !important;
+  padding: 8px 36px 8px 10px !important;
+  border: 1px solid #dde3ea !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: #1f2937;
+  background-color: #fff !important;
+  cursor: pointer;
+  box-sizing: border-box !important;
+  text-align: left;
+}
+
+.tps-modal .start-date-text:disabled {
+  background-color: #e9ecef !important;
+  cursor: not-allowed;
+  color: #6c757d;
+}
+
+.tps-modal .start-date-text::placeholder {
+  color: #9ca3af;
+}
+
+.tps-modal .start-date-picker-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #4b5563;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tps-modal .start-date-picker-btn:hover:not(:disabled) {
+  background-color: #eef4ff;
+  color: #1f62cf;
+}
+
+.tps-modal .start-date-picker-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.tps-modal .start-date-native-picker {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tps-modal .start-date-text:focus {
+  outline: none !important;
+  border-color: #81c784 !important;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2) !important;
 }
 
 .tps-modal .plan-table th:nth-child(6),
 .tps-modal .plan-table td:nth-child(6) {
-  width: 13% !important;
+  width: 14% !important;
   min-width: 120px !important;
 }
 
 .tps-modal .plan-table th:nth-child(7),
 .tps-modal .plan-table td:nth-child(7) {
-  width: 5% !important;
-  min-width: 50px !important;
+  width: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  padding: 8px 2px !important;
 }
 
 
 .tps-modal .plan-table select,
-.tps-modal .plan-table input {
+.tps-modal .plan-table input:not(.start-date-text):not(.start-date-native-picker) {
   width: 100% !important;
   padding: 6px 8px !important;
   border: 1px solid #ddd !important;
@@ -582,7 +696,7 @@
 }
 
 /* Guarantee date inputs have sufficient minimum width */
-.tps-modal .plan-table input[type="date"] {
+.tps-modal .plan-table input[type="date"]:not(.start-date-native-picker) {
   min-width: 100% !important;
 }
 

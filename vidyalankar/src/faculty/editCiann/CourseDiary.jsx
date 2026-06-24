@@ -11,6 +11,16 @@ const CourseDiary = () => {
   const [isSecondarySidebarVisible, setIsSecondarySidebarVisible] =
     useState(false);
 
+  useEffect(() => {
+    const handleSecondaryToggle = () => {
+      setIsSecondarySidebarVisible((prev) => !prev);
+    };
+    window.addEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    return () => {
+      window.removeEventListener("faculty:toggle-secondary-sidebar", handleSecondaryToggle);
+    };
+  }, []);
+
   const location = useLocation();
   const navigate = useNavigate();
   const [ciannData, setCiannData] = useState(location.state?.ciannData || null);
@@ -391,6 +401,7 @@ const CourseDiary = () => {
   return (
     <div className="ciann-diary-root" style={styles.layout}>
       <SecondarySidebar
+        ciannData={ciannData}
         isSecondarySidebarVisible={isSecondarySidebarVisible}
         setIsSecondarySidebarVisible={setIsSecondarySidebarVisible}
       />
