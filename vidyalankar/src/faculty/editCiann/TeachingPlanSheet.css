@@ -152,8 +152,8 @@
 }
 .teaching-main-content.syllabus-main-content .teaching th,
 .teaching-main-content.syllabus-main-content .teaching td {
-  padding: 8px 4px;
-  text-align: center;
+  padding: 8px 12px;
+  text-align: left;
   font-size: 12px;
   border: 1px solid var(--card-border, #ccc);
   word-wrap: break-word;
@@ -161,7 +161,7 @@
 .teaching-main-content.syllabus-main-content .teaching th {
   background: var(--primary-light, #f8f9fa);
   font-weight: bold;
-  text-align: center;
+  text-align: left;
   white-space: normal;
 }
 .teaching-main-content.syllabus-main-content .teaching th:nth-child(1),
@@ -388,8 +388,8 @@
   }
   .teaching-main-content.syllabus-main-content .teaching td,
   .teaching-main-content.syllabus-main-content .teaching th {
-    text-align: center !important;
-    padding: 8px 4px !important;
+    text-align: left !important;
+    padding: 8px 12px !important;
     border-top: 1px solid #ccc !important; /* lighter horizontal lines */
     border-bottom: 1px solid #ccc !important; /* lighter horizontal lines */
     border-left: 2px solid #000 !important; /* darker vertical separators */

@@ -455,7 +455,6 @@ const SecondarySidebar = ({
                   }}
                   style={item.subItems ? { cursor: "pointer" } : {}}
                 >
-                  <span className="secondary-nav-index">{index + 1}</span>
                   <i className={`bi ${item.icon} secondary-nav-icon`}></i>
                   <span className="secondary-nav-label">{item.label}</span>
                   {item.subItems && (

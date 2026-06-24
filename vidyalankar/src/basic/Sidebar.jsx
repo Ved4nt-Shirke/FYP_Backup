@@ -117,6 +117,86 @@ const Sidebar = ({
     fetchPendingRequests();
   }, [isFaculty, location.pathname]);
 
+  useEffect(() => {
+    const path = location.pathname;
+    
+    // Map paths to their corresponding dropdowns
+    if (["/create-ciann", "/edit-ciann", "/summary-cards"].includes(path) || path.startsWith("/create-ciann") || path.startsWith("/edit-ciann")) {
+      setOpenDropdown("ciann");
+    } else if (path.startsWith("/faculty/mock-exams")) {
+      setOpenDropdown("mockExam");
+    } else if (
+      path.startsWith("/smart-attendance") ||
+      path.startsWith("/mark-attendance") ||
+      path.startsWith("/view-attendance") ||
+      path.startsWith("/edit-attendance") ||
+      path.startsWith("/defaulter") ||
+      path.startsWith("/attendance-summary-cards") ||
+      path.startsWith("/theory-ciann-cards") ||
+      path.startsWith("/extra-theory") ||
+      path.startsWith("/extra-practical") ||
+      path.startsWith("/tutorial-ciann") ||
+      path.startsWith("/practical-ciann") ||
+      path.startsWith("/prac-form") ||
+      path.startsWith("/theory-edit") ||
+      path.startsWith("/final-attendance") ||
+      path.startsWith("/student-extra-attendance") ||
+      path.startsWith("/student-attendance") ||
+      path.startsWith("/edit-attendance1") ||
+      path.startsWith("/edit-attendance2") ||
+      path.startsWith("/edit-individual-attendance") ||
+      path.startsWith("/edit-extra-theory-attendance") ||
+      path.startsWith("/edit-practical-attendance") ||
+      path.startsWith("/edit-tutorial-attendance") ||
+      path.startsWith("/edit-existing-practical-attendance") ||
+      path.startsWith("/view-attend") ||
+      path.startsWith("/view-practical") ||
+      path.startsWith("/view-extra-practical") ||
+      path.startsWith("/view-tutorial-attendance")
+    ) {
+      setOpenDropdown("attendance");
+    } else if (
+      path.startsWith("/assess-ciann") ||
+      path.startsWith("/edit-card") ||
+      path.startsWith("/studentwise-defaulters") ||
+      path.startsWith("/view-assessment") ||
+      path.startsWith("/assessment-") ||
+      path.startsWith("/view-assessment-") ||
+      path.startsWith("/edit-assess") ||
+      path.startsWith("/edit-prog-assess") ||
+      path.startsWith("/studentwise-select") ||
+      path.startsWith("/studentwise-assess") ||
+      path.startsWith("/studentwise-setup")
+    ) {
+      setOpenDropdown("assessment");
+    } else if (path.startsWith("/ct-cianns") || path.startsWith("/ct-dashboard")) {
+      setOpenDropdown("ct");
+    } else if (path.startsWith("/pt-microproject")) {
+      setOpenDropdown("ptMicroProject");
+    } else if (path.startsWith("/msbte")) {
+      setOpenDropdown("msbte");
+      
+      // Auto-expand specific MSBTE sections based on path query or sub-path
+      if (path.includes("fa-pr-k3")) {
+        setOpenMsbteSections(prev => ({ ...prev, k3: true }));
+      } else if (path.includes("sa-pr-k4")) {
+        setOpenMsbteSections(prev => ({ ...prev, k4: true }));
+      } else if (path.includes("sa-th")) {
+        setOpenMsbteSections(prev => ({ ...prev, saTh: true }));
+      } else if (path.includes("industrial-visit")) {
+        setOpenMsbteSections(prev => ({ ...prev, k8: true }));
+      } else if (path.includes("expert-lecture")) {
+        setOpenMsbteSections(prev => ({ ...prev, k9: true }));
+      } else if (path.includes("term-analysis")) {
+        setOpenMsbteSections(prev => ({ ...prev, k7: true }));
+      } else if (path.includes("/k7/")) {
+        setOpenMsbteSections(prev => ({ ...prev, k7: true }));
+      }
+    } else if (path.startsWith("/faculty/practical-exams")) {
+      setOpenDropdown("practicalExams");
+    }
+  }, [location.pathname]);
+
   if (disableOnCompact && isCompact) {
     return null;
   }
@@ -373,7 +453,9 @@ const Sidebar = ({
               >
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/create-ciann" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -385,7 +467,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/edit-ciann" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -397,7 +481,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/summary-cards" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -430,7 +516,9 @@ const Sidebar = ({
               >
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/faculty/mock-exams/create" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -442,7 +530,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/faculty/mock-exams" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -454,7 +544,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/faculty/mock-exams/results" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -487,15 +579,16 @@ const Sidebar = ({
               >
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2 smart-attendance-link"
+                    className={`dropdown-item d-flex align-items-center gap-2 smart-attendance-link ${
+                      location.pathname === "/smart-attendance" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
                       handleAttendanceSelect("Smart Hub");
                     }}
                   >
-                    <i className="bi bi-lightning-charge-fill"></i> 🎯 Smart
-                    Attendance Hub
+                    <i className="bi bi-lightning-charge-fill"></i> 🎯 Smart Attendance Hub
                   </a>
                 </li>
                 <li>
@@ -503,7 +596,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/mark-attendance" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -515,7 +610,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/edit-attendance" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -527,7 +624,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/view-attendance" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -539,7 +638,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/attendance-summary-cards" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -551,7 +652,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/defaulter" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -584,7 +687,9 @@ const Sidebar = ({
               >
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/assess-ciann" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -596,7 +701,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/edit-card" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -608,7 +715,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/studentwise-defaulters" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -620,7 +729,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/view-assessment" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -653,7 +764,9 @@ const Sidebar = ({
               >
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/ct-cianns" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -665,7 +778,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/ct-cianns" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -688,7 +803,7 @@ const Sidebar = ({
                 onClick={() => handleDropdownToggle("ptMicroProject")}
               >
                 <i className="bi bi-diagram-3"></i>
-                <span>PT & MICROPROJECT</span>
+                <span>PT & Microproject</span>
                 <i className="bi bi-chevron-down dropdown-chevron"></i>
               </button>
               <ul
@@ -698,7 +813,9 @@ const Sidebar = ({
               >
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/pt-microproject/dashboard" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -710,7 +827,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/pt-microproject/microproject" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -744,7 +863,9 @@ const Sidebar = ({
               >
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                    className={`dropdown-item d-flex align-items-center justify-content-between gap-2 ${
+                      location.pathname.startsWith("/msbte/fa-pr-k3") ? "active-header" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -762,7 +883,9 @@ const Sidebar = ({
                 {openMsbteSections.k3 && (
                   <li>
                     <a
-                      className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                      className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                        location.pathname === "/msbte/fa-pr-k3/cianns" ? "active" : ""
+                      }`}
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
@@ -775,7 +898,9 @@ const Sidebar = ({
                 )}
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                    className={`dropdown-item d-flex align-items-center justify-content-between gap-2 ${
+                      location.pathname.startsWith("/msbte/sa-pr-k4") ? "active-header" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -794,7 +919,9 @@ const Sidebar = ({
                   <>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/sa-pr-k4/cianns" && location.search.includes("mode=generate") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -806,7 +933,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/sa-pr-k4/cianns" && location.search.includes("mode=edit") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -818,7 +947,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/sa-pr-k4/cianns" && location.search.includes("mode=print") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -832,7 +963,9 @@ const Sidebar = ({
                 )}
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                    className={`dropdown-item d-flex align-items-center justify-content-between gap-2 ${
+                      location.pathname.startsWith("/msbte/sa-th") ? "active-header" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -851,7 +984,9 @@ const Sidebar = ({
                   <>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/sa-th/cianns" && location.search.includes("mode=generate") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -863,7 +998,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/sa-th/cianns" && location.search.includes("mode=edit") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -875,7 +1012,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/sa-th/cianns" && location.search.includes("mode=print") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -889,7 +1028,9 @@ const Sidebar = ({
                 )}
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/msbte/fa-th-k5/cianns" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -902,7 +1043,9 @@ const Sidebar = ({
                 {!isHodOrCoordinator && (
                   <li>
                     <a
-                      className="dropdown-item d-flex align-items-center gap-2"
+                      className={`dropdown-item d-flex align-items-center gap-2 ${
+                        location.pathname === "/msbte/term-analysis" ? "active" : ""
+                      }`}
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
@@ -915,7 +1058,9 @@ const Sidebar = ({
                 )}
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                    className={`dropdown-item d-flex align-items-center justify-content-between gap-2 ${
+                      location.pathname.startsWith("/msbte/industrial-visit") ? "active-header" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -934,7 +1079,9 @@ const Sidebar = ({
                   <>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/industrial-visit/k8/generate" ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -946,7 +1093,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/industrial-visit/k8/edit" ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -958,7 +1107,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/industrial-visit/k8/print" ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -972,7 +1123,9 @@ const Sidebar = ({
                 )}
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                    className={`dropdown-item d-flex align-items-center justify-content-between gap-2 ${
+                      location.pathname.startsWith("/msbte/expert-lecture") ? "active-header" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -991,7 +1144,9 @@ const Sidebar = ({
                   <>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/expert-lecture/k9/generate" ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1003,7 +1158,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/expert-lecture/k9/edit" ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1015,7 +1172,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname === "/msbte/expert-lecture/k9/print" ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1029,7 +1188,9 @@ const Sidebar = ({
                 )}
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center justify-content-between gap-2"
+                    className={`dropdown-item d-flex align-items-center justify-content-between gap-2 ${
+                      location.pathname.startsWith("/msbte/k7") ? "active-header" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -1048,7 +1209,9 @@ const Sidebar = ({
                   <>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname.includes("/msbte/k7/placeholder/Part A") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1060,20 +1223,24 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname.includes("/msbte/k7/report-selector") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
                           navigateAndClose("/msbte/k7/report-selector");
                         }}
-                        style={{ fontWeight: "600", color: "#4f46e5" }}
+                        style={{ fontWeight: "600" }}
                       >
                         Part B
                       </a>
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname.includes("/msbte/k7/placeholder/Part C") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1085,7 +1252,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname.includes("/msbte/k7/placeholder/Part D") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1097,7 +1266,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname.includes("/msbte/k7/placeholder/Part E") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1109,7 +1280,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname.includes("/msbte/k7/placeholder/Part F") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1121,7 +1294,9 @@ const Sidebar = ({
                     </li>
                     <li>
                       <a
-                        className="dropdown-item d-flex align-items-center gap-2 msbte-subitem"
+                        className={`dropdown-item d-flex align-items-center gap-2 msbte-subitem ${
+                          location.pathname.includes("/msbte/k7/placeholder/Part G") ? "active" : ""
+                        }`}
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1169,7 +1344,9 @@ const Sidebar = ({
               >
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/faculty/practical-exams" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -1181,7 +1358,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/faculty/practical-exams/add" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -1193,7 +1372,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/faculty/practical-exams/manage" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -1205,7 +1386,9 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className="dropdown-item d-flex align-items-center gap-2"
+                    className={`dropdown-item d-flex align-items-center gap-2 ${
+                      location.pathname === "/faculty/practical-exams/status" ? "active" : ""
+                    }`}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();

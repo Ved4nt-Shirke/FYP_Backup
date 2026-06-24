@@ -446,7 +446,7 @@ const LabPlanningSheet = () => {
                                 <td>{p.co || ""}</td>
                                 <td>{formatLlo(p.llo)}</td>
                                 <td>{p.exptNo}</td>
-                                <td className="expt-name-cell">{p.exptName}</td>
+                                <td className="expt-name-cell" style={{ whiteSpace: "pre-line" }}>{p.exptName}</td>
                                 <td>{p.date}</td>
                                 <td>{p.actualDate || "--"}</td>
                               </tr>

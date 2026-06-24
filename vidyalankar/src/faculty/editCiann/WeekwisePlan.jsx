@@ -214,7 +214,7 @@ const WeekwisePlan = ({
             co: item.co || "",
             llo: item.llo ? getNormalizedLlo(item.llo) : "",
             exptNo: item.exptNo || "",
-            exptName: item.exptName || "",
+            exptName: item.exptName ? item.exptName.replace(/,\s*/g, "\n") : "",
             date: item.date || "",
           }))
         );
@@ -486,10 +486,12 @@ const WeekwisePlan = ({
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          font-size: 12px;
+          font-size: 16px;
           font-weight: bold;
           cursor: pointer;
           transition: all 0.2s ease;
+          line-height: 1;
+          padding: 0;
         }
         .delete-row-btn:hover:not(:disabled) {
           background-color: #ea868f !important;
@@ -583,8 +585,8 @@ const WeekwisePlan = ({
         .weekwise-plan-table th:nth-child(3), .weekwise-plan-table td:nth-child(3) { width: 7% !important; min-width: 80px !important; }  /* CO */
         .weekwise-plan-table th:nth-child(4), .weekwise-plan-table td:nth-child(4) { width: 15% !important; min-width: 130px !important; } /* LLO */
         .weekwise-plan-table th:nth-child(5), .weekwise-plan-table td:nth-child(5) { width: 16% !important; min-width: 170px !important; } /* Experiment No */
-        .weekwise-plan-table th:nth-child(6), .weekwise-plan-table td:nth-child(6) { width: 27% !important; min-width: 250px !important; } /* Experiment Name */
-        .weekwise-plan-table th:nth-child(7), .weekwise-plan-table td:nth-child(7) { width: 17% !important; min-width: 155px !important; } /* Planned Date */
+        .weekwise-plan-table th:nth-child(6), .weekwise-plan-table td:nth-child(6) { width: 34% !important; min-width: 300px !important; } /* Experiment Name */
+        .weekwise-plan-table th:nth-child(7), .weekwise-plan-table td:nth-child(7) { width: 10% !important; min-width: 110px !important; } /* Planned Date */
         .weekwise-plan-table th:nth-child(8), .weekwise-plan-table td:nth-child(8) { width: 4% !important; min-width: 48px !important; }  /* Action */
 
         .weekwise-plan-table input,
@@ -611,15 +613,19 @@ const WeekwisePlan = ({
         .weekwise-plan-table textarea[readonly] {
           background-color: #f5f5f5;
           cursor: default;
+          resize: vertical;
+          min-height: 70px;
+          height: auto;
+          line-height: 1.4;
         }
         
-        .plan-table select {
+        .weekwise-plan-table select {
           cursor: pointer;
         }
         
-        .plan-table select:disabled,
-        .plan-table input:disabled,
-        .plan-table textarea:disabled {
+        .weekwise-plan-table select:disabled,
+        .weekwise-plan-table input:disabled,
+        .weekwise-plan-table textarea:disabled {
           background-color: #f5f5f5;
           cursor: not-allowed;
           opacity: 0.7;
@@ -631,42 +637,49 @@ const WeekwisePlan = ({
         
         .action-buttons-container {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
-            padding: 15px 25px;
-            background: #f8f9fa;
-            border-top: 1px solid #eee;
-            flex-shrink: 0; /* Prevent footer from shrinking */
+            gap: 12px;
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            flex-shrink: 0;
         }
 
         .action-buttons-container button {
-          padding: 10px 24px;
-          font-weight: 600;
-          border: none;
+          padding: 10px 20px;
+          font-weight: 700;
+          font-size: 14px;
           border-radius: 8px;
           cursor: pointer;
-          transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          transition: all 0.2s ease;
+          border: none;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         
         .action-buttons-container button.submit-btn {
-            background-color: #4CAF50;
-            color: white;
+            background-color: #10b981 !important;
+            color: white !important;
         }
         
         .action-buttons-container button.submit-btn:hover {
-            background-color: #43A047;
+            background-color: #059669 !important;
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
         }
         
         .action-buttons-container button.cancel {
-            background-color: #d22e2eff;
-            color: white;
+            background-color: white !important;
+            color: #64748b !important;
+            border: 1px solid #e2e8f0 !important;
         }
         
         .action-buttons-container button.cancel:hover {
-            background-color: #ab8686ff;
-            transform: translateY(-1px);
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+            box-shadow: none !important;
+            transform: none !important;
         }
         
         .submission-message {
@@ -947,7 +960,7 @@ const WeekwisePlan = ({
                                   const expObj = experiments.find(e => String(e.practicalNo) === String(no));
                                   return expObj ? expObj.practicalName : "";
                                 }).filter(Boolean);
-                                updated[i].exptName = names.join(", ");
+                                updated[i].exptName = names.join("\n");
 
                                 setPlans(updated);
                               }}
@@ -992,7 +1005,7 @@ const WeekwisePlan = ({
                         title="Delete Row"
                         disabled={!week}
                       >
-                        ✕
+                        &times;
                       </button>
                     </td>
                   </tr>
