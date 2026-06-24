@@ -759,7 +759,7 @@ const PrintCiann = () => {
 
   const attendanceSessionsLog = useMemo(() => {
     const list = [];
-    
+
     theoryAttendance.forEach((record) => {
       const presentCount = (record.students || []).filter(s => s.status === 'Present').length;
       const totalStudents = (record.students || []).length;
@@ -797,7 +797,7 @@ const PrintCiann = () => {
     return students.map((student) => {
       const sName = (student.studentName || student.name || "").trim().toLowerCase();
       const sRoll = (student.rollNo || student.rollId || student.regNumber || "").trim().toLowerCase();
-      
+
       let theoryConducted = 0;
       let theoryAttended = 0;
       let practicalConducted = 0;
@@ -943,7 +943,7 @@ const PrintCiann = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="vm-print-section-header">
               <h3>Institute Vision</h3>
             </div>
@@ -988,11 +988,11 @@ const PrintCiann = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="vm-print-section-header">
               <h3>Department Vision, Mission, PEO</h3>
             </div>
-            
+
             <div className="vm-print-sub-section">
               <h4>Vision</h4>
               <p>{deptVisionMission?.vision || "To empower students with domain knowledge of Computer Engineering and interpersonal skills to cater to the industrial and societal needs."}</p>
@@ -1050,7 +1050,7 @@ const PrintCiann = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="vm-print-section-header">
               <h3>Program Outcomes (PO)</h3>
             </div>

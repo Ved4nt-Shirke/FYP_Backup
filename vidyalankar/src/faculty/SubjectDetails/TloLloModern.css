@@ -1,0 +1,371 @@
+/* TloLloModern.css */
+
+/* Overrides for CIANN Sidebar active states when on Tlo/Llo pages */
+.student-layout.tlo-page-active,
+.student-layout.llo-page-active {
+  background: #edf7f4 !important;
+}
+
+.student-layout.tlo-page-active .secondary-nav-item.active,
+.student-layout.llo-page-active .secondary-nav-item.active {
+  background: #e6f7f0 !important;
+  border-left: 4px solid #0eb582 !important;
+  border-color: transparent transparent transparent #0eb582 !important;
+  color: #0eb582 !important;
+}
+
+.student-layout.tlo-page-active .secondary-nav-item.active .secondary-nav-index,
+.student-layout.llo-page-active .secondary-nav-item.active .secondary-nav-index {
+  background: #0eb582 !important;
+  color: #ffffff !important;
+}
+
+.student-layout.tlo-page-active .secondary-nav-item.active .secondary-nav-icon,
+.student-layout.llo-page-active .secondary-nav-item.active .secondary-nav-icon {
+  color: #0eb582 !important;
+}
+
+.student-layout.tlo-page-active .secondary-sidebar-title,
+.student-layout.llo-page-active .secondary-sidebar-title {
+  color: #0eb582 !important;
+}
+
+/* Card Container Styles */
+.tlollo-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.02), 0 1px 3px rgba(0, 0, 0, 0.02);
+  padding: 32px;
+  margin-bottom: 24px;
+  border: none;
+}
+
+.tlollo-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid #e6f0eb;
+  margin-bottom: 24px;
+}
+
+.tlollo-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.tlollo-subject-badge {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.tlollo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 48px;
+}
+
+@media (max-width: 992px) {
+  .tlollo-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* Left Column - Course Outcome Selection & Description */
+.co-section-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.co-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.co-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-action-green {
+  background: none;
+  border: none;
+  color: #0eb582;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+
+.btn-action-green:hover {
+  color: #0c9c6f;
+}
+
+.btn-action-green.btn-delete {
+  color: #0eb582;
+}
+
+.btn-action-green.btn-delete:hover {
+  color: #dc3545;
+}
+
+.co-dropdown {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.co-dropdown:focus {
+  outline: none;
+  border-color: #0eb582;
+  box-shadow: 0 0 0 3px rgba(14, 181, 130, 0.15);
+}
+
+.co-description-box {
+  margin-top: 20px;
+  background: #f8faf9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.co-description-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  display: block;
+  text-transform: uppercase;
+}
+
+.co-description-textarea {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.co-description-textarea:focus {
+  outline: none;
+  border-color: #0eb582;
+  box-shadow: 0 0 0 3px rgba(14, 181, 130, 0.1);
+}
+
+/* Right Column - Mapped Outcomes */
+.outcomes-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.outcomes-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.outcomes-section-title-icon {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.btn-add-outcome {
+  background: none;
+  border: none;
+  color: #0eb582;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+
+.btn-add-outcome:hover {
+  color: #0c9c6f;
+}
+
+.outcomes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 150px;
+}
+
+.outcome-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f8faf9;
+  border-radius: 8px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.outcome-item:focus-within {
+  border-color: #c2e5d9;
+  background: #f4fcf9;
+}
+
+.outcome-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 52px;
+  text-align: center;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.outcome-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.9rem;
+  color: #1e293b;
+  padding: 4px 0;
+  font-weight: 500;
+}
+
+.btn-delete-outcome {
+  background: none;
+  border: none;
+  color: #0eb582;
+  cursor: pointer;
+  font-size: 1.15rem;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-delete-outcome:hover {
+  background-color: #fee2e2;
+  color: #dc3545;
+}
+
+/* Save Footer */
+.tlollo-save-footer {
+  margin-top: 32px;
+  border-top: 1.5px solid #e6f0eb;
+  padding-top: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-save-details {
+  width: 100%;
+  background-color: #0eb582;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(14, 181, 130, 0.15);
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+.btn-save-details:hover {
+  background-color: #0c9c6f;
+  box-shadow: 0 6px 16px rgba(14, 181, 130, 0.25);
+}
+
+.btn-save-details:active {
+  transform: scale(0.995);
+}
+
+.btn-save-details:disabled {
+  background-color: #94a3b8;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Summary Table Styling tweaks for green theme */
+.tlollo-summary-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 16px;
+}
+
+.tlollo-summary-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.02), 0 1px 3px rgba(0, 0, 0, 0.02);
+  padding: 24px;
+  border: none;
+}
+
+.tlollo-summary-card .table {
+  border-color: #e6f0eb;
+}
+
+.tlollo-summary-card .table thead th {
+  background: #f4f8f6 !important;
+  color: #1b4332 !important;
+  font-weight: 700 !important;
+  border-color: #e6f0eb !important;
+}
+
+.tlollo-summary-card .table tbody td {
+  border-color: #e6f0eb !important;
+}

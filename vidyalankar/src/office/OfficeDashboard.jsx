@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
-import { config } from "../config/api";
+import { config, getApiUrl } from "../config/api";
 import ManageStudents from "./ManageStudents";
 import NoticesPage from "./NoticesPage";
 import "./OfficeDashboard.css";
@@ -68,6 +68,11 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [generatedCredentials, setGeneratedCredentials] = useState([]);
+
+  // Notices Dashboard Stats
+  const [noticeAnalytics, setNoticeAnalytics] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [recentNotices, setRecentNotices] = useState([]);
   
   // Batch allocation
   const [showBatchAllocationDialog, setShowBatchAllocationDialog] = useState(false);
@@ -134,6 +139,49 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
       setLoading(false);
     }
   };
+
+  const fetchNoticeAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+      const token = localStorage.getItem("token");
+      const url = getApiUrl("/office/notices/analytics");
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNoticeAnalytics(data.analytics);
+      }
+    } catch (err) {
+      console.error("Failed to fetch notice analytics", err);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
+  const fetchRecentNoticesForDashboard = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const url = getApiUrl("/office/notices");
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRecentNotices((data.notices || []).slice(0, 5));
+      }
+    } catch (err) {
+      console.error("Failed to fetch recent notices", err);
+    }
+  };
+
+  useEffect(() => {
+    if (currentTab === "dashboard") {
+      fetchNoticeAnalytics();
+      fetchRecentNoticesForDashboard();
+      fetchStudents();
+    }
+  }, [currentTab]);
 
   useEffect(() => {
     if (selectedDepartment && selectedCourse && selectedDivision && selectedAcademicYear) {
@@ -429,9 +477,206 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
     document.body.removeChild(link);
   };
 
+  const renderDashboardHome = () => {
+    const stats = noticeAnalytics || {
+      totalNoticesSent: 0,
+      todayNotices: 0,
+      pendingUnread: 0,
+      mostActiveDepartment: "N/A",
+      departmentWiseCount: {}
+    };
+
+    return (
+      <div className="office-dashboard-home animate-fadeIn">
+        {/* Row 1: Notice Board Analytics Cards */}
+        <div className="dashboard-section-header">
+          <h3>📢 Notice Board Analytics</h3>
+          <p>Real-time insights on notices, readership, and department activity.</p>
+        </div>
+
+        <div className="stats-row-container">
+          <div className="stats-metric-card notice-card-blue">
+            <div className="metric-icon-box notices-sent">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+              </svg>
+            </div>
+            <div className="metric-text-group">
+              <span className="metric-value">{analyticsLoading ? "..." : stats.totalNoticesSent}</span>
+              <span className="metric-title">Total Notices Sent</span>
+            </div>
+          </div>
+
+          <div className="stats-metric-card notice-card-orange">
+            <div className="metric-icon-box pending-reads">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+            </div>
+            <div className="metric-text-group">
+              <span className="metric-value">{analyticsLoading ? "..." : stats.pendingUnread}</span>
+              <span className="metric-title">Pending Reads</span>
+            </div>
+          </div>
+
+          <div className="stats-metric-card notice-card-green">
+            <div className="metric-icon-box today-notices">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
+              </svg>
+            </div>
+            <div className="metric-text-group">
+              <span className="metric-value">{analyticsLoading ? "..." : stats.todayNotices}</span>
+              <span className="metric-title">Today's Notices</span>
+            </div>
+          </div>
+
+          <div className="stats-metric-card notice-card-purple">
+            <div className="metric-icon-box active-dept">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-2.25a1.125 1.125 0 00-1.125 1.125v3.375m9 0M9 18.75h.008v.008H9v-.008zM12 18.75h.008v.008H12v-.008zM15 18.75h.008v.008H15v-.008zM9.75 16.5h.008v.008H9.75v-.008zM14.25 16.5h.008v.008h-.008v-.008zM12 13.5h.008v.008H12V13.5zm0-2.25h.008v.008H12v-.008zM9.75 14.25h.008v.008H9.75v-.008zm4.5 0h.008v.008h-.008v-.008z" />
+              </svg>
+            </div>
+            <div className="metric-text-group">
+              <span className="metric-value text-scrollable">{analyticsLoading ? "..." : stats.mostActiveDepartment}</span>
+              <span className="metric-title">Most Active Department</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 2: Charts and Recent Notices feed */}
+        <div className="dashboard-grid-two-cols">
+          <div className="dashboard-visuals-card">
+            <h4>📊 Department Distribution</h4>
+            <p className="card-sub-description">Total notices targeted to/available for each department</p>
+            {analyticsLoading ? (
+              <div className="visuals-loader">
+                <div className="loading-ring-spinner" />
+              </div>
+            ) : Object.keys(stats.departmentWiseCount).length === 0 ? (
+              <div className="visuals-empty">No department notices data available</div>
+            ) : (
+              <div className="dept-distribution-list">
+                {Object.entries(stats.departmentWiseCount).map(([name, count]) => {
+                  const maxVal = Math.max(...Object.values(stats.departmentWiseCount), 1);
+                  const percentage = Math.min(100, Math.round((count / maxVal) * 100));
+                  return (
+                    <div key={name} className="dept-dist-item">
+                      <div className="dept-dist-info">
+                        <span className="dept-dist-name">{name}</span>
+                        <span className="dept-dist-count">{count} notices</span>
+                      </div>
+                      <div className="dept-dist-bar-track">
+                        <div 
+                          className="dept-dist-bar-fill" 
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="dashboard-feed-card">
+            <div className="feed-header-row">
+              <h4>Feed: Recent Notices</h4>
+              <button className="feed-view-all-btn" onClick={() => setCurrentTab("notices")}>View notice board</button>
+            </div>
+            <div className="recent-notices-feed office-scrollable">
+              {recentNotices.length === 0 ? (
+                <div className="feed-empty-state">
+                  <span>📢</span>
+                  <p>No notices published recently.</p>
+                </div>
+              ) : (
+                recentNotices.map((n) => {
+                  const typeLabel = (n.noticeType || "general").toUpperCase();
+                  const targetLabel = (n.targetType || "all").replace("-", " ").toUpperCase();
+                  return (
+                    <div key={n._id} className="feed-item animate-fadeIn">
+                      <div className="feed-item-top">
+                        <span className={`feed-badge ${n.noticeType || "general"}`}>{typeLabel}</span>
+                        <span className="feed-date">{new Date(n.scheduledAt || n.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <h5 className="feed-title">{n.title}</h5>
+                      <div className="feed-item-meta">
+                        <span className="feed-meta-tag">Audience: <strong>{targetLabel}</strong></span>
+                        <span className="feed-meta-tag">Reads: <strong>{n.readBy?.length || 0}</strong></span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Row 3: Roster Database Health Summary */}
+        <div className="dashboard-section-header margin-top-lg">
+          <h3>👥 Roster Database Health</h3>
+          <p>Quick metrics representing the size and allocations of the student database roster.</p>
+        </div>
+
+        <div className="stats-row-container">
+          <div className="stats-metric-card">
+            <div className="metric-icon-box students">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+              </svg>
+            </div>
+            <div className="metric-text-group">
+              <span className="metric-value">{students.length}</span>
+              <span className="metric-title">Total Students</span>
+            </div>
+          </div>
+
+          <div className="stats-metric-card">
+            <div className="metric-icon-box departments">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.33l-7.5-5-7.5 5V21m3.75-9.75h7.5" />
+              </svg>
+            </div>
+            <div className="metric-text-group">
+              <span className="metric-value">{departmentsCount}</span>
+              <span className="metric-title">Departments</span>
+            </div>
+          </div>
+
+          <div className="stats-metric-card">
+            <div className="metric-icon-box divisions">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div className="metric-text-group">
+              <span className="metric-value">{uniqueDivisions}</span>
+              <span className="metric-title">Divisions</span>
+            </div>
+          </div>
+
+          <div className="stats-metric-card">
+            <div className="metric-icon-box upload">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5h10.5a2.25 2.25 0 002.25-2.25V13.5a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 13.5v3.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            </div>
+            <div className="metric-text-group">
+              <span className="metric-value">{lastUpload}</span>
+              <span className="metric-title">Last Upload</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="office-grid-wrapper animate-fadeIn">
-      {currentTab === "upload" ? (
+      {currentTab === "dashboard" ? (
+        renderDashboardHome()
+      ) : currentTab === "upload" ? (
         <div className="dashboard-layout-container">
           
           {/* Top Row: Mini Stat Cards */}

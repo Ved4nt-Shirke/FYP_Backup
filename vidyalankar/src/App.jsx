@@ -330,7 +330,9 @@ const AppContent = () => {
     window.innerWidth >= 769,
   );
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [currentTab, setCurrentTab] = useState("upload");
+  const [currentTab, setCurrentTab] = useState(
+    localStorage.getItem("role") === "office" ? "dashboard" : "upload"
+  );
   const userDropdownRef = useRef(null);
 
   const userRole = localStorage.getItem("role") || "faculty";

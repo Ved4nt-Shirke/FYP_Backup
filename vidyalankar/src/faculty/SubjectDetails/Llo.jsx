@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SecondarySidebar from "../editCiann/SecondarySidebar";
 import { config, getApiUrl } from "../../config/api";
 import "../editCiann/EditCiannModern.css";
+import "./TloLloModern.css";
 
 export default function Llo() {
   const location = useLocation();
@@ -259,7 +260,7 @@ export default function Llo() {
   const selectedCoObj = courseOutcomes.find((c) => c.coNumber === selectedCo);
 
   return (
-    <div className="student-layout">
+    <div className="student-layout llo-page-active">
       <div className="student-main-row">
         {/* Left Column: Workspace Secondary Sidebar */}
         <div className="student-secondary-sidebar-wrapper">
@@ -275,7 +276,7 @@ export default function Llo() {
           <div className="container-fluid py-4 px-md-4">
             {/* Header / Title */}
             <div className="mb-4">
-              <h2 className="fw-bold text-dark mb-1">Lab Learning Outcomes (LLO)</h2>
+              <h2 className="fw-bold mb-1" style={{ color: "#0b3b2c" }}>Lab Learning Outcomes (LLO)</h2>
               <p className="text-secondary mb-0">
                 Select a Course Outcome (CO) from Admin Subject Course Details and define its corresponding Lab Learning Outcomes.
               </p>
@@ -290,8 +291,8 @@ export default function Llo() {
             )}
 
             {loading ? (
-              <div className="text-center py-5 bg-white rounded-3 shadow-sm my-4">
-                <div className="spinner-border text-primary" role="status">
+              <div className="text-center py-5 bg-white rounded-4 shadow-sm my-4">
+                <div className="spinner-border text-success" role="status">
                   <span className="visually-hidden">Loading Course Outcomes...</span>
                 </div>
                 <p className="mt-3 text-muted">Loading Course Outcomes & mappings...</p>
@@ -300,188 +301,150 @@ export default function Llo() {
               <div className="row g-4">
                 {/* Selector and Editing Card */}
                 <div className="col-12">
-                  <div className="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                  <div className="tlollo-card">
                     {/* Header */}
-                    <div className="card-header border-0 bg-dark text-white p-3 d-flex align-items-center justify-content-between">
-                      <h5 className="mb-0 fw-semibold text-white">LLO Management</h5>
-                      <span className="badge bg-primary px-3 py-2 rounded-pill fs-7">
+                    <div className="tlollo-card-header">
+                      <h4 className="tlollo-card-title">LLO Management</h4>
+                      <span className="tlollo-subject-badge">
                         Subject: {ciannData?.subject?.name || "Active subject"}
                       </span>
                     </div>
 
-                    {/* Body */}
-                    <div className="card-body p-4 bg-white">
-                      <div className="row g-4">
-                        {/* CO Dropdown Selection */}
-                        <div className="col-md-4 border-end-md">
-                          <label className="form-label fw-bold text-dark mb-2">Select Course Outcome (CO)</label>
-                          <select
-                            value={selectedCo}
-                            onChange={(e) => setSelectedCo(e.target.value)}
-                            className="form-select form-select-lg border-2 shadow-sm rounded-3 bg-light text-dark fw-semibold"
-                            style={{ cursor: "pointer" }}
-                          >
-                            {courseOutcomes.map((co) => (
-                              <option key={co.coNumber} value={co.coNumber}>
-                                {co.coNumber}
-                              </option>
-                            ))}
-                          </select>
-
-                          <div className="d-flex gap-2 mt-3">
+                    {/* Body Grid */}
+                    <div className="tlollo-grid">
+                      {/* Left Column: CO Dropdown Selection & Description */}
+                      <div>
+                        <div className="co-section-header">
+                          <label className="co-section-title">Course Outcome (CO)</label>
+                          <div className="co-actions">
                             <button
                               type="button"
                               onClick={handleAddCo}
-                              className="btn btn-sm btn-outline-primary w-100 fw-bold"
+                              className="btn-action-green"
                             >
-                              + Add CO
+                              <i className="bi bi-plus-lg"></i> ADD
                             </button>
-                            <button
-                              type="button"
-                              onClick={handleDeleteCo}
-                              disabled={courseOutcomes.length <= 1}
-                              className="btn btn-sm btn-outline-danger w-100 fw-bold"
-                            >
-                              Delete CO
-                            </button>
-                          </div>
-
-                          {selectedCoObj && (
-                            <div className="mt-4 p-3 bg-light rounded-3 border-start border-4 border-primary">
-                              <span className="text-primary fw-bold text-uppercase fs-7 block mb-2 d-block">
-                                Description
-                              </span>
-                              <textarea
-                                value={selectedCoObj.description || ""}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setCourseOutcomes((prev) =>
-                                    prev.map((c) =>
-                                      c.coNumber === selectedCo
-                                        ? { ...c, description: val }
-                                        : c
-                                    )
-                                  );
-                                }}
-                                className="form-control form-control-sm bg-white text-dark"
-                                placeholder="Enter Course Outcome Description..."
-                                rows="4"
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Outcomes Inputs */}
-                        <div className="col-md-8">
-                          <div className="d-flex align-items-center justify-content-between mb-3">
-                            <h6 className="fw-bold text-dark d-flex align-items-center gap-2 mb-0">
-                              <i className="bi bi-flask text-primary"></i>
-                              Mapped Lab Learning Outcomes for {selectedCo}
-                            </h6>
-                            <button
-                              type="button"
-                              onClick={handleAddLloField}
-                              className="btn btn-sm btn-primary rounded-pill px-3 py-1 d-flex align-items-center gap-1 shadow-sm"
-                            >
-                              <i className="bi bi-plus-lg"></i> Add LLO
-                            </button>
-                          </div>
-
-                          <div className="outcome-inputs-list" style={{ minHeight: "150px" }}>
-                            {activeLlos.map((llo, idx) => (
-                              <div
-                                key={idx}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "10px",
-                                  marginBottom: "10px",
-                                  background: "#f8f9fa",
-                                  borderRadius: "10px",
-                                  padding: "10px 14px",
-                                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                                }}
+                            {courseOutcomes.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={handleDeleteCo}
+                                className="btn-action-green btn-delete"
                               >
-                                <span
-                                  style={{
-                                    minWidth: "52px",
-                                    fontSize: "12px",
-                                    fontWeight: "600",
-                                    color: "#6c757d",
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  LLO {idx + 1}
-                                </span>
-                                <input
-                                  type="text"
-                                  value={llo}
-                                  onChange={(e) => handleLloFieldChange(idx, e.target.value)}
-                                  placeholder="Describe laboratory outcome..."
-                                  style={{
-                                    flex: 1,
-                                    border: "none",
-                                    background: "transparent",
-                                    outline: "none",
-                                    fontSize: "14px",
-                                    color: "#212529",
-                                    padding: "2px 0",
-                                  }}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveLloField(idx)}
-                                  title="Delete LLO"
-                                  style={{
-                                    flexShrink: 0,
-                                    background: "none",
-                                    border: "none",
-                                    color: "#dc3545",
-                                    cursor: "pointer",
-                                    fontSize: "1.15rem",
-                                    lineHeight: 1,
-                                    padding: "0 2px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <i className="bi bi-dash-circle-fill"></i>
-                                </button>
-                              </div>
-                            ))}
+                                <i className="bi bi-trash-fill"></i> DELETE
+                              </button>
+                            )}
                           </div>
                         </div>
+
+                        <select
+                          value={selectedCo}
+                          onChange={(e) => setSelectedCo(e.target.value)}
+                          className="co-dropdown"
+                        >
+                          {courseOutcomes.map((co) => (
+                            <option key={co.coNumber} value={co.coNumber}>
+                              {co.coNumber}
+                            </option>
+                          ))}
+                        </select>
+
+                        {selectedCoObj && (
+                          <div className="co-description-box">
+                            <span className="co-description-label">Description</span>
+                            <textarea
+                              value={selectedCoObj.description || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setCourseOutcomes((prev) =>
+                                  prev.map((c) =>
+                                    c.coNumber === selectedCo
+                                      ? { ...c, description: val }
+                                      : c
+                                  )
+                                );
+                              }}
+                              className="co-description-textarea"
+                              placeholder="Enter Course Outcome Description..."
+                              rows="4"
+                            />
+                          </div>
+                        )}
                       </div>
 
-                      {/* Save Button Footer */}
-                      <div className="border-top pt-3 mt-2 d-flex align-items-center justify-content-end gap-3">
-                        {success && (
-                          <span className="text-success fw-semibold d-flex align-items-center gap-1">
-                            <i className="bi bi-check-circle-fill"></i> Saved successfully!
-                          </span>
-                        )}
-                        <button
-                          onClick={handleSave}
-                          disabled={saving || loading || !ciannData}
-                          className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
-                        >
-                          {saving ? (
-                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                          ) : (
-                            <>
-                              <i className="bi bi-cloud-arrow-up-fill me-2"></i> Save LLO Details
-                            </>
-                          )}
-                        </button>
+                      {/* Right Column: Outcomes Inputs */}
+                      <div>
+                        <div className="outcomes-section-header">
+                          <h6 className="outcomes-section-title">
+                            <i className="bi bi-flask-fill outcomes-section-title-icon" style={{ color: "#0eb582" }}></i>
+                            Mapped Lab Learning Outcomes for {selectedCo}
+                          </h6>
+                          <button
+                            type="button"
+                            onClick={handleAddLloField}
+                            className="btn-add-outcome"
+                          >
+                            <i className="bi bi-plus-lg"></i> ADD LLO
+                          </button>
+                        </div>
+
+                        <div className="outcomes-list">
+                          {activeLlos.map((llo, idx) => (
+                            <div key={idx} className="outcome-item">
+                              <span className="outcome-badge">
+                                LLO {idx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                value={llo}
+                                onChange={(e) => handleLloFieldChange(idx, e.target.value)}
+                                placeholder="Describe laboratory outcome..."
+                                className="outcome-input"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveLloField(idx)}
+                                className="btn-delete-outcome"
+                                title="Delete LLO"
+                              >
+                                <i className="bi bi-trash-fill"></i>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
+                    </div>
+
+                    {/* Success Alert */}
+                    {success && (
+                      <div className="alert alert-success border-0 rounded-3 shadow-sm d-flex align-items-center gap-2 mb-3 mt-4">
+                        <i className="bi bi-check-circle-fill text-success fs-5"></i>
+                        <span>{success}</span>
+                      </div>
+                    )}
+
+                    {/* Save Button Footer */}
+                    <div className="tlollo-save-footer">
+                      <button
+                        onClick={handleSave}
+                        disabled={saving || loading || !ciannData}
+                        className="btn-save-details"
+                      >
+                        {saving ? (
+                          <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        ) : (
+                          <>
+                            <i className="bi bi-cloud-arrow-up-fill"></i> SAVE LLO DETAILS
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Summary Section */}
                 <div className="col-12">
-                  <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
-                    <h5 className="fw-bold text-dark mb-3">LLO Mapping Summary</h5>
+                  <div className="tlollo-summary-card">
+                    <h5 className="tlollo-summary-title">LLO Mapping Summary</h5>
                     <div className="table-responsive">
                       <table className="table table-bordered align-middle">
                         <thead className="table-dark">
@@ -500,7 +463,7 @@ export default function Llo() {
                             return (
                               <tr key={co.coNumber}>
                                 <td>
-                                  <span className="badge bg-primary fs-7 rounded-pill">{co.coNumber}</span>
+                                  <span className="badge bg-success fs-7 rounded-pill">{co.coNumber}</span>
                                 </td>
                                 <td className="text-secondary small fw-semibold">{co.description}</td>
                                 <td>
