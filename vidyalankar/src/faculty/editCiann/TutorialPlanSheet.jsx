@@ -275,7 +275,7 @@ const TutorialPlanSheet = () => {
     }
 
     if (!modalWeek) {
-      setMessage("⚠️ Please select a week (Entry No.).");
+      setMessage("⚠️ Please select a week.");
       return;
     }
 
@@ -355,7 +355,7 @@ const TutorialPlanSheet = () => {
               <td
                 rowSpan={plansForWeek.length}
                 style={{ textAlign: "center", verticalAlign: "middle" }}
-                data-label="Entry No."
+                data-label="Week No."
                 className="entry-no"
               >
                 {week}
@@ -377,7 +377,7 @@ const TutorialPlanSheet = () => {
         >
           <td
             style={{ textAlign: "center", verticalAlign: "middle" }}
-            data-label="Entry No."
+            data-label="Week No."
             className="entry-no"
           >
             {week}
@@ -440,7 +440,7 @@ const TutorialPlanSheet = () => {
 
         <div className="weekwise-form-container">
           <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: "15px 0" }}>
-            <label style={{ fontWeight: "600", fontSize: "15px", color: "var(--ciann-text, #495057)" }}>Select Entry (Week):</label>
+            <label style={{ fontWeight: "600", fontSize: "15px", color: "var(--ciann-text, #495057)" }}>Select Week:</label>
             <select
               value={modalWeek}
               onChange={(e) => handleWeekChange(e.target.value)}
@@ -716,7 +716,7 @@ const TutorialPlanSheet = () => {
                   <table className="teaching-table tutorial-table">
                     <thead>
                       <tr>
-                        <th>Entry No.</th>
+                        <th>Week No.</th>
                         <th>Chapter</th>
                         <th>Sub-Topic</th>
                         <th>Start Date</th>

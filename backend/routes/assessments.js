@@ -439,7 +439,13 @@ router.get('/students-by-batch', async (req, res) => {
 
     const students = await Student.find(query)
       .select('rollNo studentName batch')
-      .sort({ rollNo: 1 });
+      .lean();
+
+    students.sort((a, b) => {
+      const aRoll = String(a.rollNo || "").trim();
+      const bRoll = String(b.rollNo || "").trim();
+      return aRoll.localeCompare(bRoll, undefined, { numeric: true, sensitivity: 'base' });
+    });
 
     if (students.length === 0) {
       return res.json({ 
@@ -605,7 +611,13 @@ router.get('/batch/:batch', async (req, res) => {
     // Get all students in the batch
     const batchStudents = await Student.find({ batch: batch })
       .select('rollNo studentName batch')
-      .sort({ rollNo: 1 });
+      .lean();
+
+    batchStudents.sort((a, b) => {
+      const aRoll = String(a.rollNo || "").trim();
+      const bRoll = String(b.rollNo || "").trim();
+      return aRoll.localeCompare(bRoll, undefined, { numeric: true, sensitivity: 'base' });
+    });
     
     if (batchStudents.length === 0) {
       return res.json({ 
@@ -680,7 +692,13 @@ router.post('/by-students', async (req, res) => {
       studentName: { $in: studentNames },
     })
       .select('rollNo studentName batch')
-      .sort({ rollNo: 1 });
+      .lean();
+
+    students.sort((a, b) => {
+      const aRoll = String(a.rollNo || "").trim();
+      const bRoll = String(b.rollNo || "").trim();
+      return aRoll.localeCompare(bRoll, undefined, { numeric: true, sensitivity: 'base' });
+    });
 
     if (students.length === 0) {
       return res.json({

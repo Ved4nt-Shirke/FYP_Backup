@@ -213,7 +213,12 @@ const SecondarySidebar = ({
   // Handle click outside for notification dropdown
   useEffect(() => {
     function handleClickOutside(event) {
-      if (notifDropdownRef.current && !notifDropdownRef.current.contains(event.target)) {
+      if (
+        notifDropdownRef.current &&
+        !notifDropdownRef.current.contains(event.target) &&
+        bellRef.current &&
+        !bellRef.current.contains(event.target)
+      ) {
         setShowNotifDropdown(false);
       }
     }

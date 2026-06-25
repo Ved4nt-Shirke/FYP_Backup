@@ -365,6 +365,8 @@ body.ciann-view-only a.btn:not(.ciann-comments-toggle-btn) {
   position: relative;
   display: inline-block;
   margin-left: 8px;
+  z-index: 10001 !important;
+  pointer-events: auto !important;
 }
 
 .ciann-notif-bell-btn {
@@ -381,6 +383,12 @@ body.ciann-view-only a.btn:not(.ciann-comments-toggle-btn) {
   justify-content: center;
   border-radius: 50%;
   transition: background-color 0.2s;
+  z-index: 10002 !important;
+}
+
+.ciann-notif-bell-btn * {
+  pointer-events: none !important; /* Forces clicks to target the button directly */
+  cursor: pointer !important;
 }
 
 .ciann-notif-bell-btn:hover {

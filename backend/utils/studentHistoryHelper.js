@@ -258,11 +258,11 @@ async function resolveStudents(params, college) {
     }));
   }
 
-  // Sort students naturally by roll number
+  // Sort students by roll number (natural alphanumeric sort)
   students.sort((a, b) => {
-    const aRoll = String(a.rollNo || "");
-    const bRoll = String(b.rollNo || "");
-    return aRoll.localeCompare(bRoll, undefined, { numeric: true, sensitivity: 'base' });
+    const aRoll = String(a.rollNo || "").trim();
+    const bRoll = String(b.rollNo || "").trim();
+    return aRoll.localeCompare(bRoll, undefined, { numeric: true, sensitivity: "base" });
   });
 
   return students;

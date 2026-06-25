@@ -58,6 +58,7 @@
   box-sizing: border-box;
   display: flex;
   justify-content: flex-start; /* Ensure card starts at the left */
+  align-items: flex-start; /* Prevent vertical stretching and overflow */
 }
 
 /* --- THE WHITE CARD (PLAN-CONTAINER) --- */

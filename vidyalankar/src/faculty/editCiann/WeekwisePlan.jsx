@@ -811,19 +811,10 @@ const WeekwisePlan = ({
                         </select>
                       </td>
                     )}
-                    <td>
-                      <select
-                        value={plan.batch}
-                        onChange={(e) => handleChange(i, "batch", e.target.value)}
-                        disabled={!week}
-                        className="batch-select"
-                      >
-                        {(batches.length > 0 ? batches : ["B1", "B2", "B3", "B4", "B5", "B6"]).map((b) => (
-                          <option key={b} value={b}>
-                            {b}
-                          </option>
-                        ))}
-                      </select>
+                    <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                      <span className="batch-label" style={{ fontWeight: "600", color: "#334155", display: "inline-block", padding: "6px 12px", background: "#f1f5f9", borderRadius: "6px" }}>
+                        {plan.batch}
+                      </span>
                     </td>
                     <td>
                       <div className="co-badges-container">
@@ -1043,10 +1034,11 @@ const WeekwisePlan = ({
               type="button"
               className="add-row-btn"
               onClick={() => {
-                const defaultBatch = batches.length > 0 ? batches[0] : "B1";
+                const batchList = batches.length > 0 ? batches : ["B1", "B2", "B3"];
+                const nextBatch = batchList[plans.length % batchList.length];
                 setPlans([
                   ...plans,
-                  { batch: defaultBatch, co: "", llo: "", exptNo: "", exptName: "", date: "" }
+                  { batch: nextBatch, co: "", llo: "", exptNo: "", exptName: "", date: "" }
                 ]);
               }}
               disabled={!week}

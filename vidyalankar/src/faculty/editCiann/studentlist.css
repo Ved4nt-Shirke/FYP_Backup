@@ -45,47 +45,79 @@ body {
 .studentlist-container {
   width: min(100%, 1100px);
   max-width: 1100px;
-  margin: 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  min-height: 600px;
+  margin: 0 0 40px 0;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  min-height: 550px;
   position: relative;
   background: #fff;
-  border-radius: 8px;
-  padding: 15px;
+  border-radius: 16px;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
 .header-with-button {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.table-responsive-wrapper {
+  overflow-x: auto;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
 /* =================== TABLE STYLES =================== */
 .studentlist-container .table {
-  border-collapse: collapse;
-  border-spacing: 0;
-  width: 100%;
-}
-
-.studentlist-container .table th {
-  text-align: center;
-}
-
-.studentlist-container .table td {
-  border: 0.5px solid #cccccc;
-  padding: 8px 6px;
-  vertical-align: middle;
-  text-align: left;
-  font-size: 12px !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
 }
 
 .studentlist-container .table thead th {
-  font-weight: 600;
-  background-color: #e9edf2;
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+  font-weight: 600 !important;
   font-size: 13px !important;
-  height: 35px !important;
-  border: 0.5px solid #cccccc;
+  padding: 14px 16px !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+}
+
+.studentlist-container .table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.studentlist-container .table tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+.studentlist-container .table tbody td {
+  padding: 14px 16px !important;
+  font-size: 14px !important;
+  color: #334155 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  background-color: transparent !important;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Remove border on last row */
+.studentlist-container .table tbody tr:last-child td {
+  border-bottom: none !important;
 }
 
 /* ============ PAGINATION BUTTONS STYLE ============ */
@@ -93,36 +125,31 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 1rem;
+  margin-top: 24px;
 }
 
-.pagination-buttons button {
-  font-weight: 600;
-  font-size: 14px;
-  padding: 6px 12px;
-  border: 1.5px solid #ccc;
-  border-radius: 10px;
-  background-color: white;
-  color: black;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.pagination-buttons .btn {
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 10px 20px !important;
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  background-color: #ffffff !important;
+  color: #475569 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transform: none !important;
 }
 
-.pagination-buttons button:hover {
-  background-color: green;
-  border-color: green;
-  color: white;
-}
-
-/* ==== Desktop specific widths ==== */
-.studentlist-container .table td:first-child,
-.studentlist-container .table td:nth-child(2),
-.studentlist-container .table td:nth-child(3),
-.studentlist-container .table td:nth-child(4) {
-  min-width: 140px;
-  text-align: center;
-  background-color: #ffffff;
-  border: white;
+.pagination-buttons .btn:hover {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  transform: translateY(-1px) !important;
 }
 
 /* .table td:first-child,
@@ -272,17 +299,10 @@ body {
   overflow: visible;
 }
 
-.student-secondary-sidebar-wrapper {
-  position: static !important;
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  height: 0 !important;
-  overflow: visible !important;
-  padding-right: 0 !important;
-}
+
 
 .student-main-content {
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow-y: visible;
+  overflow-x: visible;
+  align-items: flex-start;
 }

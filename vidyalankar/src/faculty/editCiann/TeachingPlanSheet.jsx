@@ -698,7 +698,7 @@ const TeachingPlan = () => {
     }
 
     if (!modalWeek) {
-      setMessage("⚠️ Please select a week (Entry No.).");
+      setMessage("⚠️ Please select a week.");
       return;
     }
 
@@ -779,7 +779,7 @@ const TeachingPlan = () => {
             <td
               rowSpan={plansForWeek.length}
               style={{ textAlign: "center", verticalAlign: "middle" }}
-              data-label="Entry No."
+              data-label="Week No."
               className="entry-no"
             >
               {week}
@@ -811,7 +811,7 @@ const TeachingPlan = () => {
         >
           <td
             style={{ textAlign: "center", verticalAlign: "middle" }}
-            data-label="Entry No."
+            data-label="Week No."
             className="entry-no"
           >
             {week}
@@ -886,7 +886,7 @@ const TeachingPlan = () => {
 
         <div className="weekwise-form-container">
           <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: "15px 0" }}>
-            <label style={{ fontWeight: "600", fontSize: "15px", color: "#495057" }}>Select Entry (Week):</label>
+            <label style={{ fontWeight: "600", fontSize: "15px", color: "#495057" }}>Select Week:</label>
             <select
               value={modalWeek}
               onChange={(e) => handleWeekChange(e.target.value)}
@@ -1219,7 +1219,7 @@ const TeachingPlan = () => {
                   <table className="teaching-table">
                     <thead>
                       <tr>
-                        <th>Entry No.</th>
+                        <th>Week No.</th>
                         <th>CO</th>
                         <th>Chapter</th>
                         <th>TLO</th>
