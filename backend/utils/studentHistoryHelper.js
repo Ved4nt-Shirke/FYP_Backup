@@ -4,6 +4,25 @@ const Student = require("../models/Student");
 const Division = require("../models/Division");
 
 /**
+ * Normalizes academicYear string to a RegExp supporting optional spaces and short vs long formats.
+ * E.g., "2026 - 2027" -> /^2026\s*-\s*(?:27|2027)$/i
+ */
+function getAcademicYearRegex(academicYear) {
+  if (!academicYear) return null;
+  const matches = academicYear.match(/(\d{4})\s*-\s*(\d{2,4})/);
+  if (matches) {
+    const startYear = matches[1];
+    const endYear = matches[2];
+    const shortEndYear = endYear.length === 4 ? endYear.slice(2) : endYear;
+    const longEndYear = endYear.length === 2 ? (startYear.slice(0, 2) + endYear) : endYear;
+    const pattern = `^${startYear}\\s*-\\s*(?:${shortEndYear}|${longEndYear})$`;
+    return new RegExp(pattern, "i");
+  }
+  return new RegExp(`^${academicYear.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+}
+
+
+/**
  * Ensures that a student has an active StudentAcademicHistory record for their current academic year and semester.
  * @param {Object} student - The Student document (from master Student collection).
  */
@@ -103,7 +122,12 @@ async function resolveStudents(params, college) {
   let historyQuery = {};
 
   if (academicYear) {
-    historyQuery.academicYear = academicYear;
+    const ayRegex = getAcademicYearRegex(academicYear);
+    if (ayRegex) {
+      historyQuery.academicYear = ayRegex;
+    } else {
+      historyQuery.academicYear = academicYear;
+    }
     useHistory = true;
   }
   if (semester) {
@@ -153,6 +177,7 @@ async function resolveStudents(params, college) {
           if (batch && s.batch !== batch) return false;
           if (departmentId && String(s.departmentId?._id || s.departmentId) !== String(departmentId)) return false;
           if (courseId && String(s.courseId?._id || s.courseId) !== String(courseId)) return false;
+          if (division && String(rec.divisionId?.name || s.division).trim().toLowerCase() !== String(division).trim().toLowerCase()) return false;
           return true;
         })
         .map(rec => {
@@ -195,13 +220,24 @@ async function resolveStudents(params, college) {
     if (courseId) {
       query.courseId = courseId;
     } else if (semester) {
-      const courses = await Course.find({ semester: String(semester) });
+      const semNum = Number(semester);
+      const semFilter = !isNaN(semNum) ? { $in: [semNum, String(semester)] } : String(semester);
+      const courses = await Course.find({ semester: semFilter });
       if (courses.length > 0) {
         query.courseId = { $in: courses.map(c => c._id) };
+      } else {
+        query.courseId = { $in: [] }; // Return no students if no courses match the semester
       }
     }
     if (departmentId) query.departmentId = departmentId;
-    if (academicYear) query.academicYear = academicYear;
+    if (academicYear) {
+      const ayRegex = getAcademicYearRegex(academicYear);
+      if (ayRegex) {
+        query.academicYear = ayRegex;
+      } else {
+        query.academicYear = academicYear;
+      }
+    }
 
     const dbStudents = await Student.find(query)
       .populate("departmentId", "name code")
