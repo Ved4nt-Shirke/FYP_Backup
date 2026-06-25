@@ -372,7 +372,8 @@ body.ciann-view-only a.btn:not(.ciann-comments-toggle-btn) {
   border: none;
   font-size: 1.15rem;
   color: var(--primary-color, #295fc5);
-  cursor: pointer;
+  cursor: pointer !important;
+  pointer-events: auto !important;
   position: relative;
   padding: 4px;
   display: flex;
@@ -418,6 +419,7 @@ body.ciann-view-only a.btn:not(.ciann-comments-toggle-btn) {
   flex-direction: column;
   overflow: hidden;
   margin-top: 8px;
+  pointer-events: auto !important;
 }
 
 @media (max-width: 768px) {

@@ -16,6 +16,7 @@ const TutorialAttendanceSchema = new mongoose.Schema({
       attendance: String,
     },
   ],
+  remark: String,
 }, {
   timestamps: true
 });

@@ -329,6 +329,17 @@
   text-align: left;
 } /* LLO */
 
+/* Class-based alignment for LLO and Experiment Name cells (nth-child breaks with rowspan) */
+.labplanning-main-content .lab-table td.llo-cell,
+.labplanning-main-content .lab-table th.llo-cell {
+  text-align: left !important;
+}
+
+.labplanning-main-content .lab-table td.expt-name-cell,
+.labplanning-main-content .lab-table th.expt-name-cell {
+  text-align: left !important;
+}
+
 .labplanning-main-content .lab-table th:nth-child(5),
 .labplanning-main-content .lab-table td:nth-child(5) {
   width: 8%;

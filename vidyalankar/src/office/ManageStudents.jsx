@@ -525,7 +525,9 @@ const ManageStudents = () => {
   };
 
   const handleDeleteStudent = async (studentId, studentName) => {
-    if (!window.confirm(`Are you sure you want to permanently delete student "${studentName}"? This action will revoke portal credentials.`)) {
+    const divisionName = divisions.find(d => d._id === selectedDivision)?.name || "";
+    const classContext = divisionName ? ` from ${divisionName}` : "";
+    if (!window.confirm(`Are you sure you want to permanently delete student "${studentName}"${classContext}?\n\nThis action will revoke portal credentials and cannot be undone.`)) {
       return;
     }
 
@@ -551,6 +553,67 @@ const ManageStudents = () => {
         handleCloseDetailsDrawer();
       }
       setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAllClassStudents = async () => {
+    if (!selectedDepartment || !selectedCourse || !selectedDivision) {
+      setError("Please select Department, Course and Division filter first.");
+      return;
+    }
+
+    const divisionName = divisions.find(d => d._id === selectedDivision)?.name || "selected class";
+    const studentCount = filteredStudents.length;
+
+    if (studentCount === 0) {
+      setError("No students found in the selected class to delete.");
+      return;
+    }
+
+    if (!window.confirm(`WARNING: Are you sure you want to permanently delete ALL ${studentCount} students in class "${divisionName}"?\n\nThis will also delete their portal user accounts. This action CANNOT be undone.`)) {
+      return;
+    }
+
+    const verificationPrompt = window.prompt(`To confirm, type the division name "${divisionName}" below:`);
+    if (verificationPrompt !== divisionName) {
+      setError("Deletion cancelled. Division name did not match.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess("");
+
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.office.clearStudents, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          departmentId: selectedDepartment,
+          courseId: selectedCourse,
+          divisionId: selectedDivision,
+          academicYear: selectedAcademicYear || undefined,
+          batch: selectedBatch || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to delete student records.");
+      }
+
+      setSuccess(`Successfully deleted ${data.deletedStudents || studentCount} students from class "${divisionName}".`);
+      setStudents([]);
+      handleCloseDetailsDrawer();
+      setTimeout(() => setSuccess(""), 4000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -801,9 +864,24 @@ const ManageStudents = () => {
             className="wizard-btn-primary"
             onClick={() => setShowAddStudentModal(true)}
             disabled={!selectedDepartment || !selectedCourse || !selectedDivision}
-            title={(!selectedDepartment || !selectedCourse || !selectedDivision) ? "Please select Department, Course and Division filter first" : ""}
+            title={(!selectedDepartment || !selectedCourse || !selectedDivision) ? "Please select Department, Course and Division filter first" : `Add student to ${divisions.find(d => d._id === selectedDivision)?.name || "selected class"}`}
           >
-            Add Student Profile
+            ➕ Add Student
+            {selectedDivision && <span style={{ fontSize: "11px", opacity: 0.85, marginLeft: "4px" }}>
+              — {divisions.find(d => d._id === selectedDivision)?.name || ""}
+            </span>}
+          </button>
+
+          <button
+            className="wizard-btn-danger"
+            onClick={handleDeleteAllClassStudents}
+            disabled={!selectedDepartment || !selectedCourse || !selectedDivision || students.length === 0}
+            title={(!selectedDepartment || !selectedCourse || !selectedDivision) ? "Please select Department, Course and Division filter first" : `Delete all students in class ${divisions.find(d => d._id === selectedDivision)?.name || "selected class"}`}
+          >
+            🗑️ Delete Class Students
+            {selectedDivision && <span style={{ fontSize: "11px", opacity: 0.85, marginLeft: "4px" }}>
+              — {divisions.find(d => d._id === selectedDivision)?.name || ""}
+            </span>}
           </button>
         </div>
       </div>
@@ -1202,7 +1280,11 @@ const ManageStudents = () => {
           <div className="modal-dialog-box animate-modalScaleIn" onClick={(e) => e.stopPropagation()}>
             <div className="modal-dialog-header">
               <h3>Create Student Profile</h3>
-              <p>Add a single student profile record manually.</p>
+              <p>
+                Add a new student to{" "}
+                <strong>{divisions.find(d => d._id === selectedDivision)?.name || "selected class"}</strong>
+                {courses.find(c => c._id === selectedCourse) ? ` — Sem ${courses.find(c => c._id === selectedCourse).semester}` : ""}
+              </p>
             </div>
 
             <div className="modal-dialog-body office-scrollable">

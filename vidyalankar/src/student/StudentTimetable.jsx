@@ -74,7 +74,7 @@ const StudentTimetable = () => {
       <div className="student-content-container">
         <div className="content-header">
           <h1>Timetable</h1>
-          <p>Division timetable will be available here once your semester ends.</p>
+          <p>Division timetable will be available here once published by faculty.</p>
         </div>
         <div className="no-results">
           <i className="bi bi-calendar-x"></i>
@@ -93,7 +93,7 @@ const StudentTimetable = () => {
     <div className="student-content-container">
       <div className="content-header">
         <h1>Timetable</h1>
-        <p>Published by faculty for your division after semester completion.</p>
+        <p>Published by faculty for your division.</p>
       </div>
 
       <div className="performance-summary" style={{ marginTop: 16 }}>

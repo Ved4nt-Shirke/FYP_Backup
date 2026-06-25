@@ -200,6 +200,31 @@ const WeekwisePlan = ({
     fetchExperiments();
   }, [ciannData]);
 
+  // Auto-correct/sync exptName when experiments load or plans are set
+  useEffect(() => {
+    if (experiments.length > 0 && plans.length > 0) {
+      let changed = false;
+      const updatedPlans = plans.map(plan => {
+        if (plan.exptNo) {
+          const selectedExpts = plan.exptNo.split(",").map(e => e.trim()).filter(Boolean);
+          const names = selectedExpts.map(no => {
+            const expObj = experiments.find(e => String(e.practicalNo) === String(no));
+            return expObj ? expObj.practicalName : "";
+          }).filter(Boolean);
+          const expectedName = names.join("\n");
+          if (plan.exptName !== expectedName) {
+            changed = true;
+            return { ...plan, exptName: expectedName };
+          }
+        }
+        return plan;
+      });
+      if (changed) {
+        setPlans(updatedPlans);
+      }
+    }
+  }, [experiments, plans]);
+
   useEffect(() => {
     if (initialWeek) {
       setWeek(`Week ${initialWeek}`);
@@ -214,7 +239,7 @@ const WeekwisePlan = ({
             co: item.co || "",
             llo: item.llo ? getNormalizedLlo(item.llo) : "",
             exptNo: item.exptNo || "",
-            exptName: item.exptName ? item.exptName.replace(/,\s*/g, "\n") : "",
+            exptName: item.exptName || "",
             date: item.date || "",
           }))
         );

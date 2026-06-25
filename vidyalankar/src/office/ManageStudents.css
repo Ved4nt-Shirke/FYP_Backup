@@ -743,3 +743,29 @@
 .margin-top-sm {
   margin-top: 10px;
 }
+
+/* Delete Class Students Danger Button Styling */
+.wizard-btn-danger {
+  background-color: var(--office-danger);
+  color: #ffffff;
+  border: 1px solid var(--office-danger);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 550;
+  border-radius: var(--office-radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--office-transition-fast);
+}
+
+.wizard-btn-danger:hover:not(:disabled) {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.wizard-btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
