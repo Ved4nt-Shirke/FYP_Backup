@@ -60,6 +60,7 @@ const StudentAttendance = () => {
     try {
       const topic = localStorage.getItem("topic");
       const actualDate = localStorage.getItem("date");
+      const remark = localStorage.getItem("remark");
       const ciannDataStr = localStorage.getItem("ciannData");
 
       if (!topic || !actualDate) {
@@ -82,6 +83,7 @@ const StudentAttendance = () => {
         ciannId: ciannData.ciannId,
         subject: ciannData.subject,
         division: ciannData.division,
+        remark: remark || "",
       };
 
       setIsSubmitting(true);
@@ -97,6 +99,7 @@ const StudentAttendance = () => {
 
       localStorage.removeItem("topic");
       localStorage.removeItem("date");
+      localStorage.removeItem("remark");
       localStorage.removeItem("ciannData");
 
       setTimeout(() => {
@@ -134,6 +137,7 @@ const StudentAttendance = () => {
   const ciannDataStr = localStorage.getItem("ciannData");
   const topic = localStorage.getItem("topic");
   const date = localStorage.getItem("date");
+  const remark = localStorage.getItem("remark");
   let ciannData = null;
   try {
     ciannData = ciannDataStr ? JSON.parse(ciannDataStr) : null;
@@ -193,6 +197,12 @@ const StudentAttendance = () => {
               <span className="eia-context-label">Date</span>
               <span className="eia-context-value">{date || "N/A"}</span>
             </div>
+            {remark && (
+              <div className="eia-context-item">
+                <span className="eia-context-label">Remark</span>
+                <span className="eia-context-value">{remark}</span>
+              </div>
+            )}
           </div>
         </div>
 

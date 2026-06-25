@@ -78,6 +78,8 @@ const SecondarySidebar = ({
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const notifDropdownRef = useRef(null);
+  const bellRef = useRef(null);
+  const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0, width: "320px" });
 
   const toggleSubMenu = (label) => {
     setOpenSubMenus((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -211,13 +213,66 @@ const SecondarySidebar = ({
   // Handle click outside for notification dropdown
   useEffect(() => {
     function handleClickOutside(event) {
-      if (notifDropdownRef.current && !notifDropdownRef.current.contains(event.target)) {
+      const clickedDropdown = notifDropdownRef.current && notifDropdownRef.current.contains(event.target);
+      const clickedBell = bellRef.current && bellRef.current.contains(event.target);
+      if (!clickedDropdown && !clickedBell) {
         setShowNotifDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Recalculate dropdown position when opened or window is resized/scrolled
+  useEffect(() => {
+    const updateCoords = () => {
+      if (showNotifDropdown && bellRef.current) {
+        const rect = bellRef.current.getBoundingClientRect();
+        const width = window.innerWidth < 769 ? Math.min(340, window.innerWidth - 32) : 320;
+        let left = rect.right - width;
+        if (left < 10) left = 10;
+        if (left + width > window.innerWidth - 10) {
+          left = window.innerWidth - width - 10;
+        }
+        setDropdownCoords({
+          top: rect.bottom + 8,
+          left: left,
+          width: `${width}px`
+        });
+      }
+    };
+
+    updateCoords();
+
+    if (showNotifDropdown) {
+      window.addEventListener("resize", updateCoords);
+      window.addEventListener("scroll", updateCoords, true);
+    }
+
+    return () => {
+      window.removeEventListener("resize", updateCoords);
+      window.removeEventListener("scroll", updateCoords, true);
+    };
+  }, [showNotifDropdown]);
+
+  const handleBellClick = (e) => {
+    e.stopPropagation();
+    if (!showNotifDropdown && bellRef.current) {
+      const rect = bellRef.current.getBoundingClientRect();
+      const width = window.innerWidth < 769 ? Math.min(340, window.innerWidth - 32) : 320;
+      let left = rect.right - width;
+      if (left < 10) left = 10;
+      if (left + width > window.innerWidth - 10) {
+        left = window.innerWidth - width - 10;
+      }
+      setDropdownCoords({
+        top: rect.bottom + 8,
+        left: left,
+        width: `${width}px`
+      });
+    }
+    setShowNotifDropdown(!showNotifDropdown);
+  };
 
   const handleNotificationClick = async (notif) => {
     if (!notif.isRead) {
@@ -377,11 +432,12 @@ const SecondarySidebar = ({
 
             {/* Notification Bell Dropdown */}
             <div className="d-flex align-items-center">
-              <div className="ciann-notif-container" ref={notifDropdownRef}>
+              <div className="ciann-notif-container">
                 <button
                   type="button"
+                  ref={bellRef}
                   className="ciann-notif-bell-btn"
-                  onClick={() => setShowNotifDropdown(!showNotifDropdown)}
+                  onClick={handleBellClick}
                   title="Notifications"
                 >
                   <i className="bi bi-bell-fill"></i>
@@ -390,8 +446,21 @@ const SecondarySidebar = ({
                   )}
                 </button>
 
-                {showNotifDropdown && (
-                  <div className="ciann-notif-dropdown">
+                {showNotifDropdown && createPortal(
+                  <div
+                    className="ciann-notif-dropdown"
+                    ref={notifDropdownRef}
+                    style={{
+                      position: "fixed",
+                      top: `${dropdownCoords.top}px`,
+                      left: `${dropdownCoords.left}px`,
+                      width: dropdownCoords.width,
+                      right: "auto",
+                      marginTop: "0px",
+                      pointerEvents: "auto",
+                      zIndex: 999999
+                    }}
+                  >
                     <div className="ciann-notif-header">
                       <span className="ciann-notif-title">Notifications</span>
                       {unreadNotifCount > 0 && (
@@ -422,7 +491,8 @@ const SecondarySidebar = ({
                         <li className="ciann-notif-empty">No notifications yet.</li>
                       )}
                     </ul>
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
 

@@ -416,13 +416,13 @@ const LabPlanningSheet = () => {
                     <thead>
                       <tr>
                         <th>Week No.</th>
-                        <th>Batch</th>
-                        <th>CO</th>
-                        <th>LLO</th>
-                        <th>Expt. No.</th>
-                        <th>Name of Experiment</th>
-                        <th>Date of Performance (Planned)</th>
-                        <th>Date of Completion (Actual)</th>
+                         <th>Batch</th>
+                         <th>CO</th>
+                         <th className="llo-cell">LLO</th>
+                         <th>Expt. No.</th>
+                         <th className="expt-name-cell">Name of Experiment</th>
+                         <th>Date of Performance (Planned)</th>
+                         <th>Date of Completion (Actual)</th>
                       </tr>
                     </thead>
                     {planningStarted && (
@@ -444,9 +444,9 @@ const LabPlanningSheet = () => {
                                 )}
                                 <td>{p.batch}</td>
                                 <td>{p.co || ""}</td>
-                                <td>{formatLlo(p.llo)}</td>
+                                <td className="llo-cell">{formatLlo(p.llo)}</td>
                                 <td>{p.exptNo}</td>
-                                <td className="expt-name-cell" style={{ whiteSpace: "pre-line" }}>{p.exptName}</td>
+                                <td className="expt-name-cell" style={{ whiteSpace: "pre-line", textAlign: "left" }}>{p.exptName}</td>
                                 <td>{p.date}</td>
                                 <td>{p.actualDate || "--"}</td>
                               </tr>
@@ -460,9 +460,9 @@ const LabPlanningSheet = () => {
                                 {i === 0 && <td rowSpan={arr.length}>{weekNo}</td>}
                                 <td>{batch}</td>
                                 <td></td>
+                                <td className="llo-cell"></td>
                                 <td></td>
-                                <td></td>
-                                <td className="expt-name-cell"></td>
+                                <td className="expt-name-cell" style={{ textAlign: "left" }}></td>
                                 <td></td>
                                 <td>--</td>
                               </tr>

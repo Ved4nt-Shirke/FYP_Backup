@@ -465,12 +465,12 @@ export default function Llo() {
                                 <td>
                                   <span className="badge bg-success fs-7 rounded-pill">{co.coNumber}</span>
                                 </td>
-                                <td className="text-secondary small fw-semibold">{co.description}</td>
+                                <td className="text-secondary small fw-semibold" style={{ textAlign: "left" }}>{co.description}</td>
                                 <td>
                                   {nonEmpties.length === 0 ? (
                                     <span className="text-muted italic small">No LLOs mapped yet</span>
                                   ) : (
-                                    <div className="d-flex flex-column gap-1">
+                                    <div className="d-flex flex-column gap-1" style={{ textAlign: "left" }}>
                                       {nonEmpties.map((l, idx) => (
                                         <div 
                                           key={idx} 

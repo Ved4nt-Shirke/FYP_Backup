@@ -91,11 +91,7 @@ const ensureStudent = (req, res, next) => {
 };
 
 const isVisibleForStudents = (timetable) => {
-  if (!timetable || !timetable.isActive) {
-    return false;
-  }
-  const endDate = new Date(timetable.semesterEndDate);
-  return Number.isFinite(endDate.getTime()) && Date.now() >= endDate.getTime();
+  return !!(timetable && timetable.isActive);
 };
 
 router.use(authenticate);

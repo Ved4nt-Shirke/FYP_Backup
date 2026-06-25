@@ -5,7 +5,9 @@ const tutorialPlanEntrySchema = new mongoose.Schema({
   subTopic: { type: String, required: true },
   startDate: { type: String, required: true },
   endDate: { type: String },
-  teachingMethod: { type: String }
+  teachingMethod: { type: String },
+  actualDate: { type: String, default: '' },
+  remark: { type: String, default: '' }
 }, {_id: false});
 
 const tutorialPlanSchema = new mongoose.Schema({

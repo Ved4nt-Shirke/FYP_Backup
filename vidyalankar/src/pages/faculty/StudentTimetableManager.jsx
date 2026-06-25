@@ -43,9 +43,7 @@ const StudentTimetableManager = () => {
   );
 
   const visibleCount = useMemo(
-    () =>
-      timetables.filter((item) => new Date(item.semesterEndDate) <= new Date())
-        .length,
+    () => timetables.filter((item) => item.isActive !== false).length,
     [timetables],
   );
 
@@ -317,8 +315,7 @@ const StudentTimetableManager = () => {
         <div className="stm-hero-copy">
           <h1>Student Timetable Publisher</h1>
           <p>
-            Publish a division-wise timetable for the student panel. Visibility
-            starts only after the selected semester end date.
+            Publish a division-wise timetable for the student panel. It will be visible immediately to students of that division.
           </p>
         </div>
         <div className="stm-hero-stats">
@@ -484,7 +481,7 @@ const StudentTimetableManager = () => {
                   {item.courseId?.semester || "-"}
                 </p>
                 <p>
-                  Visible to students from:{" "}
+                  Semester End Date:{" "}
                   {new Date(item.semesterEndDate).toLocaleDateString()}
                 </p>
                 <div className="stm-card-actions">

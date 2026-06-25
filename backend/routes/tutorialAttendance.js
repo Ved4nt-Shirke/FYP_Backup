@@ -5,7 +5,7 @@ const checkCiannFreeze = require('../middleware/checkFreeze');
 
 router.post('/', checkCiannFreeze, async (req, res) => {
   try {
-    const { Topic, actualDate, ciannId, subject, division, students } = req.body;
+    const { Topic, actualDate, ciannId, subject, division, students, remark } = req.body;
     
     // Basic validation
     if (!Topic || !actualDate || !ciannId || !students || students.length === 0) {
@@ -20,7 +20,8 @@ router.post('/', checkCiannFreeze, async (req, res) => {
       ciannId,
       subject,
       division,
-      students
+      students,
+      remark
     });
     
     await entry.save();
@@ -60,7 +61,7 @@ router.get('/', async (req, res) => {
 router.put('/:id', checkCiannFreeze, async (req, res) => {
   try {
     const { id } = req.params;
-    const { Topic, actualDate, ciannId, subject, division, students } = req.body;
+    const { Topic, actualDate, ciannId, subject, division, students, remark } = req.body;
     
     // Basic validation
     if (!Topic || !actualDate || !ciannId || !students || students.length === 0) {
@@ -77,7 +78,8 @@ router.put('/:id', checkCiannFreeze, async (req, res) => {
         ciannId,
         subject,
         division,
-        students
+        students,
+        remark
       },
       { new: true, runValidators: true }
     );
