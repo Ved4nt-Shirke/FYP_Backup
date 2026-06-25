@@ -213,14 +213,12 @@ const SecondarySidebar = ({
   // Handle click outside for notification dropdown
   useEffect(() => {
     function handleClickOutside(event) {
-      const clickedDropdown = notifDropdownRef.current && notifDropdownRef.current.contains(event.target);
-      const clickedBell = bellRef.current && bellRef.current.contains(event.target);
-      if (!clickedDropdown && !clickedBell) {
+      if (notifDropdownRef.current && !notifDropdownRef.current.contains(event.target)) {
         setShowNotifDropdown(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   // Recalculate dropdown position when opened or window is resized/scrolled
@@ -475,18 +473,24 @@ const SecondarySidebar = ({
                     </div>
                     <ul className="ciann-notif-list">
                       {notifications.length > 0 ? (
-                        notifications.map((notif) => (
-                          <li
-                            key={notif._id}
-                            className={`ciann-notif-item ${notif.isRead ? "" : "unread"}`}
-                            onClick={() => handleNotificationClick(notif)}
-                          >
-                            <span className="ciann-notif-message">{notif.message}</span>
-                            <span className="ciann-notif-time">
-                              {new Date(notif.createdAt).toLocaleDateString()} at {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </li>
-                        ))
+                        notifications
+                          .filter((notif) => notif && notif._id)
+                          .map((notif) => (
+                            <li
+                              key={notif._id}
+                              className={`ciann-notif-item ${notif.isRead ? "" : "unread"}`}
+                              onClick={() => handleNotificationClick(notif)}
+                            >
+                              <span className="ciann-notif-message">{notif.message}</span>
+                              <span className="ciann-notif-time">
+                                {notif.createdAt ? (
+                                  `${new Date(notif.createdAt).toLocaleDateString()} at ${new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                                ) : (
+                                  "Recent"
+                                )}
+                              </span>
+                            </li>
+                          ))
                       ) : (
                         <li className="ciann-notif-empty">No notifications yet.</li>
                       )}
