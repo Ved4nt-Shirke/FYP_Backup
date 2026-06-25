@@ -17,6 +17,7 @@ const NoticesPage = () => {
   const [targetDepartments, setTargetDepartments] = useState([]);
   const [targetDivisions, setTargetDivisions] = useState([]);
   const [targetAcademicYears, setTargetAcademicYears] = useState([]);
+  const [targetDepartmentFilter, setTargetDepartmentFilter] = useState("");
 
   // Schedule & Expiry
   const [sendInstantly, setSendInstantly] = useState(true);
@@ -324,7 +325,24 @@ const NoticesPage = () => {
     } else if (notice.targetType === "departments") {
       setTargetDepartments((notice.targetDepartments || []).map(d => typeof d === "object" ? d._id : d));
     } else if (notice.targetType === "divisions") {
-      setTargetDivisions((notice.targetDivisions || []).map(d => typeof d === "object" ? d._id : d));
+      const selectedDivs = (notice.targetDivisions || []).map(d => typeof d === "object" ? d._id : d);
+      setTargetDivisions(selectedDivs);
+      if (notice.targetDivisions && notice.targetDivisions.length > 0) {
+        const firstDiv = notice.targetDivisions[0];
+        const deptId = typeof firstDiv === "object" && firstDiv.departmentId
+          ? (typeof firstDiv.departmentId === "object" ? firstDiv.departmentId._id : firstDiv.departmentId)
+          : null;
+        if (deptId) {
+          setTargetDepartmentFilter(deptId);
+        } else {
+          const matchedDiv = targetOptions.divisions.find(d => d._id === selectedDivs[0]);
+          if (matchedDiv && matchedDiv.departmentId) {
+            setTargetDepartmentFilter(
+              typeof matchedDiv.departmentId === "object" ? matchedDiv.departmentId._id : matchedDiv.departmentId
+            );
+          }
+        }
+      }
     } else if (notice.targetType === "academic-year") {
       setTargetAcademicYears(notice.targetAcademicYears || []);
     }
@@ -373,6 +391,7 @@ const NoticesPage = () => {
     setSearchQuery("");
     setSearchResults([]);
     setEditingId(null);
+    setTargetDepartmentFilter("");
   };
 
   const applyFormat = (command, value = null) => {
@@ -425,7 +444,15 @@ const NoticesPage = () => {
       case "particular-faculty": return `Faculty: ${notice.targetFaculties?.join(", ") || "Selected"}`;
       case "particular-student": return `Students: ${notice.targetStudents?.join(", ") || "Selected"}`;
       case "departments": return `Departments: ${(notice.targetDepartments || []).map(d => d.name || d).join(", ")}`;
-      case "divisions": return `Divisions: ${(notice.targetDivisions || []).map(d => d.name || d).join(", ")}`;
+      case "divisions": {
+        const classNames = (notice.targetDivisions || []).map(d => {
+          if (typeof d === "object" && d.courseId && d.departmentId) {
+            return `${d.departmentId.code || d.departmentId.name} Sem ${d.courseId.semester} - Div ${d.name}`;
+          }
+          return d.name || d;
+        });
+        return `Classes: ${classNames.join(", ")}`;
+      }
       case "academic-year": return `Years: ${(notice.targetAcademicYears || []).join(", ")}`;
       default: return "All";
     }
@@ -667,7 +694,7 @@ const NoticesPage = () => {
                       <option value="particular-faculty">Particular Faculty</option>
                       <option value="particular-student">Particular Student</option>
                       <option value="departments">Particular Department(s)</option>
-                      <option value="divisions">Particular Division(s)</option>
+                      <option value="divisions">Particular Class</option>
                       <option value="academic-year">Particular Academic Year(s)</option>
                     </select>
                   </div>
@@ -742,22 +769,58 @@ const NoticesPage = () => {
                 )}
 
                 {targetType === "divisions" && (
-                  <div className="form-input-control">
-                    <label>Select Division(s)</label>
-                    <div className="checkboxes-selection-box office-scrollable">
-                      {targetOptions.divisions.map(div => (
-                        <label key={div._id} className="checkbox-node">
-                          <input 
-                            type="checkbox"
-                            checked={targetDivisions.includes(div._id)}
-                            onChange={() => handleCheckboxToggle(div._id, targetDivisions, setTargetDivisions)}
-                            disabled={loading}
-                          />
-                          <span>Division {div.name}</span>
-                        </label>
-                      ))}
+                  <>
+                    <div className="form-input-control" style={{ marginBottom: "12px" }}>
+                      <label>Target Department <span className="req">*</span></label>
+                      <select
+                        value={targetDepartmentFilter}
+                        onChange={(e) => {
+                          setTargetDepartmentFilter(e.target.value);
+                          setTargetDivisions([]);
+                        }}
+                        disabled={loading}
+                      >
+                        <option value="">-- Select Department --</option>
+                        {targetOptions.departments.map(dept => (
+                          <option key={dept._id} value={dept._id}>
+                            {dept.name} ({dept.code})
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                  </div>
+
+                    {targetDepartmentFilter && (
+                      <div className="form-input-control">
+                        <label>Select Class (Semester & Division)</label>
+                        <div className="checkboxes-selection-box office-scrollable">
+                          {targetOptions.divisions
+                            .filter(div => {
+                              const divDeptId = typeof div.departmentId === "object" ? div.departmentId?._id : div.departmentId;
+                              return divDeptId === targetDepartmentFilter;
+                            })
+                            .sort((a, b) => {
+                              const semA = a.courseId?.semester || 0;
+                              const semB = b.courseId?.semester || 0;
+                              if (semA !== semB) {
+                                return semA - semB;
+                              }
+                              return (a.name || "").localeCompare(b.name || "");
+                            })
+                            .map(div => (
+                              <label key={div._id} className="checkbox-node">
+                                <input 
+                                  type="checkbox"
+                                  checked={targetDivisions.includes(div._id)}
+                                  onChange={() => handleCheckboxToggle(div._id, targetDivisions, setTargetDivisions)}
+                                  disabled={loading}
+                                />
+                                <span>Sem {div.courseId?.semester || "?"} - Div {div.name} ({div.courseId?.courseCode || "?"})</span>
+                              </label>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {targetType === "academic-year" && (

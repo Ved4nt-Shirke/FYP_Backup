@@ -30,28 +30,22 @@ const StudentPromotions = () => {
 
   // Archives state
   const [archives, setArchives] = useState([]);
+  const [academicYears, setAcademicYears] = useState([]);
 
-  const generateAcademicYears = () => {
-    const d = new Date();
-    const currentYear = d.getFullYear();
-    const currentMonth = d.getMonth() + 1;
-    const activeStartYear = currentMonth >= 6 ? currentYear : currentYear - 1;
-
-    const years = [];
-    const endYearLimit = Math.max(currentYear + 8, 2035);
-
-    for (let year = 2023; year <= endYearLimit; year++) {
-      const endYearStr = String(year + 1).slice(-2);
-      const labelSuffix = year < activeStartYear ? " (Already Done)" : "";
-      years.push({
-        value: `${year}-${endYearStr}`,
-        label: `${year}-${endYearStr}${labelSuffix}`,
-      });
-    }
-    return years;
-  };
-
-  const academicYears = generateAcademicYears();
+  // Load academic years on mount
+  useEffect(() => {
+    const fetchAcademicYears = async () => {
+      try {
+        const response = await axios.get(config.academicYear.all);
+        if (response.data.success) {
+          setAcademicYears(response.data.academicYears || []);
+        }
+      } catch (error) {
+        console.error("Error loading academic years:", error);
+      }
+    };
+    fetchAcademicYears();
+  }, []);
 
   // Load departments on mount
   useEffect(() => {
@@ -420,8 +414,8 @@ const StudentPromotions = () => {
               >
                 <option value="">Select Academic Year</option>
                 {academicYears.map((year) => (
-                  <option key={year.value} value={year.value}>
-                    {year.label}
+                  <option key={year._id} value={year.yearName}>
+                    {year.yearName} ({year.scheme}){year.status === "active" ? " (Active)" : ""}
                   </option>
                 ))}
               </select>

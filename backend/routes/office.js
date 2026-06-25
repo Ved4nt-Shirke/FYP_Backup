@@ -14,6 +14,7 @@ const Course = require("../models/Course");
 const Division = require("../models/Division");
 const Institution = require("../models/Institution");
 const Faculty = require("../models/Faculty");
+const AcademicYear = require("../models/AcademicYear");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { authenticate, authorizeOffice } = require("../middleware/auth");
@@ -1161,19 +1162,18 @@ router.get("/notices/target-options", authenticate, async (req, res) => {
   try {
     const college = req.user.college || "VP";
 
-    const [departments, divisions] = await Promise.all([
+    const [departments, divisions, dbAcademicYears] = await Promise.all([
       Department.find({ institution: college }).select("_id name code").sort({ name: 1 }),
-      Division.find({ institution: college }).select("_id name").sort({ name: 1 })
+      Division.find({ institution: college })
+        .select("_id name courseId departmentId")
+        .populate("courseId", "semester scheme courseCode")
+        .populate("departmentId", "name code")
+        .sort({ name: 1 }),
+      AcademicYear.find({ college }).select("yearName").sort({ yearName: 1 })
     ]);
 
     const divisionNames = [...new Set(divisions.map(d => d.name))].sort();
-
-    const currentYear = new Date().getFullYear();
-    const startYear = currentYear - 1;
-    const academicYears = Array.from({ length: 8 }, (_, index) => {
-      const year = startYear + index;
-      return `${year}-${String(year + 1).slice(-2)}`;
-    });
+    const academicYears = dbAcademicYears.map(ay => ay.yearName);
 
     res.json({
       success: true,
@@ -1197,7 +1197,14 @@ router.get("/notices", authenticate, async (req, res) => {
     const college = req.user.college || "VP";
     const notices = await Notice.find({ college })
       .populate("targetDepartments", "name code")
-      .populate("targetDivisions", "name")
+      .populate({
+        path: "targetDivisions",
+        select: "name courseId departmentId",
+        populate: [
+          { path: "courseId", select: "semester courseCode" },
+          { path: "departmentId", select: "name code" }
+        ]
+      })
       .sort({ createdAt: -1 });
 
     res.json({ success: true, notices });

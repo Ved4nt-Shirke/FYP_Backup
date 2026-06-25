@@ -5,15 +5,6 @@ import autoTable from "jspdf-autotable";
 import { config } from "../config/api";
 import "./ManageStudents.css";
 
-const generateAcademicYearOptions = () => {
-  const currentYear = new Date().getFullYear();
-  const startYear = currentYear - 1;
-  return Array.from({ length: 8 }, (_, index) => {
-    const year = startYear + index;
-    return `${year}-${String(year + 1).slice(-2)}`;
-  });
-};
-
 const normalizeBatch = (value) =>
   (value || "")
     .toString()
@@ -65,6 +56,7 @@ const ManageStudents = () => {
   const [departments, setDepartments] = useState([]);
   const [courses, setCourses] = useState([]);
   const [divisions, setDivisions] = useState([]);
+  const [academicYears, setAcademicYears] = useState([]);
 
   // Add Student Modal
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
@@ -99,7 +91,23 @@ const ManageStudents = () => {
   // Initial load
   useEffect(() => {
     fetchDepartments();
+    fetchAcademicYears();
   }, []);
+
+  const fetchAcademicYears = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.academicYear.all, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.academicYears)) {
+        setAcademicYears(data.academicYears);
+      }
+    } catch (err) {
+      console.error("Failed to fetch academic years", err);
+    }
+  };
 
   // Sync seat numbers state with student records
   useEffect(() => {
@@ -842,8 +850,10 @@ const ManageStudents = () => {
               onChange={handleAcademicYearChange}
             >
               <option value="">Academic Year</option>
-              {generateAcademicYearOptions().map((y) => (
-                <option key={y} value={y}>{y}</option>
+              {academicYears.map((year) => (
+                <option key={year._id} value={year.yearName}>
+                  {year.yearName} ({year.scheme}){year.status === "active" ? " (Active)" : ""}
+                </option>
               ))}
             </select>
 
@@ -1246,8 +1256,10 @@ const ManageStudents = () => {
                   onChange={(e) => setNewStudent({ ...newStudent, academicYear: e.target.value })}
                 >
                   <option value="">Select Academic Year</option>
-                  {generateAcademicYearOptions().map((y) => (
-                    <option key={y} value={y}>{y}</option>
+                  {academicYears.map((year) => (
+                    <option key={year._id} value={year.yearName}>
+                      {year.yearName} ({year.scheme}){year.status === "active" ? " (Active)" : ""}
+                    </option>
                   ))}
                 </select>
               </div>

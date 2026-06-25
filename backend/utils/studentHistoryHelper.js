@@ -119,7 +119,7 @@ async function resolveStudents(params, college) {
   } else if (division) {
     const foundDivs = await Division.find({ 
       name: { $regex: new RegExp(`^${division.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
-      institution: college
+      institution: { $regex: new RegExp("^" + String(college || "").trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") }
     });
     if (foundDivs.length > 0) {
       historyQuery.divisionId = { $in: foundDivs.map(d => d._id) };
@@ -149,7 +149,7 @@ async function resolveStudents(params, college) {
         .filter(rec => {
           const s = rec.studentId;
           if (!s) return false;
-          if (s.institution !== college) return false;
+          if (String(s.institution || "").trim().toUpperCase() !== String(college || "").trim().toUpperCase()) return false;
           if (batch && s.batch !== batch) return false;
           if (departmentId && String(s.departmentId?._id || s.departmentId) !== String(departmentId)) return false;
           if (courseId && String(s.courseId?._id || s.courseId) !== String(courseId)) return false;
@@ -185,7 +185,7 @@ async function resolveStudents(params, college) {
 
   if (students.length === 0) {
     // Fallback to querying master Student table
-    const query = { institution: college };
+    const query = { institution: { $regex: new RegExp("^" + String(college || "").trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") } };
     if (batch) query.batch = batch;
     if (divisionId) {
       query.divisionId = divisionId;

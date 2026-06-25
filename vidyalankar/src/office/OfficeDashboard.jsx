@@ -5,15 +5,6 @@ import ManageStudents from "./ManageStudents";
 import NoticesPage from "./NoticesPage";
 import "./OfficeDashboard.css";
 
-const generateAcademicYearOptions = () => {
-  const currentYear = new Date().getFullYear();
-  const startYear = currentYear - 1;
-  return Array.from({ length: 8 }, (_, index) => {
-    const year = startYear + index;
-    return `${year}-${String(year + 1).slice(-2)}`;
-  });
-};
-
 const normalizeValue = (value) =>
   value === undefined || value === null ? "" : value.toString().trim();
 
@@ -60,6 +51,7 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
   const [departments, setDepartments] = useState([]);
   const [courses, setCourses] = useState([]);
   const [divisions, setDivisions] = useState([]);
+  const [academicYears, setAcademicYears] = useState([]);
 
   // Stats / Dashboard data
   const [students, setStudents] = useState([]);
@@ -83,7 +75,23 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
   useEffect(() => {
     fetchDepartments();
     fetchStudents();
+    fetchAcademicYears();
   }, []);
+
+  const fetchAcademicYears = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(config.academicYear.all, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.academicYears)) {
+        setAcademicYears(data.academicYears);
+      }
+    } catch (err) {
+      console.error("Failed to fetch academic years", err);
+    }
+  };
 
   const fetchDepartments = async () => {
     try {
@@ -530,18 +538,6 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
               <span className="metric-title">Today's Notices</span>
             </div>
           </div>
-
-          <div className="stats-metric-card notice-card-purple">
-            <div className="metric-icon-box active-dept">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="metric-svg">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-2.25a1.125 1.125 0 00-1.125 1.125v3.375m9 0M9 18.75h.008v.008H9v-.008zM12 18.75h.008v.008H12v-.008zM15 18.75h.008v.008H15v-.008zM9.75 16.5h.008v.008H9.75v-.008zM14.25 16.5h.008v.008h-.008v-.008zM12 13.5h.008v.008H12V13.5zm0-2.25h.008v.008H12v-.008zM9.75 14.25h.008v.008H9.75v-.008zm4.5 0h.008v.008h-.008v-.008z" />
-              </svg>
-            </div>
-            <div className="metric-text-group">
-              <span className="metric-value text-scrollable">{analyticsLoading ? "..." : stats.mostActiveDepartment}</span>
-              <span className="metric-title">Most Active Department</span>
-            </div>
-          </div>
         </div>
 
         {/* Row 2: Charts and Recent Notices feed */}
@@ -841,9 +837,9 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
                         onChange={(e) => setSelectedAcademicYear(e.target.value)}
                       >
                         <option value="">-- Choose Academic Year --</option>
-                        {generateAcademicYearOptions().map((year) => (
-                          <option key={year} value={year}>
-                            {year}
+                        {academicYears.map((year) => (
+                          <option key={year._id} value={year.yearName}>
+                            {year.yearName} ({year.scheme}){year.status === "active" ? " (Active)" : ""}
                           </option>
                         ))}
                       </select>
