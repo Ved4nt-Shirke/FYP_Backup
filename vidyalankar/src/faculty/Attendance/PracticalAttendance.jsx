@@ -10,6 +10,7 @@ const PracticalEdit = () => {
   const ciannData = location.state?.ciannData;
 
   const [labPlans, setLabPlans] = useState([]);
+  const [practicalRecords, setPracticalRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,30 +19,66 @@ const PracticalEdit = () => {
   useEffect(() => {
     if (!ciannData?.ciannId) return;
 
-    const fetchLabPlans = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(
-          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/lab-planning/${ciannData.ciannId}`,
-        );
-        if (res.status === 404) {
-          setLabPlans([]);
-          return;
+        const BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "");
+        const ciannId = ciannData.ciannId;
+
+        // Fetch lab plans and actual attendance records in parallel
+        const [labRes, attRes] = await Promise.all([
+          fetch(`${BASE}/api/lab-planning/${ciannId}`),
+          fetch(`${BASE}/api/practical-attendance?ciannId=${ciannId}`),
+        ]);
+
+        const plans = labRes.ok ? await labRes.json() : [];
+        const records = attRes.ok ? await attRes.json() : [];
+
+        setLabPlans(Array.isArray(plans) ? plans : []);
+        setPracticalRecords(Array.isArray(records) ? records : []);
+
+        // Auto-cleanup: clear stale actualDate from lab plans that have no attendance record
+        // This fixes corrupted data from the old bug where actualDate was set before submission
+        if (Array.isArray(plans) && Array.isArray(records)) {
+          const recordKeys = new Set(
+            records.map((r) => `${r.weekNo}-${r.batch}-${r.exptNo}`),
+          );
+          for (const weekPlan of plans) {
+            for (const plan of weekPlan.plans || []) {
+              if (plan.actualDate) {
+                const key = `${weekPlan.weekNo}-${plan.batch}-${plan.exptNo}`;
+                if (!recordKeys.has(key)) {
+                  // Lab plan has actualDate but no real attendance record — clear the stale date
+                  try {
+                    await fetch(
+                      `${BASE}/api/lab-planning/${ciannId}/${weekPlan.weekNo}/${plan.batch}/${plan.exptNo}`,
+                      {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ actualDate: "", remark: plan.remark || "" }),
+                      },
+                    );
+                    plan.actualDate = ""; // Clear locally too so UI updates immediately
+                  } catch (cleanupErr) {
+                    console.warn("Could not clear stale actualDate:", cleanupErr);
+                  }
+                }
+              }
+            }
+          }
+          // Re-set labPlans after cleanup so the UI reflects cleared dates
+          setLabPlans([...plans]);
         }
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: Failed to fetch lab plans`);
-        }
-        const data = await res.json();
-        setLabPlans(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Error fetching lab plans:", err);
+        console.error("Error fetching lab plans or attendance:", err);
         setLabPlans([]);
+        setPracticalRecords([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLabPlans();
+    fetchData();
   }, [ciannData?.ciannId]);
 
   const allRows = useMemo(() => {
@@ -58,6 +95,16 @@ const PracticalEdit = () => {
     );
   }, [labPlans]);
 
+  // ✅ True source of truth: a row is "Completed" only if a real attendance record exists in the DB
+  const isCompleted = (plan) => {
+    return practicalRecords.some(
+      (r) =>
+        String(r.weekNo) === String(plan.weekNo) &&
+        r.batch === plan.batch &&
+        String(r.exptNo) === String(plan.exptNo),
+    );
+  };
+
   const itemsPerPage = 8;
   const totalPages = Math.ceil(allRows.length / itemsPerPage) || 1;
   const paginatedRows = allRows.slice(
@@ -71,7 +118,7 @@ const PracticalEdit = () => {
   };
 
   const handleOpenModal = (plan) => {
-    if (plan.actualDate) return;
+    if (isCompleted(plan)) return;
     setSelectedPlan(plan);
     setIsModalOpen(true);
   };
@@ -94,7 +141,7 @@ const PracticalEdit = () => {
     );
   }
 
-  const completedCount = allRows.filter((row) => row.actualDate).length;
+  const completedCount = allRows.filter((row) => isCompleted(row)).length;
   const pendingCount = allRows.length - completedCount;
 
   return (
@@ -184,7 +231,7 @@ const PracticalEdit = () => {
                         </td>
                         <td data-label="Planned Date">{plan.plannedDate}</td>
                         <td data-label="Status">
-                          {plan.actualDate ? (
+                          {isCompleted(plan) ? (
                             <span className="status-pill completed">
                               Completed
                             </span>
@@ -194,11 +241,11 @@ const PracticalEdit = () => {
                         </td>
                         <td data-label="Action">
                           <button
-                            className={`action-pill ${plan.actualDate ? "is-locked" : ""}`}
+                            className={`action-pill ${isCompleted(plan) ? "is-locked" : ""}`}
                             onClick={() => handleOpenModal(plan)}
-                            disabled={!!plan.actualDate}
+                            disabled={isCompleted(plan)}
                           >
-                            {plan.actualDate ? "Marked" : "Mark"}
+                            {isCompleted(plan) ? "Marked" : "Mark"}
                           </button>
                         </td>
                       </tr>
