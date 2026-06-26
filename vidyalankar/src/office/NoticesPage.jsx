@@ -10,14 +10,13 @@ const NoticesPage = () => {
   const [noticeContent, setNoticeContent] = useState("");
   const [noticeType, setNoticeType] = useState("general");
   const [targetType, setTargetType] = useState("all");
-  
+
   // Targeted selection states
   const [targetFaculties, setTargetFaculties] = useState([]);
   const [targetStudents, setTargetStudents] = useState([]);
   const [targetDepartments, setTargetDepartments] = useState([]);
   const [targetDivisions, setTargetDivisions] = useState([]);
   const [targetAcademicYears, setTargetAcademicYears] = useState([]);
-  const [targetDepartmentFilter, setTargetDepartmentFilter] = useState("");
 
   // Schedule & Expiry
   const [sendInstantly, setSendInstantly] = useState(true);
@@ -43,7 +42,7 @@ const NoticesPage = () => {
 
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  
+
   // Filters & Search for notices list
   const [filterSearch, setFilterSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -316,7 +315,7 @@ const NoticesPage = () => {
     setNoticeContent(notice.content);
     setNoticeType(notice.noticeType || "general");
     setTargetType(notice.targetType || "all");
-    
+
     // Resolve target arrays
     if (notice.targetType === "particular-faculty") {
       setTargetFaculties((notice.targetFaculties || []).map(username => ({ username, name: username })));
@@ -325,24 +324,7 @@ const NoticesPage = () => {
     } else if (notice.targetType === "departments") {
       setTargetDepartments((notice.targetDepartments || []).map(d => typeof d === "object" ? d._id : d));
     } else if (notice.targetType === "divisions") {
-      const selectedDivs = (notice.targetDivisions || []).map(d => typeof d === "object" ? d._id : d);
-      setTargetDivisions(selectedDivs);
-      if (notice.targetDivisions && notice.targetDivisions.length > 0) {
-        const firstDiv = notice.targetDivisions[0];
-        const deptId = typeof firstDiv === "object" && firstDiv.departmentId
-          ? (typeof firstDiv.departmentId === "object" ? firstDiv.departmentId._id : firstDiv.departmentId)
-          : null;
-        if (deptId) {
-          setTargetDepartmentFilter(deptId);
-        } else {
-          const matchedDiv = targetOptions.divisions.find(d => d._id === selectedDivs[0]);
-          if (matchedDiv && matchedDiv.departmentId) {
-            setTargetDepartmentFilter(
-              typeof matchedDiv.departmentId === "object" ? matchedDiv.departmentId._id : matchedDiv.departmentId
-            );
-          }
-        }
-      }
+      setTargetDivisions((notice.targetDivisions || []).map(d => typeof d === "object" ? d._id : d));
     } else if (notice.targetType === "academic-year") {
       setTargetAcademicYears(notice.targetAcademicYears || []);
     }
@@ -353,7 +335,7 @@ const NoticesPage = () => {
     const offset = sDate.getTimezoneOffset() * 60000;
     const localScheduled = new Date(sDate.getTime() - offset).toISOString().slice(0, 16);
     setScheduledAt(localScheduled);
-    
+
     const now = new Date();
     setSendInstantly(sDate <= now);
 
@@ -391,7 +373,6 @@ const NoticesPage = () => {
     setSearchQuery("");
     setSearchResults([]);
     setEditingId(null);
-    setTargetDepartmentFilter("");
   };
 
   const applyFormat = (command, value = null) => {
@@ -444,15 +425,7 @@ const NoticesPage = () => {
       case "particular-faculty": return `Faculty: ${notice.targetFaculties?.join(", ") || "Selected"}`;
       case "particular-student": return `Students: ${notice.targetStudents?.join(", ") || "Selected"}`;
       case "departments": return `Departments: ${(notice.targetDepartments || []).map(d => d.name || d).join(", ")}`;
-      case "divisions": {
-        const classNames = (notice.targetDivisions || []).map(d => {
-          if (typeof d === "object" && d.courseId && d.departmentId) {
-            return `${d.departmentId.code || d.departmentId.name} Sem ${d.courseId.semester} - Div ${d.name}`;
-          }
-          return d.name || d;
-        });
-        return `Classes: ${classNames.join(", ")}`;
-      }
+      case "divisions": return `Divisions: ${(notice.targetDivisions || []).map(d => d.name || d).join(", ")}`;
       case "academic-year": return `Years: ${(notice.targetAcademicYears || []).join(", ")}`;
       default: return "All";
     }
@@ -461,7 +434,7 @@ const NoticesPage = () => {
   return (
     <ErrorBoundary>
       <div className="notices-layout-wrapper animate-fadeIn">
-        
+
         {/* Upper Title Row */}
         <div className="notices-page-title-row">
           <div className="title-left">
@@ -485,8 +458,8 @@ const NoticesPage = () => {
         <div className="notices-filters-card">
           <div className="filters-card-inner">
             <div className="filter-select-group">
-              <select 
-                value={filterType} 
+              <select
+                value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
               >
                 <option value="all">All Types</option>
@@ -506,9 +479,9 @@ const NoticesPage = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="search-svg">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.604 10.604z" />
                 </svg>
-                <input 
-                  type="text" 
-                  placeholder="Search titles, content..." 
+                <input
+                  type="text"
+                  placeholder="Search titles, content..."
                   value={filterSearch}
                   onChange={(e) => setFilterSearch(e.target.value)}
                 />
@@ -542,7 +515,7 @@ const NoticesPage = () => {
                   </div>
 
                   <h3 className="notice-announcement-title">{notice.title}</h3>
-                  
+
                   <div
                     className="notice-announcement-body office-scrollable"
                     dangerouslySetInnerHTML={{ __html: notice.content }}
@@ -559,7 +532,7 @@ const NoticesPage = () => {
                       </div>
                       <div className="attachments-links">
                         {notice.attachments.map((att, idx) => (
-                          <a 
+                          <a
                             key={idx}
                             href={getApiUrl(`/office/notices/file/${notice._id}/${idx}`)}
                             target="_blank"
@@ -694,7 +667,7 @@ const NoticesPage = () => {
                       <option value="particular-faculty">Particular Faculty</option>
                       <option value="particular-student">Particular Student</option>
                       <option value="departments">Particular Department(s)</option>
-                      <option value="divisions">Particular Class</option>
+                      <option value="divisions">Particular class(s)</option>
                       <option value="academic-year">Particular Academic Year(s)</option>
                     </select>
                   </div>
@@ -720,8 +693,8 @@ const NoticesPage = () => {
                           ))
                         )}
                       </div>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder={targetType === "particular-faculty" ? "Type faculty name..." : "Type student name..."}
                         value={searchQuery}
                         onChange={(e) => handleSearchTarget(e.target.value)}
@@ -731,8 +704,8 @@ const NoticesPage = () => {
                     {searchResults.length > 0 && (
                       <div className="search-dropdown-menu office-scrollable">
                         {searchResults.map((item, idx) => (
-                          <div 
-                            key={idx} 
+                          <div
+                            key={idx}
                             className="search-result-item"
                             onClick={() => handleAddTargetTag(item)}
                           >
@@ -755,7 +728,7 @@ const NoticesPage = () => {
                     <div className="checkboxes-selection-box office-scrollable">
                       {targetOptions.departments.map(dept => (
                         <label key={dept._id} className="checkbox-node">
-                          <input 
+                          <input
                             type="checkbox"
                             checked={targetDepartments.includes(dept._id)}
                             onChange={() => handleCheckboxToggle(dept._id, targetDepartments, setTargetDepartments)}
@@ -769,58 +742,22 @@ const NoticesPage = () => {
                 )}
 
                 {targetType === "divisions" && (
-                  <>
-                    <div className="form-input-control" style={{ marginBottom: "12px" }}>
-                      <label>Target Department <span className="req">*</span></label>
-                      <select
-                        value={targetDepartmentFilter}
-                        onChange={(e) => {
-                          setTargetDepartmentFilter(e.target.value);
-                          setTargetDivisions([]);
-                        }}
-                        disabled={loading}
-                      >
-                        <option value="">-- Select Department --</option>
-                        {targetOptions.departments.map(dept => (
-                          <option key={dept._id} value={dept._id}>
-                            {dept.name} ({dept.code})
-                          </option>
-                        ))}
-                      </select>
+                  <div className="form-input-control">
+                    <label>Select Division(s)</label>
+                    <div className="checkboxes-selection-box office-scrollable">
+                      {targetOptions.divisions.map(div => (
+                        <label key={div._id} className="checkbox-node">
+                          <input
+                            type="checkbox"
+                            checked={targetDivisions.includes(div._id)}
+                            onChange={() => handleCheckboxToggle(div._id, targetDivisions, setTargetDivisions)}
+                            disabled={loading}
+                          />
+                          <span>Division {div.name}</span>
+                        </label>
+                      ))}
                     </div>
-
-                    {targetDepartmentFilter && (
-                      <div className="form-input-control">
-                        <label>Select Class (Semester & Division)</label>
-                        <div className="checkboxes-selection-box office-scrollable">
-                          {targetOptions.divisions
-                            .filter(div => {
-                              const divDeptId = typeof div.departmentId === "object" ? div.departmentId?._id : div.departmentId;
-                              return divDeptId === targetDepartmentFilter;
-                            })
-                            .sort((a, b) => {
-                              const semA = a.courseId?.semester || 0;
-                              const semB = b.courseId?.semester || 0;
-                              if (semA !== semB) {
-                                return semA - semB;
-                              }
-                              return (a.name || "").localeCompare(b.name || "");
-                            })
-                            .map(div => (
-                              <label key={div._id} className="checkbox-node">
-                                <input 
-                                  type="checkbox"
-                                  checked={targetDivisions.includes(div._id)}
-                                  onChange={() => handleCheckboxToggle(div._id, targetDivisions, setTargetDivisions)}
-                                  disabled={loading}
-                                />
-                                <span>Sem {div.courseId?.semester || "?"} - Div {div.name} ({div.courseId?.courseCode || "?"})</span>
-                              </label>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
+                  </div>
                 )}
 
                 {targetType === "academic-year" && (
@@ -829,7 +766,7 @@ const NoticesPage = () => {
                     <div className="checkboxes-selection-box office-scrollable">
                       {targetOptions.academicYears.map(year => (
                         <label key={year} className="checkbox-node">
-                          <input 
+                          <input
                             type="checkbox"
                             checked={targetAcademicYears.includes(year)}
                             onChange={() => handleCheckboxToggle(year, targetAcademicYears, setTargetAcademicYears)}
@@ -846,7 +783,7 @@ const NoticesPage = () => {
                 <div className="scheduling-section-wrapper">
                   <div className="form-input-control checkbox-instant">
                     <label className="checkbox-node">
-                      <input 
+                      <input
                         type="checkbox"
                         checked={sendInstantly}
                         onChange={(e) => {
@@ -862,7 +799,7 @@ const NoticesPage = () => {
                   {!sendInstantly && (
                     <div className="form-input-control">
                       <label>Schedule Publish Date & Time</label>
-                      <input 
+                      <input
                         type="datetime-local"
                         value={scheduledAt}
                         onChange={(e) => setScheduledAt(e.target.value)}
@@ -873,7 +810,7 @@ const NoticesPage = () => {
 
                   <div className="form-input-control">
                     <label>Notice Expiry Date & Time <span className="hint">(Optional)</span></label>
-                    <input 
+                    <input
                       type="datetime-local"
                       value={expiresAt}
                       onChange={(e) => setExpiresAt(e.target.value)}
@@ -886,7 +823,7 @@ const NoticesPage = () => {
                 <div className="form-input-control">
                   <label>Add File Attachments <span className="hint">(PDF, Images, DOC, Excel. Max 10MB each)</span></label>
                   <div className="attachments-drop-zone">
-                    <input 
+                    <input
                       type="file"
                       id="notice-attachments-selector"
                       multiple
@@ -945,7 +882,7 @@ const NoticesPage = () => {
                         <s>S</s>
                       </button>
                       <div className="toolbar-divider" />
-                      
+
                       <button type="button" onClick={() => applyFormat("insertUnorderedList")} title="Bullet List">
                         • List
                       </button>
@@ -953,11 +890,11 @@ const NoticesPage = () => {
                         1. List
                       </button>
                       <div className="toolbar-divider" />
-                      
+
                       <button type="button" onClick={insertLink} title="Insert URL Link">
                         Link
                       </button>
-                      
+
                       <input type="color" onChange={changeColor} title="Font Color" className="color-picker-input" />
                     </div>
 

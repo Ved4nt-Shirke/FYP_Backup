@@ -23,23 +23,14 @@ const PracticalFinalAtt = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [selectedBatch, setSelectedBatch] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Generate batch options (academic years)
-  const generateBatchOptions = () => {
-    const currentYear = new Date().getFullYear();
-    const batches = [];
-    for (let i = 0; i < 5; i++) {
-      const startYear = currentYear - i;
-      const endYear = startYear + 1;
-      batches.push(`${startYear}-${endYear.toString().slice(-2)}`);
-    }
-    return batches;
+  // Map lab-plan batch codes (B1/B2/B3) to student batch field values (Batch 1/Batch 2/Batch 3)
+  const labBatchToStudentBatch = (labBatch) => {
+    const map = { B1: "Batch 1", B2: "Batch 2", B3: "Batch 3" };
+    return map[labBatch] || labBatch;
   };
-
-  const batchOptions = generateBatchOptions();
 
   useEffect(() => {
     if (!ciannId || !weekNo || !batch || !exptNo) {
@@ -57,28 +48,18 @@ const PracticalFinalAtt = () => {
     if (ciannData?.academicYear) {
       params.academicYear = ciannData.academicYear;
     }
-    // Use selectedBatch (academic year like 2025-26) for filtering students
-    if (selectedBatch) {
-      params.batch = selectedBatch;
-    }
+
+    // Map the lab-plan batch code (e.g. "B1") to the student batch value (e.g. "Batch 1")
+    // and pass it as a filter so only students belonging to this batch are returned
+    const studentBatchValue = labBatchToStudentBatch(batch);
+    params.batch = studentBatchValue;
 
     axios
       .get(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`, { params })
       .then((res) => {
-        const allStudents = Array.isArray(res.data)
+        const batchStudents = Array.isArray(res.data)
           ? res.data
           : res.data.students || [];
-
-        // Divide students into B1, B2, B3 batches
-        const batchSize = Math.ceil(allStudents.length / 3);
-        const batches = {
-          B1: allStudents.slice(0, batchSize),
-          B2: allStudents.slice(batchSize, batchSize * 2),
-          B3: allStudents.slice(batchSize * 2),
-        };
-
-        // Filter students based on the practical batch (B1, B2, or B3)
-        const batchStudents = batches[batch] || allStudents;
 
         setStudents(batchStudents);
         const initAttendance = {};
@@ -92,7 +73,7 @@ const PracticalFinalAtt = () => {
         setSubmitError("Failed to fetch students. Please try again.");
       })
       .finally(() => setIsLoading(false));
-  }, [ciannId, weekNo, batch, exptNo, ciannData, selectedBatch]);
+  }, [ciannId, weekNo, batch, exptNo, ciannData]);
 
   const handleSubmit = async () => {
     if (!window.confirm("Are you sure you want to submit the attendance?")) {
@@ -118,10 +99,24 @@ const PracticalFinalAtt = () => {
     };
 
     try {
+      // Step 1: Submit student-level attendance
       await axios.post(
         `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/practical-attendance`,
         attendanceData,
       );
+
+      // Step 2: Only NOW mark the lab plan experiment as completed (sets actualDate)
+      // This is what makes the row show "Completed" and locks the Mark button
+      try {
+        await axios.put(
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/lab-planning/${ciannId}/${weekNo}/${batch}/${exptNo}`,
+          { actualDate, remark },
+        );
+      } catch (labErr) {
+        // Non-critical: attendance is already saved even if lab plan update fails
+        console.warn("Could not update lab plan actualDate:", labErr.message);
+      }
+
       alert("Attendance submitted successfully!");
       navigate("/dashboard");
     } catch (err) {
@@ -261,25 +256,6 @@ const PracticalFinalAtt = () => {
           >
             Reset
           </button>
-        </div>
-
-        <div className="practical-filter-panel">
-          <label htmlFor="batch-filter" className="practical-filter-label">
-            Filter by Academic Year Batch:
-          </label>
-          <select
-            id="batch-filter"
-            value={selectedBatch}
-            onChange={(e) => setSelectedBatch(e.target.value)}
-            className="practical-filter-select"
-          >
-            <option value="">-- All Batches --</option>
-            {batchOptions.map((batchYear) => (
-              <option key={batchYear} value={batchYear}>
-                {batchYear}
-              </option>
-            ))}
-          </select>
         </div>
 
         <section className="practical-metrics">

@@ -70,7 +70,11 @@ const Defaulter = () => {
 
       try {
         const studentsRes = await fetchApi(
-          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students?${new URLSearchParams({
+            ...(selectedCiann.divisionId ? { divisionId: selectedCiann.divisionId } : {}),
+            ...(selectedCiann.division && !selectedCiann.divisionId ? { division: selectedCiann.division } : {}),
+            ...(selectedCiann.academicYear ? { academicYear: selectedCiann.academicYear } : {}),
+          }).toString()}`,
         );
         const theoryRes = await fetchApi(
           `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/theory-attendance?ciannId=${ciannId}`,

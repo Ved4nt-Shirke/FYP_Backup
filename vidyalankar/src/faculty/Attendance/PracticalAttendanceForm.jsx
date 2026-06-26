@@ -44,20 +44,8 @@ const PracticalAttendanceForm = ({
     setError("");
 
     try {
-      const response = await fetch(
-        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/lab-planning/${ciannId}/${weekNo}/${batch}/${exptNo}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        },
-      );
-
-      if (!response.ok) {
-        const errorRes = await response.json();
-        throw new Error(errorRes.message || "Update failed");
-      }
-
+      // Navigate directly to mark student attendance — do NOT update actualDate on lab plan yet.
+      // The lab plan actualDate will be set only after student attendance is successfully submitted.
       navigate("/PracticalFinalAtt", {
         state: {
           ciannId,
