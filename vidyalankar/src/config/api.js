@@ -73,7 +73,9 @@ export const config = {
     conversations: `${API_BASE_URL}/chat/conversations`,
     messages: `${API_BASE_URL}/chat/messages`,
     startConversation: `${API_BASE_URL}/chat/conversations/start`,
+    startConversationWithStudent: `${API_BASE_URL}/chat/conversations/start-with-student`,
     facultyList: `${API_BASE_URL}/chat/faculty-list`,
+    studentList: `${API_BASE_URL}/chat/student-list`,
     conversationMessages: (conversationId) =>
       `${API_BASE_URL}/chat/conversations/${conversationId}/messages`,
     toggleMute: (conversationId) =>

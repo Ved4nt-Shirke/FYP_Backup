@@ -12,11 +12,12 @@ const router = express.Router();
 
 router.use(authenticate);
 
-const ensureStudentOrFaculty = (req, res, next) => {
-  if (req.user?.role !== "student" && req.user?.role !== "faculty") {
+const ensureChatUser = (req, res, next) => {
+  const allowed = ["student", "faculty", "office"];
+  if (!allowed.includes(req.user?.role)) {
     return res
       .status(403)
-      .json({ message: "Chat is available only for students and faculty." });
+      .json({ message: "Chat is not available for your role." });
   }
   return next();
 };
@@ -51,6 +52,7 @@ const buildDisplayName = async (user) => {
     return faculty?.fullName || user.username;
   }
 
+  // office or other roles — just use username
   return user.username;
 };
 
@@ -72,7 +74,64 @@ const isParticipant = (conversation, userId) => {
   return conversation.participants.some((p) => String(p.userId) === asString);
 };
 
-router.get("/faculty-list", ensureStudentOrFaculty, async (req, res) => {
+// ─── Student list for faculty/office to search and DM ───────────────────────
+router.get("/student-list", ensureChatUser, async (req, res) => {
+  try {
+    const { search = "" } = req.query;
+    const institutionCode = String(req.user.college || "").trim();
+    const q = String(search).trim();
+
+    // Find matching students in this institution
+    const searchFilter = { institution: { $regex: new RegExp(`^${escapeRegex(institutionCode)}$`, "i") } };
+    if (q) {
+      searchFilter.$or = [
+        { studentName: { $regex: new RegExp(escapeRegex(q), "i") } },
+        { username: { $regex: new RegExp(escapeRegex(q), "i") } },
+        { rollNo: { $regex: new RegExp(escapeRegex(q), "i") } },
+        { enrollmentNo: { $regex: new RegExp(escapeRegex(q), "i") } },
+      ];
+    }
+
+    const students = await Student.find(searchFilter)
+      .select("studentName username rollNo enrollmentNo division batch")
+      .limit(30)
+      .sort({ studentName: 1 });
+
+    // Also look up their User records to get the user._id needed for conversations
+    const usernames = students.map((s) => String(s.username || "")).filter(Boolean);
+    const studentUsers = await User.find({
+      role: "student",
+      username: { $in: usernames },
+      college: { $regex: new RegExp(`^${escapeRegex(institutionCode)}$`, "i") },
+    }).select("_id username");
+
+    const userMap = new Map(
+      studentUsers.map((u) => [String(u.username).toLowerCase(), u._id])
+    );
+
+    const list = students
+      .map((s) => {
+        const userId = userMap.get(String(s.username || "").toLowerCase());
+        if (!userId) return null;
+        return {
+          id: userId,
+          name: s.studentName || s.username,
+          username: s.username,
+          rollNo: s.rollNo,
+          batch: s.batch,
+          division: s.division,
+        };
+      })
+      .filter(Boolean);
+
+    res.json(list);
+  } catch (error) {
+    console.error("Failed to fetch student list:", error);
+    res.status(500).json({ message: "Failed to fetch student list" });
+  }
+});
+
+router.get("/faculty-list", ensureChatUser, async (req, res) => {
   try {
     const institutionCode = String(req.user.college || "").trim();
 
@@ -172,9 +231,10 @@ router.get("/faculty-list", ensureStudentOrFaculty, async (req, res) => {
   }
 });
 
+// Student → Faculty: start conversation
 router.post(
   "/conversations/start",
-  ensureStudentOrFaculty,
+  ensureChatUser,
   async (req, res) => {
     try {
       const { facultyId } = req.body;
@@ -183,7 +243,7 @@ router.post(
       if (currentUser.role !== "student") {
         return res
           .status(403)
-          .json({ message: "Only students can start a new conversation." });
+          .json({ message: "Only students can use this endpoint. Faculty/Office should use /start-with-student." });
       }
 
       if (!facultyId || !mongoose.Types.ObjectId.isValid(facultyId)) {
@@ -247,7 +307,84 @@ router.post(
   },
 );
 
-router.get("/conversations", ensureStudentOrFaculty, async (req, res) => {
+// Faculty / Office → Student: start or resume a direct conversation
+router.post(
+  "/conversations/start-with-student",
+  ensureChatUser,
+  async (req, res) => {
+    try {
+      const { studentId } = req.body;
+      const currentUser = req.user;
+
+      if (currentUser.role === "student") {
+        return res
+          .status(403)
+          .json({ message: "Students cannot use this endpoint." });
+      }
+
+      if (!studentId || !mongoose.Types.ObjectId.isValid(studentId)) {
+        return res.status(400).json({ message: "Invalid studentId" });
+      }
+
+      const studentUser = await User.findOne({
+        _id: studentId,
+        role: "student",
+        college: currentUser.college,
+      });
+
+      if (!studentUser) {
+        return res
+          .status(404)
+          .json({ message: "Student not found in your institution." });
+      }
+
+      // For the conversation schema, facultyId holds the non-student side
+      // (whether faculty or office staff)
+      let conversation = await ChatConversation.findOne({
+        institutionCode: currentUser.college,
+        facultyId: currentUser._id,
+        studentId: studentUser._id,
+      });
+
+      if (!conversation) {
+        const [senderName, studentName] = await Promise.all([
+          buildDisplayName(currentUser),
+          buildDisplayName(studentUser),
+        ]);
+
+        conversation = await ChatConversation.create({
+          institutionCode: currentUser.college,
+          participants: [
+            {
+              userId: currentUser._id,
+              role: currentUser.role,
+              username: currentUser.username,
+            },
+            {
+              userId: studentUser._id,
+              role: studentUser.role,
+              username: studentUser.username,
+            },
+          ],
+          facultyId: currentUser._id,
+          facultyName: senderName,
+          studentId: studentUser._id,
+          studentName,
+          departmentName: "",
+          lastMessage: "",
+          lastMessageAt: new Date(),
+        });
+      }
+
+      res.status(201).json(conversation);
+    } catch (error) {
+      console.error("Failed to start conversation with student:", error);
+      res.status(500).json({ message: "Failed to start conversation" });
+    }
+  },
+);
+
+router.get("/conversations", ensureChatUser, async (req, res) => {
   try {
     const currentUser = req.user;
     const {
@@ -263,10 +400,11 @@ router.get("/conversations", ensureStudentOrFaculty, async (req, res) => {
 
     if (currentUser.role === "faculty") {
       baseQuery.facultyId = currentUser._id;
-    }
-
-    if (currentUser.role === "student") {
+    } else if (currentUser.role === "student") {
       baseQuery.studentId = currentUser._id;
+    } else if (currentUser.role === "office") {
+      // office staff are stored in facultyId slot when they initiate
+      baseQuery.facultyId = currentUser._id;
     }
 
     if (includeArchived !== "true") {
@@ -294,10 +432,13 @@ router.get("/conversations", ensureStudentOrFaculty, async (req, res) => {
           "seenBy.userId": { $ne: currentUser._id },
         });
 
-        const displayName =
-          currentUser.role === "faculty"
-            ? conversation.studentName || conversation.studentId
-            : conversation.facultyName || conversation.facultyId;
+        let displayName;
+        if (currentUser.role === "faculty" || currentUser.role === "office") {
+          displayName = conversation.studentName || String(conversation.studentId);
+        } else {
+          // student sees the faculty/staff name
+          displayName = conversation.facultyName || String(conversation.facultyId);
+        }
 
         return {
           ...conversation.toObject(),
@@ -332,7 +473,7 @@ router.get("/conversations", ensureStudentOrFaculty, async (req, res) => {
 
 router.get(
   "/conversations/:id/messages",
-  ensureStudentOrFaculty,
+  ensureChatUser,
   async (req, res) => {
     try {
       const conversation = await ChatConversation.findById(req.params.id);
@@ -371,7 +512,7 @@ router.get(
   },
 );
 
-router.post("/messages", ensureStudentOrFaculty, async (req, res) => {
+router.post("/messages", ensureChatUser, async (req, res) => {
   try {
     const { conversationId, body } = req.body;
     const trimmedBody = String(body || "").trim();
@@ -418,7 +559,7 @@ router.post("/messages", ensureStudentOrFaculty, async (req, res) => {
   }
 });
 
-router.get("/unread-count", ensureStudentOrFaculty, async (req, res) => {
+router.get("/unread-count", ensureChatUser, async (req, res) => {
   try {
     const conversations = await ChatConversation.find({
       institutionCode: req.user.college,
@@ -447,7 +588,7 @@ router.get("/unread-count", ensureStudentOrFaculty, async (req, res) => {
 
 router.post(
   "/conversations/:id/mute",
-  ensureStudentOrFaculty,
+  ensureChatUser,
   async (req, res) => {
     try {
       const conversation = await ChatConversation.findById(req.params.id);
@@ -480,7 +621,7 @@ router.post(
 
 router.post(
   "/conversations/:id/archive",
-  ensureStudentOrFaculty,
+  ensureChatUser,
   async (req, res) => {
     try {
       const conversation = await ChatConversation.findById(req.params.id);
