@@ -39,15 +39,30 @@ function EditProgAssess() {
       // Fallback: fetch assessed experiments if not passed
       fetchAssessedExperiments();
     }
-  }, [assessedExperiments]);
+  }, [assessedExperiments, ciannData]);
 
   const fetchAssessedExperiments = async () => {
     try {
       setLoading(true);
       setError(null);
 
+      let ciannIdParam = "";
+      if (ciannData && ciannData.ciannId) {
+        ciannIdParam = `&ciannId=${ciannData.ciannId}`;
+      } else {
+        const stored = localStorage.getItem("ciannData");
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed.ciannId) {
+              ciannIdParam = `&ciannId=${parsed.ciannId}`;
+            }
+          } catch (e) {}
+        }
+      }
+
       const response = await fetch(
-        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}`
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}${ciannIdParam}`
       );
       const data = await response.json();
 

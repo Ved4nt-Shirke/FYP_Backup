@@ -148,23 +148,46 @@ export default function StudentWiseAssess() {
         let allExperiments = [];
         let lastErr = null;
 
-        // Try with className + course combinations first, iterating through program candidates
-        outer: for (const prog of programCandidates.length ? programCandidates : ['']) {
-          if (!prog) continue; // backend requires program
-          for (const cls of classCandidates) {
-            for (const crs of courseCandidates) {
-              try {
-                const params = new URLSearchParams({ program: prog, className: cls, course: crs });
-                const expRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments?${params.toString()}`);
-                const expData = await expRes.json();
-                if (expRes.ok && expData?.success && Array.isArray(expData.experiments) && expData.experiments.length > 0) {
-                  allExperiments = expData.experiments;
-                  break outer;
-                } else {
-                  lastErr = new Error(expData?.message || `No experiments for program=${prog} class=${cls} course=${crs}`);
+        // Attempt to fetch using ciannId first if available
+        const currentCiannId = ciannData?.ciannId || storageCiann?.ciannId || qp.ciannId;
+        if (currentCiannId) {
+          try {
+            const params = new URLSearchParams({ ciannId: currentCiannId });
+            const expRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments?${params.toString()}`);
+            const expData = await expRes.json();
+            if (expRes.ok && expData?.success && Array.isArray(expData.experiments) && expData.experiments.length > 0) {
+              allExperiments = expData.experiments;
+            }
+          } catch (err) {
+            console.warn("Failed to fetch experiments by ciannId:", err);
+          }
+        }
+
+        // Try with className + course combinations first, iterating through program candidates if not found yet
+        if (!allExperiments.length) {
+          outer: for (const prog of programCandidates.length ? programCandidates : ['']) {
+            if (!prog) continue; // backend requires program
+            for (const cls of classCandidates) {
+              for (const crs of courseCandidates) {
+                try {
+                  const params = new URLSearchParams({ 
+                    program: prog, 
+                    className: cls, 
+                    course: crs,
+                    ciannId: currentCiannId || '',
+                    semester: ciannData?.semester || storageCiann?.semester || ''
+                  });
+                  const expRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments?${params.toString()}`);
+                  const expData = await expRes.json();
+                  if (expRes.ok && expData?.success && Array.isArray(expData.experiments) && expData.experiments.length > 0) {
+                    allExperiments = expData.experiments;
+                    break outer;
+                  } else {
+                    lastErr = new Error(expData?.message || `No experiments for program=${prog} class=${cls} course=${crs}`);
+                  }
+                } catch (err) {
+                  lastErr = err;
                 }
-              } catch (err) {
-                lastErr = err;
               }
             }
           }

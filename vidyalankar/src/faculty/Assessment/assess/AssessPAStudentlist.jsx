@@ -53,8 +53,9 @@ export default function AssessPAStudentlist() {
 
       if (isEditMode && experiment) {
         // In edit mode, fetch existing assessment data
+        const ciannIdParam = ciannData?.ciannId ? `&ciannId=${ciannData.ciannId}` : '';
         const response = await fetch(
-          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}`,
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}${ciannIdParam}`,
         );
         const data = await response.json();
 

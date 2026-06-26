@@ -32,7 +32,8 @@ export default function EditAssessedStudentList() {
       console.log('Fetching assessed data for experiment:', experiment.id, 'batch:', batch);
 
       // Fetch existing assessment data for this experiment and batch
-      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}`);
+      const ciannIdParam = ciannData?.ciannId ? `&ciannId=${ciannData.ciannId}` : '';
+      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}${ciannIdParam}`);
       const data = await response.json();
 
       console.log('Edit data response:', data);
@@ -118,7 +119,12 @@ export default function EditAssessedStudentList() {
         body: JSON.stringify({
           studentsMarks,
           experimentId: experiment.id,
-          experimentName: experiment.name
+          experimentName: experiment.name,
+          batch: batch,
+          program: ciannData?.department?.name || "",
+          className: ciannData?.class || "",
+          course: ciannData?.subject?.name || "",
+          ciannId: ciannData?.ciannId
         }),
       });
 

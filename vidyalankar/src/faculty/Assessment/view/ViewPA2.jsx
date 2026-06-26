@@ -82,7 +82,8 @@ export default function ViewPA2() {
       setError(null);
 
       // Fetch assessed experiments for this batch
-      const experimentsResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}`);
+      const ciannIdParam = ciannData?.ciannId ? `&ciannId=${ciannData.ciannId}` : '';
+      const experimentsResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}${ciannIdParam}`);
       const experimentsResult = await experimentsResponse.json();
 
       if (!experimentsResponse.ok) {
@@ -94,7 +95,8 @@ export default function ViewPA2() {
       }
 
       // Fetch assessment data for the batch
-      const assessmentResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batch/${batch}`);
+      const batchCiannIdParam = ciannData?.ciannId ? `?ciannId=${ciannData.ciannId}` : '';
+      const assessmentResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batch/${batch}${batchCiannIdParam}`);
       const assessmentResult = await assessmentResponse.json();
 
       if (!assessmentResponse.ok) {

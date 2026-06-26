@@ -76,10 +76,14 @@ export default function AssessPA() {
       // If we already have experiments passed in, use them; otherwise fetch
       let allExperiments = passedExperiments;
       if (!allExperiments.length) {
+        const currentCiannId = ciannData?.ciannId || storageCiann?.ciannId || '';
+        const currentSemester = ciannData?.semester || storageCiann?.semester || '';
         const params = new URLSearchParams({
+          ciannId: currentCiannId,
           program: effectiveProgram,
           className: effectiveClass || '',
           course: effectiveCourse,
+          semester: currentSemester
         });
         const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments?${params.toString()}`);
         const data = await response.json();
@@ -98,7 +102,8 @@ export default function AssessPA() {
 
       // Fetch assessed experiments for this batch
       try {
-        const assessedResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}`);
+        const currentCiannId = ciannData?.ciannId || storageCiann?.ciannId || '';
+        const assessedResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}&ciannId=${currentCiannId}`);
         const assessedData = await assessedResponse.json();
 
         if (assessedData.success) {

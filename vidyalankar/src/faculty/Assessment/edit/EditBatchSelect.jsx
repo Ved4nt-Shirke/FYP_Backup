@@ -62,7 +62,8 @@ export default function EditBatchSelect() {
     
     try {
       // Fetch assessed experiments for this batch
-      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${selectedBatch}`);
+      const ciannIdParam = ciannData?.ciannId ? `&ciannId=${ciannData.ciannId}` : '';
+      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${selectedBatch}${ciannIdParam}`);
       const data = await response.json();
       
       if (!response.ok) {
