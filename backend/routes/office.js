@@ -703,7 +703,13 @@ router.post("/bulk-import", authenticate, authorizeOffice, async (req, res) => {
           }).sort({ updatedAt: -1, createdAt: -1 });
 
           if (existingCredentialStudent?.plainPassword) {
+            // Reuse the existing plainPassword but ALWAYS re-sync the User's hash
+            // to guarantee login works (User.password may have been changed independently)
             plainPassword = existingCredentialStudent.plainPassword;
+            hashedPassword = await bcrypt.hash(plainPassword, 10);
+            existingUser.password = hashedPassword;
+            existingUser.college = req.user.college;
+            await existingUser.save();
           } else {
             plainPassword = generateSafePassword();
             hashedPassword = await bcrypt.hash(plainPassword, 10);

@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { config, getApiUrl } from "../config/api";
 import ManageStudents from "./ManageStudents";
 import NoticesPage from "./NoticesPage";
+import OfficeChatPage from "./chat/OfficeChatPage";
 import "./OfficeDashboard.css";
 
 const normalizeValue = (value) =>
@@ -1164,6 +1165,8 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
         </div>
       ) : currentTab === "notices" ? (
         <NoticesPage />
+      ) : currentTab === "chat" ? (
+        <OfficeChatPage />
       ) : (
         <ManageStudents />
       )}
