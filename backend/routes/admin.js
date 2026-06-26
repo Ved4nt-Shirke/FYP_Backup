@@ -2908,13 +2908,21 @@ router.post("/promotions/promote", authenticate, authorizeAdmin, async (req, res
     // Resolve source and target semesters
     const sourceCourse = await Course.findById(sourceCourseId);
     const targetCourse = await Course.findById(targetCourseId);
+    const targetDivision = await Division.findById(targetDivisionId);
 
     if (!sourceCourse || !targetCourse) {
       return res.status(400).json({ success: false, message: "Source or Target Course not found" });
     }
+    if (!targetDivision) {
+      return res.status(400).json({ success: false, message: "Target Division not found" });
+    }
 
     const sourceSemester = sourceCourse.semester;
     const targetSemester = targetCourse.semester;
+
+    // Fetch sample student to get academic year before they are updated
+    const sampleStudent = await Student.findOne({ _id: studentIds[0], institution });
+    const oldAcademicYear = sampleStudent ? sampleStudent.academicYear : null;
 
     // Process students promotion
     let promotedCount = 0;
@@ -2959,10 +2967,10 @@ router.post("/promotions/promote", authenticate, authorizeAdmin, async (req, res
       }
 
       // 2. Update Student Master Document
-      const oldAcademicYear = student.academicYear;
       student.departmentId = targetDepartmentId;
       student.courseId = targetCourseId;
       student.divisionId = targetDivisionId;
+      student.division = targetDivision.name; // FIX: Sync text-based division!
       student.academicYear = targetAcademicYear;
       student.seatNo = ""; // reset exam seat number for the new year
       await student.save();
@@ -2998,17 +3006,17 @@ router.post("/promotions/promote", authenticate, authorizeAdmin, async (req, res
     // 4. Lock/Archive Ciann records for the source division of the old semester
     const sourceDivision = await Division.findById(sourceDivisionId);
     if (sourceDivision) {
-      // Find one of the promoted students to get their old academic year if they had it
-      // otherwise fallback to the current academic year calculated or standard logic
-      const sampleStudent = await Student.findById(studentIds[0]);
-      const oldAcadYearFilter = sampleStudent ? sampleStudent.academicYear : targetAcademicYear;
+      const query = {
+        college: institution,
+        division: sourceDivision.name,
+        semester: String(sourceSemester)
+      };
+      if (oldAcademicYear) {
+        query.academicYear = oldAcademicYear; // FIX: Sync specific academic year cianns!
+      }
 
       const ciannUpdateResult = await Ciann.updateMany(
-        {
-          college: institution,
-          division: sourceDivision.name,
-          semester: String(sourceSemester)
-        },
+        query,
         { $set: { status: "completed" } }
       );
       console.log(`[PROMOTION] Locked Ciann records for division ${sourceDivision.name}, sem ${sourceSemester}. Count:`, ciannUpdateResult.modifiedCount);

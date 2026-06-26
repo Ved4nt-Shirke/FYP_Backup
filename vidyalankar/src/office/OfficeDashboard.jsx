@@ -4,6 +4,7 @@ import { config, getApiUrl } from "../config/api";
 import ManageStudents from "./ManageStudents";
 import NoticesPage from "./NoticesPage";
 import OfficeChatPage from "./chat/OfficeChatPage";
+import StudentPromotions from "./StudentPromotions";
 import "./OfficeDashboard.css";
 
 const normalizeValue = (value) =>
@@ -1167,6 +1168,8 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
         <NoticesPage />
       ) : currentTab === "chat" ? (
         <OfficeChatPage />
+      ) : currentTab === "promotions" ? (
+        <StudentPromotions />
       ) : (
         <ManageStudents />
       )}

@@ -226,6 +226,41 @@ const SecondarySidebar = ({
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  // Native event listener for the bell button to avoid synthetic event conflicts
+  useEffect(() => {
+    const bellBtn = bellRef.current;
+    if (!bellBtn) return;
+
+    const handleNativeBellClick = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      
+      setShowNotifDropdown((prev) => {
+        const nextVal = !prev;
+        if (nextVal) {
+          const rect = bellBtn.getBoundingClientRect();
+          const width = window.innerWidth < 769 ? Math.min(340, window.innerWidth - 32) : 320;
+          let left = rect.right - width;
+          if (left < 10) left = 10;
+          if (left + width > window.innerWidth - 10) {
+            left = window.innerWidth - width - 10;
+          }
+          setDropdownCoords({
+            top: rect.bottom + 8,
+            left: left,
+            width: `${width}px`
+          });
+        }
+        return nextVal;
+      });
+    };
+
+    bellBtn.addEventListener("click", handleNativeBellClick);
+    return () => {
+      bellBtn.removeEventListener("click", handleNativeBellClick);
+    };
+  }, []);
+
   // Recalculate dropdown position when opened or window is resized/scrolled
   useEffect(() => {
     const updateCoords = () => {
@@ -257,25 +292,6 @@ const SecondarySidebar = ({
       window.removeEventListener("scroll", updateCoords, true);
     };
   }, [showNotifDropdown]);
-
-  const handleBellClick = (e) => {
-    e.stopPropagation();
-    if (!showNotifDropdown && bellRef.current) {
-      const rect = bellRef.current.getBoundingClientRect();
-      const width = window.innerWidth < 769 ? Math.min(340, window.innerWidth - 32) : 320;
-      let left = rect.right - width;
-      if (left < 10) left = 10;
-      if (left + width > window.innerWidth - 10) {
-        left = window.innerWidth - width - 10;
-      }
-      setDropdownCoords({
-        top: rect.bottom + 8,
-        left: left,
-        width: `${width}px`
-      });
-    }
-    setShowNotifDropdown(!showNotifDropdown);
-  };
 
   const handleNotificationClick = async (notif) => {
     if (!notif.isRead) {
@@ -440,7 +456,6 @@ const SecondarySidebar = ({
                   type="button"
                   ref={bellRef}
                   className="ciann-notif-bell-btn"
-                  onClick={handleBellClick}
                   title="Notifications"
                 >
                   <i className="bi bi-bell-fill"></i>

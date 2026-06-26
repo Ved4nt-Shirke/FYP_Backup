@@ -261,6 +261,9 @@ router.get("/profile", authenticate, async (req, res) => {
     if (user.role === "faculty") {
       const Faculty = require("../models/Faculty");
       profile = await Faculty.findOne({ generatedUsername: user.username }).populate("department", "name code");
+    } else if (user.role === "office") {
+      const OfficeStaff = require("../models/OfficeStaff");
+      profile = await OfficeStaff.findOne({ generatedUsername: user.username }).populate("department", "name code");
     }
 
     res.json({

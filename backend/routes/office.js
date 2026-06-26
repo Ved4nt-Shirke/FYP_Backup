@@ -1443,5 +1443,307 @@ router.get("/notices/file/:noticeId/:attachmentIndex", authenticate, async (req,
   }
 });
 
+// ============================================
+// OFFICE STAFF STUDENT PROMOTIONS ENDPOINTS
+// ============================================
+
+// helper to get the office staff department
+const getOfficeStaffDepartment = async (user) => {
+  let deptId = user.department;
+  if (!deptId) {
+    const office = await OfficeStaff.findOne({ generatedUsername: user.username });
+    if (office) {
+      deptId = office.department;
+    }
+  }
+  return deptId;
+};
+
+// GET /api/office/promotions/eligible-students
+router.get("/promotions/eligible-students", authenticate, authorizeOffice, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const { departmentId, courseId, divisionId } = req.query;
+
+    if (!departmentId || !courseId || !divisionId) {
+      return res.status(400).json({ success: false, message: "Department, Course, and Division are required" });
+    }
+
+    const officeDept = await getOfficeStaffDepartment(req.user);
+    if (!officeDept || String(officeDept) !== String(departmentId)) {
+      return res.status(403).json({ success: false, message: "Unauthorized. You can only promote students from your own department." });
+    }
+
+    const query = {
+      institution,
+      departmentId,
+      courseId,
+      divisionId
+    };
+
+    const students = await Student.find(query).sort({ studentName: 1 });
+    res.json({ success: true, students });
+  } catch (err) {
+    console.error("Error fetching eligible students for office promotion:", err);
+    res.status(500).json({ success: false, message: "Error fetching students", error: err.message });
+  }
+});
+
+// POST /api/office/promotions/promote
+router.post("/promotions/promote", authenticate, authorizeOffice, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const {
+      sourceDepartmentId,
+      sourceCourseId,
+      sourceDivisionId,
+      targetDepartmentId,
+      targetCourseId,
+      targetDivisionId,
+      targetAcademicYear,
+      studentIds
+    } = req.body;
+
+    if (!sourceDepartmentId || !sourceCourseId || !sourceDivisionId || !targetDepartmentId || !targetCourseId || !targetDivisionId || !targetAcademicYear || !studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
+      return res.status(400).json({ success: false, message: "All source/target parameters and a non-empty studentIds array are required" });
+    }
+
+    const officeDept = await getOfficeStaffDepartment(req.user);
+    if (!officeDept || String(officeDept) !== String(sourceDepartmentId) || String(officeDept) !== String(targetDepartmentId)) {
+      return res.status(403).json({ success: false, message: "Unauthorized. You can only promote students within your own department." });
+    }
+
+    // Resolve source and target semesters
+    const sourceCourse = await Course.findById(sourceCourseId);
+    const targetCourse = await Course.findById(targetCourseId);
+    const targetDivision = await Division.findById(targetDivisionId);
+
+    if (!sourceCourse || !targetCourse) {
+      return res.status(400).json({ success: false, message: "Source or Target Course not found" });
+    }
+    if (!targetDivision) {
+      return res.status(400).json({ success: false, message: "Target Division not found" });
+    }
+
+    const sourceSemester = sourceCourse.semester;
+    const targetSemester = targetCourse.semester;
+
+    // Fetch sample student to get academic year before they are updated
+    const sampleStudent = await Student.findOne({ _id: studentIds[0], institution });
+    const oldAcademicYear = sampleStudent ? sampleStudent.academicYear : null;
+
+    const StudentAcademicHistory = require("../models/StudentAcademicHistory");
+    const Ciann = require("../models/Ciann");
+
+    // Process students promotion
+    let promotedCount = 0;
+    const officeUsername = req.user.username || "office";
+
+    for (const studentId of studentIds) {
+      const student = await Student.findOne({ _id: studentId, institution });
+      if (!student) continue;
+
+      // 1. Create history log for the previous semester (which is now completed)
+      try {
+        let oldDivisionId = student.divisionId;
+        if (!oldDivisionId && student.division) {
+          const divDoc = await Division.findOne({ 
+            name: { $regex: new RegExp(`^${student.division.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+            institution 
+          });
+          if (divDoc) oldDivisionId = divDoc._id;
+        }
+
+        await StudentAcademicHistory.findOneAndUpdate(
+          {
+            studentId: student._id,
+            academicYear: student.academicYear || "unknown",
+            semester: sourceSemester
+          },
+          {
+            studentId: student._id,
+            academicYear: student.academicYear || "unknown",
+            semester: sourceSemester,
+            divisionId: oldDivisionId,
+            rollNo: student.rollNo,
+            seatNo: student.seatNo || "",
+            status: "completed",
+            promotedAt: new Date(),
+            promotedBy: officeUsername
+          },
+          { upsert: true, new: true }
+        );
+      } catch (historyErr) {
+        console.error(`Error writing completed history for student ${student.enrollmentNo}:`, historyErr.message);
+      }
+
+      // 2. Update Student Master Document
+      student.departmentId = targetDepartmentId;
+      student.courseId = targetCourseId;
+      student.divisionId = targetDivisionId;
+      student.division = targetDivision.name; // FIX: Sync text-based division!
+      student.academicYear = targetAcademicYear;
+      student.seatNo = ""; // reset exam seat number for the new year
+      await student.save();
+
+      // 3. Create active history log for the promoted new semester
+      try {
+        await StudentAcademicHistory.findOneAndUpdate(
+          {
+            studentId: student._id,
+            academicYear: targetAcademicYear,
+            semester: targetSemester
+          },
+          {
+            studentId: student._id,
+            academicYear: targetAcademicYear,
+            semester: targetSemester,
+            divisionId: targetDivisionId,
+            rollNo: student.rollNo,
+            seatNo: "",
+            status: "active",
+            promotedAt: new Date(),
+            promotedBy: officeUsername
+          },
+          { upsert: true, new: true }
+        );
+      } catch (historyErr2) {
+        console.error(`Error writing active history for student ${student.enrollmentNo}:`, historyErr2.message);
+      }
+
+      promotedCount++;
+    }
+
+    // 4. Lock/Archive Ciann records for the source division of the old semester
+    const sourceDivision = await Division.findById(sourceDivisionId);
+    if (sourceDivision) {
+      const query = {
+        college: institution,
+        division: sourceDivision.name,
+        semester: String(sourceSemester)
+      };
+      if (oldAcademicYear) {
+        query.academicYear = oldAcademicYear; // FIX: Sync specific academic year cianns!
+      }
+
+      const ciannUpdateResult = await Ciann.updateMany(
+        query,
+        { $set: { status: "completed" } }
+      );
+      console.log(`[PROMOTION] Locked Ciann records for division ${sourceDivision.name}, sem ${sourceSemester}. Count:`, ciannUpdateResult.modifiedCount);
+    }
+
+    res.json({
+      success: true,
+      message: `Successfully promoted ${promotedCount} students.`,
+      promotedCount
+    });
+  } catch (err) {
+    console.error("Error promoting students (office):", err);
+    res.status(500).json({ success: false, message: "Error performing promotions", error: err.message });
+  }
+});
+
+// GET /api/office/archive/semesters
+// Retrieve list of unique semesters/divisions for freezing/archiving (restricted by department)
+router.get("/archive/semesters", authenticate, authorizeOffice, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const Ciann = require("../models/Ciann");
+    const Subject = require("../models/Subject");
+
+    const officeDept = await getOfficeStaffDepartment(req.user);
+    if (!officeDept) {
+      return res.status(400).json({ success: false, message: "Office staff department not configured" });
+    }
+
+    // Get subjects in this department to filter Ciann records
+    const deptSubjects = await Subject.find({ departmentId: officeDept, institution }).select("_id name");
+    const deptSubjectNames = deptSubjects.map((s) => s.name);
+
+    // Retrieve Ciann records matching these subjects
+    const cianns = await Ciann.find({
+      college: institution,
+      subject: { $in: deptSubjectNames }
+    })
+      .select("academicYear division semester status")
+      .lean();
+
+    const groupsMap = {};
+    cianns.forEach((c) => {
+      const key = `${c.academicYear}-${c.division}-${c.semester}`;
+      if (!groupsMap[key]) {
+        groupsMap[key] = {
+          academicYear: c.academicYear,
+          division: c.division,
+          semester: c.semester,
+          totalCianns: 0,
+          completedCianns: 0,
+        };
+      }
+      groupsMap[key].totalCianns++;
+      if (c.status === "completed") {
+        groupsMap[key].completedCianns++;
+      }
+    });
+
+    const semesters = Object.values(groupsMap).map((g) => ({
+      ...g,
+      status: g.completedCianns === g.totalCianns ? "completed" : g.completedCianns > 0 ? "partial" : "active",
+    }));
+
+    res.json({ success: true, semesters });
+  } catch (err) {
+    console.error("Error fetching semesters for archiving (office):", err);
+    res.status(500).json({ success: false, message: "Error retrieving archives", error: err.message });
+  }
+});
+
+// POST /api/office/archive/freeze
+// Freeze or unfreeze all Ciann/course-diary edits for a particular semester
+router.post("/archive/freeze", authenticate, authorizeOffice, async (req, res) => {
+  try {
+    const institution = req.user.college;
+    const { academicYear, division, semester, action } = req.body;
+    const Ciann = require("../models/Ciann");
+    const Subject = require("../models/Subject");
+
+    if (!academicYear || !division || !semester || !action) {
+      return res.status(400).json({ success: false, message: "academicYear, division, semester, and action are required" });
+    }
+
+    const officeDept = await getOfficeStaffDepartment(req.user);
+    if (!officeDept) {
+      return res.status(400).json({ success: false, message: "Office staff department not configured" });
+    }
+
+    // Double-check: must only toggle records belonging to subjects in officeDept
+    const deptSubjects = await Subject.find({ departmentId: officeDept, institution }).select("name");
+    const deptSubjectNames = deptSubjects.map((s) => s.name);
+
+    const targetStatus = action === "freeze" ? "completed" : "active";
+
+    const result = await Ciann.updateMany(
+      {
+        college: institution,
+        academicYear,
+        division,
+        semester: String(semester),
+        subject: { $in: deptSubjectNames }
+      },
+      { $set: { status: targetStatus } }
+    );
+
+    res.json({
+      success: true,
+      message: `Successfully ${action === "freeze" ? "froze" : "reopened"} ${result.modifiedCount} records.`,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (err) {
+    console.error("Error toggling semester freeze (office):", err);
+    res.status(500).json({ success: false, message: "Error updating semester status", error: err.message });
+  }
+});
+
 module.exports = router;
 

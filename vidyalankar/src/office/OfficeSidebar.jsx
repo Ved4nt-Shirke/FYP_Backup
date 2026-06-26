@@ -87,6 +87,16 @@ const OfficeSidebar = ({
       ),
       tab: "chat",
     },
+    {
+      id: "promotions",
+      label: "Student Promotions",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="nav-svg-icon">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M16.5 7.5L21 12m0 0l-4.5 4.5M21 12H9" />
+        </svg>
+      ),
+      tab: "promotions",
+    },
   ];
 
   const handleNavigation = (item) => {

@@ -205,6 +205,10 @@ export const config = {
     courses: (departmentId) => `${API_BASE_URL}/office/courses/${departmentId}`,
     courseDivisions: (courseId) =>
       `${API_BASE_URL}/office/course-divisions/${courseId}`,
+    promotionsEligible: `${API_BASE_URL}/office/promotions/eligible-students`,
+    promoteStudents: `${API_BASE_URL}/office/promotions/promote`,
+    archiveSemesters: `${API_BASE_URL}/office/archive/semesters`,
+    freezeSemester: `${API_BASE_URL}/office/archive/freeze`,
   },
 
   // Catalog endpoints (for fetching admin-created data: departments, courses, divisions, subjects)

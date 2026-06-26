@@ -34,6 +34,8 @@
   gap: 15px;
   flex: 1;
   min-width: 0;
+  height: 100%;
+  max-height: var(--header-height, 60px);
 }
 
 .menu-toggle {
@@ -74,6 +76,8 @@
   gap: 10px;
   color: #ffffff;
   min-width: 0;
+  height: 100%;
+  max-height: 100%;
 }
 
 .institution-logo-image {
@@ -280,6 +284,8 @@
   align-items: center;
   gap: 10px;
   margin-left: auto;
+  height: 100%;
+  max-height: var(--header-height, 60px);
 }
 
 .ciann-request-bell {
