@@ -672,6 +672,109 @@ router.get('/batch-statistics', async (req, res) => {
   }
 });
 
+// GET batch-wise assessment statistics (URL format: /statistics/:batch)
+router.get('/statistics/:batch', async (req, res) => {
+  try {
+    const { batch } = req.params;
+    const { ciannId } = req.query; // optional ciannId
+    
+    if (!batch) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Batch parameter is required' 
+      });
+    }
+
+    // Get all students in the batch
+    const batchStudents = await Student.find({ batch: batch }).select('studentName rollNo');
+    const studentNames = batchStudents.map(s => s.studentName);
+    
+    if (studentNames.length === 0) {
+      return res.json({ 
+        success: true, 
+        statistics: {
+          batch: batch,
+          totalAssessments: 0,
+          totalStudentAssessments: 0,
+          averageMarks: 0,
+          experimentsAssessed: []
+        }
+      });
+    }
+
+    let query = { studentName: { $in: studentNames } };
+    
+    // Filter by ciannId if provided to make it subject-specific
+    if (ciannId) {
+      const numericCiannId = parseInt(ciannId, 10);
+      if (!isNaN(numericCiannId)) {
+        query.ciannId = numericCiannId;
+      }
+    }
+
+    // Get assessments for this batch
+    const assessments = await Assessment.find(query);
+    
+    // Calculate statistics
+    const assessedStudentNames = [...new Set(assessments.map(a => a.studentName))];
+    const assessedStudentsCount = assessedStudentNames.length;
+    
+    const totalMarks = assessments.reduce((sum, a) => sum + a.marks, 0);
+    const averageMarks = assessments.length > 0 ? (totalMarks / assessments.length).toFixed(2) : 0;
+
+    // Get experiment-wise statistics
+    const matchStage = { studentName: { $in: studentNames } };
+    if (ciannId) {
+      const numericCiannId = parseInt(ciannId, 10);
+      if (!isNaN(numericCiannId)) {
+        matchStage.ciannId = numericCiannId;
+      }
+    }
+
+    const experimentStats = await Assessment.aggregate([
+      {
+        $match: matchStage
+      },
+      {
+        $group: {
+          _id: {
+            experimentNumber: "$experimentNumber",
+            experimentName: "$experimentName"
+          },
+          studentsCount: { $sum: 1 },
+          averageMarks: { $avg: "$marks" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          experimentId: "$_id.experimentNumber",
+          experimentName: "$_id.experimentName",
+          studentsCount: 1,
+          averageMarks: { $round: ["$averageMarks", 2] }
+        }
+      },
+      {
+        $sort: { experimentId: 1 }
+      }
+    ]);
+
+    res.json({ 
+      success: true, 
+      statistics: {
+        batch: batch,
+        totalAssessments: assessments.length,
+        totalStudentAssessments: assessedStudentsCount,
+        averageMarks: parseFloat(averageMarks),
+        experimentsAssessed: experimentStats
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching batch statistics:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // GET assessment data by batch for viewing
 router.get('/batch/:batch', async (req, res) => {
   try {

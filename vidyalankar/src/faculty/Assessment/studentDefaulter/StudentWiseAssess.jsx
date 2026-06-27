@@ -77,6 +77,7 @@ export default function StudentWiseAssess() {
 
   const [experiments, setExperiments] = useState([]); // all experiments from curriculum
   const [assessedMap, setAssessedMap] = useState({}); // experimentNumber -> marks
+  const [assessingExps, setAssessingExps] = useState({}); // experimentNumber -> boolean (currently being assessed)
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -95,6 +96,7 @@ export default function StudentWiseAssess() {
         // Reset state when student or subject changes to prevent cross-contamination
         setExperiments([]);
         setAssessedMap({});
+        setAssessingExps({});
 
         // Validate subject info before calling API
         // Require at least course; program is recommended but we will attempt best-effort fetch without it
@@ -295,21 +297,27 @@ export default function StudentWiseAssess() {
       setSaving(true);
       setError('');
 
-      // Prepare payload: only the current student for all experiments shown
-      const studentsMarks = experiments.map(exp => ({
-        studentName,
-        rollNo: studentRollNo,
-        marks: assessedMap[exp.practicalNo] === '' || assessedMap[exp.practicalNo] == null ? 0 : Number(assessedMap[exp.practicalNo]),
-      }));
+      // Filter experiments to only those that are assessed (either previously or newly assessed)
+      const toSave = experiments.filter(exp => {
+        const markVal = assessedMap[exp.practicalNo];
+        return markVal !== undefined && markVal !== '' && markVal !== null;
+      });
+
+      if (toSave.length === 0) {
+        alert('No new or modified marks to save.');
+        setSaving(false);
+        return;
+      }
 
       // The API expects one experiment at a time currently.
-      for (const exp of experiments) {
+      for (const exp of toSave) {
+        const markVal = assessedMap[exp.practicalNo];
         const payload = {
           studentsMarks: [
             {
               studentName,
               rollNo: studentRollNo,
-              marks: assessedMap[exp.practicalNo] === '' || assessedMap[exp.practicalNo] == null ? 0 : Number(assessedMap[exp.practicalNo]),
+              marks: Number(markVal),
             },
           ],
           experimentId: String(exp.practicalNo),
@@ -392,6 +400,7 @@ export default function StudentWiseAssess() {
               ) : (
                 experiments.map((exp) => {
                   const isAssessed = assessedMap[exp.practicalNo] !== undefined && assessedMap[exp.practicalNo] !== '' && assessedMap[exp.practicalNo] !== null;
+                  const showInput = isAssessed || assessingExps[exp.practicalNo];
                   return (
                     <tr key={`student-${studentName}-exp-${exp.practicalNo}`}>
                       <td style={{ textAlign: 'center' }}>{exp.practicalNo}</td>
@@ -404,17 +413,32 @@ export default function StudentWiseAssess() {
                         )}
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        <input
-                          type="number"
-                          className="form-control"
-                          min={0}
-                          max={25}
-                          value={assessedMap[exp.practicalNo] ?? ''}
-                          onChange={(e) => handleMarksChange(exp.practicalNo, e.target.value)}
-                          placeholder="Enter marks"
-                          style={{ maxWidth: 120, margin: '0 auto' }}
-                          key={`marks-input-${studentName}-${exp.practicalNo}`}
-                        />
+                        {showInput ? (
+                          <input
+                            type="number"
+                            className="form-control"
+                            min={0}
+                            max={25}
+                            value={assessedMap[exp.practicalNo] ?? ''}
+                            onChange={(e) => handleMarksChange(exp.practicalNo, e.target.value)}
+                            placeholder="Enter marks"
+                            style={{ maxWidth: 120, margin: '0 auto' }}
+                            key={`marks-input-${studentName}-${exp.practicalNo}`}
+                            autoFocus={assessingExps[exp.practicalNo]}
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-primary"
+                            style={{ minWidth: 100 }}
+                            onClick={() => {
+                              setAssessingExps(prev => ({ ...prev, [exp.practicalNo]: true }));
+                              handleMarksChange(exp.practicalNo, '');
+                            }}
+                          >
+                            <i className="bi bi-plus-circle me-1"></i> Assess
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );

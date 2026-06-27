@@ -127,8 +127,16 @@ const AssismentCiaanCards = () => {
     );
   };
 
-  const activeCianns = ciannDataList.filter(c => c.status !== "completed" && c.status !== "archived");
-  const archivedCianns = ciannDataList.filter(c => c.status === "completed" || c.status === "archived");
+  const selectedYear = localStorage.getItem("selectedAcademicYear") || "all";
+  const filteredCiannList = ciannDataList.filter(c => {
+    if (selectedYear && selectedYear !== "all") {
+      return c.academicYear === selectedYear;
+    }
+    return true;
+  });
+
+  const activeCianns = filteredCiannList.filter(c => c.status !== "completed" && c.status !== "archived");
+  const archivedCianns = filteredCiannList.filter(c => c.status === "completed" || c.status === "archived");
 
   return (
     <>
