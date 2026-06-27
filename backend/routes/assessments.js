@@ -5,6 +5,72 @@ const Student = require('../models/Student');
 const { resolveStudents } = require('../utils/studentHistoryHelper');
 const Experiment = require('../models/Experiment');
 const Ciann = require('../models/Ciann');
+const Department = require('../models/Department');
+const mongoose = require('mongoose');
+
+function getAcademicYearRegex(academicYear) {
+  if (!academicYear) return null;
+  const matches = academicYear.match(/(\d{4})\s*-\s*(\d{2,4})/);
+  if (matches) {
+    const startYear = matches[1];
+    const endYear = matches[2];
+    const shortEndYear = endYear.length === 4 ? endYear.slice(2) : endYear;
+    const longEndYear = endYear.length === 2 ? (startYear.slice(0, 2) + endYear) : endYear;
+    const pattern = `^${startYear}\\s*-\\s*(?:${shortEndYear}|${longEndYear})$`;
+    return new RegExp(pattern, "i");
+  }
+  const escaped = academicYear.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^${escaped}$`, "i");
+}
+
+async function buildStudentQuery({ batch, ciannId, division }) {
+  const query = { batch: batch };
+  
+  const resolvedDivision = await resolveDivisionFromQuery({ ciannId, division });
+  if (resolvedDivision) {
+    query.division = {
+      $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
+    };
+  }
+
+  if (ciannId) {
+    const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
+    if (ciann) {
+      if (ciann.academicYear) {
+        const ayRegex = getAcademicYearRegex(ciann.academicYear);
+        if (ayRegex) {
+          query.academicYear = ayRegex;
+        } else {
+          query.academicYear = ciann.academicYear;
+        }
+      }
+      if (ciann.department) {
+        const ciannDeptId = ciann.department._id || ciann.department.id;
+        let resolvedDeptId = ciannDeptId;
+        
+        try {
+          const deptDoc = await Department.findOne({
+            $or: [
+              { _id: mongoose.isValidObjectId(ciannDeptId) ? ciannDeptId : new mongoose.Types.ObjectId() },
+              { name: { $regex: new RegExp(`^${escapeRegex(ciann.department.name)}$`, 'i') } },
+              { code: { $regex: new RegExp(`^${escapeRegex(ciann.department.code || ciann.department.name)}$`, 'i') } }
+            ]
+          });
+          if (deptDoc) {
+            resolvedDeptId = deptDoc._id;
+          }
+        } catch (err) {
+          console.warn('[buildStudentQuery] Failed to resolve department by name/code:', err.message);
+        }
+        
+        query.departmentId = resolvedDeptId;
+      }
+    }
+  }
+  return query;
+}
+
+
 
 // Startup migration: Set ciannId to 0 for older assessments where it is missing,
 // and drop the old unique index to support the new compound unique index.
@@ -521,25 +587,7 @@ router.get('/students-by-batch', async (req, res) => {
     }
 
     const resolvedDivision = await resolveDivisionFromQuery({ ciannId, division });
-    const query = { batch: batch };
-
-    if (resolvedDivision) {
-      query.division = {
-        $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
-      };
-    }
-
-    if (ciannId) {
-      const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
-      if (ciann) {
-        if (ciann.academicYear) {
-          query.academicYear = ciann.academicYear;
-        }
-        if (ciann.department && (ciann.department._id || ciann.department.id)) {
-          query.departmentId = ciann.department._id || ciann.department.id;
-        }
-      }
-    }
+    const query = await buildStudentQuery({ batch, ciannId, division });
 
     const students = await Student.find(query)
       .select('rollNo studentName batch')
@@ -819,24 +867,7 @@ router.get('/batch/:batch', async (req, res) => {
     // Get all students in the batch/division/academic year/department
     let batchStudents = [];
     if (batch) {
-      const resolvedDivision = await resolveDivisionFromQuery({ ciannId });
-      const query = { batch: batch };
-      if (resolvedDivision) {
-        query.division = {
-          $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
-        };
-      }
-      if (ciannId) {
-        const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
-        if (ciann) {
-          if (ciann.academicYear) {
-            query.academicYear = ciann.academicYear;
-          }
-          if (ciann.department && (ciann.department._id || ciann.department.id)) {
-            query.departmentId = ciann.department._id || ciann.department.id;
-          }
-        }
-      }
+      const query = await buildStudentQuery({ batch, ciannId });
       batchStudents = await Student.find(query)
         .select('rollNo studentName batch')
         .lean();
@@ -1010,24 +1041,7 @@ router.get('/edit-data/:experimentId', async (req, res) => {
     // 1. Fetch all students in the batch
     let batchStudents = [];
     if (batch) {
-      const resolvedDivision = await resolveDivisionFromQuery({ ciannId });
-      const query = { batch: batch };
-      if (resolvedDivision) {
-        query.division = {
-          $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
-        };
-      }
-      if (ciannId) {
-        const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
-        if (ciann) {
-          if (ciann.academicYear) {
-            query.academicYear = ciann.academicYear;
-          }
-          if (ciann.department && (ciann.department._id || ciann.department.id)) {
-            query.departmentId = ciann.department._id || ciann.department.id;
-          }
-        }
-      }
+      const query = await buildStudentQuery({ batch, ciannId });
       batchStudents = await Student.find(query).select('studentName rollNo').lean();
     }
 
