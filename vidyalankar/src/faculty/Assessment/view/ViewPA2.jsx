@@ -76,14 +76,25 @@ export default function ViewPA2() {
     };
   }, []);
 
+  const getNormalizedBatch = (b) => {
+    if (!b) return "";
+    const clean = b.trim().toUpperCase();
+    if (clean === "B1") return "Batch 1";
+    if (clean === "B2") return "Batch 2";
+    if (clean === "B3") return "Batch 3";
+    return b;
+  };
+
   const fetchAssessmentData = async () => {
     try {
       setLoading(true);
       setError(null);
 
+      const normalizedBatch = getNormalizedBatch(batch);
+
       // Fetch assessed experiments for this batch
       const ciannIdParam = ciannData?.ciannId ? `&ciannId=${ciannData.ciannId}` : '';
-      const experimentsResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}${ciannIdParam}`);
+      const experimentsResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${normalizedBatch}${ciannIdParam}`);
       const experimentsResult = await experimentsResponse.json();
 
       if (!experimentsResponse.ok) {
@@ -96,7 +107,7 @@ export default function ViewPA2() {
 
       // Fetch assessment data for the batch
       const batchCiannIdParam = ciannData?.ciannId ? `?ciannId=${ciannData.ciannId}` : '';
-      const assessmentResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batch/${batch}${batchCiannIdParam}`);
+      const assessmentResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batch/${normalizedBatch}${batchCiannIdParam}`);
       const assessmentResult = await assessmentResponse.json();
 
       if (!assessmentResponse.ok) {
@@ -111,14 +122,15 @@ export default function ViewPA2() {
       const processedData = assessmentResult.data.map(student => {
         const experimentMarks = {};
         
-        // Initialize all experiments with 0 marks
+        // Initialize all experiments with "-" (empty/unassessed)
         experimentsResult.experiments.forEach(exp => {
-          experimentMarks[exp.id] = 0;
+          experimentMarks[exp.id] = "-";
         });
         
         // Fill in actual marks from assessments
         Object.keys(student.assessments).forEach(expNum => {
-          experimentMarks[parseInt(expNum)] = student.assessments[expNum].marks;
+          const marksVal = student.assessments[expNum].marks;
+          experimentMarks[parseInt(expNum)] = (marksVal !== undefined && marksVal !== null && marksVal !== "") ? marksVal : "-";
         });
 
         return {
@@ -130,7 +142,7 @@ export default function ViewPA2() {
       });
 
       setStudentsData(processedData);
-      setExperiments(experimentsResult.experiments.slice(0, 8)); // Show first 8 experiments as per screenshot
+      setExperiments(experimentsResult.experiments);
     } catch (error) {
       console.error('Error fetching assessment data:', error);
       setError(error.message);

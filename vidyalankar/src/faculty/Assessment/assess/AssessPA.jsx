@@ -208,7 +208,7 @@ export default function AssessPA() {
                   <thead className="table-light">
                     <tr>
                       <th style={{ width: '10%', textAlign: 'center' }}>Exp ID</th>
-                      <th style={{ width: '70%' }}>Exp Name</th>
+                      <th style={{ width: '70%', textAlign: 'left' }}>Exp Name</th>
                       <th style={{ width: '20%', textAlign: 'center' }}>Action</th>
                     </tr>
                   </thead>
@@ -248,7 +248,7 @@ export default function AssessPA() {
                 <thead className="table-light">
                   <tr>
                     <th style={{ width: '10%', textAlign: 'center' }}>Exp ID</th>
-                    <th style={{ width: '70%' }}>Exp Name</th>
+                    <th style={{ width: '70%', textAlign: 'left' }}>Exp Name</th>
                     <th style={{ width: '20%', textAlign: 'center' }}>Action</th>
                   </tr>
                 </thead>
@@ -256,7 +256,7 @@ export default function AssessPA() {
                   {pendingExperiments.map((exp) => (
                     <tr key={exp.practicalNo}>
                       <td style={{ textAlign: 'center' }}>{exp.practicalNo}</td>
-                      <td>{exp.practicalName}</td>
+                      <td style={{ textAlign: 'left' }}>{exp.practicalName}</td>
                       <td style={{ textAlign: 'center' }}>
                         <button
                           className="btn btn-success"

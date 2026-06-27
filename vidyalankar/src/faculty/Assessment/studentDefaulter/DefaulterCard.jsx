@@ -46,30 +46,31 @@ const DefaulterCard = () => {
   const renderCiannCard = (ciannData) => {
     const isArchived = ciannData.status === "completed" || ciannData.status === "archived";
     return (
-      <div
-        key={ciannData._id}
-        className={`ciann-dashboard-card ${isArchived ? "archived-card" : ""}`}
-        onClick={() => handleCardClick(ciannData)}
-      >
-        <i className="bi bi-pencil-square ciann-icon"></i>
-        <div className="ciann-id">
-          CIAAN ID: {ciannData.ciannId}
-          {isArchived && (
-            <span className="badge bg-secondary ms-2" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
-              {ciannData.status === 'completed' ? 'Completed' : 'Archived'}
-            </span>
-          )}
+      <div key={ciannData._id} className="position-relative">
+        <div
+          className={`ciann-dashboard-card ${isArchived ? "archived-card" : ""}`}
+          onClick={() => handleCardClick(ciannData)}
+        >
+          <i className="bi bi-pencil-square ciann-icon"></i>
+          <div className="ciann-id">
+            CIAAN ID: {ciannData.ciannId}
+            {isArchived && (
+              <span className="badge bg-secondary ms-2" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
+                {ciannData.status === 'completed' ? 'Completed' : 'Archived'}
+              </span>
+            )}
+          </div>
+          <p className="card-text">
+            <strong>{ciannData.subject?.name}</strong>
+            <br />({ciannData.subject?.code})
+          </p>
+          <p className="card-text">
+            Division: <strong>{ciannData.division}</strong>
+          </p>
+          <p className="card-text text-muted small" style={{ marginTop: "4px", fontSize: "0.8rem" }}>
+            Academic Year: <strong>{ciannData.academicYear}</strong>
+          </p>
         </div>
-        <p className="card-text">
-          <strong>{ciannData.subject?.name}</strong>
-          <br />({ciannData.subject?.code})
-        </p>
-        <p className="card-text">
-          Division: <strong>{ciannData.division}</strong>
-        </p>
-        <p className="card-text text-muted small" style={{ marginTop: "4px", fontSize: "0.8rem" }}>
-          Academic Year: <strong>{ciannData.academicYear}</strong>
-        </p>
       </div>
     );
   };
@@ -95,11 +96,11 @@ const DefaulterCard = () => {
       <div className="edit-ciann-page">
         <div className="edit-ciann-header">
           <h2 className="text-center py-2 bg-success text-white">
-            Edit Assessment - Select CIAAN
+            Student-wise Defaulter - Select CIAAN
           </h2>
           {availableBatches.length > 0 && (
             <div className="alert alert-info mt-3">
-              <strong>Available Batches for Editing:</strong> {availableBatches.join(", ")}
+              <strong>Available Batches:</strong> {availableBatches.join(", ")}
             </div>
           )}
         </div>
@@ -109,7 +110,7 @@ const DefaulterCard = () => {
             <p>Loading CIAANs...</p>
           </div>
         ) : ciannDataList.length > 0 ? (
-          <div className="container py-2">
+          <div>
             {/* Active Workspaces Section */}
             <div className="workspace-section-group mb-5">
               <h4 className="workspace-section-title text-primary mb-4" style={{ display: "flex", alignItems: "center", fontWeight: "700" }}>

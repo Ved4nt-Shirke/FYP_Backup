@@ -262,8 +262,21 @@ router.post('/save-marks', async (req, res) => {
         const { studentName, rollNo, marks } = studentMark;
         console.log(`Processing student: ${studentName}, marks: ${marks}`);
 
+        const resolvedCiannId = ciannId ? Number(ciannId) : 0;
+
+        // If marks is empty string, null, or undefined, delete the assessment record if it exists
+        if (marks === "" || marks === null || marks === undefined) {
+          await Assessment.deleteOne({
+            experimentNumber: experimentNumber,
+            studentName: studentName,
+            ciannId: resolvedCiannId
+          });
+          continue;
+        }
+
         // Validate marks range
-        if (marks < 0 || marks > 25) {
+        const parsedMarks = parseInt(marks, 10);
+        if (isNaN(parsedMarks) || parsedMarks < 0 || parsedMarks > 25) {
           console.log(`Invalid marks for ${studentName}: ${marks}`);
           errors.push(`Invalid marks for ${studentName}: ${marks}. Marks should be between 0-25`);
           continue;
@@ -279,7 +292,6 @@ router.post('/save-marks', async (req, res) => {
         console.log(`Student ${studentName} found in database`);
 
         // Use upsert to update existing or create new assessment
-        const resolvedCiannId = ciannId ? Number(ciannId) : 0;
         const assessment = await Assessment.findOneAndUpdate(
           {
             experimentNumber: experimentNumber,
@@ -291,7 +303,7 @@ router.post('/save-marks', async (req, res) => {
             experimentNumber: experimentNumber,
             studentName: studentName,
             rollNo: rollNo || studentExists.rollNo || 'N/A',
-            marks: parseInt(marks),
+            marks: parsedMarks,
             // store context so defaulter and studentwise can load reliably
             program: program || '',
             className: classCtx || '',
@@ -515,6 +527,18 @@ router.get('/students-by-batch', async (req, res) => {
       query.division = {
         $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
       };
+    }
+
+    if (ciannId) {
+      const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
+      if (ciann) {
+        if (ciann.academicYear) {
+          query.academicYear = ciann.academicYear;
+        }
+        if (ciann.department && (ciann.department._id || ciann.department.id)) {
+          query.departmentId = ciann.department._id || ciann.department.id;
+        }
+      }
     }
 
     const students = await Student.find(query)
@@ -792,10 +816,31 @@ router.get('/batch/:batch', async (req, res) => {
       });
     }
 
-    // Get all students in the batch
-    const batchStudents = await Student.find({ batch: batch })
-      .select('rollNo studentName batch')
-      .lean();
+    // Get all students in the batch/division/academic year/department
+    let batchStudents = [];
+    if (batch) {
+      const resolvedDivision = await resolveDivisionFromQuery({ ciannId });
+      const query = { batch: batch };
+      if (resolvedDivision) {
+        query.division = {
+          $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
+        };
+      }
+      if (ciannId) {
+        const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
+        if (ciann) {
+          if (ciann.academicYear) {
+            query.academicYear = ciann.academicYear;
+          }
+          if (ciann.department && (ciann.department._id || ciann.department.id)) {
+            query.departmentId = ciann.department._id || ciann.department.id;
+          }
+        }
+      }
+      batchStudents = await Student.find(query)
+        .select('rollNo studentName batch')
+        .lean();
+    }
 
     batchStudents.sort((a, b) => {
       const aRoll = String(a.rollNo || "").trim();
@@ -962,25 +1007,44 @@ router.get('/edit-data/:experimentId', async (req, res) => {
       });
     }
 
-    const query = { 
-      experimentNumber: parseInt(experimentId) 
-    };
-    
+    // 1. Fetch all students in the batch
+    let batchStudents = [];
     if (batch) {
-      // Filter by batch: first get students from the batch, then filter assessments
-      const Student = require('../models/Student');
-      const batchStudents = await Student.find({ batch: batch }).select('studentName');
-      const studentNames = batchStudents.map(student => student.studentName);
-      
-      if (studentNames.length === 0) {
-        return res.json({ 
-          success: false, 
-          message: 'No students found for this batch' 
-        });
+      const resolvedDivision = await resolveDivisionFromQuery({ ciannId });
+      const query = { batch: batch };
+      if (resolvedDivision) {
+        query.division = {
+          $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
+        };
       }
-      query.studentName = { $in: studentNames };
+      if (ciannId) {
+        const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
+        if (ciann) {
+          if (ciann.academicYear) {
+            query.academicYear = ciann.academicYear;
+          }
+          if (ciann.department && (ciann.department._id || ciann.department.id)) {
+            query.departmentId = ciann.department._id || ciann.department.id;
+          }
+        }
+      }
+      batchStudents = await Student.find(query).select('studentName rollNo').lean();
     }
 
+    if (batchStudents.length === 0) {
+      return res.json({ 
+        success: false, 
+        message: 'No students found for this batch' 
+      });
+    }
+
+    // 2. Fetch existing assessments for this batch and experiment
+    const studentNames = batchStudents.map(student => student.studentName);
+    const query = { 
+      experimentNumber: parseInt(experimentId),
+      studentName: { $in: studentNames }
+    };
+    
     if (ciannId) {
       const numericCiannId = parseInt(ciannId, 10);
       const ciann = await Ciann.findOne({ ciannId: numericCiannId });
@@ -997,33 +1061,63 @@ router.get('/edit-data/:experimentId', async (req, res) => {
       }
     }
 
-    const assessments = await Assessment.find(query).sort({ studentName: 1 });
+    const assessments = await Assessment.find(query);
 
-    if (assessments.length === 0) {
-      return res.json({ 
-        success: false, 
-        message: 'No assessment data found for this experiment and batch' 
-      });
+    // 3. Map assessments and experiment info
+    const assessmentMap = {};
+    const experimentNameMap = {};
+    assessments.forEach(a => {
+      assessmentMap[a.studentName] = a.marks;
+      if (a.experimentName) {
+        experimentNameMap[a.experimentName] = (experimentNameMap[a.experimentName] || 0) + 1;
+      }
+    });
+
+    let expName = `Experiment ${experimentId}`;
+    const nameEntries = Object.entries(experimentNameMap);
+    if (nameEntries.length > 0) {
+      nameEntries.sort((a, b) => b[1] - a[1]);
+      expName = nameEntries[0][0];
+    } else {
+      if (ciannId) {
+        const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
+        if (ciann && ciann.subject?.code) {
+          const expDoc = await Experiment.findOne({ 
+            courseCode: ciann.subject.code,
+            practicalNo: parseInt(experimentId)
+          });
+          if (expDoc && expDoc.practicalName) {
+            expName = expDoc.practicalName;
+          }
+        }
+      }
     }
 
-    // Get experiment info from first assessment
-    const experimentInfo = {
-      id: assessments[0].experimentNumber,
-      name: assessments[0].experimentName
-    };
+    // 4. Build students list for edit page containing all students in the batch
+    const studentsList = batchStudents.map(student => {
+      const existingMark = assessmentMap[student.studentName];
+      return {
+        _id: student._id,
+        rollNo: student.rollNo || 'N/A',
+        studentName: student.studentName,
+        marks: existingMark !== undefined ? existingMark : '' // Blank if not assessed
+      };
+    });
 
-    // Transform assessments to student format
-    const students = assessments.map(assessment => ({
-      _id: assessment._id,
-      rollNo: assessment.rollNo || 'N/A',
-      studentName: assessment.studentName,
-      marks: assessment.marks
-    }));
+    // 5. Sort students strictly by roll number
+    studentsList.sort((a, b) => {
+      const aRoll = String(a.rollNo || "").trim();
+      const bRoll = String(b.rollNo || "").trim();
+      return aRoll.localeCompare(bRoll, undefined, { numeric: true, sensitivity: 'base' });
+    });
 
     res.json({ 
       success: true, 
-      experiment: experimentInfo,
-      students: students
+      experiment: {
+        id: parseInt(experimentId),
+        name: expName
+      },
+      students: studentsList
     });
   } catch (error) {
     console.error('Error fetching edit data:', error);

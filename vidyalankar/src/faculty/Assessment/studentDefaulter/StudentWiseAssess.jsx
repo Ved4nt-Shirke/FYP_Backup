@@ -387,7 +387,7 @@ export default function StudentWiseAssess() {
             <thead className="table-light">
               <tr>
                 <th style={{ width: '10%', textAlign: 'center' }}>Exp ID</th>
-                <th style={{ width: '55%' }}>Exp Name</th>
+                <th style={{ width: '55%', textAlign: 'left' }}>Exp Name</th>
                 <th style={{ width: '15%', textAlign: 'center' }}>Status</th>
                 <th style={{ width: '20%', textAlign: 'center' }}>Marks (0-25)</th>
               </tr>
@@ -400,11 +400,10 @@ export default function StudentWiseAssess() {
               ) : (
                 experiments.map((exp) => {
                   const isAssessed = assessedMap[exp.practicalNo] !== undefined && assessedMap[exp.practicalNo] !== '' && assessedMap[exp.practicalNo] !== null;
-                  const showInput = isAssessed || assessingExps[exp.practicalNo];
                   return (
                     <tr key={`student-${studentName}-exp-${exp.practicalNo}`}>
                       <td style={{ textAlign: 'center' }}>{exp.practicalNo}</td>
-                      <td>{exp.practicalName}</td>
+                      <td style={{ textAlign: 'left' }}>{exp.practicalName}</td>
                       <td style={{ textAlign: 'center' }}>
                         {isAssessed ? (
                           <span className="badge bg-success">Assessed</span>
@@ -413,7 +412,7 @@ export default function StudentWiseAssess() {
                         )}
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        {showInput ? (
+                        {isAssessed ? (
                           <input
                             type="number"
                             className="form-control"
@@ -424,20 +423,11 @@ export default function StudentWiseAssess() {
                             placeholder="Enter marks"
                             style={{ maxWidth: 120, margin: '0 auto' }}
                             key={`marks-input-${studentName}-${exp.practicalNo}`}
-                            autoFocus={assessingExps[exp.practicalNo]}
                           />
                         ) : (
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-primary"
-                            style={{ minWidth: 100 }}
-                            onClick={() => {
-                              setAssessingExps(prev => ({ ...prev, [exp.practicalNo]: true }));
-                              handleMarksChange(exp.practicalNo, '');
-                            }}
-                          >
-                            <i className="bi bi-plus-circle me-1"></i> Assess
-                          </button>
+                          <span className="text-muted" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <i className="bi bi-lock-fill"></i> Locked
+                          </span>
                         )}
                       </td>
                     </tr>

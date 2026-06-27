@@ -160,7 +160,7 @@ function EditProgAssess() {
             <thead className="table-light">
               <tr>
                 <th style={{ width: "10%", textAlign: "center" }}>Exp ID</th>
-                <th style={{ width: "70%" }}>Exp Name</th>
+                <th style={{ width: "70%", textAlign: "left" }}>Exp Name</th>
                 <th style={{ width: "20%", textAlign: "center" }}>Action</th>
               </tr>
             </thead>
@@ -169,7 +169,7 @@ function EditProgAssess() {
                 experiments.map((exp) => (
                   <tr key={exp.id}>
                     <td style={{ textAlign: "center" }}>{exp.id}</td>
-                    <td>{exp.name}</td>
+                    <td style={{ textAlign: "left" }}>{exp.name}</td>
                     <td style={{ textAlign: "center" }}>
                       <button
                         className="btn btn-success"
