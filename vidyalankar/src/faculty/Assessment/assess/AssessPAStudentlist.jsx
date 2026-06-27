@@ -52,22 +52,72 @@ export default function AssessPAStudentlist() {
       setError(null);
 
       if (isEditMode && experiment) {
-        // In edit mode, fetch existing assessment data
+        // In edit mode, fetch existing assessment data, but merge with full student list
         const ciannIdParam = ciannData?.ciannId ? `&ciannId=${ciannData.ciannId}` : '';
-        const response = await fetch(
-          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}${ciannIdParam}`,
-        );
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Failed to fetch assessment data");
+        
+        // 1. Fetch all students in the batch/division
+        let allStudents = [];
+        try {
+          const studentsResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/students-by-batch?batch=${batch}${ciannIdParam}`);
+          const studentsData = await studentsResponse.json();
+          if (studentsResponse.ok && studentsData.success && studentsData.students) {
+            allStudents = studentsData.students;
+          }
+        } catch (err) {
+          console.warn('Failed to fetch batch students:', err);
         }
 
-        if (data.success && data.students) {
-          setStudents(data.students);
-        } else {
-          throw new Error("No assessment data found for this experiment");
+        // 2. Fetch existing assessments
+        let existingAssessments = [];
+        try {
+          const response = await fetch(
+            `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}${ciannIdParam}`,
+          );
+          const data = await response.json();
+          if (response.ok && data.success && data.students) {
+            existingAssessments = data.students;
+          }
+        } catch (err) {
+          console.warn('Failed to fetch existing assessments:', err);
         }
+
+        if (allStudents.length === 0 && existingAssessments.length === 0) {
+          throw new Error('No students or assessment data found for this experiment and batch');
+        }
+
+        // Build fallback list if resolve students returned empty
+        if (allStudents.length === 0) {
+          allStudents = existingAssessments.map(s => ({
+            _id: s._id,
+            studentName: s.studentName,
+            rollNo: s.rollNo
+          }));
+        }
+
+        // Map existing grades if any (fallback to empty string)
+        const assessedMap = {};
+        existingAssessments.forEach(s => {
+          assessedMap[s.studentName] = s.marks;
+        });
+
+        const mergedStudents = allStudents.map(student => {
+          const existingMark = assessedMap[student.studentName];
+          return {
+            _id: student._id,
+            rollNo: student.rollNo || 'N/A',
+            studentName: student.studentName,
+            marks: existingMark !== undefined ? existingMark : ''
+          };
+        });
+
+        // Sort by roll number numerically
+        mergedStudents.sort((a, b) => {
+          const aRoll = String(a.rollNo || "").trim();
+          const bRoll = String(b.rollNo || "").trim();
+          return aRoll.localeCompare(bRoll, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
+        setStudents(mergedStudents);
       } else {
         // Normal mode: fetch students from the students database with batch and division filter
         let studentsData = [];
