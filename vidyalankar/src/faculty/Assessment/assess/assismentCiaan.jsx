@@ -11,13 +11,30 @@ const AssismentCiaanCards = () => {
   const [availableBatches, setAvailableBatches] = useState([]);
   const navigate = useNavigate(); // 👈 useNavigate hook
 
+  const [selectedYear, setSelectedYear] = useState(
+    localStorage.getItem("selectedAcademicYear") || "all"
+  );
+
+  useEffect(() => {
+    const handleYearChange = (event) => {
+      setSelectedYear(event.detail || "all");
+    };
+
+    window.addEventListener("academicYearChanged", handleYearChange);
+    return () => {
+      window.removeEventListener("academicYearChanged", handleYearChange);
+    };
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch CIANNs
-        const ciannRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns`);
+        setLoading(true);
+        // Fetch CIANNs matching selected year
+        const yearParam = selectedYear && selectedYear !== "all" ? `?academicYear=${encodeURIComponent(selectedYear)}` : "";
+        const ciannRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns${yearParam}`);
         const ciannData = await ciannRes.json();
-        setCiannDataList(ciannData);
+        setCiannDataList(ciannData || []);
 
         // Fetch available batches for assessment
         const batchesRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches`);
@@ -27,13 +44,12 @@ const AssismentCiaanCards = () => {
         }
       } catch (err) {
         console.error("Error fetching data:", err);
-        alert("Failed to fetch CIANNs and batch information");
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [selectedYear]);
 
   const handleCardClick = async (ciannData) => {
     setLoadingExperiments(true);
@@ -127,7 +143,6 @@ const AssismentCiaanCards = () => {
     );
   };
 
-  const selectedYear = localStorage.getItem("selectedAcademicYear") || "all";
   const filteredCiannList = ciannDataList.filter(c => {
     if (selectedYear && selectedYear !== "all") {
       return c.academicYear === selectedYear;

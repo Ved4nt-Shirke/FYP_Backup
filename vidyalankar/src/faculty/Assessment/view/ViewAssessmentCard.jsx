@@ -9,20 +9,38 @@ const ViewAssessmentCard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); // 👈 useNavigate hook
 
+  const [selectedYear, setSelectedYear] = useState(
+    localStorage.getItem("selectedAcademicYear") || "all"
+  );
+
+  useEffect(() => {
+    const handleYearChange = (event) => {
+      setSelectedYear(event.detail || "all");
+    };
+
+    window.addEventListener("academicYearChanged", handleYearChange);
+    return () => {
+      window.removeEventListener("academicYearChanged", handleYearChange);
+    };
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ciannRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns`);
+        setLoading(true);
+        // Fetch CIANNs matching selected year
+        const yearParam = selectedYear && selectedYear !== "all" ? `?academicYear=${encodeURIComponent(selectedYear)}` : "";
+        const ciannRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns${yearParam}`);
         const ciannData = await ciannRes.json();
-        setCiannDataList(ciannData);
+        setCiannDataList(ciannData || []);
       } catch (err) {
-        alert("Failed to fetch CIANNs");
+        console.error("Error fetching CIANNs:", err);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [selectedYear]);
 
   const handleCardClick = (ciannData) => {
     navigate("/view-batch-select", { state: { ciannData } }); // 👈 pass data to next page
@@ -60,7 +78,6 @@ const ViewAssessmentCard = () => {
     );
   };
 
-  const selectedYear = localStorage.getItem("selectedAcademicYear") || "all";
   const filteredCiannList = ciannDataList.filter(c => {
     if (selectedYear && selectedYear !== "all") {
       return c.academicYear === selectedYear;

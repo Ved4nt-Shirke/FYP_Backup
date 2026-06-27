@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { showSuccessAlert, showErrorAlert } from '../../../utils/alertUtils.jsx';
 import './EditIndividualAttendance.css';
+import '../FinalAtt.css';
 
 const EditExistingPracticalAttendance = () => {
   const location = useLocation();
@@ -27,18 +28,52 @@ const EditExistingPracticalAttendance = () => {
 
     const fetchStudents = async () => {
       try {
-        // Fetch all students from the database
-        const response = await axios.get(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`);
-        setStudents(response.data);
+        // 1. Fetch CIANN details first
+        const ciannResponse = await axios.get(
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns/${ciannId}`
+        );
+        const ciannData = ciannResponse.data;
+
+        // 2. Map lab-plan batch codes (B1/B2/B3) to student batch field values (Batch 1/Batch 2/Batch 3)
+        const labBatchToStudentBatch = (labBatch) => {
+          const map = { B1: "Batch 1", B2: "Batch 2", B3: "Batch 3" };
+          return map[labBatch] || labBatch;
+        };
+
+        const params = {};
+        const divisionId = ciannData?.divisionId?._id || ciannData?.divisionId;
+        if (divisionId) {
+          params.divisionId = divisionId;
+        } else if (ciannData?.division) {
+          params.division = ciannData.division;
+        }
+        if (ciannData?.academicYear) {
+          params.academicYear = ciannData.academicYear;
+        }
+
+        const studentBatchValue = labBatchToStudentBatch(attendanceRecord.batch);
+        params.batch = studentBatchValue;
+
+        // 3. Fetch ONLY the students matching this batch and division/year
+        const response = await axios.get(
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`,
+          { params }
+        );
+
+        const fetchedStudents = Array.isArray(response.data)
+          ? response.data
+          : response.data.students || [];
+
+        setStudents(fetchedStudents);
 
         // Initialize attendance state with existing data
         const initialAttendance = {};
-        response.data.forEach(student => {
+        fetchedStudents.forEach(student => {
           // Find if this student has attendance record
           const existingRecord = attendanceRecord.students?.find(
             s => s.rollNo === student.rollNo
           );
-          initialAttendance[student.rollNo] = existingRecord?.status === "Present";
+          initialAttendance[student.rollNo] = existingRecord ? existingRecord.status === "Present" : false;
         });
         setAttendance(initialAttendance);
       } catch (error) {
@@ -225,34 +260,41 @@ const EditExistingPracticalAttendance = () => {
               <div style={{ fontSize: '14px' }}>Please check if students are enrolled for this practical.</div>
             </div>
           ) : (
-            <div className="table-wrapper">
-              <table className="attendance-table">
-                <thead>
-                  <tr>
-                    <th>Roll No</th>
-                    <th>Student Name</th>
-                    <th>Mark Present</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map(student => (
-                    <tr key={student.rollNo}>
-                      <td data-label="Roll No">{student.rollNo}</td>
-                      <td data-label="Student Name">{student.studentName}</td>
-                      <td data-label="Mark Present">
-                        <label className="custom-checkbox">
-                          <input
-                            type="checkbox"
-                            checked={attendance[student.rollNo] || false}
-                            onChange={() => handleCheckboxChange(student.rollNo)}
-                          />
-                          <span className="checkmark"></span>
-                        </label>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="students-panel">
+              <div className="final-students-grid">
+                {students.map((student) => (
+                  <div
+                    key={student.rollNo}
+                    className={`final-student-card ${attendance[student.rollNo] ? "present" : "absent"}`}
+                    onClick={() => handleCheckboxChange(student.rollNo)}
+                  >
+                    <div className="final-student-header">
+                      <span className="final-roll-badge">
+                        {student.rollNo}
+                      </span>
+                      <button
+                        type="button"
+                        className={`status-pill status-toggle ${attendance[student.rollNo] ? "present" : "absent"}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleCheckboxChange(student.rollNo);
+                        }}
+                      >
+                        {attendance[student.rollNo] ? "Present" : "Absent"}
+                      </button>
+                    </div>
+                    <div className="final-student-name">
+                      {student.studentName}
+                    </div>
+                    <div className="final-student-meta">
+                      Enrollment: {student.enrollmentNo || "N/A"}
+                    </div>
+                    <div className="final-student-meta">
+                      Batch: {student.batch || "N/A"}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
