@@ -145,7 +145,7 @@ export default function AssessPAStudentlist() {
           rollNo: student.rollNo,
           studentName: student.studentName,
           batch: student.batch,
-          marks: 0, // default marks for new assessment
+          marks: "", // default marks empty for new assessment
         }));
 
         setStudents(studentsWithMarks);
@@ -161,8 +161,18 @@ export default function AssessPAStudentlist() {
   };
 
   const handleMarksChange = (studentId, marks) => {
-    const numericMarks = parseInt(marks) || 0;
-    if (numericMarks < 0 || numericMarks > 25) {
+    if (marks === "") {
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          student._id === studentId
+            ? { ...student, marks: "" }
+            : student,
+        ),
+      );
+      return;
+    }
+    const numericMarks = parseInt(marks);
+    if (isNaN(numericMarks) || numericMarks < 0 || numericMarks > 25) {
       alert("Marks should be between 0 and 25");
       return;
     }
@@ -187,7 +197,8 @@ export default function AssessPAStudentlist() {
 
       // Validate marks before submitting
       const invalidMarks = students.filter((student) => {
-        const marks = student.marks || 0;
+        const marks = student.marks;
+        if (marks === "" || marks === undefined || marks === null) return false;
         return marks < 0 || marks > 25;
       });
 
@@ -201,13 +212,21 @@ export default function AssessPAStudentlist() {
         return;
       }
 
-      // Prepare students marks data
-      const studentsMarks = students.map((student) => ({
-        studentId: student._id,
-        rollNo: student.rollNo,
-        studentName: student.studentName,
-        marks: Math.min(Math.max(student.marks || 0, 0), 25), // Ensure marks are within range
-      }));
+      // Prepare students marks data: only save students who have a mark entered!
+      const studentsMarks = students
+        .filter(student => student.marks !== "" && student.marks !== undefined && student.marks !== null)
+        .map((student) => ({
+          studentId: student._id,
+          rollNo: student.rollNo,
+          studentName: student.studentName,
+          marks: Number(student.marks),
+        }));
+
+      if (studentsMarks.length === 0) {
+        alert("Please enter marks for at least one student before submitting.");
+        setSaving(false);
+        return;
+      }
 
       const requestPayload = {
         studentsMarks,
@@ -418,7 +437,7 @@ export default function AssessPAStudentlist() {
                         <input
                           type="number"
                           className="form-control"
-                          value={student.marks || 0}
+                          value={student.marks ?? ''}
                           min="0"
                           max="25"
                           onChange={(e) =>

@@ -384,7 +384,9 @@ router.get('/assessed-experiments', async (req, res) => {
   try {
     const { batch, ciannId } = req.query;
     
-    let matchStage = {};
+    let matchStage = {
+      marks: { $gt: 0 } // Ignore fake/default assessments with 0 marks
+    };
 
     // 1. Resolve batch studentNames if batch is provided
     if (batch) {
@@ -461,7 +463,7 @@ router.get('/all-assessed-experiments', async (req, res) => {
 
     const assessments = await Assessment.aggregate([
       {
-        $match: { ciannId: numericCiannId }
+        $match: { ciannId: numericCiannId, marks: { $gt: 0 } }
       },
       {
         $group: {
@@ -603,7 +605,7 @@ router.get('/batch-statistics', async (req, res) => {
       });
     }
 
-    let query = { studentName: { $in: studentNames } };
+    let query = { studentName: { $in: studentNames }, marks: { $gt: 0 } };
     if (experimentNumber) {
       query.experimentNumber = parseInt(experimentNumber);
     }
@@ -623,7 +625,7 @@ router.get('/batch-statistics', async (req, res) => {
     // Get experiment-wise statistics
     const experimentStats = await Assessment.aggregate([
       {
-        $match: { studentName: { $in: studentNames } }
+        $match: { studentName: { $in: studentNames }, marks: { $gt: 0 } }
       },
       {
         $group: {
@@ -702,7 +704,7 @@ router.get('/statistics/:batch', async (req, res) => {
       });
     }
 
-    let query = { studentName: { $in: studentNames } };
+    let query = { studentName: { $in: studentNames }, marks: { $gt: 0 } };
     
     // Filter by ciannId if provided to make it subject-specific
     if (ciannId) {
@@ -723,7 +725,7 @@ router.get('/statistics/:batch', async (req, res) => {
     const averageMarks = assessments.length > 0 ? (totalMarks / assessments.length).toFixed(2) : 0;
 
     // Get experiment-wise statistics
-    const matchStage = { studentName: { $in: studentNames } };
+    const matchStage = { studentName: { $in: studentNames }, marks: { $gt: 0 } };
     if (ciannId) {
       const numericCiannId = parseInt(ciannId, 10);
       if (!isNaN(numericCiannId)) {
