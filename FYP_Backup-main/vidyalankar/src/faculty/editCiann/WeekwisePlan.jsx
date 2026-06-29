@@ -427,7 +427,7 @@ const WeekwisePlan = ({
           position: absolute;
           top: 100%;
           left: 0;
-          right: 0;
+          min-width: 280px;
           background-color: white;
           border: 1px solid #ccc;
           border-radius: 8px;
@@ -453,6 +453,8 @@ const WeekwisePlan = ({
           transition: background-color 0.2s ease;
           user-select: none;
           border-bottom: 1px solid #f0f0f0;
+          white-space: normal;
+          word-break: break-word;
         }
         .llo-dropdown-item:last-child {
           border-bottom: none;
@@ -883,7 +885,7 @@ const WeekwisePlan = ({
                         </button>
 
                         {openLloDropdownIndex === i && (
-                          <div className={`llo-dropdown-menu ${plans.length > 2 && i >= plans.length - 2 ? "open-up" : ""}`}>
+                          <div className={`llo-dropdown-menu ${(plans.length > 2 && i >= plans.length - 2) || (plans.length === 2 && i === 1) ? "open-up" : ""}`}>
                             {(() => {
                               const selectedCOs = plan.co ? plan.co.split(",").map(c => c.trim()) : [];
                               // Build LLO list with numbers (coNum.idx) and full text
@@ -937,7 +939,7 @@ const WeekwisePlan = ({
                                       }}
                                     />
                                     <span className="llo-item-text" title={lloItem.value}>
-                                      <strong>{lloItem.label}</strong>
+                                      <strong>{lloItem.label}</strong> - {lloItem.value}
                                     </span>
                                   </label>
                                 );

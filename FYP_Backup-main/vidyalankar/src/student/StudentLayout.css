@@ -208,6 +208,7 @@
 
 .student-main-content {
   flex: 1;
+  min-width: 0;
   margin-left: 270px;
   height: 100vh;
   display: flex;
@@ -220,7 +221,12 @@
   top: 0;
   z-index: 1100;
   min-height: 62px;
-  padding: 10px 18px;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -230,8 +236,9 @@
     var(--student-surface) 0%,
     color-mix(in srgb, var(--student-primary-light) 34%, #ffffff 66%) 100%
   );
-  border-bottom: 1px solid var(--student-border);
-  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.08);
+  border: none !important;
+  border-bottom: 1px solid var(--student-border) !important;
+  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.06);
 }
 
 .header-left,

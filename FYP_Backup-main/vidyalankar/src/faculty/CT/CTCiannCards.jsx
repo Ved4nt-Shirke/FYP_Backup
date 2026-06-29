@@ -33,6 +33,12 @@ export default function CTCiannCards() {
     fetchCianns();
   }, []);
 
+  const handleCardClick = (ciannData) => {
+    navigate(`/ct-dashboard/${ciannData._id || ciannData.ciannId}`, {
+      state: { ciannData },
+    });
+  };
+
   const renderCiannCard = (ciannData) => {
     const isArchived = ciannData.status === "completed" || ciannData.status === "archived";
     return (
