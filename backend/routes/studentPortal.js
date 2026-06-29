@@ -6,6 +6,7 @@ const CTMarks = require('../models/CTMarks');
 const Notice = require('../models/Notice');
 const StudyMaterial = require('../models/StudyMaterial');
 const Division = require('../models/Division');
+const StudentMaterialProgress = require('../models/StudentMaterialProgress');
 const { authenticate } = require('../middleware/auth');
 
 const normalizeUsername = (value = '') =>
@@ -218,7 +219,6 @@ router.post('/notices/:id/read', verifyStudent, async (req, res) => {
 // GET study materials
 router.get('/study-materials', verifyStudent, async (req, res) => {
   try {
-    const { subject } = req.query;
     const student = await getStudentFromRequest(req.user);
 
     if (!student) {
@@ -239,6 +239,7 @@ router.get('/study-materials', verifyStudent, async (req, res) => {
     const query = {
       institution,
       isActive: true,
+      isDraft: { $ne: true }, // Filter drafts
     };
 
     if (student.courseId) {
@@ -251,40 +252,108 @@ router.get('/study-materials', verifyStudent, async (req, res) => {
       query.divisionName = { $regex: exactRegex(student.division) };
     }
 
+    // Advanced search filters
+    const {
+      subject,
+      chapterNo,
+      category,
+      academicYear,
+      semester,
+      resourceType,
+      tags,
+      search,
+    } = req.query;
+
     if (subject) {
       query.subject = { $regex: exactRegex(subject) };
     }
+    if (chapterNo) {
+      query.chapterNo = Number(chapterNo);
+    }
+    if (category && category !== 'all' && category !== 'All') {
+      query.category = category;
+    }
+    if (academicYear) {
+      query.academicYear = academicYear;
+    }
+    if (semester) {
+      query.semester = Number(semester);
+    }
+    if (resourceType && resourceType !== 'all') {
+      query.resourceType = resourceType;
+    }
+    if (tags) {
+      const tagList = tags.split(',').map((t) => t.trim()).filter(Boolean);
+      if (tagList.length > 0) {
+        query.tags = { $in: tagList };
+      }
+    }
+    if (search) {
+      const escaped = escapeRegex(search);
+      const searchRegex = new RegExp(escaped, 'i');
+      query.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { subject: searchRegex },
+        { uploadedByName: searchRegex },
+        { tags: { $in: [searchRegex] } },
+      ];
+    }
 
-    const materials = await StudyMaterial.find(query)
-      .populate('courseId', 'courseCode semester scheme')
-      .populate('divisionId', 'name')
-      .sort({ createdAt: -1 });
+    const [materials, progressList] = await Promise.all([
+      StudyMaterial.find(query)
+        .populate('courseId', 'courseCode semester scheme')
+        .populate('divisionId', 'name')
+        .sort({ chapterNo: 1, createdAt: -1 }),
+      StudentMaterialProgress.find({ studentId: student._id }),
+    ]);
 
-    const formatted = materials.map((item) => ({
-      _id: item._id,
-      title: item.title,
-      subject: item.subject || 'General',
-      type: item.category,
-      category: item.category,
-      resourceType: item.resourceType,
-      size:
-        item.resourceType === 'file'
-          ? item.fileSize < 1024
-            ? `${item.fileSize} B`
-            : item.fileSize < 1024 * 1024
-              ? `${(item.fileSize / 1024).toFixed(1)} KB`
-              : `${(item.fileSize / (1024 * 1024)).toFixed(1)} MB`
-          : 'Link',
-      date: item.createdAt,
-      description: item.description || '',
-      division: item.divisionId?.name || item.divisionName,
-      course: item.courseId?.courseCode || '',
-      externalUrl: item.externalUrl || '',
-      downloadUrl:
-        item.resourceType === 'file'
-          ? `/api/study-materials/file/${item._id}`
-          : item.externalUrl,
-    }));
+    const progressMap = {};
+    progressList.forEach((p) => {
+      progressMap[String(p.materialId)] = p;
+    });
+
+    const formatted = materials.map((item) => {
+      const prog = progressMap[String(item._id)] || {};
+      return {
+        _id: item._id,
+        title: item.title,
+        description: item.description || '',
+        subject: item.subject || 'General',
+        type: item.category,
+        category: item.category,
+        resourceType: item.resourceType,
+        richTextContent: item.richTextContent || '',
+        thumbnailPath: item.thumbnailPath || '',
+        size:
+          item.resourceType === 'file'
+            ? item.fileSize < 1024
+              ? `${item.fileSize} B`
+              : item.fileSize < 1024 * 1024
+                ? `${(item.fileSize / 1024).toFixed(1)} KB`
+                : `${(item.fileSize / (1024 * 1024)).toFixed(1)} MB`
+            : 'Link',
+        fileSize: item.fileSize,
+        date: item.createdAt,
+        division: item.divisionId?.name || item.divisionName,
+        course: item.courseId?.courseCode || '',
+        externalUrl: item.externalUrl || '',
+        downloadUrl:
+          item.resourceType === 'file'
+            ? `/api/study-materials/file/${item._id}`
+            : item.externalUrl,
+        academicYear: item.academicYear || '',
+        semester: item.semester || 1,
+        chapterNo: item.chapterNo || 0,
+        chapterName: item.chapterName || '',
+        tags: item.tags || [],
+        uploadedByName: item.uploadedByName || '',
+        isBookmarked: !!prog.isBookmarked,
+        isCompleted: !!prog.isCompleted,
+        videoProgress: prog.videoProgress || { playedSeconds: 0, playedPercentage: 0 },
+        lastViewedAt: prog.lastViewedAt || null,
+      };
+    });
 
     res.json(formatted);
   } catch (err) {

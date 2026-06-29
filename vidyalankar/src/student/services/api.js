@@ -72,10 +72,18 @@ export const noticesService = {
 
 // Study Materials API
 export const studyMaterialsService = {
-  // Get all study materials
-  getMaterials: async () => {
+  // Get all study materials (with optional query filters)
+  getMaterials: async (filters = {}) => {
     const token = getAuthToken();
-    const response = await fetch('/api/study-materials/student/current', {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== "") {
+        params.append(key, val);
+      }
+    });
+    const queryString = params.toString();
+    const url = `/api/study-materials/student/current${queryString ? "?" + queryString : ""}`;
+    const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` })
@@ -92,7 +100,20 @@ export const studyMaterialsService = {
   
   // Get materials by subject
   getMaterialsBySubject: async (subject) => {
-    return await apiRequest(`/study-materials?subject=${subject}`);
+    const token = getAuthToken();
+    const response = await fetch(`/api/study-materials/student/current?subject=${encodeURIComponent(subject)}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return Array.isArray(data?.materials) ? data.materials : [];
   },
   
   // Download material
@@ -109,6 +130,61 @@ export const studyMaterialsService = {
     }
 
     return await response.blob();
+  },
+
+  // Update progress (bookmark, mark completed, watch progress)
+  updateProgress: async (materialId, fields = {}) => {
+    const token = getAuthToken();
+    const response = await fetch('/api/study-materials/student/progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      },
+      body: JSON.stringify({ materialId, ...fields })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+
+  // Get recently viewed materials
+  getRecentlyViewed: async () => {
+    const token = getAuthToken();
+    const response = await fetch('/api/study-materials/student/recently-viewed', {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return Array.isArray(data?.materials) ? data.materials : [];
+  },
+
+  // Get continue watching video lectures
+  getContinueWatching: async () => {
+    const token = getAuthToken();
+    const response = await fetch('/api/study-materials/student/continue-watching', {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return Array.isArray(data?.materials) ? data.materials : [];
   }
 };
 

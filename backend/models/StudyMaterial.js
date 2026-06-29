@@ -25,24 +25,70 @@ const studyMaterialSchema = new mongoose.Schema(
       required: true,
       enum: [
         "Notes",
-        "Assignment",
+        "PPT / Presentation",
+        "Assignments",
         "Question Bank",
+        "Previous Year Questions",
+        "Video Lectures",
+        "Important Questions",
+        "MCQ Quiz",
         "Lab Manual",
-        "Reference",
-        "Presentation",
-        "Other",
+        "Practical Files",
+        "Reference PDFs",
+        "E-books / EPA",
+        "Case Studies",
+        "Mini Projects",
+        "External Links",
+        "Other"
       ],
       default: "Notes",
     },
     resourceType: {
       type: String,
       required: true,
-      enum: ["file", "link"],
+      enum: ["file", "link", "rich-text"],
     },
     externalUrl: {
       type: String,
       trim: true,
       default: "",
+    },
+    richTextContent: {
+      type: String,
+      default: "",
+    },
+    thumbnailPath: {
+      type: String,
+      default: "",
+    },
+    academicYear: {
+      type: String,
+      trim: true,
+      default: "",
+      index: true,
+    },
+    semester: {
+      type: Number,
+      default: 1,
+    },
+    chapterNo: {
+      type: Number,
+      default: 0,
+    },
+    chapterName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    tags: {
+      type: [String],
+      default: [],
+      index: true,
+    },
+    isDraft: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
     fileName: {
       type: String,
@@ -112,6 +158,7 @@ const studyMaterialSchema = new mongoose.Schema(
   },
 );
 
-studyMaterialSchema.index({ institution: 1, courseId: 1, divisionId: 1, isActive: 1 });
+studyMaterialSchema.index({ institution: 1, courseId: 1, divisionId: 1, isActive: 1, isDraft: 1 });
+studyMaterialSchema.index({ academicYear: 1, semester: 1, subject: 1 });
 
 module.exports = mongoose.model("StudyMaterial", studyMaterialSchema);
