@@ -6,11 +6,27 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [greeting, setGreeting] = useState("");
+  const [studentInfo, setStudentInfo] = useState({
+    name: "Student",
+    enrollmentNo: "",
+    rollNo: "",
+    division: "",
+    batch: ""
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
+
+    // Retrieve info from localStorage
+    const name = localStorage.getItem("studentName") || localStorage.getItem("username") || "Student";
+    const enrollmentNo = localStorage.getItem("enrollmentNo") || "";
+    const rollNo = localStorage.getItem("studentRollNo") || "";
+    const division = localStorage.getItem("studentDivision") || "";
+    const batch = localStorage.getItem("studentBatch") || "";
+
+    setStudentInfo({ name, enrollmentNo, rollNo, division, batch });
 
     return () => clearInterval(timer);
   }, []);
@@ -42,9 +58,31 @@ const StudentDashboard = () => {
     <div className="student-dashboard-content">
       <div className="welcome-section">
         <div className="welcome-header">
-          <div>
-            <h1>{greeting}, Student!</h1>
-            <p>Track your academics, notices, and exam readiness from one place</p>
+          <div className="welcome-left">
+            <span className="welcome-greeting">{greeting},</span>
+            <h1 className="student-display-name">{studentInfo.name}</h1>
+            <div className="student-meta-badges">
+              {studentInfo.enrollmentNo && (
+                <span className="meta-badge">
+                  <i className="bi bi-card-text me-1"></i>Enroll: {studentInfo.enrollmentNo}
+                </span>
+              )}
+              {studentInfo.rollNo && (
+                <span className="meta-badge">
+                  <i className="bi bi-hash me-1"></i>Roll: {studentInfo.rollNo}
+                </span>
+              )}
+              {studentInfo.division && (
+                <span className="meta-badge">
+                  <i className="bi bi-grid-3x3-gap me-1"></i>Div: {studentInfo.division}
+                </span>
+              )}
+              {studentInfo.batch && (
+                <span className="meta-badge">
+                  <i className="bi bi-people me-1"></i>Batch: {studentInfo.batch}
+                </span>
+              )}
+            </div>
           </div>
           <div className="datetime-display">
             <div className="time">{formatTime(currentTime)}</div>
@@ -56,15 +94,15 @@ const StudentDashboard = () => {
       {/* Hero Section with Motivational Message */}
       <div className="hero-section">
         <div className="hero-content">
-          <span className="hero-badge">Student Workspace</span>
-          <h2>Stay ahead with focused study and smart practice</h2>
-          <p>Use quick actions below to access material, exams, and results faster.</p>
+          <span className="hero-badge">Student Portal</span>
+          <h2>Your Academic Workspace</h2>
+          <p>Easily access study materials, track test performances, and view notices.</p>
           <div className="hero-actions">
             <button className="cta-button" onClick={() => handleNavigation("/study-material")}>
-              Open Study Material
+              <i className="bi bi-journal-text me-1"></i>Study Material
             </button>
             <button className="cta-button secondary" onClick={() => handleNavigation("/results")}>
-              View Results
+              <i className="bi bi-check2-square me-1"></i>View Results
             </button>
           </div>
         </div>
@@ -80,7 +118,7 @@ const StudentDashboard = () => {
           <div className="card" onClick={() => handleNavigation("/study-material")}>
             <i className="bi bi-book"></i>
             <span>Study Material</span>
-            <small>Notes, chapters and references</small>
+            <small>Notes, chapters, and references</small>
           </div>
           <div className="card" onClick={() => handleNavigation("/results")}>
             <i className="bi bi-bar-chart"></i>
@@ -94,12 +132,6 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
-      
-
-
-      
-
-
     </div>
   );
 };
