@@ -61,10 +61,9 @@ export default function EditBatchSelect() {
     setLoading(true);
     
     try {
-      // Fetch assessed experiments for this batch, scoped to this CIANN
-      const aeParams = new URLSearchParams({ batch: selectedBatch });
-      if (ciannData?.ciannId) aeParams.append("ciannId", ciannData.ciannId);
-      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?${aeParams.toString()}`);
+      // Fetch assessed experiments for this batch
+      const ciannIdParam = ciannData?.ciannId ? `&ciannId=${ciannData.ciannId}` : '';
+      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${selectedBatch}${ciannIdParam}`);
       const data = await response.json();
       
       if (!response.ok) {

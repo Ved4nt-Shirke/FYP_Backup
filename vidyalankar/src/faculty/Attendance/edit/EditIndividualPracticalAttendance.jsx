@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { showSuccessAlert, showErrorAlert } from '../../../utils/alertUtils.jsx';
 import './EditIndividualAttendance.css';
+import '../FinalAtt.css';
+import '../PracticalFinalAtt.css';
 
 const EditIndividualPracticalAttendance = () => {
   const location = useLocation();
@@ -14,6 +16,52 @@ const EditIndividualPracticalAttendance = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const handleSelectAll = (value) => {
+    const updated = {};
+    students.forEach((student) => {
+      updated[student.rollNo] = value;
+    });
+    setAttendance(updated);
+  };
+
+  const handleToggleAll = () => {
+    const updated = {};
+    students.forEach((student) => {
+      updated[student.rollNo] = !attendance[student.rollNo];
+    });
+    setAttendance(updated);
+  };
+
+  const handleReset = () => {
+    const updated = {};
+    students.forEach((student) => {
+      updated[student.rollNo] = false;
+    });
+    setAttendance(updated);
+  };
+
+  const filteredStudents = students.filter((student) => {
+    const query = searchTerm.trim().toLowerCase();
+    const studentName = (student.studentName || "").toLowerCase();
+    const enrollment = (student.enrollmentNo || "").toLowerCase();
+    const roll = (student.rollNo || "").toLowerCase();
+
+    const matchesSearch =
+      studentName.includes(query) ||
+      enrollment.includes(query) ||
+      roll.includes(query);
+
+    if (!matchesSearch) return false;
+
+    const isPresent = !!attendance[student.rollNo];
+    if (statusFilter === "present") return isPresent;
+    if (statusFilter === "absent") return !isPresent;
+
+    return true;
+  });
 
   useEffect(() => {
     if (!practicalData || !ciannId) {
@@ -24,14 +72,48 @@ const EditIndividualPracticalAttendance = () => {
 
     const fetchStudents = async () => {
       try {
-        // Fetch all students from the database
-        const response = await axios.get(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`);
-        setStudents(response.data);
+        // 1. Fetch CIANN details first
+        const ciannResponse = await axios.get(
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns/${ciannId}`
+        );
+        const ciannData = ciannResponse.data;
 
-        // Initialize attendance state - for new practical attendance, all students start as absent
+        // 2. Map lab-plan batch codes (B1/B2/B3) to student batch field values (Batch 1/Batch 2/Batch 3)
+        const labBatchToStudentBatch = (labBatch) => {
+          const map = { B1: "Batch 1", B2: "Batch 2", B3: "Batch 3" };
+          return map[labBatch] || labBatch;
+        };
+
+        const params = {};
+        const divisionId = ciannData?.divisionId?._id || ciannData?.divisionId;
+        if (divisionId) {
+          params.divisionId = divisionId;
+        } else if (ciannData?.division) {
+          params.division = ciannData.division;
+        }
+        if (ciannData?.academicYear) {
+          params.academicYear = ciannData.academicYear;
+        }
+
+        const studentBatchValue = labBatchToStudentBatch(practicalData.batch);
+        params.batch = studentBatchValue;
+
+        // 3. Fetch ONLY the students matching this batch and division/year
+        const response = await axios.get(
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/students`,
+          { params }
+        );
+
+        const fetchedStudents = Array.isArray(response.data)
+          ? response.data
+          : response.data.students || [];
+
+        setStudents(fetchedStudents);
+
+        // Initialize attendance state - all start as absent
         const initialAttendance = {};
-        response.data.forEach(student => {
-          initialAttendance[student.rollNo] = false; // false = absent, true = present
+        fetchedStudents.forEach(student => {
+          initialAttendance[student.rollNo] = false;
         });
         setAttendance(initialAttendance);
       } catch (error) {
@@ -139,120 +221,170 @@ const EditIndividualPracticalAttendance = () => {
   const absentCount = students.length - presentCount;
 
   return (
-    <div className="edit-attendance-page-container">
-      <div className="edit-attendance-card">
-        <h1 className="edit-attendance-heading">Mark Practical Attendance</h1>
-        
-        {/* Attendance Information Display */}
-        <div className="context-fields-container">
-          <div>
-            <span className="context-label">Week No:</span>
-            <div className="context-value">{practicalData.weekNo || 'Not specified'}</div>
+    <div className="practical-page">
+      <div className="practical-card">
+        <header className="practical-header">
+          <div className="practical-header-main">
+            <p className="practical-eyebrow">Mark Lab Attendance</p>
+            <h2 className="practical-title">Mark Practical Attendance</h2>
+            <p className="practical-subtitle">
+              {practicalData.exptName} (No. {practicalData.exptNo})
+            </p>
           </div>
-          <div>
-            <span className="context-label">Batch:</span>
-            <div className="context-value">{practicalData.batch || 'Not specified'}</div>
+          <div className="practical-header-meta">
+            <div>
+              <span>CIANN ID</span>
+              <strong>{ciannId || "N/A"}</strong>
+            </div>
+            <div>
+              <span>Batch</span>
+              <strong>{practicalData.batch || "N/A"}</strong>
+            </div>
+            <div>
+              <span>Week</span>
+              <strong>{practicalData.weekNo || "N/A"}</strong>
+            </div>
           </div>
-          <div>
-            <span className="context-label">Experiment:</span>
-            <div className="context-value">{practicalData.exptName} (No. {practicalData.exptNo})</div>
+        </header>
+
+        <div className="practical-bulk-actions">
+          <button
+            type="button"
+            className="practical-action-btn"
+            onClick={() => handleSelectAll(true)}
+          >
+            Mark All Present
+          </button>
+          <button
+            type="button"
+            className="practical-action-btn"
+            onClick={() => handleSelectAll(false)}
+          >
+            Mark All Absent
+          </button>
+          <button
+            type="button"
+            className="practical-action-btn"
+            onClick={handleToggleAll}
+          >
+            Toggle All
+          </button>
+          <button
+            type="button"
+            className="practical-action-btn ghost"
+            onClick={handleReset}
+          >
+            Reset
+          </button>
+        </div>
+
+        <section className="practical-metrics">
+          <div className="metric-card">
+            <span>Total Students</span>
+            <strong>{students.length}</strong>
           </div>
-          <div>
-            <span className="context-label">Date:</span>
-            <div className="context-value">{practicalData.actualDate || 'Not specified'}</div>
+          <div className="metric-card success">
+            <span>Present</span>
+            <strong>{presentCount}</strong>
           </div>
-          <div>
-            <span className="context-label">CIANN ID:</span>
-            <div className="context-value">{ciannId || 'Not specified'}</div>
+          <div className="metric-card warning">
+            <span>Absent</span>
+            <strong>{absentCount}</strong>
           </div>
-          <div>
-            <span className="context-label">Total Students:</span>
-            <div className="context-value">{students.length}</div>
+          <div className="metric-card info" style={{ borderColor: 'var(--practical-border)' }}>
+            <span>Attendance Rate</span>
+            <strong>{students.length > 0 ? Math.round((presentCount / students.length) * 100) : 0}%</strong>
+          </div>
+        </section>
+
+        <div className="practical-toolbar">
+          <input
+            type="text"
+            className="practical-search"
+            placeholder="Search by roll, name, enrollment..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <div className="practical-filter-chips">
+            <button
+              type="button"
+              className={`practical-filter-chip ${statusFilter === "all" ? "active" : ""}`}
+              onClick={() => setStatusFilter("all")}
+            >
+              All ({students.length})
+            </button>
+            <button
+              type="button"
+              className={`practical-filter-chip ${statusFilter === "present" ? "active" : ""}`}
+              onClick={() => setStatusFilter("present")}
+            >
+              Present ({presentCount})
+            </button>
+            <button
+              type="button"
+              className={`practical-filter-chip ${statusFilter === "absent" ? "active" : ""}`}
+              onClick={() => setStatusFilter("absent")}
+            >
+              Absent ({absentCount})
+            </button>
           </div>
         </div>
 
-        {/* Attendance Statistics */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', 
-          gap: '15px', 
-          marginBottom: '25px',
-          padding: '20px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px',
-          border: '1px solid #e9ecef'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>{presentCount}</div>
-            <div style={{ fontSize: '14px', color: '#666', fontWeight: '500' }}>Present</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc3545' }}>{absentCount}</div>
-            <div style={{ fontSize: '14px', color: '#666', fontWeight: '500' }}>Absent</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>{students.length}</div>
-            <div style={{ fontSize: '14px', color: '#666', fontWeight: '500' }}>Total</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#6f42c1' }}>
-              {students.length > 0 ? Math.round((presentCount / students.length) * 100) : 0}%
+        <section className="practical-table-section">
+          <div className="practical-table-head">
+            <div>
+              <h3>Student List</h3>
+              <p>Update attendance choices below.</p>
             </div>
-            <div style={{ fontSize: '14px', color: '#666', fontWeight: '500' }}>Attendance</div>
+            <div className="practical-badge">Date: {practicalData.actualDate || "N/A"}</div>
           </div>
-        </div>
 
-        {/* Students Section */}
-        <div className="students-section">
-          <h3 className="students-heading">Mark Attendance</h3>
-          
-          {students.length === 0 ? (
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '40px', 
-              color: '#666',
-              backgroundColor: '#f8f9fa',
-              borderRadius: '8px',
-              border: '1px solid #e9ecef'
-            }}>
-              <div style={{ fontSize: '16px', marginBottom: '8px' }}>No students found</div>
-              <div style={{ fontSize: '14px' }}>Please check if students are enrolled for this practical.</div>
-            </div>
-          ) : (
-            <div className="table-wrapper">
-              <table className="attendance-table">
-                <thead>
-                  <tr>
-                    <th>Roll No</th>
-                    <th>Student Name</th>
-                    <th>Mark Present</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map(student => (
-                    <tr key={student.rollNo}>
-                      <td data-label="Roll No">{student.rollNo}</td>
-                      <td data-label="Student Name">{student.studentName}</td>
-                      <td data-label="Mark Present">
-                        <label className="custom-checkbox">
-                          <input
-                            type="checkbox"
-                            checked={attendance[student.rollNo] || false}
-                            onChange={() => handleCheckboxChange(student.rollNo)}
-                          />
-                          <span className="checkmark"></span>
-                        </label>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+          <div className="students-panel">
+            {filteredStudents.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "40px", color: "var(--practical-muted)" }}>
+                <h4>No students match the selected filter.</h4>
+              </div>
+            ) : (
+              <div className="final-students-grid">
+                {filteredStudents.map((student) => (
+                  <div
+                    key={student.rollNo}
+                    className={`final-student-card ${attendance[student.rollNo] ? "present" : "absent"}`}
+                    onClick={() => handleCheckboxChange(student.rollNo)}
+                  >
+                    <div className="final-student-header">
+                      <span className="final-roll-badge">
+                        {student.rollNo}
+                      </span>
+                      <button
+                        type="button"
+                        className={`status-pill status-toggle ${attendance[student.rollNo] ? "present" : "absent"}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleCheckboxChange(student.rollNo);
+                        }}
+                      >
+                        {attendance[student.rollNo] ? "Present" : "Absent"}
+                      </button>
+                    </div>
+                    <div className="final-student-name">
+                      {student.studentName}
+                    </div>
+                    <div className="final-student-meta">
+                      Enrollment: {student.enrollmentNo || "N/A"}
+                    </div>
+                    <div className="final-student-meta">
+                      Batch: {student.batch || "N/A"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* Action Buttons */}
-        <div className="action-buttons-container">
+        <div className="action-buttons-container" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px' }}>
           <button 
             className="button-base button-secondary" 
             onClick={handleCancel}

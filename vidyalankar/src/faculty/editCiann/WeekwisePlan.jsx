@@ -394,6 +394,9 @@ const WeekwisePlan = ({
           position: relative;
           width: 100%;
         }
+        .llo-dropdown-container.is-open {
+          z-index: 1000;
+        }
         .llo-dropdown-trigger {
           width: 100%;
           padding: 8px 10px;
@@ -427,7 +430,8 @@ const WeekwisePlan = ({
           position: absolute;
           top: 100%;
           left: 0;
-          min-width: 280px;
+          width: 350px;
+          max-width: 450px;
           background-color: white;
           border: 1px solid #ccc;
           border-radius: 8px;
@@ -453,8 +457,6 @@ const WeekwisePlan = ({
           transition: background-color 0.2s ease;
           user-select: none;
           border-bottom: 1px solid #f0f0f0;
-          white-space: normal;
-          word-break: break-word;
         }
         .llo-dropdown-item:last-child {
           border-bottom: none;
@@ -585,6 +587,7 @@ const WeekwisePlan = ({
           min-width: 1150px; /* Minimum width to force horizontal scroll on small screens */
           table-layout: fixed; /* Ensures column widths are respected */
           border: 0; /* Use wrapper for outer border */
+          margin-bottom: 120px; /* Extra space at bottom for dropdowns */
         }
 
         .weekwise-plan-table th,
@@ -867,7 +870,7 @@ const WeekwisePlan = ({
                     </td>
                     <td>
                       <div
-                        className="llo-dropdown-container"
+                        className={`llo-dropdown-container ${openLloDropdownIndex === i ? "is-open" : ""}`}
                         ref={(el) => (dropdownRefs.current[i] = el)}
                       >
                         <button
@@ -885,7 +888,7 @@ const WeekwisePlan = ({
                         </button>
 
                         {openLloDropdownIndex === i && (
-                          <div className={`llo-dropdown-menu ${(plans.length > 2 && i >= plans.length - 2) || (plans.length === 2 && i === 1) ? "open-up" : ""}`}>
+                          <div className={`llo-dropdown-menu ${plans.length > 2 && i >= plans.length - 2 ? "open-up" : ""}`}>
                             {(() => {
                               const selectedCOs = plan.co ? plan.co.split(",").map(c => c.trim()) : [];
                               // Build LLO list with numbers (coNum.idx) and full text

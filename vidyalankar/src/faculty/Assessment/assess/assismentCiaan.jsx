@@ -1,176 +1,157 @@
-// src/Assessment/AssismentCiaanCards.jsx
-import React, { useEffect, useState, useCallback } from "react";
+// src/Attendance/AssismentCiaanCards.jsx
+import React, { useEffect, useState } from "react";
 import Header from "../../../basic/Header";
-import { useNavigate } from "react-router-dom";
-import "./AssessCiaan.css";
-
-const API = () =>
-  (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(
-    /\/api$/,
-    ""
-  );
+import { useNavigate } from "react-router-dom"; // 👈 import navigate
+import "../../components/EditCiann.css";
 
 const AssismentCiaanCards = () => {
   const [ciannDataList, setCiannDataList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingExperiments, setLoadingExperiments] = useState(false);
   const [availableBatches, setAvailableBatches] = useState([]);
-  const [activeAcademicYear, setActiveAcademicYear] = useState(null);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // 👈 useNavigate hook
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Fetch active academic year first
-      const yearRes = await fetch(`${API()}/api/academic-year/current`);
-      const yearData = await yearRes.json();
-      if (yearData.success) {
-        setActiveAcademicYear(yearData.academicYear);
-      }
+  const [selectedYear, setSelectedYear] = useState(
+    localStorage.getItem("selectedAcademicYear") || "all"
+  );
 
-      const ciannRes = await fetch(`${API()}/api/cianns`);
-      const ciannData = await ciannRes.json();
-      setCiannDataList(ciannData);
+  useEffect(() => {
+    const handleYearChange = (event) => {
+      setSelectedYear(event.detail || "all");
+    };
 
-      const batchesRes = await fetch(`${API()}/api/assessments/batches`);
-      const batchesData = await batchesRes.json();
-      if (batchesData.success) {
-        setAvailableBatches(batchesData.batches);
-      }
-    } catch (err) {
-      console.error("Error fetching data:", err);
-    } finally {
-      setLoading(false);
-    }
+    window.addEventListener("academicYearChanged", handleYearChange);
+    return () => {
+      window.removeEventListener("academicYearChanged", handleYearChange);
+    };
   }, []);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch CIANNs matching selected year
+        const yearParam = selectedYear && selectedYear !== "all" ? `?academicYear=${encodeURIComponent(selectedYear)}` : "";
+        const ciannRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns${yearParam}`);
+        const ciannData = await ciannRes.json();
+        setCiannDataList(ciannData || []);
+
+        // Fetch available batches for assessment
+        const batchesRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches`);
+        const batchesData = await batchesRes.json();
+        if (batchesData.success) {
+          setAvailableBatches(batchesData.batches);
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchData();
-    window.addEventListener("academicYearChanged", fetchData);
-    return () => window.removeEventListener("academicYearChanged", fetchData);
-  }, [fetchData]);
+  }, [selectedYear]);
 
   const handleCardClick = async (ciannData) => {
     setLoadingExperiments(true);
     try {
-      const experimentsRes = await fetch(`${API()}/api/assessments/get-experiments`, {
+      // Fetch experiments for this CIAAN's subject
+      const experimentsRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
+          ciannId: ciannData.ciannId,
           program: ciannData.department?.name || "",
-          className: ciannData.courseCode || ciannData.class || "",
+          className: ciannData.class || "",
           course: ciannData.subject?.name || "",
+          semester: ciannData.semester || "",
         }),
       });
+      
       const experimentsData = await experimentsRes.json();
-
-      // Fetch division-scoped batches for this CIANN
-      const batchParams = new URLSearchParams();
-      if (ciannData.division) batchParams.append("division", ciannData.division);
-      if (ciannData.ciannId) batchParams.append("ciannId", ciannData.ciannId);
-      let batches = availableBatches;
-      try {
-        const batchRes = await fetch(`${API()}/api/assessments/batches?${batchParams.toString()}`);
-        const batchData = await batchRes.json();
-        if (batchData.success && batchData.batches.length > 0) batches = batchData.batches;
-      } catch (_) {}
-
-      navigate("/assess-batch-select", {
-        state: {
-          ciannData,
-          experiments: experimentsData.success ? experimentsData.experiments || [] : [],
-          availableBatches: batches,
-        },
-      });
+      
+      if (experimentsData.success) {
+        // Pass CIAAN data, experiments, and available batches to the next page
+        navigate("/assess-batch-select", { 
+          state: { 
+            ciannData,
+            experiments: experimentsData.experiments || [],
+            availableBatches: availableBatches
+          } 
+        });
+      } else {
+        // If no experiments found, still navigate but with empty experiments array
+        navigate("/assess-batch-select", { 
+          state: { 
+            ciannData,
+            experiments: [],
+            availableBatches: availableBatches
+          } 
+        });
+      }
     } catch (error) {
       console.error("Error fetching experiments:", error);
-      navigate("/assess-batch-select", {
-        state: { ciannData, experiments: [], availableBatches },
+      alert("Failed to fetch experiments. Proceeding with empty experiments list.");
+      // Navigate anyway with empty experiments array
+      navigate("/assess-batch-select", { 
+        state: { 
+          ciannData,
+          experiments: [],
+          availableBatches: availableBatches
+        } 
       });
     } finally {
       setLoadingExperiments(false);
     }
   };
 
-  // Filter CIANNs: active ones are those in active academic year and not completed/archived
-  const activeCianns = ciannDataList.filter(c => 
-    c.status !== "completed" && 
-    c.status !== "archived" && 
-    (!activeAcademicYear || c.academicYear === activeAcademicYear.yearName)
-  );
-  
-  // Archived/previous CIANNs are those either completed/archived OR not in active academic year
-  const archivedCianns = ciannDataList.filter(c => 
-    c.status === "completed" || 
-    c.status === "archived" || 
-    (activeAcademicYear && c.academicYear !== activeAcademicYear.yearName)
-  );
-
-  const renderCard = (ciann, isArchived = false) => {
-    const subjectName = ciann.subject?.name || "Unknown Subject";
-    const subjectCode = ciann.subject?.code || "";
-    const classDiv = ciann.class || ciann.division || "—";
-    const academicYear = ciann.academicYear || "—";
-    const initials = subjectName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-
+  const renderCiannCard = (ciannData) => {
+    const isArchived = ciannData.status === "completed" || ciannData.status === "archived";
     return (
-      <div
-        key={ciann._id}
-        className={`assess-ciaan-card ${isArchived ? "assess-ciaan-card--archived" : ""} ${loadingExperiments ? "assess-ciaan-card--disabled" : ""}`}
-        onClick={() => !loadingExperiments && handleCardClick(ciann)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={e => e.key === "Enter" && !loadingExperiments && handleCardClick(ciann)}
-      >
-        {/* Top row */}
-        <div className="assess-card-top">
-          <div className={`assess-card-avatar ${isArchived ? "assess-card-avatar--archived" : ""}`}>
-            {initials}
+      <div key={ciannData._id} className="position-relative">
+        <div
+          className={`ciann-dashboard-card ${isArchived ? "archived-card" : ""} ${loadingExperiments ? 'disabled' : ''}`}
+          onClick={() => !loadingExperiments && handleCardClick(ciannData)}
+          style={{ 
+            cursor: loadingExperiments ? 'not-allowed' : 'pointer',
+            opacity: loadingExperiments ? 0.6 : 1 
+          }}
+        >
+          <i className="bi bi-pencil-square ciann-icon"></i>
+          <div className="ciann-id">
+            CIAAN ID: {ciannData.ciannId}
+            {isArchived && (
+              <span className="badge bg-secondary ms-2" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
+                {ciannData.status === 'completed' ? 'Completed' : 'Archived'}
+              </span>
+            )}
           </div>
-          {isArchived && (
-            <span className="assess-card-status-pill assess-card-status-pill--archived">
-              {ciann.status === "completed" ? "Completed" : "Archived"}
-            </span>
-          )}
-          {!isArchived && (
-            <span className="assess-card-status-pill assess-card-status-pill--active">
-              Active
-            </span>
-          )}
-        </div>
-
-        {/* Subject Info */}
-        <div className="assess-card-body">
-          <h3 className="assess-card-subject">{subjectName}</h3>
-          {subjectCode && <span className="assess-card-code">{subjectCode}</span>}
-        </div>
-
-        {/* Meta pills row */}
-        <div className="assess-card-meta">
-          <div className="assess-meta-pill">
-            <i className="bi bi-hash"></i>
-            <span>CIAAN {ciann.ciannId}</span>
-          </div>
-          <div className="assess-meta-pill">
-            <i className="bi bi-people-fill"></i>
-            <span>{classDiv}</span>
-          </div>
-          <div className="assess-meta-pill">
-            <i className="bi bi-calendar3"></i>
-            <span>{academicYear}</span>
-          </div>
-        </div>
-
-        {/* Footer CTA */}
-        <div className="assess-card-footer">
-          <button className={`assess-card-btn ${isArchived ? "assess-card-btn--secondary" : ""}`}>
-            <i className={`bi ${isArchived ? "bi-eye-fill" : "bi-clipboard2-check-fill"}`}></i>
-            {loadingExperiments ? "Loading..." : isArchived ? "View Assessment" : "Start Assessment"}
-          </button>
+          <p className="card-text">
+            <strong>{ciannData.subject?.name}</strong>
+            <br />
+            ({ciannData.subject?.code})
+          </p>
+          <p className="card-text">
+            Division: <strong>{ciannData.division}</strong>
+          </p>
+          <p className="card-text text-muted small" style={{ marginTop: "4px", fontSize: "0.8rem" }}>
+            Academic Year: <strong>{ciannData.academicYear}</strong>
+          </p>
         </div>
       </div>
     );
   };
+
+  const filteredCiannList = ciannDataList.filter(c => {
+    if (selectedYear && selectedYear !== "all") {
+      return c.academicYear === selectedYear;
+    }
+    return true;
+  });
+
+  const activeCianns = filteredCiannList.filter(c => c.status !== "completed" && c.status !== "archived");
+  const archivedCianns = filteredCiannList.filter(c => c.status === "completed" || c.status === "archived");
 
   return (
     <>
@@ -179,56 +160,62 @@ const AssismentCiaanCards = () => {
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
         rel="stylesheet"
       />
-      <div className="assess-ciaan-page">
-        {/* Page Header */}
-        <div className="assess-page-header">
-          <div className="assess-page-header__inner">
-            <div className="assess-page-header__icon">
-              <i className="bi bi-clipboard2-pulse-fill"></i>
-            </div>
-            <div>
-              <h1 className="assess-page-header__title">Practical Assessment</h1>
-              <p className="assess-page-header__subtitle">Select a CIAAN to begin assessing students for experiments</p>
-            </div>
-          </div>
+      <div className="edit-ciann-page">
+        <div className="edit-ciann-header">
+          <h2 className="text-center py-2 bg-success text-white">
+            Assess - Select CIAAN
+          </h2>
           {availableBatches.length > 0 && (
-            <div className="assess-batch-info">
-              <i className="bi bi-collection-fill"></i>
-              <span>Batches: <strong>{availableBatches.join(", ")}</strong></span>
+            <div className="alert alert-info mt-3">
+              <strong>Available Batches for Assessment:</strong> {availableBatches.join(", ")}
             </div>
           )}
         </div>
-
+        
         {loading ? (
-          <div className="assess-loading-state">
-            <div className="assess-spinner"></div>
+          <div className="text-center py-5">
             <p>Loading CIAANs...</p>
           </div>
         ) : loadingExperiments ? (
-          <div className="assess-loading-state">
-            <div className="assess-spinner"></div>
-            <p>Fetching experiments...</p>
+          <div className="text-center py-5">
+            <p>Loading experiments...</p>
           </div>
-        ) : activeCianns.length === 0 ? (
-          <div className="assess-empty-state">
-            <i className="bi bi-folder-x"></i>
-            <h3>No Active CIAANs Available</h3>
-            <p>No active CIAANs for the current academic year.</p>
+        ) : ciannDataList.length > 0 ? (
+          <div>
+            {/* Active Workspaces Section */}
+            <div className="workspace-section-group mb-5">
+              <h4 className="workspace-section-title text-primary mb-4" style={{ display: "flex", alignItems: "center", fontWeight: "700" }}>
+                <i className="bi bi-activity me-2"></i>Active Semesters
+              </h4>
+              {activeCianns.length > 0 ? (
+                <div className="ciann-card-container">
+                  {activeCianns.map((ciannData) => renderCiannCard(ciannData))}
+                </div>
+              ) : (
+                <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
+                  <i className="bi bi-info-circle me-2"></i>No active CIANN workspaces in this section.
+                </div>
+              )}
+            </div>
+
+            {/* Archived Workspaces Section */}
+            <div className="workspace-section-group">
+              <h4 className="workspace-section-title text-secondary mb-4" style={{ display: "flex", alignItems: "center", fontWeight: "700" }}>
+                <i className="bi bi-archive-fill me-2"></i>Previous Semesters / Archived (Read-Only)
+              </h4>
+              {archivedCianns.length > 0 ? (
+                <div className="ciann-card-container">
+                  {archivedCianns.map((ciannData) => renderCiannCard(ciannData))}
+                </div>
+              ) : (
+                <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
+                  <i className="bi bi-info-circle me-2"></i>No archived or completed CIANN workspaces in this section.
+                </div>
+              )}
+            </div>
           </div>
         ) : (
-          <div className="assess-sections">
-            {/* Active Section Only */}
-            <section className="assess-section">
-              <div className="assess-section-header">
-                <span className="assess-section-dot assess-section-dot--active"></span>
-                <h2 className="assess-section-title">Active Semesters</h2>
-                <span className="assess-section-count">{activeCianns.length}</span>
-              </div>
-              <div className="assess-card-grid">
-                {activeCianns.map(c => renderCard(c, false))}
-              </div>
-            </section>
-          </div>
+          <p className="text-center">No CIAANs available.</p>
         )}
       </div>
     </>

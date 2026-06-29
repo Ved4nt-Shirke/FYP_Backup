@@ -9,7 +9,7 @@ const Student = require('./models/Student');
 
 async function repairPasswords() {
   try {
-    const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/vidyalankarDB';
+    const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/vidyalankar';
     await mongoose.connect(MONGO_URI);
     console.log('✅ MongoDB Connected\n');
 

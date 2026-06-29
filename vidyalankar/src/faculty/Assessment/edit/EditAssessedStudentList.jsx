@@ -31,30 +31,78 @@ export default function EditAssessedStudentList() {
 
       console.log('Fetching assessed data for experiment:', experiment.id, 'batch:', batch);
 
-      // Fetch existing assessment data for this experiment and batch
-      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}`);
-      const data = await response.json();
-
-      console.log('Edit data response:', data);
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch assessment data');
+      const ciannIdParam = ciannData?.ciannId ? `&ciannId=${ciannData.ciannId}` : '';
+      
+      // 1. Fetch all students in the batch/division
+      let allStudents = [];
+      try {
+        const studentsResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/students-by-batch?batch=${batch}${ciannIdParam}`);
+        const studentsData = await studentsResponse.json();
+        if (studentsResponse.ok && studentsData.success && studentsData.students) {
+          allStudents = studentsData.students;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch batch students:', err);
       }
 
-      if (data.success && data.students) {
-        setStudents(data.students);
-        
-        // Store original marks for comparison
-        const originalMarksMap = {};
-        data.students.forEach(student => {
-          originalMarksMap[student._id] = student.marks;
-        });
-        setOriginalMarks(originalMarksMap);
-        
-        console.log('Loaded students with existing marks:', data.students.length);
-      } else {
-        throw new Error('No assessment data found for this experiment and batch');
+      // 2. Fetch existing assessments
+      let existingAssessments = [];
+      try {
+        const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}${ciannIdParam}`);
+        const data = await response.json();
+        if (response.ok && data.success && data.students) {
+          existingAssessments = data.students;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch existing assessments:', err);
       }
+
+      if (allStudents.length === 0 && existingAssessments.length === 0) {
+        throw new Error('No students or assessment data found for this experiment and batch');
+      }
+
+      // Build fallback list if resolve students returned empty
+      if (allStudents.length === 0) {
+        allStudents = existingAssessments.map(s => ({
+          _id: s._id,
+          studentName: s.studentName,
+          rollNo: s.rollNo
+        }));
+      }
+
+      // Map existing grades if any (fallback to empty string)
+      const assessedMap = {};
+      existingAssessments.forEach(s => {
+        assessedMap[s.studentName] = s.marks;
+      });
+
+      const mergedStudents = allStudents.map(student => {
+        const existingMark = assessedMap[student.studentName];
+        return {
+          _id: student._id,
+          rollNo: student.rollNo || 'N/A',
+          studentName: student.studentName,
+          marks: existingMark !== undefined ? existingMark : ''
+        };
+      });
+
+      // Sort by roll number numerically
+      mergedStudents.sort((a, b) => {
+        const aRoll = String(a.rollNo || "").trim();
+        const bRoll = String(b.rollNo || "").trim();
+        return aRoll.localeCompare(bRoll, undefined, { numeric: true, sensitivity: 'base' });
+      });
+
+      setStudents(mergedStudents);
+      
+      // Store original marks for comparison
+      const originalMarksMap = {};
+      mergedStudents.forEach(student => {
+        originalMarksMap[student._id] = student.marks;
+      });
+      setOriginalMarks(originalMarksMap);
+      
+      console.log('Loaded and merged students list:', mergedStudents.length);
     } catch (error) {
       console.error('Error fetching assessed students:', error);
       setError(error.message);
@@ -65,8 +113,18 @@ export default function EditAssessedStudentList() {
   };
 
   const handleMarksChange = (studentId, marks) => {
-    const numericMarks = parseInt(marks) || 0;
-    if (numericMarks < 0 || numericMarks > 25) {
+    if (marks === "") {
+      setStudents(prevStudents =>
+        prevStudents.map(student =>
+          student._id === studentId
+            ? { ...student, marks: "" }
+            : student
+        )
+      );
+      return;
+    }
+    const numericMarks = parseInt(marks);
+    if (isNaN(numericMarks) || numericMarks < 0 || numericMarks > 25) {
       alert("Marks should be between 0 and 25");
       return;
     }
@@ -102,12 +160,12 @@ export default function EditAssessedStudentList() {
 
       console.log('Updating marks for', changedStudents.length, 'students');
 
-      // Prepare students marks data
+      // Prepare students marks data: send all (including empty marks for backend to resolve deletion)
       const studentsMarks = students.map(student => ({
         studentId: student._id,
         rollNo: student.rollNo,
         studentName: student.studentName,
-        marks: student.marks || 0
+        marks: student.marks
       }));
 
       const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/save-marks`, {
@@ -118,7 +176,12 @@ export default function EditAssessedStudentList() {
         body: JSON.stringify({
           studentsMarks,
           experimentId: experiment.id,
-          experimentName: experiment.name
+          experimentName: experiment.name,
+          batch: batch,
+          program: ciannData?.department?.name || "",
+          className: ciannData?.class || "",
+          course: ciannData?.subject?.name || "",
+          ciannId: ciannData?.ciannId
         }),
       });
 
@@ -163,7 +226,7 @@ export default function EditAssessedStudentList() {
       setStudents(prevStudents =>
         prevStudents.map(student => ({
           ...student,
-          marks: originalMarks[student._id] || 0
+          marks: originalMarks[student._id]
         }))
       );
     }
@@ -292,14 +355,15 @@ export default function EditAssessedStudentList() {
                       <td>{student.studentName}</td>
                       <td>
                         <span className="badge bg-secondary">
-                          {originalMarks[student._id] || 0}
+                          {originalMarks[student._id] !== undefined && originalMarks[student._id] !== "" ? originalMarks[student._id] : "-"}
                         </span>
                       </td>
                       <td>
                         <input 
                           type="number" 
                           className={`form-control ${isChanged ? 'border-warning' : ''}`}
-                          value={student.marks || 0}
+                          value={student.marks ?? ""}
+                          placeholder="0-25"
                           min="0"
                           max="25"
                           onChange={(e) => handleMarksChange(student._id, e.target.value)}
@@ -362,7 +426,7 @@ export default function EditAssessedStudentList() {
               Total Students: {students.length} | 
               Filtered: {filteredStudents.length} | 
               Changed: {changedCount} | 
-              Average Marks: {students.length > 0 ? (students.reduce((sum, s) => sum + (s.marks || 0), 0) / students.length).toFixed(1) : 0}
+              Average Marks: {students.length > 0 ? (students.reduce((sum, s) => sum + (Number(s.marks) || 0), 0) / students.length).toFixed(1) : 0}
             </small>
           </div>
         )}
@@ -371,10 +435,10 @@ export default function EditAssessedStudentList() {
           <div className="alert alert-light">
             <h6><i className="bi bi-info-circle"></i> Edit Instructions:</h6>
             <ul className="mb-0">
-              <li><strong>Original Marks:</strong> Shows the current marks stored in database</li>
-              <li><strong>Current Marks:</strong> Modify these values to update student marks</li>
+              <li><strong>Original Marks:</strong> Shows the current marks stored in database (or - if unassessed)</li>
+              <li><strong>Current Marks:</strong> Modify these values to update student marks (leave blank to clear/delete assessment)</li>
               <li><strong>Status:</strong> Shows which students have modified marks (highlighted in yellow)</li>
-              <li><strong>Submit:</strong> Only students with changed marks will be updated in database</li>
+              <li><strong>Submit:</strong> Only students with changed marks will be updated/deleted in database</li>
               <li><strong>Reset:</strong> Restore all marks to their original values</li>
             </ul>
           </div>

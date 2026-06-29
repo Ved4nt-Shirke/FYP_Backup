@@ -237,7 +237,6 @@ import PTMarksEntry from "./faculty/PTMicroProject/PTMarksEntry";
 // Defaulters
 import Defaulter from "./faculty/components/defaulter";
 import DefaulterCard from "./faculty/Assessment/studentDefaulter/DefaulterCard";
-import StudentWiseCiannSelect from "./faculty/Assessment/studentDefaulter/StudentWiseCiannSelect";
 import StudentWiseSelect from "./faculty/Assessment/studentDefaulter/StudentWiseSelect";
 import StudentWiseAssess from "./faculty/Assessment/studentDefaulter/StudentWiseAssess";
 import StudentAssessSetup from "./faculty/Assessment/studentDefaulter/StudentAssessSetup";
@@ -971,7 +970,7 @@ const AppContent = () => {
             />
             {/* Defaulter Routes */}
             <Route path="/defaulter" element={<Defaulter />} />
-            <Route path="/studentwise-defaulters" element={<StudentWiseCiannSelect />} />
+            <Route path="/studentwise-defaulters" element={<DefaulterCard />} />
             <Route path="/studentwise-select" element={<StudentWiseSelect />} />
             <Route path="/studentwise-assess" element={<StudentWiseAssess />} />
             <Route path="/studentwise-setup" element={<StudentAssessSetup />} />

@@ -8,25 +8,9 @@ export default function AssessmentDashboard() {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [batches, setBatches] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchBatches = async () => {
-      try {
-        const response = await fetch(
-          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches`
-        );
-        const data = await response.json();
-        if (data.success) {
-          setBatches(data.batches);
-        }
-      } catch (error) {
-        console.error("Error fetching batches:", error);
-      }
-    };
-    fetchBatches();
-  }, []);
+  const batches = ["B1", "B2", "B3", "B4", "B5"]; // Standard batch format
 
   const fetchStatistics = async (batch) => {
     try {
@@ -34,7 +18,7 @@ export default function AssessmentDashboard() {
       setError(null);
 
       const response = await fetch(
-        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batch-statistics?batch=${encodeURIComponent(batch)}`
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/statistics/${batch}`
       );
       const data = await response.json();
 

@@ -34,9 +34,46 @@ export default function CTCiannCards() {
   }, []);
 
   const handleCardClick = (ciannData) => {
-    navigate(`/ct-dashboard/${ciannData._id || ciannData.ciannId}`, {
-      state: { ciannData },
-    });
+    navigate(`/ct-dashboard/${ciannData.ciannId}`, { state: { ciannData } });
+  };
+
+  const renderCiannCard = (ciannData) => {
+    const isArchived = ciannData.status === "completed" || ciannData.status === "archived";
+    return (
+      <article
+        key={ciannData._id || ciannData.ciannId}
+        className={`ct-ciann-card ${isArchived ? "archived-card" : ""}`}
+        onClick={() => handleCardClick(ciannData)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            handleCardClick(ciannData);
+          }
+        }}
+        tabIndex={0}
+        role="button"
+      >
+        <div className="ct-ciann-card-id">
+          CIANN ID: {ciannData.ciannId}
+          {isArchived && (
+            <span className="badge bg-secondary ms-2" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
+              {ciannData.status === 'completed' ? 'Completed' : 'Archived'}
+            </span>
+          )}
+        </div>
+        <h3>{ciannData.subject?.name || "-"}</h3>
+        <p className="ct-ciann-subject-code">
+          {ciannData.subject?.code || "-"}
+        </p>
+        <p className="ct-ciann-meta">
+          Division: {ciannData.division || "-"}
+        </p>
+        <p className="ct-ciann-meta text-muted small" style={{ fontSize: "0.78rem", marginTop: "4px" }}>
+          Academic Year: {ciannData.academicYear || "-"}
+        </p>
+        <span className="ct-ciann-open">{isArchived ? "View Dashboard" : "Open Dashboard"}</span>
+      </article>
+    );
   };
 
   const activeCianns = ciannDataList.filter(c => c.status !== "completed" && c.status !== "archived");
@@ -66,44 +103,7 @@ export default function CTCiannCards() {
               </h4>
               {activeCianns.length > 0 ? (
                 <div className="ct-ciann-grid">
-                  {activeCianns.map((ciannData) => {
-                    const isArchived = ciannData.status === "completed" || ciannData.status === "archived";
-                    return (
-                      <article
-                        key={ciannData._id || ciannData.ciannId}
-                        className={`ct-ciann-card ${isArchived ? "archived-card" : ""}`}
-                        onClick={() => handleCardClick(ciannData)}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter" || event.key === " ") {
-                            event.preventDefault();
-                            handleCardClick(ciannData);
-                          }
-                        }}
-                        tabIndex={0}
-                        role="button"
-                      >
-                        <div className="ct-ciann-card-id">
-                          CIANN ID: {ciannData.ciannId}
-                          {isArchived && (
-                            <span className="badge bg-secondary ms-2" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
-                              {ciannData.status === 'completed' ? 'Completed' : 'Archived'}
-                            </span>
-                          )}
-                        </div>
-                        <h3>{ciannData.subject?.name || "-"}</h3>
-                        <p className="ct-ciann-subject-code">
-                          {ciannData.subject?.code || "-"}
-                        </p>
-                        <p className="ct-ciann-meta">
-                          Division: {ciannData.division || "-"}
-                        </p>
-                        <p className="ct-ciann-meta text-muted small" style={{ fontSize: "0.78rem", marginTop: "4px" }}>
-                          Academic Year: {ciannData.academicYear || "-"}
-                        </p>
-                        <span className="ct-ciann-open">{isArchived ? "View Dashboard" : "Open Dashboard"}</span>
-                      </article>
-                    );
-                  })}
+                  {activeCianns.map((ciannData) => renderCiannCard(ciannData))}
                 </div>
               ) : (
                 <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
@@ -119,44 +119,7 @@ export default function CTCiannCards() {
               </h4>
               {archivedCianns.length > 0 ? (
                 <div className="ct-ciann-grid">
-                  {archivedCianns.map((ciannData) => {
-                    const isArchived = ciannData.status === "completed" || ciannData.status === "archived";
-                    return (
-                      <article
-                        key={ciannData._id || ciannData.ciannId}
-                        className={`ct-ciann-card ${isArchived ? "archived-card" : ""}`}
-                        onClick={() => handleCardClick(ciannData)}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter" || event.key === " ") {
-                            event.preventDefault();
-                            handleCardClick(ciannData);
-                          }
-                        }}
-                        tabIndex={0}
-                        role="button"
-                      >
-                        <div className="ct-ciann-card-id">
-                          CIANN ID: {ciannData.ciannId}
-                          {isArchived && (
-                            <span className="badge bg-secondary ms-2" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
-                              {ciannData.status === 'completed' ? 'Completed' : 'Archived'}
-                            </span>
-                          )}
-                        </div>
-                        <h3>{ciannData.subject?.name || "-"}</h3>
-                        <p className="ct-ciann-subject-code">
-                          {ciannData.subject?.code || "-"}
-                        </p>
-                        <p className="ct-ciann-meta">
-                          Division: {ciannData.division || "-"}
-                        </p>
-                        <p className="ct-ciann-meta text-muted small" style={{ fontSize: "0.78rem", marginTop: "4px" }}>
-                          Academic Year: {ciannData.academicYear || "-"}
-                        </p>
-                        <span className="ct-ciann-open">{isArchived ? "View Dashboard" : "Open Dashboard"}</span>
-                      </article>
-                    );
-                  })}
+                  {archivedCianns.map((ciannData) => renderCiannCard(ciannData))}
                 </div>
               ) : (
                 <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>

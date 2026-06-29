@@ -246,3 +246,185 @@
     width: 100%;
   }
 }
+
+/* Premium Statistics Summary Bar */
+.ct-stats-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.ct-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ct-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+.ct-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  font-size: 1.5rem;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.ct-stat-icon.text-primary {
+  background: #eff6ff;
+  color: #1d4ed8 !important;
+}
+
+.ct-stat-icon.text-success {
+  background: #f0fdf4;
+  color: #15803d !important;
+}
+
+.ct-stat-icon.text-warning {
+  background: #fffbeb;
+  color: #b45309 !important;
+}
+
+.ct-stat-icon.text-info {
+  background: #ecfeff;
+  color: #0e7490 !important;
+}
+
+.ct-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ct-stat-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.ct-stat-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.ct-stat-sub {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* Table Row Highlights */
+.ct-row-assessed {
+  background-color: #f8fafc;
+}
+
+.ct-row-assessed:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.ct-row-pending {
+  background-color: #ffffff;
+}
+
+.ct-row-pending:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Badges styling */
+.ct-student-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ct-student-name {
+  font-weight: 600;
+  color: #334155;
+}
+
+.ct-badge-success {
+  background-color: #dcfce7 !important;
+  color: #15803d !important;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  font-weight: 700;
+}
+
+.ct-badge-pending {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  font-weight: 700;
+}
+
+/* Premium input elements */
+.ct-marks-input-wrapper {
+  max-width: 160px;
+}
+
+.ct-marks-input {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  padding: 0.45rem 0.75rem;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.ct-marks-input:focus {
+  border-color: #3b82f6;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+/* Loading Spinner styling */
+.ct-loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  gap: 1rem;
+  color: #64748b;
+}
+
+.ct-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3.5px solid #e2e8f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: ct-spin 0.8s linear infinite;
+}
+
+@keyframes ct-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

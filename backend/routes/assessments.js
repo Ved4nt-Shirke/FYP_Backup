@@ -457,19 +457,6 @@ router.get('/report', async (req, res) => {
   }
 });
 
-// GET distinct ciannIds that have at least one saved assessment
-router.get('/assessed-cianns', async (req, res) => {
-  try {
-    const distinctCiannIds = await Assessment.distinct('ciannId', {
-      ciannId: { $exists: true, $ne: null }
-    });
-    res.json({ success: true, ciannIds: distinctCiannIds.filter(id => id != null) });
-  } catch (error) {
-    console.error('Error fetching assessed cianns:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
 // GET assessed experiments (experiments that have assessment records)
 router.get('/assessed-experiments', async (req, res) => {
   try {
@@ -485,7 +472,7 @@ router.get('/assessed-experiments', async (req, res) => {
       const batchStudents = await Student.find({ batch: batch }).select('studentName');
       const studentNames = batchStudents.map(student => student.studentName);
       if (studentNames.length === 0) {
-        return res.json({ success: true, experiments: [], ciannIds: [] });
+        return res.json({ success: true, experiments: [] });
       }
       matchStage.studentName = { $in: studentNames };
     }
@@ -532,14 +519,7 @@ router.get('/assessed-experiments', async (req, res) => {
       }
     ]);
 
-    // Also return distinct ciannIds that have assessments (for CIANN filtering)
-    let assessedCiannIds = [];
-    if (!ciannId) {
-      const ciannIdResults = await Assessment.distinct('ciannId', batch ? { studentName: matchStage.studentName } : {});
-      assessedCiannIds = ciannIdResults.filter(Boolean);
-    }
-
-    res.json({ success: true, experiments: assessedExperiments, ciannIds: assessedCiannIds });
+    res.json({ success: true, experiments: assessedExperiments });
   } catch (error) {
     console.error('Error fetching assessed experiments:', error);
     res.status(500).json({ success: false, message: 'Server error' });
