@@ -18,26 +18,10 @@ const AttendanceCiannSelector = ({
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState(
-    localStorage.getItem("selectedAcademicYear") || ""
-  );
-
-  useEffect(() => {
-    const handleYearChange = (event) => {
-      setSelectedAcademicYear(event.detail || "");
-    };
-
-    window.addEventListener("academicYearChanged", handleYearChange);
-    return () => {
-      window.removeEventListener("academicYearChanged", handleYearChange);
-    };
-  }, []);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
-        const ciannData = await fetchCiannsWithAuth(selectedAcademicYear);
+        const ciannData = await fetchCiannsWithAuth();
         setCiannDataList(ciannData || []);
       } catch (err) {
         alert("Failed to fetch CIANNs: " + err.message);
@@ -47,7 +31,7 @@ const AttendanceCiannSelector = ({
     };
 
     fetchData();
-  }, [selectedAcademicYear]);
+  }, []);
 
   const renderCiannCard = (ciannData) => {
     const isArchived = ciannData.status === "completed" || ciannData.status === "archived";

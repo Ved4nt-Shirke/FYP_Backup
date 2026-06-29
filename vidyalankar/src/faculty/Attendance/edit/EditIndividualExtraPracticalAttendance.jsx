@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { showSuccessAlert, showErrorAlert } from '../../../utils/alertUtils.jsx';
-import './EditIndividualAttendance.css';
-import '../FinalAtt.css'; // Reusing the same CSS file
+import './EditIndividualAttendance.css'; // Reusing the same CSS file
 
 const EditIndividualExtraPracticalAttendance = () => {
   const location = useLocation();
@@ -196,35 +195,34 @@ const EditIndividualExtraPracticalAttendance = () => {
             <h3 className="students-heading">Mark Attendance</h3>
             
             {formData.students && formData.students.length > 0 ? (
-              <div className="students-panel">
-                <div className="final-students-grid">
-                  {formData.students.map((student) => (
-                    <div
-                      key={student.rollId}
-                      className={`final-student-card ${student.attendance === 'Present' ? "present" : "absent"}`}
-                      onClick={() => handleStudentStatusChange(student.rollId)}
-                    >
-                      <div className="final-student-header">
-                        <span className="final-roll-badge">
-                          {student.rollId}
-                        </span>
-                        <button
-                          type="button"
-                          className={`status-pill status-toggle ${student.attendance === 'Present' ? "present" : "absent"}`}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleStudentStatusChange(student.rollId);
-                          }}
-                        >
-                          {student.attendance === 'Present' ? "Present" : "Absent"}
-                        </button>
-                      </div>
-                      <div className="final-student-name">
-                        {student.name}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="table-wrapper">
+                <table className="attendance-table">
+                  <thead>
+                    <tr>
+                      <th>Roll No</th>
+                      <th>Student Name</th>
+                      <th>Mark Present</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formData.students.map(student => (
+                      <tr key={student.rollId}>
+                        <td data-label="Roll No">{student.rollId}</td>
+                        <td data-label="Student Name">{student.name}</td>
+                        <td data-label="Mark Present">
+                          <label className="custom-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={student.attendance === 'Present'}
+                              onChange={() => handleStudentStatusChange(student.rollId)}
+                            />
+                            <span className="checkmark"></span>
+                          </label>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
               <div style={{ 

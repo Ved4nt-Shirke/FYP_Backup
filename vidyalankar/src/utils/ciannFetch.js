@@ -14,18 +14,14 @@ const safeRedirectToLogin = () => {
   window.location.replace("/login");
 };
 
-export const fetchCiannsWithAuth = async (academicYear) => {
+export const fetchCiannsWithAuth = async () => {
   try {
     const token = TokenManager.getToken();
     if (!token) {
       throw new Error("Session expired. Please login again.");
     }
 
-    const url = academicYear 
-      ? `${config.cianns}?academicYear=${encodeURIComponent(academicYear)}` 
-      : config.cianns;
-
-    const response = await fetch(url, {
+    const response = await fetch(config.cianns, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

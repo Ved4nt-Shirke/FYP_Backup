@@ -1,144 +1,216 @@
-// src/components/assisment/assisment/EditAssess.jsx
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import Header from '../../basic/Header';
-import './EditAssess.css';
+// src/Assessment/EditAssess.jsx
+import React, { useEffect, useState } from "react";
+import Header from "../../basic/Header";
+import { useNavigate } from "react-router-dom";
+import "./assess/AssessCiaan.css"; // Using the same CSS as new assessment
 
-export default function EditAssess() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { ciannData } = location.state || {};
-
-  const [selectedBatch, setSelectedBatch] = useState('');
-  const [batches, setBatches] = useState([]);
+const EditAssess = () => {
+  const [ciannDataList, setCiannDataList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [loadingExperiments, setLoadingExperiments] = useState(false);
+  const [availableBatches, setAvailableBatches] = useState([]);
+  const [activeAcademicYear, setActiveAcademicYear] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchBatches = async () => {
-      if (!ciannData) {
-        setError("CIAAN information is missing. Please select a CIAAN first.");
-        setLoading(false);
-        return;
-      }
+    const fetchData = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch(
-          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches?ciannId=${ciannData.ciannId}&division=${ciannData.division}`
-        );
-        const data = await response.json();
-        if (data.success) {
-          setBatches(data.batches || []);
-        } else {
-          setError(data.message || "Failed to fetch batches");
+        // Fetch active academic year first
+        const yearRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/academic-year/current`);
+        const yearData = await yearRes.json();
+        if (yearData.success) {
+          setActiveAcademicYear(yearData.academicYear);
+        }
+
+        const ciannRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/cianns`);
+        const ciannData = await ciannRes.json();
+        setCiannDataList(ciannData);
+
+        const batchesRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/batches`);
+        const batchesData = await batchesRes.json();
+        if (batchesData.success) {
+          setAvailableBatches(batchesData.batches);
         }
       } catch (err) {
-        console.error("Error fetching batches:", err);
-        setError("Failed to fetch available batches from server.");
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchBatches();
-  }, [ciannData]);
+    fetchData();
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedBatch) {
-      alert('Please select a batch first.');
-      return;
-    }
-
+  const handleCardClick = async (ciannData) => {
+    setLoadingExperiments(true);
     try {
-      setLoadingSubmit(true);
-      // Fetch assessed experiments for this batch and ciannId
-      const response = await fetch(
-        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${selectedBatch}&ciannId=${ciannData.ciannId}`
-      );
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch assessed experiments');
-      }
-      
-      if (data.success && data.experiments && data.experiments.length > 0) {
-        // Navigate to edit experiment list page with assessed experiments
-        navigate('/assessment/edit-prog', {
-          state: { 
-            batch: selectedBatch, 
-            ciannData,
-            assessedExperiments: data.experiments
-          },
-        });
-      } else {
-        alert("No assessed experiments found for this batch. Please complete some assessments first.");
-      }
-    } catch (err) {
-      console.error("Error fetching assessed experiments:", err);
-      alert("Error loading assessed experiments. Please try again.");
+      const experimentsRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          program: ciannData.department?.name || "",
+          className: ciannData.courseCode || ciannData.class || "",
+          course: ciannData.subject?.name || "",
+        }),
+      });
+      const experimentsData = await experimentsRes.json();
+      navigate("/edit-batch-select", {
+        state: {
+          ciannData,
+          experiments: experimentsData.success ? experimentsData.experiments || [] : [],
+          availableBatches: availableBatches,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching experiments:", error);
+      navigate("/edit-batch-select", {
+        state: { ciannData, experiments: [], availableBatches },
+      });
     } finally {
-      setLoadingSubmit(false);
+      setLoadingExperiments(false);
     }
+  };
+
+  // Filter CIANNs: active ones are those in active academic year and not completed/archived
+  const activeCianns = ciannDataList.filter(c => 
+    c.status !== "completed" && 
+    c.status !== "archived" && 
+    (!activeAcademicYear || c.academicYear === activeAcademicYear.yearName)
+  );
+  
+  // Archived/previous CIANNs are those either completed/archived OR not in active academic year
+  const archivedCianns = ciannDataList.filter(c => 
+    c.status === "completed" || 
+    c.status === "archived" || 
+    (activeAcademicYear && c.academicYear !== activeAcademicYear.yearName)
+  );
+
+  const renderCard = (ciann, isArchived = false) => {
+    const subjectName = ciann.subject?.name || "Unknown Subject";
+    const subjectCode = ciann.subject?.code || "";
+    const classDiv = ciann.class || ciann.division || "—";
+    const academicYear = ciann.academicYear || "—";
+    const initials = subjectName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+
+    return (
+      <div
+        key={ciann._id}
+        className={`assess-ciaan-card ${isArchived ? "assess-ciaan-card--archived" : ""} ${loadingExperiments ? "assess-ciaan-card--disabled" : ""}`}
+        onClick={() => !loadingExperiments && handleCardClick(ciann)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => e.key === "Enter" && !loadingExperiments && handleCardClick(ciann)}
+      >
+        {/* Top row */}
+        <div className="assess-card-top">
+          <div className={`assess-card-avatar ${isArchived ? "assess-card-avatar--archived" : ""}`}>
+            {initials}
+          </div>
+          {isArchived && (
+            <span className="assess-card-status-pill assess-card-status-pill--archived">
+              {ciann.status === "completed" ? "Completed" : "Archived"}
+            </span>
+          )}
+          {!isArchived && (
+            <span className="assess-card-status-pill assess-card-status-pill--active">
+              Active
+            </span>
+          )}
+        </div>
+
+        {/* Subject Info */}
+        <div className="assess-card-body">
+          <h3 className="assess-card-subject">{subjectName}</h3>
+          {subjectCode && <span className="assess-card-code">{subjectCode}</span>}
+        </div>
+
+        {/* Meta pills row */}
+        <div className="assess-card-meta">
+          <div className="assess-meta-pill">
+            <i className="bi bi-hash"></i>
+            <span>CIAAN {ciann.ciannId}</span>
+          </div>
+          <div className="assess-meta-pill">
+            <i className="bi bi-people-fill"></i>
+            <span>{classDiv}</span>
+          </div>
+          <div className="assess-meta-pill">
+            <i className="bi bi-calendar3"></i>
+            <span>{academicYear}</span>
+          </div>
+        </div>
+
+        {/* Footer CTA */}
+        <div className="assess-card-footer">
+          <button className={`assess-card-btn ${isArchived ? "assess-card-btn--secondary" : ""}`}>
+            <i className={`bi ${isArchived ? "bi-eye-fill" : "bi-pencil-fill"}`}></i>
+            {loadingExperiments ? "Loading..." : isArchived ? "View Assessment" : "Edit Assessment"}
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
     <>
       <Header showSearch={false} />
-      <div className="assessment-page-container">
-        <div className="assessment-container">
-          <h2>Batch Selection Assessment</h2>
-          
-          {ciannData && (
-            <div className="alert alert-info w-100 mb-4" style={{ borderRadius: '8px' }}>
-              <strong>Selected CIAAN ID:</strong> {ciannData.ciannId}
-              <br />
-              <strong>Subject:</strong> {ciannData.subject?.name} ({ciannData.subject?.code})
-              <br />
-              <strong>Division:</strong> {ciannData.division}
+      <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+        rel="stylesheet"
+      />
+      <div className="assess-ciaan-page">
+        {/* Page Header */}
+        <div className="assess-page-header">
+          <div className="assess-page-header__inner">
+            <div className="assess-page-header__icon">
+              <i className="bi bi-clipboard2-check-fill"></i>
             </div>
-          )}
-
-          {loading ? (
-            <div className="text-center py-4 w-100">
-              <div className="spinner-border text-success" role="status">
-                <span className="visually-hidden">Loading batches...</span>
-              </div>
-              <p className="mt-2 text-muted">Loading available batches...</p>
+            <div>
+              <h1 className="assess-page-header__title">Edit Assessment</h1>
+              <p className="assess-page-header__subtitle">Select a CIAAN to edit student assessments</p>
             </div>
-          ) : error ? (
-            <div className="alert alert-danger w-100 mb-4" style={{ borderRadius: '8px' }}>
-              <strong>Error:</strong> {error}
+          </div>
+          {availableBatches.length > 0 && (
+            <div className="assess-batch-info">
+              <i className="bi bi-collection-fill"></i>
+              <span>Batches: <strong>{availableBatches.join(", ")}</strong></span>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit}>
-              <label htmlFor="batch-select">Select Batch:</label>
-              <select
-                id="batch-select"
-                value={selectedBatch}
-                onChange={(e) => setSelectedBatch(e.target.value)}
-                disabled={loadingSubmit}
-              >
-                <option value="">-- Select Batch --</option>
-                {batches.map(batch => (
-                  <option key={batch} value={batch}>{batch}</option>
-                ))}
-              </select>
-              
-              {batches.length === 0 && (
-                <div className="text-warning mb-3">
-                  No batches found for division {ciannData?.division}.
-                </div>
-              )}
-
-              <button type="submit" disabled={loadingSubmit || batches.length === 0}>
-                {loadingSubmit ? 'Loading...' : 'Submit'}
-              </button>
-            </form>
           )}
         </div>
+
+        {loading ? (
+          <div className="assess-loading-state">
+            <div className="assess-spinner"></div>
+            <p>Loading CIAANs...</p>
+          </div>
+        ) : loadingExperiments ? (
+          <div className="assess-loading-state">
+            <div className="assess-spinner"></div>
+            <p>Fetching experiments...</p>
+          </div>
+        ) : activeCianns.length === 0 ? (
+          <div className="assess-empty-state">
+            <i className="bi bi-folder-x"></i>
+            <h3>No Active CIAANs Available</h3>
+            <p>No active CIAANs for the current academic year.</p>
+          </div>
+        ) : (
+          <div className="assess-sections">
+            {/* Active Section Only */}
+            <section className="assess-section">
+              <div className="assess-section-header">
+                <span className="assess-section-dot assess-section-dot--active"></span>
+                <h2 className="assess-section-title">Active Semesters</h2>
+                <span className="assess-section-count">{activeCianns.length}</span>
+              </div>
+              <div className="assess-card-grid">
+                {activeCianns.map(c => renderCard(c, false))}
+              </div>
+            </section>
+          </div>
+        )}
       </div>
     </>
   );
-}
+};
+
+export default EditAssess;

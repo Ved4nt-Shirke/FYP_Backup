@@ -166,33 +166,6 @@ const NoticesPage = () => {
     }
   };
 
-  const formatClassName = (div) => {
-    if (!div) return "";
-    const parsedDiv = typeof div === "object" ? div : targetOptions.divisions.find(d => d._id === div);
-    if (!parsedDiv) return typeof div === "string" ? div : "";
-    
-    if (parsedDiv.courseId) {
-      const code = parsedDiv.courseId.courseCode || "";
-      const sem = parsedDiv.courseId.semester || "";
-      const scheme = parsedDiv.courseId.scheme || "";
-      const divName = parsedDiv.name || "";
-      if (code) {
-        let label = code;
-        if (sem && !code.includes(String(sem))) {
-          label += sem;
-        }
-        if (scheme && !code.includes(scheme)) {
-          label += scheme;
-        }
-        return `${label} ${divName}`.trim();
-      }
-      if (sem) {
-        return `${sem} Sem ${divName}`.trim();
-      }
-    }
-    return `Division ${parsedDiv.name || ""}`.trim();
-  };
-
   const handleCheckboxToggle = (id, targetState, setTargetState) => {
     if (targetState.includes(id)) {
       setTargetState(targetState.filter(item => item !== id));
@@ -452,7 +425,7 @@ const NoticesPage = () => {
       case "particular-faculty": return `Faculty: ${notice.targetFaculties?.join(", ") || "Selected"}`;
       case "particular-student": return `Students: ${notice.targetStudents?.join(", ") || "Selected"}`;
       case "departments": return `Departments: ${(notice.targetDepartments || []).map(d => d.name || d).join(", ")}`;
-      case "divisions": return `Divisions: ${(notice.targetDivisions || []).map(d => formatClassName(d)).join(", ")}`;
+      case "divisions": return `Divisions: ${(notice.targetDivisions || []).map(d => d.name || d).join(", ")}`;
       case "academic-year": return `Years: ${(notice.targetAcademicYears || []).join(", ")}`;
       default: return "All";
     }
@@ -770,39 +743,7 @@ const NoticesPage = () => {
 
                 {targetType === "divisions" && (
                   <div className="form-input-control">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <label style={{ margin: 0 }}>Select Division(s)</label>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                          type="button"
-                          onClick={() => setTargetDivisions(targetOptions.divisions.map(d => d._id))}
-                          style={{
-                            padding: '2px 8px',
-                            fontSize: '11px',
-                            cursor: 'pointer',
-                            borderRadius: '4px',
-                            border: '1px solid #dcdcdc',
-                            backgroundColor: '#f8f9fa'
-                          }}
-                        >
-                          Select All
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setTargetDivisions([])}
-                          style={{
-                            padding: '2px 8px',
-                            fontSize: '11px',
-                            cursor: 'pointer',
-                            borderRadius: '4px',
-                            border: '1px solid #dcdcdc',
-                            backgroundColor: '#f8f9fa'
-                          }}
-                        >
-                          Clear All
-                        </button>
-                      </div>
-                    </div>
+                    <label>Select Division(s)</label>
                     <div className="checkboxes-selection-box office-scrollable">
                       {targetOptions.divisions.map(div => (
                         <label key={div._id} className="checkbox-node">
@@ -812,7 +753,7 @@ const NoticesPage = () => {
                             onChange={() => handleCheckboxToggle(div._id, targetDivisions, setTargetDivisions)}
                             disabled={loading}
                           />
-                          <span>{formatClassName(div)}</span>
+                          <span>Division {div.name}</span>
                         </label>
                       ))}
                     </div>

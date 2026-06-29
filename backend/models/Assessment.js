@@ -16,17 +16,18 @@ const assessmentSchema = new mongoose.Schema({
   program: { type: String, required: false },
   className: { type: String, required: false },
   course: { type: String, required: false },
-  ciannId: { type: Number, required: false, default: 0 },
+  ciannId: { type: Number, required: false },
   batch: { type: String, required: false }
 }, {
   timestamps: true
 });
 
-// Compound unique index by experiment, student, and CIAAN context to prevent mix-ups.
+// NOTE: Keeping existing unique index to avoid migration side-effects.
+// If you need per-course uniqueness, create a migration to replace this with
+// { experimentNumber: 1, studentName: 1, course: 1 } unique index.
 assessmentSchema.index({ 
   experimentNumber: 1, 
-  studentName: 1,
-  ciannId: 1
+  studentName: 1 
 }, { unique: true });
 
 module.exports = mongoose.model('Assessment', assessmentSchema);

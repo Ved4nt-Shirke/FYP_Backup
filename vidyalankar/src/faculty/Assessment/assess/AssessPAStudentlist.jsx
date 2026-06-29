@@ -52,72 +52,21 @@ export default function AssessPAStudentlist() {
       setError(null);
 
       if (isEditMode && experiment) {
-        // In edit mode, fetch existing assessment data, but merge with full student list
-        const ciannIdParam = ciannData?.ciannId ? `&ciannId=${ciannData.ciannId}` : '';
-        
-        // 1. Fetch all students in the batch/division
-        let allStudents = [];
-        try {
-          const studentsResponse = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/students-by-batch?batch=${batch}${ciannIdParam}`);
-          const studentsData = await studentsResponse.json();
-          if (studentsResponse.ok && studentsData.success && studentsData.students) {
-            allStudents = studentsData.students;
-          }
-        } catch (err) {
-          console.warn('Failed to fetch batch students:', err);
+        // In edit mode, fetch existing assessment data
+        const response = await fetch(
+          `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}`,
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to fetch assessment data");
         }
 
-        // 2. Fetch existing assessments
-        let existingAssessments = [];
-        try {
-          const response = await fetch(
-            `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/edit-data/${experiment.id}?batch=${batch}${ciannIdParam}`,
-          );
-          const data = await response.json();
-          if (response.ok && data.success && data.students) {
-            existingAssessments = data.students;
-          }
-        } catch (err) {
-          console.warn('Failed to fetch existing assessments:', err);
+        if (data.success && data.students) {
+          setStudents(data.students);
+        } else {
+          throw new Error("No assessment data found for this experiment");
         }
-
-        if (allStudents.length === 0 && existingAssessments.length === 0) {
-          throw new Error('No students or assessment data found for this experiment and batch');
-        }
-
-        // Build fallback list if resolve students returned empty
-        if (allStudents.length === 0) {
-          allStudents = existingAssessments.map(s => ({
-            _id: s._id,
-            studentName: s.studentName,
-            rollNo: s.rollNo
-          }));
-        }
-
-        // Map existing grades if any (fallback to empty string)
-        const assessedMap = {};
-        existingAssessments.forEach(s => {
-          assessedMap[s.studentName] = s.marks;
-        });
-
-        const mergedStudents = allStudents.map(student => {
-          const existingMark = assessedMap[student.studentName];
-          return {
-            _id: student._id,
-            rollNo: student.rollNo || 'N/A',
-            studentName: student.studentName,
-            marks: existingMark !== undefined ? existingMark : ''
-          };
-        });
-
-        // Sort by roll number numerically
-        mergedStudents.sort((a, b) => {
-          const aRoll = String(a.rollNo || "").trim();
-          const bRoll = String(b.rollNo || "").trim();
-          return aRoll.localeCompare(bRoll, undefined, { numeric: true, sensitivity: 'base' });
-        });
-
-        setStudents(mergedStudents);
       } else {
         // Normal mode: fetch students from the students database with batch and division filter
         let studentsData = [];
@@ -195,7 +144,7 @@ export default function AssessPAStudentlist() {
           rollNo: student.rollNo,
           studentName: student.studentName,
           batch: student.batch,
-          marks: "", // default marks empty for new assessment
+          marks: 0, // default marks for new assessment
         }));
 
         setStudents(studentsWithMarks);
@@ -211,18 +160,8 @@ export default function AssessPAStudentlist() {
   };
 
   const handleMarksChange = (studentId, marks) => {
-    if (marks === "") {
-      setStudents((prevStudents) =>
-        prevStudents.map((student) =>
-          student._id === studentId
-            ? { ...student, marks: "" }
-            : student,
-        ),
-      );
-      return;
-    }
-    const numericMarks = parseInt(marks);
-    if (isNaN(numericMarks) || numericMarks < 0 || numericMarks > 25) {
+    const numericMarks = parseInt(marks) || 0;
+    if (numericMarks < 0 || numericMarks > 25) {
       alert("Marks should be between 0 and 25");
       return;
     }
@@ -247,8 +186,7 @@ export default function AssessPAStudentlist() {
 
       // Validate marks before submitting
       const invalidMarks = students.filter((student) => {
-        const marks = student.marks;
-        if (marks === "" || marks === undefined || marks === null) return false;
+        const marks = student.marks || 0;
         return marks < 0 || marks > 25;
       });
 
@@ -262,21 +200,13 @@ export default function AssessPAStudentlist() {
         return;
       }
 
-      // Prepare students marks data: only save students who have a mark entered!
-      const studentsMarks = students
-        .filter(student => student.marks !== "" && student.marks !== undefined && student.marks !== null)
-        .map((student) => ({
-          studentId: student._id,
-          rollNo: student.rollNo,
-          studentName: student.studentName,
-          marks: Number(student.marks),
-        }));
-
-      if (studentsMarks.length === 0) {
-        alert("Please enter marks for at least one student before submitting.");
-        setSaving(false);
-        return;
-      }
+      // Prepare students marks data
+      const studentsMarks = students.map((student) => ({
+        studentId: student._id,
+        rollNo: student.rollNo,
+        studentName: student.studentName,
+        marks: Math.min(Math.max(student.marks || 0, 0), 25), // Ensure marks are within range
+      }));
 
       const requestPayload = {
         studentsMarks,
@@ -340,8 +270,14 @@ export default function AssessPAStudentlist() {
           ? `Successfully updated marks for ${data.savedCount} students!`
           : `Successfully saved marks for ${data.savedCount} students!`;
         alert(message);
-        // Navigate back to previous page after successful save/update
-        navigate(-1);
+        // After edit mode submit, go back to experiment list; for new assessment go back one step
+        if (isEditMode) {
+          navigate("/assessment/edit-prog", {
+            state: { batch, ciannData }
+          });
+        } else {
+          navigate(-1);
+        }
       } else {
         throw new Error(data.message || "Failed to save marks");
       }
@@ -487,7 +423,7 @@ export default function AssessPAStudentlist() {
                         <input
                           type="number"
                           className="form-control"
-                          value={student.marks ?? ''}
+                          value={student.marks || 0}
                           min="0"
                           max="25"
                           onChange={(e) =>

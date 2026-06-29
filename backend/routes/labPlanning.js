@@ -281,30 +281,75 @@ router.delete('/ciann/:ciannId', checkCiannFreeze, async (req, res) => {
   }
 });
 
-// Helper function: Sync lab plans to practical attendance (only updates experiment names for existing records)
+// Helper function: Sync lab plans to practical attendance
 async function syncLabPlanToPracticalAttendance(ciannId, weekNo, plans) {
   try {
     console.log(`Syncing lab plans to practical attendance for CIANN ${ciannId}, Week ${weekNo}`);
     
+    // Get all students for this CIANN by querying division
+    const ciann = await Ciann.findOne({ ciannId: parseInt(ciannId) });
+    if (!ciann) {
+      console.log(`CIANN ${ciannId} not found - skipping attendance sync`);
+      return;
+    }
+    
+    const divisionId = ciann.divisionId || ciann.division;
+    if (!divisionId) {
+      console.log(`CIANN ${ciannId} has no division - skipping attendance sync`);
+      return;
+    }
+    
+    // Get all students in this division/batch historically
+    const students = await resolveStudents({
+      divisionId: ciann.divisionId,
+      division: ciann.division,
+      academicYear: ciann.academicYear,
+      semester: ciann.semester
+    }, ciann.college);
+    
+    if (students.length === 0) {
+      console.log(`No students found for CIANN ${ciannId}`);
+      return;
+    }
+    
+    // For each plan (each batch), create or update practical attendance
     for (const plan of plans) {
-      if (!plan.batch || !plan.exptNo || !plan.exptName) {
+      if (!plan.batch || !plan.exptNo || !plan.exptName || !plan.date) {
         continue; // Skip incomplete plans
       }
       
+      // Create student attendance array with default "Absent" status
+      const studentAttendance = students.map(student => ({
+        rollNo: student.rollNo,
+        studentName: student.studentName,
+        status: 'Absent' // Default to absent, faculty can mark present
+      }));
+      
+      // Create or update practical attendance record
       const attendanceFilter = {
-        ciannId: parseInt(ciannId),
-        weekNo: parseInt(weekNo),
+        ciannId,
+        weekNo,
         batch: plan.batch,
         exptNo: plan.exptNo
       };
       
-      await PracticalAttendance.updateOne(
+      const attendanceData = {
+        exptName: plan.exptName,
+        actualDate: plan.date,
+        students: studentAttendance
+      };
+      
+      await PracticalAttendance.findOneAndUpdate(
         attendanceFilter,
-        { $set: { exptName: plan.exptName } }
+        attendanceData,
+        { upsert: true, new: true }
       );
+      
+      console.log(`Created/updated practical attendance for batch ${plan.batch}, expt ${plan.exptNo}`);
     }
   } catch (error) {
     console.error('Error in syncLabPlanToPracticalAttendance:', error);
+    // Don't throw - sync failures shouldn't break the operation
   }
 }
 

@@ -39,30 +39,15 @@ function EditProgAssess() {
       // Fallback: fetch assessed experiments if not passed
       fetchAssessedExperiments();
     }
-  }, [assessedExperiments, ciannData]);
+  }, [assessedExperiments]);
 
   const fetchAssessedExperiments = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      let ciannIdParam = "";
-      if (ciannData && ciannData.ciannId) {
-        ciannIdParam = `&ciannId=${ciannData.ciannId}`;
-      } else {
-        const stored = localStorage.getItem("ciannData");
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            if (parsed.ciannId) {
-              ciannIdParam = `&ciannId=${parsed.ciannId}`;
-            }
-          } catch (e) {}
-        }
-      }
-
       const response = await fetch(
-        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}${ciannIdParam}`
+        `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}`
       );
       const data = await response.json();
 
@@ -160,7 +145,7 @@ function EditProgAssess() {
             <thead className="table-light">
               <tr>
                 <th style={{ width: "10%", textAlign: "center" }}>Exp ID</th>
-                <th style={{ width: "70%", textAlign: "left" }}>Exp Name</th>
+                <th style={{ width: "70%" }}>Exp Name</th>
                 <th style={{ width: "20%", textAlign: "center" }}>Action</th>
               </tr>
             </thead>
@@ -169,7 +154,7 @@ function EditProgAssess() {
                 experiments.map((exp) => (
                   <tr key={exp.id}>
                     <td style={{ textAlign: "center" }}>{exp.id}</td>
-                    <td style={{ textAlign: "left" }}>{exp.name}</td>
+                    <td>{exp.name}</td>
                     <td style={{ textAlign: "center" }}>
                       <button
                         className="btn btn-success"

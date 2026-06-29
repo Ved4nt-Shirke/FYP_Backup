@@ -1,8 +1,8 @@
-// src/Assessment/AssismentCiaanCards.jsx
+// src/faculty/Assessment/studentDefaulter/StudentWiseCiannSelect.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import Header from "../../../basic/Header";
 import { useNavigate } from "react-router-dom";
-import "./AssessCiaan.css";
+import "../assess/AssessCiaan.css";
 
 const API = () =>
   (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(
@@ -10,8 +10,9 @@ const API = () =>
     ""
   );
 
-const AssismentCiaanCards = () => {
+const StudentWiseCiannSelect = () => {
   const [ciannDataList, setCiannDataList] = useState([]);
+  const [assessedCiannIds, setAssessedCiannIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [loadingExperiments, setLoadingExperiments] = useState(false);
   const [availableBatches, setAvailableBatches] = useState([]);
@@ -24,9 +25,7 @@ const AssismentCiaanCards = () => {
       // Fetch active academic year first
       const yearRes = await fetch(`${API()}/api/academic-year/current`);
       const yearData = await yearRes.json();
-      if (yearData.success) {
-        setActiveAcademicYear(yearData.academicYear);
-      }
+      if (yearData.success) setActiveAcademicYear(yearData.academicYear);
 
       const ciannRes = await fetch(`${API()}/api/cianns`);
       const ciannData = await ciannRes.json();
@@ -34,8 +33,22 @@ const AssismentCiaanCards = () => {
 
       const batchesRes = await fetch(`${API()}/api/assessments/batches`);
       const batchesData = await batchesRes.json();
-      if (batchesData.success) {
-        setAvailableBatches(batchesData.batches);
+      if (batchesData.success) setAvailableBatches(batchesData.batches);
+
+      // Fetch all assessed ciannIds so we only show CIANNs that have been assessed
+      try {
+        const assessedRes = await fetch(
+          `${API()}/api/assessments/assessed-experiments`
+        );
+        const assessedData = await assessedRes.json();
+        if (assessedData.success && Array.isArray(assessedData.ciannIds)) {
+          setAssessedCiannIds(new Set(assessedData.ciannIds));
+        } else {
+          // Fallback: treat all as having assessments if endpoint doesn't return ciannIds
+          setAssessedCiannIds(null);
+        }
+      } catch (_) {
+        setAssessedCiannIds(null);
       }
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -53,38 +66,41 @@ const AssismentCiaanCards = () => {
   const handleCardClick = async (ciannData) => {
     setLoadingExperiments(true);
     try {
-      const experimentsRes = await fetch(`${API()}/api/assessments/get-experiments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          program: ciannData.department?.name || "",
-          className: ciannData.courseCode || ciannData.class || "",
-          course: ciannData.subject?.name || "",
-        }),
-      });
+      // Fetch assessed experiments for THIS CIANN specifically
+      const params = new URLSearchParams();
+      if (ciannData.ciannId) params.append("ciannId", ciannData.ciannId);
+      const experimentsRes = await fetch(
+        `${API()}/api/assessments/assessed-experiments?${params.toString()}`
+      );
       const experimentsData = await experimentsRes.json();
 
-      // Fetch division-scoped batches for this CIANN
+      // Fetch division-scoped batches
       const batchParams = new URLSearchParams();
       if (ciannData.division) batchParams.append("division", ciannData.division);
       if (ciannData.ciannId) batchParams.append("ciannId", ciannData.ciannId);
       let batches = availableBatches;
       try {
-        const batchRes = await fetch(`${API()}/api/assessments/batches?${batchParams.toString()}`);
+        const batchRes = await fetch(
+          `${API()}/api/assessments/batches?${batchParams.toString()}`
+        );
         const batchData = await batchRes.json();
-        if (batchData.success && batchData.batches.length > 0) batches = batchData.batches;
+        if (batchData.success && batchData.batches.length > 0)
+          batches = batchData.batches;
       } catch (_) {}
 
-      navigate("/assess-batch-select", {
+      navigate("/studentwise-select", {
         state: {
           ciannData,
-          experiments: experimentsData.success ? experimentsData.experiments || [] : [],
+          // Only pass experiments that have been assessed for this CIANN
+          experiments: experimentsData.success
+            ? experimentsData.experiments || []
+            : [],
           availableBatches: batches,
         },
       });
     } catch (error) {
       console.error("Error fetching experiments:", error);
-      navigate("/assess-batch-select", {
+      navigate("/studentwise-select", {
         state: { ciannData, experiments: [], availableBatches },
       });
     } finally {
@@ -92,57 +108,53 @@ const AssismentCiaanCards = () => {
     }
   };
 
-  // Filter CIANNs: active ones are those in active academic year and not completed/archived
-  const activeCianns = ciannDataList.filter(c => 
-    c.status !== "completed" && 
-    c.status !== "archived" && 
-    (!activeAcademicYear || c.academicYear === activeAcademicYear.yearName)
-  );
-  
-  // Archived/previous CIANNs are those either completed/archived OR not in active academic year
-  const archivedCianns = ciannDataList.filter(c => 
-    c.status === "completed" || 
-    c.status === "archived" || 
-    (activeAcademicYear && c.academicYear !== activeAcademicYear.yearName)
+  // Filter CIANNs: only active year and not completed/archived
+  const activeCianns = ciannDataList.filter(
+    (c) =>
+      c.status !== "completed" &&
+      c.status !== "archived" &&
+      (!activeAcademicYear || c.academicYear === activeAcademicYear.yearName)
   );
 
-  const renderCard = (ciann, isArchived = false) => {
+  const renderCard = (ciann) => {
     const subjectName = ciann.subject?.name || "Unknown Subject";
     const subjectCode = ciann.subject?.code || "";
     const classDiv = ciann.class || ciann.division || "—";
     const academicYear = ciann.academicYear || "—";
-    const initials = subjectName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+    const initials = subjectName
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
 
     return (
       <div
         key={ciann._id}
-        className={`assess-ciaan-card ${isArchived ? "assess-ciaan-card--archived" : ""} ${loadingExperiments ? "assess-ciaan-card--disabled" : ""}`}
+        className={`assess-ciaan-card ${
+          loadingExperiments ? "assess-ciaan-card--disabled" : ""
+        }`}
         onClick={() => !loadingExperiments && handleCardClick(ciann)}
         role="button"
         tabIndex={0}
-        onKeyDown={e => e.key === "Enter" && !loadingExperiments && handleCardClick(ciann)}
+        onKeyDown={(e) =>
+          e.key === "Enter" && !loadingExperiments && handleCardClick(ciann)
+        }
       >
         {/* Top row */}
         <div className="assess-card-top">
-          <div className={`assess-card-avatar ${isArchived ? "assess-card-avatar--archived" : ""}`}>
-            {initials}
-          </div>
-          {isArchived && (
-            <span className="assess-card-status-pill assess-card-status-pill--archived">
-              {ciann.status === "completed" ? "Completed" : "Archived"}
-            </span>
-          )}
-          {!isArchived && (
-            <span className="assess-card-status-pill assess-card-status-pill--active">
-              Active
-            </span>
-          )}
+          <div className="assess-card-avatar">{initials}</div>
+          <span className="assess-card-status-pill assess-card-status-pill--active">
+            Active
+          </span>
         </div>
 
         {/* Subject Info */}
         <div className="assess-card-body">
           <h3 className="assess-card-subject">{subjectName}</h3>
-          {subjectCode && <span className="assess-card-code">{subjectCode}</span>}
+          {subjectCode && (
+            <span className="assess-card-code">{subjectCode}</span>
+          )}
         </div>
 
         {/* Meta pills row */}
@@ -163,9 +175,9 @@ const AssismentCiaanCards = () => {
 
         {/* Footer CTA */}
         <div className="assess-card-footer">
-          <button className={`assess-card-btn ${isArchived ? "assess-card-btn--secondary" : ""}`}>
-            <i className={`bi ${isArchived ? "bi-eye-fill" : "bi-clipboard2-check-fill"}`}></i>
-            {loadingExperiments ? "Loading..." : isArchived ? "View Assessment" : "Start Assessment"}
+          <button className="assess-card-btn">
+            <i className="bi bi-person-check-fill"></i>
+            {loadingExperiments ? "Loading..." : "Select Student"}
           </button>
         </div>
       </div>
@@ -184,17 +196,26 @@ const AssismentCiaanCards = () => {
         <div className="assess-page-header">
           <div className="assess-page-header__inner">
             <div className="assess-page-header__icon">
-              <i className="bi bi-clipboard2-pulse-fill"></i>
+              <i className="bi bi-person-lines-fill"></i>
             </div>
             <div>
-              <h1 className="assess-page-header__title">Practical Assessment</h1>
-              <p className="assess-page-header__subtitle">Select a CIAAN to begin assessing students for experiments</p>
+              <h1 className="assess-page-header__title">
+                Student-wise Defaulter
+              </h1>
+              <p className="assess-page-header__subtitle">
+                Select a CIAAN to view student-wise assessments
+              </p>
             </div>
           </div>
-          {availableBatches.length > 0 && (
+          {activeAcademicYear && (
             <div className="assess-batch-info">
-              <i className="bi bi-collection-fill"></i>
-              <span>Batches: <strong>{availableBatches.join(", ")}</strong></span>
+              <i className="bi bi-mortarboard-fill"></i>
+              <span>
+                Year:{" "}
+                <strong>
+                  {activeAcademicYear.yearName || activeAcademicYear}
+                </strong>
+              </span>
             </div>
           )}
         </div>
@@ -222,10 +243,12 @@ const AssismentCiaanCards = () => {
               <div className="assess-section-header">
                 <span className="assess-section-dot assess-section-dot--active"></span>
                 <h2 className="assess-section-title">Active Semesters</h2>
-                <span className="assess-section-count">{activeCianns.length}</span>
+                <span className="assess-section-count">
+                  {activeCianns.length}
+                </span>
               </div>
               <div className="assess-card-grid">
-                {activeCianns.map(c => renderCard(c, false))}
+                {activeCianns.map((c) => renderCard(c))}
               </div>
             </section>
           </div>
@@ -235,4 +258,4 @@ const AssismentCiaanCards = () => {
   );
 };
 
-export default AssismentCiaanCards;
+export default StudentWiseCiannSelect;

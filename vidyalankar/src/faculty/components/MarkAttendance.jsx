@@ -5,43 +5,28 @@ import "./AttendancePanel.css";
 const cardsData = [
   {
     label: "Theory Attendance",
-    badge: "Theory",
-    description: "Record attendance for regular classroom theory lectures.",
-    icon: "bi-journal-bookmark-fill",
+    icon: "bi-calendar-check",
     path: "/theory-ciann-cards",
-    color: "blue",
   },
   {
     label: "Practical Attendance",
-    badge: "Practical",
-    description: "Mark attendance for practical lab experiments and batches.",
-    icon: "bi-cpu-fill",
+    icon: "bi-calendar-check-fill",
     path: "/practical-ciann-cards",
-    color: "emerald",
   },
   {
     label: "Extra Theory Attendance",
-    badge: "Extra",
-    description: "Schedule and record attendance for extra theory sessions.",
-    icon: "bi-calendar-plus-fill",
+    icon: "bi-calendar-plus",
     path: "/extra-theory-ciann-cards",
-    color: "indigo",
   },
   {
     label: "Extra Practical Attendance",
-    badge: "Extra Lab",
-    description: "Record attendance for extra practical and make-up lab sessions.",
-    icon: "bi-folder-plus",
+    icon: "bi-calendar-plus-fill",
     path: "/extra-practical-ciann-cards",
-    color: "pink",
   },
   {
     label: "Tutorial Attendance",
-    badge: "Tutorial",
-    description: "Record attendance for tutorial classes and small-group discussions.",
-    icon: "bi-chat-left-text-fill",
+    icon: "bi-journals",
     path: "/tutorial-ciann-cards",
-    color: "amber",
   },
 ];
 
@@ -67,25 +52,20 @@ const Dashboard = () => {
           <button
             key={card.label}
             type="button"
-            className={`attendance-panel-card theme-${card.color}`}
+            className="attendance-panel-card"
             onClick={() => handleCardClick(card)}
             onKeyDown={(e) =>
               (e.key === "Enter" || e.key === " ") && handleCardClick(card)
             }
           >
-            <div className="attendance-panel-card-body">
-              <div className="attendance-panel-card-header">
-                <span className="attendance-panel-badge">{card.badge}</span>
-                <span className="attendance-panel-icon">
-                  <i className={`bi ${card.icon}`}></i>
-                </span>
-              </div>
+            <div className="attendance-panel-card-top">
+              <span className="attendance-panel-icon">
+                <i className={`bi ${card.icon}`}></i>
+              </span>
               <h3 className="attendance-panel-title">{card.label}</h3>
-              <p className="attendance-panel-desc">{card.description}</p>
             </div>
-            <div className="attendance-panel-action">
-              <span>Continue</span>
-              <i className="bi bi-arrow-right-short"></i>
+            <div className="attendance-panel-footer">
+              Continue <i className="bi bi-arrow-right"></i>
             </div>
           </button>
         ))}
@@ -93,5 +73,4 @@ const Dashboard = () => {
     </div>
   );
 };
-
 export default Dashboard;

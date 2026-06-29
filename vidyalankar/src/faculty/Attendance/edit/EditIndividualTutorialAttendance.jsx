@@ -3,8 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { showSuccessAlert, showErrorAlert } from "../../../utils/alertUtils.jsx";
-import './EditIndividualAttendance.css';
-import '../FinalAtt.css';
+import "./EditIndividualAttendance.css";
 
 const EditIndividualTutorialAttendance = () => {
   const location = useLocation();
@@ -202,41 +201,34 @@ const EditIndividualTutorialAttendance = () => {
               <div style={{ fontSize: '14px' }}>Please check if students are enrolled for this tutorial.</div>
             </div>
           ) : (
-            <div className="students-panel">
-              <div className="final-students-grid">
-                {students.map((student) => (
-                  <div
-                    key={student.rollNo}
-                    className={`final-student-card ${attendance[student.rollNo] ? "present" : "absent"}`}
-                    onClick={() => handleCheckboxChange(student.rollNo)}
-                  >
-                    <div className="final-student-header">
-                      <span className="final-roll-badge">
-                        {student.rollNo}
-                      </span>
-                      <button
-                        type="button"
-                        className={`status-pill status-toggle ${attendance[student.rollNo] ? "present" : "absent"}`}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleCheckboxChange(student.rollNo);
-                        }}
-                      >
-                        {attendance[student.rollNo] ? "Present" : "Absent"}
-                      </button>
-                    </div>
-                    <div className="final-student-name">
-                      {student.studentName}
-                    </div>
-                    <div className="final-student-meta">
-                      Enrollment: {student.enrollmentNo || "N/A"}
-                    </div>
-                    <div className="final-student-meta">
-                      Batch: {student.batch || "N/A"}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="table-wrapper">
+              <table className="attendance-table">
+                <thead>
+                  <tr>
+                    <th>Roll No</th>
+                    <th>Student Name</th>
+                    <th>Mark Present</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.map(student => (
+                    <tr key={student.rollNo}>
+                      <td data-label="Roll No">{student.rollNo}</td>
+                      <td data-label="Student Name">{student.studentName}</td>
+                      <td data-label="Mark Present">
+                        <label className="custom-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={attendance[student.rollNo] || false}
+                            onChange={() => handleCheckboxChange(student.rollNo)}
+                          />
+                          <span className="checkmark"></span>
+                        </label>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

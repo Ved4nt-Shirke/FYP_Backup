@@ -11,7 +11,7 @@ const username = process.argv[2] || '2320310003';
 
 async function debugLogin() {
   try {
-    const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/vidyalankar';
+    const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/vidyalankarDB';
     await mongoose.connect(MONGO_URI);
     console.log('✅ MongoDB Connected\n');
 

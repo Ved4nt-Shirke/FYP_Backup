@@ -34,8 +34,7 @@ export default function EditExperimentList() {
       
       console.log('Fetching assessed experiments for batch:', batch);
       
-      const ciannIdParam = ciannData?.ciannId ? `&ciannId=${ciannData.ciannId}` : '';
-      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}${ciannIdParam}`);
+      const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/assessed-experiments?batch=${batch}`);
       const data = await response.json();
       
       console.log('API Response:', data);

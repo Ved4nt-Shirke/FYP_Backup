@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../../basic/Header';
 
@@ -34,236 +34,80 @@ export default function StudentWiseAssess() {
     } catch (_) {}
   }
 
-  // Derive subject info with robust fallbacks (also check localStorage ciannData)
-  const storageCiann = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem('ciannData') || 'null'); } catch (_) { return null; }
-  }, []);
-
-  const program = (
-    location.state?.program ||
-    ciannData?.department?.program ||
-    ciannData?.department?.name ||
-    ciannData?.department?.label ||
-    ciannData?.department?.value ||
-    (typeof ciannData?.department === 'string' ? ciannData.department : '') ||
-    storageCiann?.department?.program ||
-    storageCiann?.department?.name ||
-    storageCiann?.department?.label ||
-    storageCiann?.department?.value ||
-    (typeof storageCiann?.department === 'string' ? storageCiann.department : '') ||
-    qp.program ||
-    // Fallback: try to derive from CIANN ID pattern if available
-    (ciannData?.ciannId ? ciannData.ciannId.split('-')[0] || '' : '') ||
-    ''
-  ).toString().trim();
-  const className = (
-    location.state?.className ||
-    ciannData?.class ||
-    ciannData?.division ||
-    storageCiann?.class ||
-    storageCiann?.division ||
-    qp.className ||
-    ''
-  ).toString().trim();
+  // Derive subject/context info from ciannData or query params
   const course = (
     location.state?.course ||
     ciannData?.subject?.name ||
     ciannData?.subject?.code ||
-    storageCiann?.subject?.name ||
-    storageCiann?.subject?.code ||
     qp.course ||
     ''
   ).toString().trim();
 
-  const [experiments, setExperiments] = useState([]); // all experiments from curriculum
+
+
+  const [experiments, setExperiments] = useState([]); // only assessed experiments for this CIANN
   const [assessedMap, setAssessedMap] = useState({}); // experimentNumber -> marks
-  const [assessingExps, setAssessingExps] = useState({}); // experimentNumber -> boolean (currently being assessed)
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-
-  const subjectInfo = useMemo(() => ({ program, className, course }), [program, className, course]);
-
-  // If missing subject context and we have ciannData, try to salvage values once here
-  const hasMinimalContext = Boolean(program && className && course);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
         setError('');
-        
-        // Reset state when student or subject changes to prevent cross-contamination
         setExperiments([]);
         setAssessedMap({});
-        setAssessingExps({});
 
-        // Validate subject info before calling API
-        // Require at least course; program is recommended but we will attempt best-effort fetch without it
-        if (!subjectInfo.course) {
-          console.warn('Missing minimal subjectInfo', { subjectInfo, ciannData, fromState: location.state, fromQuery: qp });
-          setExperiments([]);
-          throw new Error('Missing subject info (course). Use the Studentwise Select page or add course as a query param.');
-        }
-        if (!subjectInfo.program) {
-          console.warn('Program missing; proceeding with best-effort fetch using course and class/division only', { subjectInfo, ciannData, fromState: location.state, fromQuery: qp });
-        }
+        const apiBase = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "");
 
-        // Build robust candidates for program, course (name/code) and class (class/division/composed)
-        const courseCandidates = Array.from(new Set([
-          subjectInfo.course,
-          ciannData?.subject?.code,
-          ciannData?.subject?.name,
-          storageCiann?.subject?.code,
-          storageCiann?.subject?.name,
-          qp.course,
-        ].filter(Boolean).map(s => String(s).trim())));
+        // Step 1: Fetch only assessed experiments for this CIANN
+        const aeParams = new URLSearchParams();
+        if (ciannData?.ciannId) aeParams.append('ciannId', ciannData.ciannId);
+        const aeRes = await fetch(`${apiBase}/api/assessments/assessed-experiments?${aeParams.toString()}`);
+        const aeData = await aeRes.json();
 
-        const rawClass = subjectInfo.className || ciannData?.class || storageCiann?.class || '';
-        const div = ciannData?.division || storageCiann?.division || '';
-        const classCandidates = Array.from(new Set([
-          subjectInfo.className,
-          ciannData?.class,
-          div,
-          storageCiann?.class,
-          storageCiann?.division,
-          rawClass && div ? `${String(rawClass).trim()}${String(div).trim()}` : null,
-          qp.className,
-        ].filter(Boolean).map(s => String(s).trim())));
-
-        const rawPrograms = [
-          subjectInfo.program,
-          ciannData?.department?.label,
-          ciannData?.department?.value,
-          typeof ciannData?.department === 'string' ? ciannData?.department : null,
-          storageCiann?.department?.label,
-          storageCiann?.department?.value,
-          typeof storageCiann?.department === 'string' ? storageCiann?.department : null,
-          qp.program,
-        ].filter(Boolean).map(s => String(s).trim());
-        const programCandidates = Array.from(new Set(rawPrograms.flatMap(p => {
-          const title = p.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-          const slug = p.toLowerCase().replace(/\s+/g, '-');
-          return [p, title, slug];
-        })));
-
-        let allExperiments = [];
-        let lastErr = null;
-
-        // Attempt to fetch using ciannId first if available
-        const currentCiannId = ciannData?.ciannId || storageCiann?.ciannId || qp.ciannId;
-        if (currentCiannId) {
-          try {
-            const params = new URLSearchParams({ ciannId: currentCiannId });
-            const expRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments?${params.toString()}`);
-            const expData = await expRes.json();
-            if (expRes.ok && expData?.success && Array.isArray(expData.experiments) && expData.experiments.length > 0) {
-              allExperiments = expData.experiments;
-            }
-          } catch (err) {
-            console.warn("Failed to fetch experiments by ciannId:", err);
-          }
+        if (!aeData.success || !Array.isArray(aeData.experiments) || aeData.experiments.length === 0) {
+          throw new Error('No assessed experiments found for this CIAAN. Please complete assessments first.');
         }
 
-        // Try with className + course combinations first, iterating through program candidates if not found yet
-        if (!allExperiments.length) {
-          outer: for (const prog of programCandidates.length ? programCandidates : ['']) {
-            if (!prog) continue; // backend requires program
-            for (const cls of classCandidates) {
-              for (const crs of courseCandidates) {
-                try {
-                  const params = new URLSearchParams({ 
-                    program: prog, 
-                    className: cls, 
-                    course: crs,
-                    ciannId: currentCiannId || '',
-                    semester: ciannData?.semester || storageCiann?.semester || ''
-                  });
-                  const expRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments?${params.toString()}`);
-                  const expData = await expRes.json();
-                  if (expRes.ok && expData?.success && Array.isArray(expData.experiments) && expData.experiments.length > 0) {
-                    allExperiments = expData.experiments;
-                    break outer;
-                  } else {
-                    lastErr = new Error(expData?.message || `No experiments for program=${prog} class=${cls} course=${crs}`);
-                  }
-                } catch (err) {
-                  lastErr = err;
-                }
-              }
-            }
-          }
-        }
+        // Convert assessed experiments to the same shape as curriculum experiments
+        // assessed-experiments returns { id, name } — map to { practicalNo, practicalName }
+        const assessedExps = aeData.experiments.map(e => ({
+          practicalNo: e.id,
+          practicalName: e.name,
+        }));
+        setExperiments(assessedExps);
 
-        // If still not found, try Program+Course only (backend falls back to this)
-        if (!allExperiments.length) {
-          for (const prog of programCandidates.length ? programCandidates : ['']) {
-            if (!prog) continue; // backend requires program
-            try {
-              const params = new URLSearchParams({ program: prog, course: subjectInfo.course });
-              const expRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments?${params.toString()}`);
-              const expData = await expRes.json();
-              if (expRes.ok && expData?.success && Array.isArray(expData.experiments) && expData.experiments.length > 0) {
-                allExperiments = expData.experiments;
-                break;
-              } else {
-                lastErr = new Error(expData?.message || `No experiments found for program=${prog} course=${subjectInfo.course}`);
-              }
-            } catch (err) {
-              lastErr = err;
-            }
-          }
-        }
-
-        if (!allExperiments.length) {
-          throw lastErr || new Error('Experiments not found for the provided subject/course');
-        }
-
-        // Set experiments immediately so UI renders even if history fails
-        setExperiments(allExperiments);
-
-        // Fetch student assessment history (best-effort)
+        // Step 2: Fetch this student's marks (best-effort), filtered by ciannId
         if (studentName) {
           try {
-            const histRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/student-history/${encodeURIComponent(studentName)}`);
+            const histRes = await fetch(
+              `${apiBase}/api/assessments/student-history/${encodeURIComponent(studentName)}`
+            );
             const histData = await histRes.json();
             const existing = histData?.assessments || [];
 
-            // Build map from experimentNumber to existing marks, but ONLY for the current subject context
             const map = {};
             existing.forEach(a => {
-              if (typeof a.experimentNumber === 'number') {
-                // Filter assessments to only include those for the current subject/course context
-                // Check multiple possible course identifiers for robust matching
-                const assessmentCourse = a.course || a.courseName || a.subject || '';
-                const assessmentSubject = a.subjectName || a.subjectCode || a.subject || '';
-                const assessmentCiannId = a.ciannId || '';
-                
-                // Match by course name/code or CIANN ID if available
-                const courseMatches = assessmentCourse && (
-                  assessmentCourse.toLowerCase().includes(course.toLowerCase()) ||
-                  course.toLowerCase().includes(assessmentCourse.toLowerCase())
-                );
-                const subjectMatches = assessmentSubject && (
-                  assessmentSubject.toLowerCase().includes(course.toLowerCase()) ||
-                  course.toLowerCase().includes(assessmentSubject.toLowerCase())
-                );
-                const ciannMatches = assessmentCiannId && ciannData?.ciannId && 
-                  assessmentCiannId === ciannData.ciannId;
-                
-                // Only include marks if they match the current subject context
-                if (courseMatches || subjectMatches || ciannMatches) {
-                  map[a.experimentNumber] = Number(a.marks);
-                  console.log(`Including assessment for exp ${a.experimentNumber}: course match=${courseMatches}, subject match=${subjectMatches}, ciann match=${ciannMatches}`);
-                } else {
-                  console.log(`Filtering out assessment for exp ${a.experimentNumber} from different subject context:`, {
-                    assessmentCourse,
-                    assessmentSubject,
-                    assessmentCiannId,
-                    currentCourse: course,
-                    currentCiannId: ciannData?.ciannId
-                  });
-                }
+              if (typeof a.experimentNumber !== 'number') return;
+
+              // Only include marks that belong to this CIANN
+              const ciannMatches =
+                a.ciannId && ciannData?.ciannId && String(a.ciannId) === String(ciannData.ciannId);
+              // Fallback: match by course name/code
+              const assessmentCourse = (a.course || a.courseName || a.subject || '').toLowerCase();
+              const currentCourse = course.toLowerCase();
+              const courseMatches =
+                currentCourse &&
+                assessmentCourse &&
+                (assessmentCourse.includes(currentCourse) || currentCourse.includes(assessmentCourse));
+
+              // Only include if the experiment was actually assessed (exists in assessedExps)
+              const isAssessedExp = assessedExps.some(e => e.practicalNo === a.experimentNumber);
+
+              if (isAssessedExp && (ciannMatches || courseMatches)) {
+                map[a.experimentNumber] = Number(a.marks);
               }
             });
             setAssessedMap(map);
@@ -271,8 +115,6 @@ export default function StudentWiseAssess() {
             console.warn('Student history fetch failed, continuing without it', histErr);
             setAssessedMap({});
           }
-        } else {
-          setAssessedMap({});
         }
       } catch (e) {
         console.error('Failed to load student-wise assessment data', e);
@@ -283,7 +125,8 @@ export default function StudentWiseAssess() {
     };
 
     loadData();
-  }, [subjectInfo, studentName]);
+  }, [ciannData?.ciannId, studentName, course]);
+
 
   const handleMarksChange = (expNo, value) => {
     const num = value === '' ? '' : Number(value);
@@ -297,35 +140,22 @@ export default function StudentWiseAssess() {
       setSaving(true);
       setError('');
 
-      // Filter experiments to only those that are assessed (either previously or newly assessed)
-      const toSave = experiments.filter(exp => {
-        const markVal = assessedMap[exp.practicalNo];
-        return markVal !== undefined && markVal !== '' && markVal !== null;
-      });
-
-      if (toSave.length === 0) {
-        alert('No new or modified marks to save.');
-        setSaving(false);
-        return;
-      }
-
       // The API expects one experiment at a time currently.
-      for (const exp of toSave) {
-        const markVal = assessedMap[exp.practicalNo];
+      for (const exp of experiments) {
         const payload = {
           studentsMarks: [
             {
               studentName,
               rollNo: studentRollNo,
-              marks: Number(markVal),
+              marks: assessedMap[exp.practicalNo] === '' || assessedMap[exp.practicalNo] == null ? 0 : Number(assessedMap[exp.practicalNo]),
             },
           ],
           experimentId: String(exp.practicalNo),
           experimentName: exp.practicalName,
           batch,
           // persist context so defaulter loads updated marks later
-          program,
-          className,
+          program: ciannData?.department?.name || ciannData?.department?.program || location.state?.program || '',
+          className: ciannData?.class || ciannData?.division || location.state?.className || '',
           course,
           ciannId: ciannData?.ciannId,
         };
@@ -341,8 +171,10 @@ export default function StudentWiseAssess() {
         }
       }
       alert('All marks saved successfully');
-      // Navigate to Studentwise Select after successful save of all experiments
-      navigate('/studentwise-select');
+      // Go back to student selection for the same CIANN
+      navigate('/studentwise-select', {
+        state: { ciannData, availableBatches: [] },
+      });
     } catch (e) {
       console.error('Failed to save', e);
       setError(e.message || 'Failed to save marks');
@@ -387,7 +219,7 @@ export default function StudentWiseAssess() {
             <thead className="table-light">
               <tr>
                 <th style={{ width: '10%', textAlign: 'center' }}>Exp ID</th>
-                <th style={{ width: '55%', textAlign: 'left' }}>Exp Name</th>
+                <th style={{ width: '55%' }}>Exp Name</th>
                 <th style={{ width: '15%', textAlign: 'center' }}>Status</th>
                 <th style={{ width: '20%', textAlign: 'center' }}>Marks (0-25)</th>
               </tr>
@@ -403,7 +235,7 @@ export default function StudentWiseAssess() {
                   return (
                     <tr key={`student-${studentName}-exp-${exp.practicalNo}`}>
                       <td style={{ textAlign: 'center' }}>{exp.practicalNo}</td>
-                      <td style={{ textAlign: 'left' }}>{exp.practicalName}</td>
+                      <td>{exp.practicalName}</td>
                       <td style={{ textAlign: 'center' }}>
                         {isAssessed ? (
                           <span className="badge bg-success">Assessed</span>
@@ -412,23 +244,17 @@ export default function StudentWiseAssess() {
                         )}
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        {isAssessed ? (
-                          <input
-                            type="number"
-                            className="form-control"
-                            min={0}
-                            max={25}
-                            value={assessedMap[exp.practicalNo] ?? ''}
-                            onChange={(e) => handleMarksChange(exp.practicalNo, e.target.value)}
-                            placeholder="Enter marks"
-                            style={{ maxWidth: 120, margin: '0 auto' }}
-                            key={`marks-input-${studentName}-${exp.practicalNo}`}
-                          />
-                        ) : (
-                          <span className="text-muted" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <i className="bi bi-lock-fill"></i> Locked
-                          </span>
-                        )}
+                        <input
+                          type="number"
+                          className="form-control"
+                          min={0}
+                          max={25}
+                          value={assessedMap[exp.practicalNo] ?? ''}
+                          onChange={(e) => handleMarksChange(exp.practicalNo, e.target.value)}
+                          placeholder="Enter marks"
+                          style={{ maxWidth: 120, margin: '0 auto' }}
+                          key={`marks-input-${studentName}-${exp.practicalNo}`}
+                        />
                       </td>
                     </tr>
                   );

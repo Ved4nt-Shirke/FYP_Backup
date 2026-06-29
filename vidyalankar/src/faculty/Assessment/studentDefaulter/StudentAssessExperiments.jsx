@@ -35,13 +35,7 @@ export default function StudentAssessExperiments() {
         const expRes = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/get-experiments`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            ciannId: ciannData?.ciannId,
-            program, 
-            className, 
-            course,
-            semester: ciannData?.semester
-          })
+          body: JSON.stringify({ program, className, course })
         });
         const expData = await expRes.json();
         if (!expData.success) throw new Error(expData.message || 'Failed to fetch experiments');
@@ -137,11 +131,7 @@ export default function StudentAssessExperiments() {
           batch,
           studentsMarks: [
             { studentName: name, rollNo, marks: sm.marks }
-          ],
-          ciannId: ciannData?.ciannId,
-          program: program || ciannData?.department?.name || "",
-          className: className || ciannData?.class || "",
-          course: course || ciannData?.subject?.name || ""
+          ]
         };
         const res = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/assessments/save-marks`, {
           method: 'POST',

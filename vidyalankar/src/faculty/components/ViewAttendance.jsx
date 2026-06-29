@@ -4,43 +4,28 @@ import "./AttendancePanel.css";
 const cardsData = [
   {
     label: "View Theory Attendance",
-    badge: "Theory",
-    description: "Browse and inspect attendance history for regular theory lectures.",
-    icon: "bi-journal-bookmark-fill",
+    icon: "bi-calendar-check",
     path: "/view-attend1",
-    color: "blue",
   },
   {
     label: "View Practical Attendance",
-    badge: "Practical",
-    description: "Browse and inspect batch-wise attendance logs for practical experiments.",
-    icon: "bi-cpu-fill",
+    icon: "bi-calendar-check-fill",
     path: "/view-practical1",
-    color: "emerald",
   },
   {
     label: "View Extra Theory Attendance",
-    badge: "Extra",
-    description: "Inspect student attendance reports for extra theory sessions.",
-    icon: "bi-calendar-plus-fill",
+    icon: "bi-calendar-plus",
     path: "/view-extra-theory-attend",
-    color: "indigo",
   },
   {
     label: "View Extra Practical Attendance",
-    badge: "Extra Lab",
-    description: "Inspect student attendance reports for extra practical labs.",
-    icon: "bi-folder-plus",
+    icon: "bi-calendar-plus-fill",
     path: "/view-extra-practical1",
-    color: "pink",
   },
   {
     label: "View Tutorial Attendance",
-    badge: "Tutorial",
-    description: "Inspect recorded attendance data for tutorials and group sessions.",
-    icon: "bi-chat-left-text-fill",
+    icon: "bi-calendar-plus-fill",
     path: "/view-tutorial-attendance",
-    color: "amber",
   },
 ];
 
@@ -66,25 +51,20 @@ const ViewAttendance = () => {
           <button
             key={card.label}
             type="button"
-            className={`attendance-panel-card theme-${card.color}`}
+            className="attendance-panel-card"
             onClick={() => handleCardClick(card)}
             onKeyDown={(e) =>
               (e.key === "Enter" || e.key === " ") && handleCardClick(card)
             }
           >
-            <div className="attendance-panel-card-body">
-              <div className="attendance-panel-card-header">
-                <span className="attendance-panel-badge">{card.badge}</span>
-                <span className="attendance-panel-icon">
-                  <i className={`bi ${card.icon}`}></i>
-                </span>
-              </div>
+            <div className="attendance-panel-card-top">
+              <span className="attendance-panel-icon">
+                <i className={`bi ${card.icon}`}></i>
+              </span>
               <h3 className="attendance-panel-title">{card.label}</h3>
-              <p className="attendance-panel-desc">{card.description}</p>
             </div>
-            <div className="attendance-panel-action">
-              <span>Continue</span>
-              <i className="bi bi-arrow-right-short"></i>
+            <div className="attendance-panel-footer">
+              Continue <i className="bi bi-arrow-right"></i>
             </div>
           </button>
         ))}
@@ -92,5 +72,4 @@ const ViewAttendance = () => {
     </div>
   );
 };
-
 export default ViewAttendance;

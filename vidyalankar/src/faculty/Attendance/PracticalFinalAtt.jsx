@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import "./PracticalFinalAtt.css";
-import "./FinalAtt.css";
 
 const PracticalFinalAtt = () => {
   const location = useLocation();
@@ -316,7 +315,7 @@ const PracticalFinalAtt = () => {
             <div className="practical-badge">CIAAN ID {ciannId}</div>
           </div>
 
-          <div className="students-panel">
+          <div className="practical-table-container">
             {isLoading ? (
               <div className="practical-loading">Loading students...</div>
             ) : submitError && !students.length ? (
@@ -333,11 +332,11 @@ const PracticalFinalAtt = () => {
                 <h4>No students match the selected filter.</h4>
               </div>
             ) : (
-              <div className="final-students-grid">
+              <div className="practical-students-grid">
                 {filteredStudents.map((student) => (
                   <div
                     key={student.rollNo}
-                    className={`final-student-card ${attendance[student.rollNo] ? "present" : "absent"}`}
+                    className={`practical-student-card ${attendance[student.rollNo] ? "present" : "absent"}`}
                     onClick={() => {
                       setAttendance((prev) => ({
                         ...prev,
@@ -345,13 +344,13 @@ const PracticalFinalAtt = () => {
                       }));
                     }}
                   >
-                    <div className="final-student-header">
-                      <span className="final-roll-badge">
+                    <div className="practical-student-header">
+                      <span className="practical-roll-badge">
                         {student.rollNo}
                       </span>
                       <button
                         type="button"
-                        className={`status-pill status-toggle ${attendance[student.rollNo] ? "present" : "absent"}`}
+                        className={`attendance-toggle ${attendance[student.rollNo] ? "present" : "absent"}`}
                         onClick={(event) => {
                           event.stopPropagation();
                           setAttendance((prev) => ({
@@ -363,13 +362,13 @@ const PracticalFinalAtt = () => {
                         {attendance[student.rollNo] ? "Present" : "Absent"}
                       </button>
                     </div>
-                    <div className="final-student-name">
+                    <div className="practical-student-name">
                       {student.studentName}
                     </div>
-                    <div className="final-student-meta">
+                    <div className="practical-student-meta">
                       Enrollment: {student.enrollmentNo || "N/A"}
                     </div>
-                    <div className="final-student-meta">
+                    <div className="practical-student-meta">
                       Batch: {student.batch || "N/A"}
                     </div>
                   </div>
