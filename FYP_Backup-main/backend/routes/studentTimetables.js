@@ -262,11 +262,18 @@ router.get("/student/current", ensureStudent, async (req, res) => {
       .populate("divisionId", "name")
       .sort({ createdAt: -1 });
 
+    const studentData = {
+      division: student.division || "b",
+      className: student.className || "CO3KA",
+      year: student.year || "First Year"
+    };
+
     if (!timetable) {
       return res.status(200).json({
         success: true,
         visible: false,
         message: "No timetable is published for your division",
+        student: studentData
       });
     }
 
@@ -276,6 +283,7 @@ router.get("/student/current", ensureStudent, async (req, res) => {
         visible: false,
         message: "Timetable will be available after semester end",
         availableFrom: timetable.semesterEndDate,
+        student: studentData
       });
     }
 
@@ -283,6 +291,7 @@ router.get("/student/current", ensureStudent, async (req, res) => {
       success: true,
       visible: true,
       timetable,
+      student: studentData
     });
   } catch (error) {
     console.error("Error fetching student timetable:", error);

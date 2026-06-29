@@ -420,3 +420,56 @@
     display: none;
   }
 }
+
+/* ==========================================================================
+   FOOLPROOF FULL-WIDTH OVERRIDES (Stretches all student portal pages to 100%)
+   ========================================================================== */
+.student-dashboard {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.student-main-content {
+  width: calc(100% - 270px) !important;
+  max-width: calc(100% - 270px) !important;
+  flex: 1 1 auto !important;
+}
+
+.student-page-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Page containers & wrappers across all student portal tabs */
+.student-content-container,
+.practical-exams-container,
+.upload-container,
+.notices-container,
+.ebooks-container,
+.mock-exam-shell,
+.mock-exam-page {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 1024px) {
+  .student-main-content {
+    width: calc(100% - 250px) !important;
+    max-width: calc(100% - 250px) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-main-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
+
