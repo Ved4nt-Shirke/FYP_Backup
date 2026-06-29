@@ -5,6 +5,96 @@ const Student = require('../models/Student');
 const { resolveStudents } = require('../utils/studentHistoryHelper');
 const Experiment = require('../models/Experiment');
 const Ciann = require('../models/Ciann');
+const Department = require('../models/Department');
+const mongoose = require('mongoose');
+
+function getAcademicYearRegex(academicYear) {
+  if (!academicYear) return null;
+  const matches = academicYear.match(/(\d{4})\s*-\s*(\d{2,4})/);
+  if (matches) {
+    const startYear = matches[1];
+    const endYear = matches[2];
+    const shortEndYear = endYear.length === 4 ? endYear.slice(2) : endYear;
+    const longEndYear = endYear.length === 2 ? (startYear.slice(0, 2) + endYear) : endYear;
+    const pattern = `^${startYear}\\s*-\\s*(?:${shortEndYear}|${longEndYear})$`;
+    return new RegExp(pattern, "i");
+  }
+  const escaped = academicYear.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^${escaped}$`, "i");
+}
+
+async function buildStudentQuery({ batch, ciannId, division }) {
+  const query = { batch: batch };
+  
+  const resolvedDivision = await resolveDivisionFromQuery({ ciannId, division });
+  if (resolvedDivision) {
+    query.division = {
+      $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
+    };
+  }
+
+  if (ciannId) {
+    const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
+    if (ciann) {
+      if (ciann.academicYear) {
+        const ayRegex = getAcademicYearRegex(ciann.academicYear);
+        if (ayRegex) {
+          query.academicYear = ayRegex;
+        } else {
+          query.academicYear = ciann.academicYear;
+        }
+      }
+      if (ciann.department) {
+        const ciannDeptId = ciann.department._id || ciann.department.id;
+        let resolvedDeptId = ciannDeptId;
+        
+        try {
+          const deptDoc = await Department.findOne({
+            $or: [
+              { _id: mongoose.isValidObjectId(ciannDeptId) ? ciannDeptId : new mongoose.Types.ObjectId() },
+              { name: { $regex: new RegExp(`^${escapeRegex(ciann.department.name)}$`, 'i') } },
+              { code: { $regex: new RegExp(`^${escapeRegex(ciann.department.code || ciann.department.name)}$`, 'i') } }
+            ]
+          });
+          if (deptDoc) {
+            resolvedDeptId = deptDoc._id;
+          }
+        } catch (err) {
+          console.warn('[buildStudentQuery] Failed to resolve department by name/code:', err.message);
+        }
+        
+        query.departmentId = resolvedDeptId;
+      }
+    }
+  }
+  return query;
+}
+
+
+
+// Startup migration: Set ciannId to 0 for older assessments where it is missing,
+// and drop the old unique index to support the new compound unique index.
+const runMigration = async () => {
+  try {
+    const updateResult = await Assessment.updateMany(
+      { ciannId: { $exists: false } },
+      { $set: { ciannId: 0 } }
+    );
+    if (updateResult.modifiedCount > 0) {
+      console.log(`Migration: Set ciannId to 0 for ${updateResult.modifiedCount} old assessments.`);
+    }
+
+    try {
+      await Assessment.collection.dropIndex('experimentNumber_1_studentName_1');
+      console.log('Successfully dropped old unique index: experimentNumber_1_studentName_1');
+    } catch (dropErr) {
+      console.log('Info: Old unique index experimentNumber_1_studentName_1 drop handled (it may not exist or is already dropped).');
+    }
+  } catch (err) {
+    console.error('Error during startup migration/index setup:', err);
+  }
+};
+runMigration();
 
 const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -32,102 +122,114 @@ router.get('/all-experiments', async (req, res) => {
   }
 });
 
+// Helper function to robustly locate experiments document
+const findExperiments = async (params) => {
+  const { ciannId, program, className, course, semester } = params;
+  
+  let resolvedProgram = program;
+  let resolvedCourse = course;
+  let resolvedClass = className;
+  let resolvedSemester = semester;
+  
+  if (ciannId) {
+    const numericCiannId = parseInt(ciannId, 10);
+    if (!Number.isNaN(numericCiannId)) {
+      const ciann = await Ciann.findOne({ ciannId: numericCiannId });
+      if (ciann) {
+        resolvedProgram = ciann.department?.name || resolvedProgram;
+        resolvedCourse = ciann.subject?.name || resolvedCourse;
+        resolvedSemester = ciann.semester || resolvedSemester;
+        resolvedClass = ciann.class || resolvedClass;
+      }
+    }
+  }
+  
+  if (!resolvedProgram || !resolvedCourse) {
+    return null;
+  }
+  
+  const p = escapeRegex(resolvedProgram);
+  const s = escapeRegex(resolvedCourse);
+  
+  let result = null;
+  
+  // 1) Match strict: program + course + className
+  if (resolvedClass) {
+    result = await Experiment.findOne({
+      program: { $regex: new RegExp(`^${p}$`, 'i') },
+      course: { $regex: new RegExp(`^${s}$`, 'i') },
+      className: { $regex: new RegExp(`^${escapeRegex(resolvedClass)}$`, 'i') }
+    });
+  }
+  
+  // 2) If not found, try matching by resolvedSemester if available
+  if (!result && resolvedSemester) {
+    result = await Experiment.findOne({
+      program: { $regex: new RegExp(`^${p}$`, 'i') },
+      course: { $regex: new RegExp(`^${s}$`, 'i') },
+      className: { $regex: new RegExp(`^Sem(ester)?\\s*${escapeRegex(resolvedSemester)}$`, 'i') }
+    });
+  }
+  
+  // 3) Try extracting semester from resolvedClass (e.g. "IF4I" or "Sem 4" or "4")
+  if (!result && resolvedClass) {
+    const semNum = String(resolvedClass).match(/\d+/)?.[0];
+    if (semNum) {
+      result = await Experiment.findOne({
+        program: { $regex: new RegExp(`^${p}$`, 'i') },
+        course: { $regex: new RegExp(`^${s}$`, 'i') },
+        className: { $regex: new RegExp(`^Sem(ester)?\\s*${semNum}$`, 'i') }
+      });
+    }
+  }
+  
+  // 4) Fallback to program + course only
+  if (!result) {
+    result = await Experiment.findOne({
+      program: { $regex: new RegExp(`^${p}$`, 'i') },
+      course: { $regex: new RegExp(`^${s}$`, 'i') }
+    });
+  }
+  
+  return result;
+};
+
 // GET experiments by subject details (GET version with query parameters)
 router.get('/get-experiments', async (req, res) => {
   try {
-    const { program, className, course } = req.query;
+    const { ciannId, program, className, course, semester } = req.query;
     
-    console.log('GET: Searching for experiments with:', { program, className, course });
+    console.log('GET: Searching for experiments with:', { ciannId, program, className, course, semester });
     
-    if (!program || !className || !course) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Program, className, and course query parameters are required' 
-      });
-    }
-
-    const result = await Experiment.findOne({ program, className, course });
-    console.log('GET: Database result:', result);
+    const result = await findExperiments({ ciannId, program, className, course, semester });
+    console.log('GET: Database result:', result ? 'Found' : 'Not Found');
     
-    if (!result) {
-      // Strict fallback: anchored, case-insensitive AND match
-      const p = (program || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const c = (className || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const s = (course || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      let strict = await Experiment.findOne({
-        program: { $regex: `^${p}$`, $options: 'i' },
-        className: { $regex: `^${c}$`, $options: 'i' },
-        course: { $regex: `^${s}$`, $options: 'i' },
-      });
-      
-      // Fallback: Program + Course only (ignore className)
-      if (!strict) {
-        strict = await Experiment.findOne({
-          program: { $regex: `^${p}$`, $options: 'i' },
-          course: { $regex: `^${s}$`, $options: 'i' },
-        });
-      }
-      
-      console.log('GET: Strict search result:', strict);
-      return res.json({ 
-        success: true, 
-        experiments: strict ? strict.experiments : [],
-        message: strict ? 'Found with anchored search' : 'No experiments found'
-      });
-    }
-
-    res.json({ success: true, experiments: result.experiments });
+    res.json({ 
+      success: true, 
+      experiments: result ? result.experiments : [],
+      message: result ? 'Experiments found' : 'No experiments found'
+    });
   } catch (error) {
     console.error('GET: Error fetching experiments:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-
+ 
 // POST experiments by subject details
 router.post('/get-experiments', async (req, res) => {
   try {
-    const { program, className, course } = req.body;
+    const { ciannId, program, className, course, semester } = req.body;
     
-    console.log('Searching for experiments with:', { program, className, course });
+    console.log('Searching for experiments with:', { ciannId, program, className, course, semester });
     
-    if (!program || !className || !course) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Program, className, and course are required' 
-      });
-    }
-
-    const result = await Experiment.findOne({ program, className, course });
-    console.log('Database result:', result);
+    const result = await findExperiments({ ciannId, program, className, course, semester });
+    console.log('Database result:', result ? 'Found' : 'Not Found');
     
-    if (!result) {
-      // Strict fallback: anchored, case-insensitive AND match
-      const p = (program || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const c = (className || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const s = (course || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      let strict = await Experiment.findOne({
-        program: { $regex: `^${p}$`, $options: 'i' },
-        className: { $regex: `^${c}$`, $options: 'i' },
-        course: { $regex: `^${s}$`, $options: 'i' },
-      });
-
-      // Fallback: Program + Course only (ignore className)
-      if (!strict) {
-        strict = await Experiment.findOne({
-          program: { $regex: `^${p}$`, $options: 'i' },
-          course: { $regex: `^${s}$`, $options: 'i' },
-        });
-      }
-      console.log('Strict search result:', strict);
-      
-      return res.json({ 
-        success: true, 
-        experiments: strict ? strict.experiments : [],
-        message: strict ? 'Found with anchored search' : 'No experiments found'
-      });
-    }
-
-    res.json({ success: true, experiments: result.experiments });
+    res.json({ 
+      success: true, 
+      experiments: result ? result.experiments : [],
+      message: result ? 'Experiments found' : 'No experiments found'
+    });
   } catch (error) {
     console.error('Error fetching experiments:', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -226,8 +328,21 @@ router.post('/save-marks', async (req, res) => {
         const { studentName, rollNo, marks } = studentMark;
         console.log(`Processing student: ${studentName}, marks: ${marks}`);
 
+        const resolvedCiannId = ciannId ? Number(ciannId) : 0;
+
+        // If marks is empty string, null, or undefined, delete the assessment record if it exists
+        if (marks === "" || marks === null || marks === undefined) {
+          await Assessment.deleteOne({
+            experimentNumber: experimentNumber,
+            studentName: studentName,
+            ciannId: resolvedCiannId
+          });
+          continue;
+        }
+
         // Validate marks range
-        if (marks < 0 || marks > 25) {
+        const parsedMarks = parseInt(marks, 10);
+        if (isNaN(parsedMarks) || parsedMarks < 0 || parsedMarks > 25) {
           console.log(`Invalid marks for ${studentName}: ${marks}`);
           errors.push(`Invalid marks for ${studentName}: ${marks}. Marks should be between 0-25`);
           continue;
@@ -246,19 +361,20 @@ router.post('/save-marks', async (req, res) => {
         const assessment = await Assessment.findOneAndUpdate(
           {
             experimentNumber: experimentNumber,
-            studentName: studentName
+            studentName: studentName,
+            ciannId: resolvedCiannId
           },
           {
             experimentName: experimentName,
             experimentNumber: experimentNumber,
             studentName: studentName,
             rollNo: rollNo || studentExists.rollNo || 'N/A',
-            marks: parseInt(marks),
+            marks: parsedMarks,
             // store context so defaulter and studentwise can load reliably
             program: program || '',
             className: classCtx || '',
             course: course || '',
-            ciannId: ciannId || undefined,
+            ciannId: resolvedCiannId,
             batch: batch || undefined
           },
           {
@@ -359,35 +475,43 @@ router.get('/assessed-experiments', async (req, res) => {
   try {
     const { batch, ciannId } = req.query;
     
-    // First, get all students from the specified batch to filter assessments
-    let batchStudents = [];
-    const matchQuery = {};
+    let matchStage = {
+      marks: { $gt: 0 } // Ignore fake/default assessments with 0 marks
+    };
 
+    // 1. Resolve batch studentNames if batch is provided
     if (batch) {
       const Student = require('../models/Student');
-      batchStudents = await Student.find({ batch: batch }).select('studentName');
+      const batchStudents = await Student.find({ batch: batch }).select('studentName');
       const studentNames = batchStudents.map(student => student.studentName);
-      
       if (studentNames.length === 0) {
         return res.json({ success: true, experiments: [], ciannIds: [] });
       }
-      
-      matchQuery.studentName = { $in: studentNames };
+      matchStage.studentName = { $in: studentNames };
     }
 
+    // 2. Filter by ciannId or fallback subject/class context
     if (ciannId) {
-      // Support both numeric and string ciannId stored in assessments
-      const numericId = Number(ciannId);
-      if (!isNaN(numericId)) {
-        matchQuery.$or = [{ ciannId: numericId }, { ciannId: ciannId }];
+      const numericCiannId = parseInt(ciannId, 10);
+      const ciann = await Ciann.findOne({ ciannId: numericCiannId });
+      if (ciann) {
+        matchStage.$or = [
+          { ciannId: numericCiannId },
+          {
+            course: { $regex: new RegExp(`^${escapeRegex(ciann.subject?.name)}$`, 'i') },
+            className: { $regex: new RegExp(`^${escapeRegex(ciann.class)}$`, 'i') }
+          }
+        ];
       } else {
-        matchQuery.ciannId = ciannId;
+        matchStage.ciannId = numericCiannId;
       }
     }
-    
-    // Get distinct experiment numbers and names from assessments for this batch and CIANN
+
+    // Get distinct experiment numbers and names from assessments
     const assessedExperiments = await Assessment.aggregate([
-      { $match: matchQuery },
+      {
+        $match: matchStage
+      },
       {
         $group: {
           _id: {
@@ -403,13 +527,15 @@ router.get('/assessed-experiments', async (req, res) => {
           name: "$_id.experimentName"
         }
       },
-      { $sort: { id: 1 } }
+      {
+        $sort: { id: 1 }
+      }
     ]);
 
     // Also return distinct ciannIds that have assessments (for CIANN filtering)
     let assessedCiannIds = [];
     if (!ciannId) {
-      const ciannIdResults = await Assessment.distinct('ciannId', batch ? matchQuery : {});
+      const ciannIdResults = await Assessment.distinct('ciannId', batch ? { studentName: matchStage.studentName } : {});
       assessedCiannIds = ciannIdResults.filter(Boolean);
     }
 
@@ -420,6 +546,53 @@ router.get('/assessed-experiments', async (req, res) => {
   }
 });
 
+// GET all assessed experiments for a CIAAN (grouped by batch)
+router.get('/all-assessed-experiments', async (req, res) => {
+  try {
+    const { ciannId } = req.query;
+    if (!ciannId) {
+      return res.status(400).json({ success: false, message: 'ciannId is required' });
+    }
+
+    const numericCiannId = parseInt(ciannId, 10);
+    if (Number.isNaN(numericCiannId)) {
+      return res.status(400).json({ success: false, message: 'Invalid ciannId' });
+    }
+
+    const assessments = await Assessment.aggregate([
+      {
+        $match: { ciannId: numericCiannId, marks: { $gt: 0 } }
+      },
+      {
+        $group: {
+          _id: {
+            batch: "$batch",
+            experimentNumber: "$experimentNumber",
+            experimentName: "$experimentName"
+          },
+          studentCount: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          batch: { $ifNull: ["$_id.batch", "All"] },
+          id: "$_id.experimentNumber",
+          name: "$_id.experimentName",
+          studentCount: "$studentCount"
+        }
+      },
+      {
+        $sort: { batch: 1, id: 1 }
+      }
+    ]);
+
+    res.json({ success: true, experiments: assessments });
+  } catch (error) {
+    console.error('Error fetching all assessed experiments:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 // GET students by batch for assessment
 router.get('/students-by-batch', async (req, res) => {
@@ -434,13 +607,7 @@ router.get('/students-by-batch', async (req, res) => {
     }
 
     const resolvedDivision = await resolveDivisionFromQuery({ ciannId, division });
-    const query = { batch: batch };
-
-    if (resolvedDivision) {
-      query.division = {
-        $regex: new RegExp(`^${escapeRegex(resolvedDivision)}$`, 'i'),
-      };
-    }
+    const query = await buildStudentQuery({ batch, ciannId, division });
 
     const students = await Student.find(query)
       .select('rollNo studentName batch')
@@ -530,7 +697,7 @@ router.get('/batch-statistics', async (req, res) => {
       });
     }
 
-    let query = { studentName: { $in: studentNames } };
+    let query = { studentName: { $in: studentNames }, marks: { $gt: 0 } };
     if (experimentNumber) {
       query.experimentNumber = parseInt(experimentNumber);
     }
@@ -550,7 +717,7 @@ router.get('/batch-statistics', async (req, res) => {
     // Get experiment-wise statistics
     const experimentStats = await Assessment.aggregate([
       {
-        $match: { studentName: { $in: studentNames } }
+        $match: { studentName: { $in: studentNames }, marks: { $gt: 0 } }
       },
       {
         $group: {
@@ -599,12 +766,11 @@ router.get('/batch-statistics', async (req, res) => {
   }
 });
 
-// GET assessment data by batch for viewing
-router.get('/batch/:batch', async (req, res) => {
+// GET batch-wise assessment statistics (URL format: /statistics/:batch)
+router.get('/statistics/:batch', async (req, res) => {
   try {
     const { batch } = req.params;
-    
-    console.log('Fetching assessment data for batch:', batch);
+    const { ciannId } = req.query; // optional ciannId
     
     if (!batch) {
       return res.status(400).json({ 
@@ -614,9 +780,118 @@ router.get('/batch/:batch', async (req, res) => {
     }
 
     // Get all students in the batch
-    const batchStudents = await Student.find({ batch: batch })
-      .select('rollNo studentName batch')
-      .lean();
+    const batchStudents = await Student.find({ batch: batch }).select('studentName rollNo');
+    const studentNames = batchStudents.map(s => s.studentName);
+    
+    if (studentNames.length === 0) {
+      return res.json({ 
+        success: true, 
+        statistics: {
+          batch: batch,
+          totalAssessments: 0,
+          totalStudentAssessments: 0,
+          averageMarks: 0,
+          experimentsAssessed: []
+        }
+      });
+    }
+
+    let query = { studentName: { $in: studentNames }, marks: { $gt: 0 } };
+    
+    // Filter by ciannId if provided to make it subject-specific
+    if (ciannId) {
+      const numericCiannId = parseInt(ciannId, 10);
+      if (!isNaN(numericCiannId)) {
+        query.ciannId = numericCiannId;
+      }
+    }
+
+    // Get assessments for this batch
+    const assessments = await Assessment.find(query);
+    
+    // Calculate statistics
+    const assessedStudentNames = [...new Set(assessments.map(a => a.studentName))];
+    const assessedStudentsCount = assessedStudentNames.length;
+    
+    const totalMarks = assessments.reduce((sum, a) => sum + a.marks, 0);
+    const averageMarks = assessments.length > 0 ? (totalMarks / assessments.length).toFixed(2) : 0;
+
+    // Get experiment-wise statistics
+    const matchStage = { studentName: { $in: studentNames }, marks: { $gt: 0 } };
+    if (ciannId) {
+      const numericCiannId = parseInt(ciannId, 10);
+      if (!isNaN(numericCiannId)) {
+        matchStage.ciannId = numericCiannId;
+      }
+    }
+
+    const experimentStats = await Assessment.aggregate([
+      {
+        $match: matchStage
+      },
+      {
+        $group: {
+          _id: {
+            experimentNumber: "$experimentNumber",
+            experimentName: "$experimentName"
+          },
+          studentsCount: { $sum: 1 },
+          averageMarks: { $avg: "$marks" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          experimentId: "$_id.experimentNumber",
+          experimentName: "$_id.experimentName",
+          studentsCount: 1,
+          averageMarks: { $round: ["$averageMarks", 2] }
+        }
+      },
+      {
+        $sort: { experimentId: 1 }
+      }
+    ]);
+
+    res.json({ 
+      success: true, 
+      statistics: {
+        batch: batch,
+        totalAssessments: assessments.length,
+        totalStudentAssessments: assessedStudentsCount,
+        averageMarks: parseFloat(averageMarks),
+        experimentsAssessed: experimentStats
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching batch statistics:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET assessment data by batch for viewing
+router.get('/batch/:batch', async (req, res) => {
+  try {
+    const { batch } = req.params;
+    const { ciannId } = req.query;
+    
+    console.log('Fetching assessment data for batch:', batch, 'ciannId:', ciannId);
+    
+    if (!batch) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Batch parameter is required' 
+      });
+    }
+
+    // Get all students in the batch/division/academic year/department
+    let batchStudents = [];
+    if (batch) {
+      const query = await buildStudentQuery({ batch, ciannId });
+      batchStudents = await Student.find(query)
+        .select('rollNo studentName batch')
+        .lean();
+    }
 
     batchStudents.sort((a, b) => {
       const aRoll = String(a.rollNo || "").trim();
@@ -635,10 +910,28 @@ router.get('/batch/:batch', async (req, res) => {
     const studentNames = batchStudents.map(s => s.studentName);
     console.log('Found students:', studentNames);
 
-    // Get all assessments for students in this batch
-    const assessments = await Assessment.find({ 
+    const query = { 
       studentName: { $in: studentNames } 
-    }).sort({ studentName: 1, experimentNumber: 1 });
+    };
+
+    if (ciannId) {
+      const numericCiannId = parseInt(ciannId, 10);
+      const ciann = await Ciann.findOne({ ciannId: numericCiannId });
+      if (ciann) {
+        query.$or = [
+          { ciannId: numericCiannId },
+          {
+            course: { $regex: new RegExp(`^${escapeRegex(ciann.subject?.name)}$`, 'i') },
+            className: { $regex: new RegExp(`^${escapeRegex(ciann.class)}$`, 'i') }
+          }
+        ];
+      } else {
+        query.ciannId = numericCiannId;
+      }
+    }
+
+    // Get all assessments for students in this batch
+    const assessments = await Assessment.find(query).sort({ studentName: 1, experimentNumber: 1 });
 
     console.log('Found assessments:', assessments.length);
 
@@ -756,7 +1049,7 @@ router.post('/by-students', async (req, res) => {
 router.get('/edit-data/:experimentId', async (req, res) => {
   try {
     const { experimentId } = req.params;
-    const { batch } = req.query;
+    const { batch, ciannId } = req.query;
 
     if (!experimentId) {
       return res.status(400).json({ 
@@ -765,57 +1058,100 @@ router.get('/edit-data/:experimentId', async (req, res) => {
       });
     }
 
-    let assessments;
-    
+    // 1. Fetch all students in the batch
+    let batchStudents = [];
     if (batch) {
-      // Filter by batch: first get students from the batch, then filter assessments
-      const Student = require('../models/Student');
-      const batchStudents = await Student.find({ batch: batch }).select('studentName');
-      const studentNames = batchStudents.map(student => student.studentName);
-      
-      if (studentNames.length === 0) {
-        return res.json({ 
-          success: false, 
-          message: 'No students found for this batch' 
-        });
-      }
-      
-      assessments = await Assessment.find({ 
-        experimentNumber: parseInt(experimentId),
-        studentName: { $in: studentNames }
-      }).sort({ studentName: 1 });
-    } else {
-      // Get all assessments for this experiment
-      assessments = await Assessment.find({ 
-        experimentNumber: parseInt(experimentId) 
-      }).sort({ studentName: 1 });
+      const query = await buildStudentQuery({ batch, ciannId });
+      batchStudents = await Student.find(query).select('studentName rollNo').lean();
     }
 
-    if (assessments.length === 0) {
+    if (batchStudents.length === 0) {
       return res.json({ 
         success: false, 
-        message: 'No assessment data found for this experiment and batch' 
+        message: 'No students found for this batch' 
       });
     }
 
-    // Get experiment info from first assessment
-    const experimentInfo = {
-      id: assessments[0].experimentNumber,
-      name: assessments[0].experimentName
+    // 2. Fetch existing assessments for this batch and experiment
+    const studentNames = batchStudents.map(student => student.studentName);
+    const query = { 
+      experimentNumber: parseInt(experimentId),
+      studentName: { $in: studentNames }
     };
+    
+    if (ciannId) {
+      const numericCiannId = parseInt(ciannId, 10);
+      const ciann = await Ciann.findOne({ ciannId: numericCiannId });
+      if (ciann) {
+        query.$or = [
+          { ciannId: numericCiannId },
+          {
+            course: { $regex: new RegExp(`^${escapeRegex(ciann.subject?.name)}$`, 'i') },
+            className: { $regex: new RegExp(`^${escapeRegex(ciann.class)}$`, 'i') }
+          }
+        ];
+      } else {
+        query.ciannId = numericCiannId;
+      }
+    }
 
-    // Transform assessments to student format
-    const students = assessments.map(assessment => ({
-      _id: assessment._id,
-      rollNo: assessment.rollNo || 'N/A',
-      studentName: assessment.studentName,
-      marks: assessment.marks
-    }));
+    const assessments = await Assessment.find(query);
+
+    // 3. Map assessments and experiment info
+    const assessmentMap = {};
+    const experimentNameMap = {};
+    assessments.forEach(a => {
+      assessmentMap[a.studentName] = a.marks;
+      if (a.experimentName) {
+        experimentNameMap[a.experimentName] = (experimentNameMap[a.experimentName] || 0) + 1;
+      }
+    });
+
+    let expName = `Experiment ${experimentId}`;
+    const nameEntries = Object.entries(experimentNameMap);
+    if (nameEntries.length > 0) {
+      nameEntries.sort((a, b) => b[1] - a[1]);
+      expName = nameEntries[0][0];
+    } else {
+      if (ciannId) {
+        const ciann = await Ciann.findOne({ ciannId: Number(ciannId) });
+        if (ciann && ciann.subject?.code) {
+          const expDoc = await Experiment.findOne({ 
+            courseCode: ciann.subject.code,
+            practicalNo: parseInt(experimentId)
+          });
+          if (expDoc && expDoc.practicalName) {
+            expName = expDoc.practicalName;
+          }
+        }
+      }
+    }
+
+    // 4. Build students list for edit page containing all students in the batch
+    const studentsList = batchStudents.map(student => {
+      const existingMark = assessmentMap[student.studentName];
+      return {
+        _id: student._id,
+        rollNo: student.rollNo || 'N/A',
+        studentName: student.studentName,
+        marks: existingMark !== undefined ? existingMark : '' // Blank if not assessed
+      };
+    });
+
+    // 5. Sort students strictly by roll number
+    studentsList.sort((a, b) => {
+      const aRoll = String(a.rollNo || "").trim();
+      const bRoll = String(b.rollNo || "").trim();
+      return aRoll.localeCompare(bRoll, undefined, { numeric: true, sensitivity: 'base' });
+    });
 
     res.json({ 
       success: true, 
-      experiment: experimentInfo,
-      students: students
+      experiment: {
+        id: parseInt(experimentId),
+        name: expName
+      },
+      students: studentsList
     });
   } catch (error) {
     console.error('Error fetching edit data:', error);

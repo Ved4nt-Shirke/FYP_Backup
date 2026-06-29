@@ -8,6 +8,8 @@ const Notification = require("../models/Notification");
 const { authenticate } = require("../middleware/auth");
 const checkCiannFreeze = require("../middleware/checkFreeze");
 
+const escapeRegex = (string) => String(string || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 // All CIANN routes require authentication to scope data per faculty
 router.use(authenticate);
 
@@ -575,6 +577,50 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const filter = buildScopedFilter(req.user);
+
+    const { all, academicYear } = req.query;
+    if (academicYear) {
+      try {
+        const matches = academicYear.match(/(\d{4})\s*-\s*(\d{2,4})/);
+        let ayFilter;
+        if (matches) {
+          const startYear = matches[1];
+          const endYear = matches[2];
+          const shortEndYear = endYear.length === 4 ? endYear.slice(2) : endYear;
+          const longEndYear = endYear.length === 2 ? (startYear.slice(0, 2) + endYear) : endYear;
+          const pattern = `^${startYear}\\s*-\\s*(?:${shortEndYear}|${longEndYear})$`;
+          ayFilter = { $regex: new RegExp(pattern, "i") };
+        } else {
+          ayFilter = { $regex: new RegExp(`^${escapeRegex(academicYear)}$`, "i") };
+        }
+        
+        filter.$and = filter.$and || [];
+        filter.$and.push({ academicYear: ayFilter });
+      } catch (err) {
+        console.error("Failed to apply academicYear filter:", err.message);
+      }
+    } else if (all !== "true") {
+      // Filter by active academic year by default
+      try {
+        const AcademicYear = require("../models/AcademicYear");
+        const activeYear = await AcademicYear.findOne({
+          college: req.user.college,
+          status: "active",
+        });
+        if (activeYear) {
+          filter.$and = filter.$and || [];
+          filter.$and.push({
+            $or: [
+              { academicYearRef: activeYear._id },
+              { academicYear: { $regex: new RegExp(`^${escapeRegex(activeYear.name)}$`, "i") } }
+            ]
+          });
+        }
+      } catch (ayErr) {
+        console.error("Failed to filter CIANNs by active academic year:", ayErr.message);
+      }
+    }
+
     let cianns = await Ciann.find(filter)
       .populate("owner", "username role")
       .populate("sharedWith.user", "username role")
