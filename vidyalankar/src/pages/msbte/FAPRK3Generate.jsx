@@ -51,7 +51,7 @@ const FAPRK3Generate = () => {
     setError("");
 
     if (!CiaanData) {
-      setError("Please select a Ciaan first.");
+      setError("Please Select a CIAAN first.");
       return;
     }
 
@@ -136,7 +136,7 @@ const FAPRK3Generate = () => {
               className="btn btn-outline-secondary"
               onClick={() => navigate("/msbte/fa-pr-k3/Ciaans")}
             >
-              Select Ciaan First
+              Select CIAAN First
             </button>
           </div>
         )}

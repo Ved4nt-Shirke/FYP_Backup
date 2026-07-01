@@ -16,7 +16,7 @@ const K7CiaanSelection = () => {
       try {
         const res = await axios.get("/Ciaans");
         if (Array.isArray(res.data)) {
-          // Sort by Ciaan ID descending
+          // Sort by CIAAN ID descending
           setCiaans(res.data.sort((a, b) => b.CiaanId - a.CiaanId));
         }
       } catch (err) {

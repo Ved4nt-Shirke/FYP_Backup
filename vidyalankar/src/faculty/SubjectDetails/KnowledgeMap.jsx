@@ -20,10 +20,10 @@ export default function KnowledgeMap() {
       setLoading(true);
       setError(null);
 
-      // Resolve Ciaan Data
+      // Resolve CIAAN Data
       const stored = sessionStorage.getItem("currentCiaanData") || localStorage.getItem("CiaanData");
       if (!stored) {
-        setError("No active Ciaan session found.");
+        setError("No active CIAAN session found.");
         return;
       }
 

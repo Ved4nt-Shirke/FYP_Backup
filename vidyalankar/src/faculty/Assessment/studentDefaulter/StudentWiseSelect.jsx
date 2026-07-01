@@ -92,7 +92,7 @@ export default function StudentWiseSelect() {
 
         {CiaanData && (
           <div className="alert alert-info">
-            <strong>Ciaan ID:</strong> {CiaanData.CiaanId} |{' '}
+            <strong>CIAAN ID:</strong> {CiaanData.CiaanId} |{' '}
             <strong>Subject:</strong> {CiaanData.subject?.name} ({CiaanData.subject?.code}) |{' '}
             <strong>Division:</strong> {CiaanData.division}
           </div>

@@ -17,7 +17,7 @@ const CiaanDetailPage = () => {
 
   if (!CiaanData || !CiaanData.CiaanId) {
     return (
-      <p>No CIAAN data to display. Please select a CIAAN from the Edit page.</p>
+      <p>No CIAAN data to display. Please Select a CIAAN from the Edit page.</p>
     );
   }
 

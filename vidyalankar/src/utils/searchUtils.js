@@ -72,7 +72,7 @@ export const performSearch = async (query) => {
         .map(record => ({
           id: `theory-${record._id}`,
           title: record.topic,
-          subtitle: `Ciaan ID: ${record.CiaanId} | Date: ${record.date}`,
+          subtitle: `CIAAN ID: ${record.CiaanId} | Date: ${record.date}`,
           category: 'Theory Attendance',
           type: 'attendance',
           subtype: 'theory',
@@ -96,7 +96,7 @@ export const performSearch = async (query) => {
         .map(record => ({
           id: `practical-${record._id}`,
           title: record.topic,
-          subtitle: `Ciaan ID: ${record.CiaanId} | Date: ${record.date}`,
+          subtitle: `CIAAN ID: ${record.CiaanId} | Date: ${record.date}`,
           category: 'Practical Attendance',
           type: 'attendance',
           subtype: 'practical',
@@ -120,7 +120,7 @@ export const performSearch = async (query) => {
         .map(record => ({
           id: `tutorial-${record._id}`,
           title: record.Topic,
-          subtitle: `Ciaan ID: ${record.CiaanId} | Date: ${record.actualDate}`,
+          subtitle: `CIAAN ID: ${record.CiaanId} | Date: ${record.actualDate}`,
           category: 'Tutorial Attendance',
           type: 'attendance',
           subtype: 'tutorial',

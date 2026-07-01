@@ -4,7 +4,7 @@ import AttendanceCiaanSelector from "../AttendanceCiannSelector";
 const ViewExtraPractical1 = () => (
   <AttendanceCiaanSelector
     title="View Extra Practical Attendance"
-    subtitle="Select a Ciaan to continue with extra practical attendance view."
+    subtitle="Select a CIAAN to continue with extra practical attendance view."
     iconClass="bi-eye"
     continueLabel="Select Batch"
     navigateTo="/view-extra-practical2"

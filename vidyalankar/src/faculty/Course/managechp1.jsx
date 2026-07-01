@@ -12,7 +12,7 @@ const ManageChapters1 = () => {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
 
-  // Ciaan data
+  // CIAAN data
   const [Ciaans, setCiaans] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [courses, setCourses] = useState([]);

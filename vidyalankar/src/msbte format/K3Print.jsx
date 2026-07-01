@@ -204,7 +204,7 @@ const K3Print = () => {
             className="btn btn-success"
             onClick={() => navigate("/msbte/k3")}
           >
-            Back to Ciaan list
+            Back to CIAAN list
           </button>
         </div>
       </div>

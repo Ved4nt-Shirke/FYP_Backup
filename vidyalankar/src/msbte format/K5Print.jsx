@@ -167,9 +167,9 @@ const K5Print = () => {
       <div className="k5-page">
         <div className="k5-card">
           <h3>Missing Selection</h3>
-          <p className="k5-error">Please select a Ciaan first.</p>
+          <p className="k5-error">Please Select a CIAAN first.</p>
           <button className="btn btn-success" onClick={() => navigate("/msbte/k5")}>
-            Back to Ciaan list
+            Back to CIAAN list
           </button>
         </div>
       </div>

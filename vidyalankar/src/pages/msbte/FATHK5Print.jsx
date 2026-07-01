@@ -136,7 +136,7 @@ const FATHK5Print = () => {
       <div className="k5-page">
         <div className="k5-card">
           <h3>Missing Ciaan Selection</h3>
-          <p className="k5-error">Please select a Ciaan first for FA-TH-K5.</p>
+          <p className="k5-error">Please Select a CIAAN first for FA-TH-K5.</p>
           <button
             className="btn btn-success"
             onClick={() => navigate("/msbte/fa-th-k5/Ciaans")}

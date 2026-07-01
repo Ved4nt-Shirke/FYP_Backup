@@ -165,7 +165,7 @@ const WeekwisePlan = ({
       .join(", ");
   };
 
-  // Fetch experiments based on Ciaan data
+  // Fetch experiments based on CIAAN data
   useEffect(() => {
     const fetchExperiments = async () => {
       if (!CiaanData) return;

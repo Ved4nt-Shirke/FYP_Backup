@@ -138,7 +138,7 @@ const CiaanCollaboratorsModal = ({ CiaanData, onClose, onUpdate }) => {
                 Ciaan Collaboration Panel
               </h5>
               <small className="text-light opacity-75">
-                Ciaan ID: {CiaanData.CiaanId} | Subject: {CiaanData.subject?.name} ({CiaanData.subject?.code})
+                CIAAN ID: {CiaanData.CiaanId} | Subject: {CiaanData.subject?.name} ({CiaanData.subject?.code})
               </small>
             </div>
             <button type="button" className="btn-close btn-close-white" onClick={onClose} aria-label="Close"></button>

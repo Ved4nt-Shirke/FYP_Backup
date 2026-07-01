@@ -304,7 +304,7 @@ const K7ReportSelector = () => {
             <div className="row g-3">
               <div className="col-12">
                 <label className="form-label" style={{ fontWeight: "600", color: "#4f46e5" }}>
-                  Select Ciaan Course (Auto-populates parameters below)
+                  Select CIAAN Course (Auto-populates parameters below)
                 </label>
                 {loadingCiaans ? (
                   <div className="text-muted">Loading assigned Ciaan courses...</div>

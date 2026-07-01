@@ -175,12 +175,12 @@ const K4MarksForm = () => {
         <Header showSearch={false} />
         <div className="k4-page">
           <div className="k4-form-card">
-            <p className="k4-error">Ciaan or division is missing.</p>
+            <p className="k4-error">CIAAN or division is missing.</p>
             <button
               className="btn btn-success"
               onClick={() => navigate(`/msbte/k4/${mode}`)}
             >
-              Back to Ciaan list
+              Back to CIAAN list
             </button>
           </div>
         </div>

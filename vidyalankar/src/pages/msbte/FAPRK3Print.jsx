@@ -154,7 +154,7 @@ const FAPRK3Print = () => {
       <div className="k3-page">
         <div className="k3-form-card">
           <h3>Missing Ciaan Selection</h3>
-          <p className="k3-error">Please select a Ciaan before generating K3 format.</p>
+          <p className="k3-error">Please Select a CIAAN before generating K3 format.</p>
           <button className="btn btn-success" onClick={() => navigate("/msbte/fa-pr-k3/Ciaans")}>
             Go to Ciaan Selection
           </button>

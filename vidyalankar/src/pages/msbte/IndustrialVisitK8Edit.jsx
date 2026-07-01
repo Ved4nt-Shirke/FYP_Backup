@@ -307,7 +307,7 @@ const IndustrialVisitK8Edit = () => {
           <div className="row g-3">
             <div className="col-md-4">
               <label className="form-label" style={{ color: "#475569", fontWeight: "500" }}>
-                Select Ciaan
+                Select CIAAN
               </label>
               <select
                 className="form-select"
@@ -320,7 +320,7 @@ const IndustrialVisitK8Edit = () => {
                 onChange={handleCiaanChange}
                 disabled={loadingCiaans}
               >
-                <option value="">-- Select Ciaan --</option>
+                <option value="">-- Select CIAAN --</option>
                 {Ciaans.map((c) => (
                   <option key={c._id} value={c.CiaanId}>
                     Ciaan {c.CiaanId} - {c.subject?.name} ({c.division})

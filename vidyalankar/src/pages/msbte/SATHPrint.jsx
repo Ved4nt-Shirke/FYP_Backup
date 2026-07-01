@@ -104,7 +104,7 @@ const SATHPrint = () => {
       {!CiaanData ? (
         <div className="k3-form-card">
           <h3>Missing Ciaan Selection</h3>
-          <p className="k3-error">Please select a Ciaan first for SA-TH print.</p>
+          <p className="k3-error">Please Select a CIAAN first for SA-TH print.</p>
           <button
             className="btn btn-success"
             onClick={() => navigate("/msbte/sa-th/Ciaans?mode=print")}

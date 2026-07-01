@@ -272,7 +272,7 @@ const Microproject = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch Ciaan list");
+        throw new Error("Failed to fetch CIAAN list");
       }
 
       const result = await response.json();
@@ -299,10 +299,10 @@ const Microproject = () => {
       setCiaans(filtered);
       setSelectedCiaanId("");
     } catch (err) {
-      console.error("Error fetching Ciaan list:", err);
+      console.error("Error fetching CIAAN list:", err);
       setCiaans([]);
       setSelectedCiaanId("");
-      setError("Error fetching Ciaan list. Please try again.");
+      setError("Error fetching CIAAN list. Please try again.");
     } finally {
       setLoadingCiaans(false);
     }
@@ -619,7 +619,7 @@ const Microproject = () => {
                         !selectedDepartment || !selectedClass || loadingCiaans
                       }
                     >
-                      <option value="">-- Select Ciaan --</option>
+                      <option value="">-- Select CIAAN --</option>
                       {Ciaans.map((Ciaan) => (
                         <option key={Ciaan._id} value={Ciaan.CiaanId}>
                           Ciaan-{Ciaan.CiaanId} |{" "}

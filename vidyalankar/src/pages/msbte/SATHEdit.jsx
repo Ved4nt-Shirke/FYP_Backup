@@ -123,7 +123,7 @@ const SATHEdit = () => {
 
   const handleUpdate = async () => {
     if (!CiaanData?.CiaanId || !CiaanData?.division) {
-      alert("Please select a Ciaan first.");
+      alert("Please Select a CIAAN first.");
       return;
     }
 
@@ -200,12 +200,12 @@ const SATHEdit = () => {
 
         {!CiaanData && (
           <div className="alert alert-warning">
-            Please select a Ciaan first for SA-TH edit.
+            Please Select a CIAAN first for SA-TH edit.
             <button
               className="btn btn-sm btn-outline-secondary ms-3"
               onClick={() => navigate("/msbte/sa-th/Ciaans?mode=edit")}
             >
-              Select Ciaan
+              Select CIAAN
             </button>
           </div>
         )}

@@ -445,7 +445,7 @@ const SecondarySidebar = ({
         <div className={sidebarClasses}>
           <div className="secondary-sidebar-header">
             <div className="secondary-sidebar-title-wrap">
-              <span className="secondary-sidebar-eyebrow">Ciaan Workspace</span>
+              <span className="secondary-sidebar-eyebrow">CIAAN Workspace</span>
               <span className="secondary-sidebar-title">CIAAN</span>
             </div>
 

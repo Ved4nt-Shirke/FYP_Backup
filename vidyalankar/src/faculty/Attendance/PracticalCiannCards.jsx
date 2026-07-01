@@ -4,7 +4,7 @@ import AttendanceCiaanSelector from "./AttendanceCiannSelector";
 const PracticalCiaanCards = () => (
   <AttendanceCiaanSelector
     title="Mark Practical Attendance"
-    subtitle="Select a Ciaan to continue with practical attendance marking."
+    subtitle="Select a CIAAN to continue with practical attendance marking."
     navigateTo="/practical-attendance"
   />
 );

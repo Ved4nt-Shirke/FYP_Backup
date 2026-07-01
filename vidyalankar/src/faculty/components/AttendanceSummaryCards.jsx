@@ -57,14 +57,14 @@ const AttendanceSummaryCards = () => {
       <div className="attendance-summary-page">
         <div className="attendance-summary-header">
           <h2>Attendance Summary</h2>
-          <p>Select a Ciaan to generate attendance summary report.</p>
+          <p>Select a CIAAN to generate attendance summary report.</p>
         </div>
 
         <div className="attendance-summary-grid">
           {loading ? (
             <div className="attendance-summary-loading">
               <div className="attendance-summary-spinner"></div>
-              <p>Loading Ciaans...</p>
+              <p>Loading CIAANs...</p>
             </div>
           ) : CiaanDataList.length > 0 ? (
             CiaanDataList.map((CiaanData) => (
@@ -79,7 +79,7 @@ const AttendanceSummaryCards = () => {
                 <div className="attendance-summary-card__body">
                   <h3>{CiaanData.subject?.name || "Subject"}</h3>
                   <p>{CiaanData.subject?.code || "-"}</p>
-                  <p>Ciaan ID: {CiaanData.CiaanId}</p>
+                  <p>CIAAN ID: {CiaanData.CiaanId}</p>
                   <p>Division: {CiaanData.division || "-"}</p>
                 </div>
                 <span className="attendance-summary-card__cta">
@@ -89,7 +89,7 @@ const AttendanceSummaryCards = () => {
             ))
           ) : (
             <p className="attendance-summary-empty">
-              No Ciaan data available. Create one to generate summary.
+              No CIAAN data available. Create one to generate summary.
             </p>
           )}
         </div>

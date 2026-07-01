@@ -331,7 +331,7 @@ const TermAnalysisK7 = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!selectedCiaanId) {
-      alert("Please select a Ciaan.");
+      alert("Please Select a CIAAN.");
       return;
     }
     setSaving(true);
@@ -781,7 +781,7 @@ const TermAnalysisK7 = () => {
               <h6 style={{ fontWeight: 600, color: "#4f46e5", marginBottom: "12px" }}>Academic Details</h6>
               <div className="row g-3 mb-4">
                 <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: "500" }}>Select Ciaan *</label>
+                  <label className="form-label" style={{ fontWeight: "500" }}>Select CIAAN *</label>
                   <select
                     className="form-select w-100"
                     value={selectedCiaanId}
@@ -789,7 +789,7 @@ const TermAnalysisK7 = () => {
                     required
                     disabled={!!recordId}
                   >
-                    <option value="">-- Select Ciaan --</option>
+                    <option value="">-- Select CIAAN --</option>
                     {Ciaans.map((c) => (
                       <option key={c._id} value={c.CiaanId}>
                         Ciaan {c.CiaanId} - {c.subject?.name} ({c.division})

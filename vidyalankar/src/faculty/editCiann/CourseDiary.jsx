@@ -44,7 +44,7 @@ const CourseDiary = () => {
     getInstitutionBranding,
   );
 
-  // Debug: Log Ciaan data structure
+  // Debug: Log CIAAN data structure
   useEffect(() => {
     if (CiaanData) {
       console.log("=== Ciaan DATA STRUCTURE ===");

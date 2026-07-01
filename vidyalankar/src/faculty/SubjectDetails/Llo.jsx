@@ -29,7 +29,7 @@ export default function Llo() {
     };
   }, []);
 
-  // Resolve Ciaan Data
+  // Resolve CIAAN Data
   useEffect(() => {
     let resolvedCiaan = location.state?.CiaanData;
     if (!resolvedCiaan) {
@@ -44,7 +44,7 @@ export default function Llo() {
     }
 
     if (!resolvedCiaan || !resolvedCiaan.CiaanId) {
-      setError("No active Ciaan session found. Please select a Ciaan card.");
+      setError("No active CIAAN session found. Please Select a CIAAN card.");
       setLoading(false);
       return;
     }
@@ -64,7 +64,7 @@ export default function Llo() {
         const subjectId = CiaanData.subject?._id || CiaanData.subjectId;
 
         if (!subjectId) {
-          throw new Error("Subject ID not found on Ciaan data.");
+          throw new Error("Subject ID not found on CIAAN data.");
         }
 
         // Fetch Existing TLOs, LLOs & COs Mappings from Ciaan-specific TloLlo record

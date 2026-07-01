@@ -4,7 +4,7 @@ import AttendanceCiaanSelector from "./AttendanceCiannSelector";
 const TheoryCiaanCards = () => (
   <AttendanceCiaanSelector
     title="Mark Theory Attendance"
-    subtitle="Select a Ciaan to continue with theory attendance marking."
+    subtitle="Select a CIAAN to continue with theory attendance marking."
     navigateTo="/theory-edit"
   />
 );

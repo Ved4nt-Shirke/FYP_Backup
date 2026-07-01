@@ -199,7 +199,7 @@ const Login = () => {
         {/* Left Branding Section */}
         <div className="login-brand">
           <img src="/new.png" alt="VPCIAAN Logo" className="logo" />
-          <h1 className="login-title">Ciaan</h1>
+          <h1 className="login-title">CIAAN</h1>
           <p className="subheading">Curriculum Implementation Assessment Norms</p>
         </div>
 

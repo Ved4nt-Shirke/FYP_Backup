@@ -44,7 +44,7 @@ const K3BatchSelection = () => {
     setError("");
 
     if (!CiaanData) {
-      setError("Ciaan information is missing. Please select a Ciaan again.");
+      setError("Ciaan information is missing. Please Select a CIAAN again.");
       return;
     }
 
@@ -70,13 +70,13 @@ const K3BatchSelection = () => {
           <div className="k3-form-card">
             <h3>Batch Selection</h3>
             <p className="k3-error">
-              Ciaan information is missing. Please go back and select a Ciaan.
+              Ciaan information is missing. Please go back and Select a CIAAN.
             </p>
             <button
               className="btn btn-success"
               onClick={() => navigate("/msbte/k3")}
             >
-              Back to Ciaan list
+              Back to CIAAN list
             </button>
           </div>
         </div>

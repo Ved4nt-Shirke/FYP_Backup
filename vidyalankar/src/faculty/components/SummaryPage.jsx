@@ -75,7 +75,7 @@ const SummaryPage = () => {
     }
 
     const { program, className, course } = getAcademicContext(data);
-    console.log('FETCHING PRINT DATA FOR Ciaan ID:', CiaanId);
+    console.log('FETCHING PRINT DATA FOR CIAAN ID:', CiaanId);
     try {
       const [
         summaryResponse,
@@ -247,7 +247,7 @@ const SummaryPage = () => {
           <div className="Ciaan-info">
             <p><strong>Subject:</strong> {CiaanData.subject?.name} ({CiaanData.subject?.code})</p>
             <p><strong>Division:</strong> {CiaanData.division}</p>
-            <p><strong>Ciaan ID:</strong> {CiaanData.CiaanId}</p>
+            <p><strong>CIAAN ID:</strong> {CiaanData.CiaanId}</p>
             <p><strong>Academic Year:</strong> {CiaanData.academicYear || '-'}</p>
             <p><strong>Class:</strong> {CiaanData.courseCode || CiaanData.class || '-'}</p>
             <p><strong>Semester:</strong> {CiaanData.semester || '-'}</p>

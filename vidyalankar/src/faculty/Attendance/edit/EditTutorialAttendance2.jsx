@@ -23,7 +23,7 @@ const EditTutorialAttendance2 = () => {
     const fetchTutorialAttendance = async () => {
       try {
         console.log(
-          "Fetching tutorial attendance for Ciaan ID:",
+          "Fetching tutorial attendance for CIAAN ID:",
           selectedCiaanId,
         );
         const response = await axios.get(

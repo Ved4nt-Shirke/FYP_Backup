@@ -153,7 +153,7 @@ export const CiaanSubjectDetailsApi = {
 
 // ==================== UTILITY FUNCTIONS ====================
 
-// Get Ciaan ID from session storage or local storage
+// Get CIAAN ID from session storage or local storage
 export const getCurrentCiaanId = () => {
   try {
     // First try sessionStorage
@@ -176,7 +176,7 @@ export const getCurrentCiaanId = () => {
 
     return null;
   } catch (error) {
-    console.error('Error getting current Ciaan ID:', error);
+    console.error('Error getting current CIAAN ID:', error);
     return null;
   }
 };

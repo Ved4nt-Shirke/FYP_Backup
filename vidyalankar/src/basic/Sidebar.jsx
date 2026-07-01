@@ -122,7 +122,7 @@ const Sidebar = ({
 
     // Map paths to their corresponding dropdowns
     if (["/create-Ciaan", "/edit-Ciaan", "/summary-cards"].includes(path) || path.startsWith("/create-Ciaan") || path.startsWith("/edit-Ciaan")) {
-      setOpenDropdown("Ciaan");
+      setOpenDropdown("CIAAN");
     } else if (path.startsWith("/faculty/mock-exams")) {
       setOpenDropdown("mockExam");
     } else if (
@@ -214,9 +214,9 @@ const Sidebar = ({
 
   const handleCiaanSelect = (option) => {
     setOpenDropdown(null);
-    if (option === "Create Ciaan") {
+    if (option === "Create CIAAN") {
       navigateAndClose("/create-Ciaan");
-    } else if (option === "Edit Ciaan") {
+    } else if (option === "Edit CIAAN") {
       navigateAndClose("/edit-Ciaan");
     } else if (option === "Print Ciaan") {
       navigateAndClose("/summary-cards");
@@ -423,13 +423,13 @@ const Sidebar = ({
           <li className="sidebar-item">
             <div className="dropdown" ref={dropdownRefs.Ciaan}>
               <button
-                className={`btn dropdown-toggle dropdown-header w-100 text-start ${openDropdown === "Ciaan" ? "open" : ""
+                className={`btn dropdown-toggle dropdown-header w-100 text-start ${openDropdown === "CIAAN" ? "open" : ""
                   }`}
                 type="button"
-                onClick={() => handleDropdownToggle("Ciaan")}
+                onClick={() => handleDropdownToggle("CIAAN")}
               >
                 <i className="bi bi-file-earmark-text"></i>
-                <span>Ciaan</span>
+                <span>CIAAN</span>
                 {pendingCiaanRequests > 0 && (
                   <span
                     className="sidebar-notification-badge"
@@ -441,7 +441,7 @@ const Sidebar = ({
                 <i className="bi bi-chevron-down dropdown-chevron"></i>
               </button>
               <ul
-                className={`dropdown-menu sidebar-submenu ${openDropdown === "Ciaan" ? "show" : ""
+                className={`dropdown-menu sidebar-submenu ${openDropdown === "CIAAN" ? "show" : ""
                   }`}
               >
                 <li>
@@ -451,10 +451,10 @@ const Sidebar = ({
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      handleCiaanSelect("Create Ciaan");
+                      handleCiaanSelect("Create CIAAN");
                     }}
                   >
-                    <i className="bi bi-plus-square"></i> Create Ciaan
+                    <i className="bi bi-plus-square"></i> Create CIAAN
                   </a>
                 </li>
                 <li>
@@ -464,10 +464,10 @@ const Sidebar = ({
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      handleCiaanSelect("Edit Ciaan");
+                      handleCiaanSelect("Edit CIAAN");
                     }}
                   >
-                    <i className="bi bi-pencil-square"></i> Edit Ciaan
+                    <i className="bi bi-pencil-square"></i> Edit CIAAN
                   </a>
                 </li>
                 <li>

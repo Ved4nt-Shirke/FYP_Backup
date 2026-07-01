@@ -111,10 +111,10 @@ const CiaanSelector = ({ onSelect, onCancel }) => {
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        <div style={styles.header}>Select a Ciaan</div>
+        <div style={styles.header}>Select a CIAAN</div>
 
         {loading && (
-          <div style={styles.loading}>Loading Ciaans...</div>
+          <div style={styles.loading}>Loading CIAANs...</div>
         )}
 
         {error && (
@@ -148,7 +148,7 @@ const CiaanSelector = ({ onSelect, onCancel }) => {
                   }
                 }}
               >
-                <div style={styles.CiaanId}>Ciaan ID: {Ciaan.CiaanId}</div>
+                <div style={styles.CiaanId}>CIAAN ID: {Ciaan.CiaanId}</div>
                 <div style={styles.CiaanDetails}>
                   {Ciaan.subject?.name} - {Ciaan.division} ({Ciaan.academicYear})
                 </div>

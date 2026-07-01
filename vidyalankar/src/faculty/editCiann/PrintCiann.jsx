@@ -644,7 +644,7 @@ const PrintCiaan = () => {
       setTutorialAttendance(tutorialList);
       setExtraTheoryAttendance(extraList);
     } catch (error) {
-      console.error("Error fetching print Ciaan data:", error);
+      console.error("Error fetching print CIAAN data:", error);
     } finally {
       setLoading(false);
     }
@@ -1101,8 +1101,8 @@ const PrintCiaan = () => {
   if (!CiaanData && !loading) {
     return (
       <div className="Ciaan-print-empty">
-        <h3>No Ciaan selected</h3>
-        <p>Select a Ciaan from Print Ciaan cards first.</p>
+        <h3>No CIAAN selected</h3>
+        <p>Select a CIAAN from Print Ciaan cards first.</p>
       </div>
     );
   }

@@ -33,7 +33,7 @@ export default function ModuleAvailabilityResource() {
 
       const stored = sessionStorage.getItem("currentCiaanData") || localStorage.getItem("CiaanData");
       if (!stored) {
-        setError("No active Ciaan session found.");
+        setError("No active CIAAN session found.");
         return;
       }
 

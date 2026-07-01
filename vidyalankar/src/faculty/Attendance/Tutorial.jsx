@@ -206,7 +206,7 @@ const TutorialAttendance = () => {
         <Header />
         <div className="attendance-main-content">
           <div className="tutorial-page-container">
-            <h3>No CIAAN selected. Please select a CIAAN card first.</h3>
+            <h3>No CIAAN selected. Please Select a CIAAN card first.</h3>
           </div>
         </div>
       </div>

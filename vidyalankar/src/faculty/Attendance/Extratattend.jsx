@@ -24,7 +24,7 @@ const StudentAttendance = () => {
       try {
         setLoading(true);
 
-        // Fetch the attendance record with Ciaan data
+        // Fetch the attendance record with CIAAN data
         const attendanceResponse = await fetch(
           `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/extra-attendance/${id}`,
         );
@@ -37,7 +37,7 @@ const StudentAttendance = () => {
         // Fetch students filtered by division if available from Ciaan
         const params = new URLSearchParams();
         if (attendanceData.CiaanId) {
-          // Try to get Ciaan data to filter by division
+          // Try to get CIAAN data to filter by division
           try {
             const CiaanResponse = await fetch(
               `${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/Ciaans`,
@@ -53,7 +53,7 @@ const StudentAttendance = () => {
             }
           } catch (CiaanError) {
             console.warn(
-              "Could not fetch Ciaan data for filtering:",
+              "Could not fetch CIAAN data for filtering:",
               CiaanError,
             );
           }
@@ -278,7 +278,7 @@ const StudentAttendance = () => {
               Extra Theory
             </h4>
             <p style={{ margin: "5px 0", fontSize: "14px" }}>
-              <strong>Ciaan ID:</strong> {attendanceRecord.CiaanId}
+              <strong>CIAAN ID:</strong> {attendanceRecord.CiaanId}
             </p>
             <p style={{ margin: "5px 0", fontSize: "14px" }}>
               <strong>Topic:</strong> {attendanceRecord.topic}

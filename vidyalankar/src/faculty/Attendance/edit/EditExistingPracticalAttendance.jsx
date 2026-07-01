@@ -20,7 +20,7 @@ const EditExistingPracticalAttendance = () => {
 
   useEffect(() => {
     if (!attendanceRecord || !CiaanId) {
-      setError("Missing attendance record or Ciaan ID");
+      setError("Missing attendance record or CIAAN ID");
       setLoading(false);
       return;
     }
@@ -168,7 +168,7 @@ const EditExistingPracticalAttendance = () => {
             <div className="context-value">{attendanceRecord.actualDate || 'Not specified'}</div>
           </div>
           <div>
-            <span className="context-label">Ciaan ID:</span>
+            <span className="context-label">CIAAN ID:</span>
             <div className="context-value">{CiaanId || 'Not specified'}</div>
           </div>
           <div>

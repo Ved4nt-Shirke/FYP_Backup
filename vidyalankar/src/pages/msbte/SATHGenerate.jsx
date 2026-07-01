@@ -130,7 +130,7 @@ const SATHGenerate = () => {
 
   const handleSave = async () => {
     if (!CiaanData?.CiaanId || !CiaanData?.division) {
-      alert("Please select a Ciaan first.");
+      alert("Please Select a CIAAN first.");
       return;
     }
 
@@ -209,12 +209,12 @@ const SATHGenerate = () => {
 
         {!CiaanData && (
           <div className="alert alert-warning">
-            Please select a Ciaan first for SA-TH.
+            Please Select a CIAAN first for SA-TH.
             <button
               className="btn btn-sm btn-outline-secondary ms-3"
               onClick={() => navigate("/msbte/sa-th/Ciaans?mode=generate")}
             >
-              Select Ciaan
+              Select CIAAN
             </button>
           </div>
         )}

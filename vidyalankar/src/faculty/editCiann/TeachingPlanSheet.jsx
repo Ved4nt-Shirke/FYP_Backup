@@ -1121,7 +1121,7 @@ const TeachingPlan = () => {
   if (!CiaanData) {
     return (
       <div style={{ padding: "2rem", textAlign: "center" }}>
-        <h3>Error: No CIAAN Selected</h3>
+        <h3>Error: No CIAAN selected</h3>
         <p>This page was loaded without the necessary data.</p>
         <button onClick={onBack} className="btn submit">
           Go Back

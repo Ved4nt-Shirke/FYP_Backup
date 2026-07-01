@@ -4,7 +4,7 @@ import AttendanceCiaanSelector from "../AttendanceCiannSelector";
 const EditPracticalAttendance1 = () => (
   <AttendanceCiaanSelector
     title="Edit Practical Attendance"
-    subtitle="Select a Ciaan to continue with practical attendance editing."
+    subtitle="Select a CIAAN to continue with practical attendance editing."
     navigateTo="/edit-practical-attendance2"
     iconClass="bi-flask"
     continueLabel="Edit Attendance"

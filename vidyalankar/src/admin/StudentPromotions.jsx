@@ -520,7 +520,7 @@ const StudentPromotions = () => {
                     <th>Academic Year</th>
                     <th>Division</th>
                     <th>Semester</th>
-                    <th>Ciaan Sheets</th>
+                    <th>CIAAN Sheets</th>
                     <th>Status</th>
                     <th style={{ textAlign: "right" }}>Actions</th>
                   </tr>

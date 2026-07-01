@@ -123,7 +123,7 @@ const ViewMarks = ({ activityType, CiaanId, courseId, refreshToken, onEdit }) =>
             <table className="table table-hover table-striped">
               <thead className="table-light">
                 <tr>
-                  <th>Ciaan</th>
+                  <th>CIAAN</th>
                   <th>Subject</th>
                   <th>Student Name</th>
                   <th>Roll No</th>

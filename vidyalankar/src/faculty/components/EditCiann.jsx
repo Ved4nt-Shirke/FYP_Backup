@@ -129,7 +129,7 @@ const EditCiaan = () => {
     return () => clearTimeout(delayDebounce);
   }, [facultySearch]);
 
-  // Fetch Ciaans owned by selected faculty
+  // Fetch CIAANs owned by selected faculty
   const handleSelectFaculty = async (faculty) => {
     setSelectedFaculty(faculty);
     setFacultyCiaans([]);
@@ -146,7 +146,7 @@ const EditCiaan = () => {
   const handleRequestAccessSubmit = async (e) => {
     e.preventDefault();
     if (!selectedCiaanId) {
-      setRequestError('Please select a Ciaan.');
+      setRequestError('Please Select a CIAAN.');
       return;
     }
 
@@ -455,7 +455,7 @@ const EditCiaan = () => {
             onClick={() => setActiveTab('my-Ciaans')}
           >
             <i className="bi bi-person-workspace"></i>
-            My Ciaans ({myCiaans.length})
+            My CIAANs ({myCiaans.length})
           </button>
           <button
             className={`edit-Ciaan-tab ${activeTab === 'shared-with-me' ? 'active' : ''}`}
@@ -501,7 +501,7 @@ const EditCiaan = () => {
                 </div>
               ) : (
                 <div className="no-workspaces-alert">
-                  <i className="bi bi-info-circle me-2"></i>No active Ciaan workspaces in this section.
+                  <i className="bi bi-info-circle me-2"></i>No active CIAAN workspaces in this section.
                 </div>
               )}
             </div>
@@ -519,7 +519,7 @@ const EditCiaan = () => {
                 </div>
               ) : (
                 <div className="no-workspaces-alert">
-                  <i className="bi bi-info-circle me-2"></i>No archived or completed Ciaan workspaces in this section.
+                  <i className="bi bi-info-circle me-2"></i>No archived or completed CIAAN workspaces in this section.
                 </div>
               )}
             </div>
@@ -748,7 +748,7 @@ const EditCiaan = () => {
                     </div>
 
                     <div className="mb-3">
-                      <label className="form-label fw-semibold text-dark mb-2">Select Ciaan Workspace</label>
+                      <label className="form-label fw-semibold text-dark mb-2">Select CIAAN Workspace</label>
                       {facultyCiaans.length > 0 ? (
                         <select
                           className="form-select"
@@ -756,17 +756,17 @@ const EditCiaan = () => {
                           onChange={(e) => setSelectedCiaanId(e.target.value)}
                           required
                         >
-                          <option value="">-- Select Ciaan --</option>
+                          <option value="">-- Select CIAAN --</option>
                           {facultyCiaans.map((c) => (
                             <option key={c.CiaanId} value={c.CiaanId}>
-                              Ciaan ID: {c.CiaanId} - {c.subject?.name || 'Subject'} ({c.subject?.code || 'N/A'}) - Div: {c.division}
+                              CIAAN ID: {c.CiaanId} - {c.subject?.name || 'Subject'} ({c.subject?.code || 'N/A'}) - Div: {c.division}
                             </option>
                           ))}
                         </select>
                       ) : (
                         <div className="text-danger small py-2">
                           <i className="bi bi-info-circle me-1"></i>
-                          This teacher does not own any Ciaan workspaces yet.
+                          This teacher does not own any CIAAN workspaces yet.
                         </div>
                       )}
                     </div>

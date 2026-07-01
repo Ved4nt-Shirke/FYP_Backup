@@ -35,7 +35,7 @@ const Defaulter = () => {
           window.location.href = "/login";
           return;
         }
-        setError("Failed to fetch Ciaan data.");
+        setError("Failed to fetch CIAAN data.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -269,10 +269,10 @@ const Defaulter = () => {
         <div className="defaulter-select-page">
           <section className="defaulter-select-hero">
             <h2>Defaulter Analysis</h2>
-            <p>Select a Ciaan to generate defaulter report</p>
+            <p>Select a CIAAN to generate defaulter report</p>
           </section>
 
-          {loading && <p className="defaulter-state">Loading Ciaans...</p>}
+          {loading && <p className="defaulter-state">Loading CIAANs...</p>}
           {error && (
             <p className="defaulter-state defaulter-state-error">{error}</p>
           )}
@@ -292,7 +292,7 @@ const Defaulter = () => {
                   <i className="bi bi-person-exclamation defaulter-Ciaan-icon"></i>
                   <h3>{Ciaan.subject?.name || "Unknown Subject"}</h3>
                   <p>{Ciaan.subject?.code || "-"}</p>
-                  <p>Ciaan ID: {Ciaan.CiaanId || "-"}</p>
+                  <p>CIAAN ID: {Ciaan.CiaanId || "-"}</p>
                   <p>Division: {Ciaan.division || "-"}</p>
                   <span className="defaulter-Ciaan-cta">Open Report</span>
                 </button>
@@ -342,7 +342,7 @@ const Defaulter = () => {
               onClick={() => setSelectedCiaan(null)}
               className="back-button"
             >
-              Back to Ciaan List
+              Back to CIAAN List
             </button>
           </div>
         </div>

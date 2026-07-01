@@ -114,7 +114,7 @@ const EditIndividualExtraTheoryAttendance = () => {
         {/* Attendance Information Display */}
         <div className="context-fields-container">
           <div>
-            <span className="context-label">Ciaan ID:</span>
+            <span className="context-label">CIAAN ID:</span>
             <div className="context-value">{formData.CiaanId || 'Not specified'}</div>
           </div>
           <div>

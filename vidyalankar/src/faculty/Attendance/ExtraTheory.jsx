@@ -13,7 +13,7 @@ const ExtraAttendance = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!CiaanData) {
-      alert("Ciaan data not found. Please go back and select a Ciaan.");
+      alert("CIAAN data not found. Please go back and Select a CIAAN.");
       return;
     }
 
@@ -59,7 +59,7 @@ const ExtraAttendance = () => {
         <Header />
         <div className="attendance-main-content">
           <div className="theory-attendance-container">
-            <h3>No CIAAN selected. Please select a CIAAN card first.</h3>
+            <h3>No CIAAN selected. Please Select a CIAAN card first.</h3>
           </div>
         </div>
       </div>
@@ -77,7 +77,7 @@ const ExtraAttendance = () => {
 
           {CiaanData && (
             <div className="Ciaan-info">
-              <strong>Ciaan ID:</strong> {CiaanData.CiaanId} |{" "}
+              <strong>CIAAN ID:</strong> {CiaanData.CiaanId} |{" "}
               <strong>Subject:</strong> {CiaanData.subject?.name} (
               {CiaanData.subject?.code}) | <strong>Division:</strong>{" "}
               {CiaanData.division}

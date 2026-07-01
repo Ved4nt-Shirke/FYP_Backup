@@ -4,7 +4,7 @@ import AttendanceCiaanSelector from "../AttendanceCiannSelector";
 const ViewAttend1 = () => (
   <AttendanceCiaanSelector
     title="View Theory Attendance"
-    subtitle="Select a Ciaan to continue with theory attendance view."
+    subtitle="Select a CIAAN to continue with theory attendance view."
     iconClass="bi-eye"
     continueLabel="View Attendance"
     navigateTo="/view-attend2"

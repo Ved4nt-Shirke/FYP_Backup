@@ -47,14 +47,14 @@ export default function CTCiaanCards() {
       <section className="ct-Ciaan-hero">
         <h2>
           <i className="bi bi-journal-check me-2"></i>
-          CT - Select Ciaan
+          CT - Select CIAAN
         </h2>
         <p>Choose a Ciaan to open the CT marks dashboard.</p>
       </section>
 
       <section className="ct-Ciaan-grid-wrap">
         {loading ? (
-          <p className="ct-Ciaan-state">Loading Ciaans...</p>
+          <p className="ct-Ciaan-state">Loading CIAANs...</p>
         ) : error ? (
           <p className="ct-Ciaan-state ct-Ciaan-error">{error}</p>
         ) : CiaanDataList.length > 0 ? (
@@ -83,7 +83,7 @@ export default function CTCiaanCards() {
                         role="button"
                       >
                         <div className="ct-Ciaan-card-id">
-                          Ciaan ID: {CiaanData.CiaanId}
+                          CIAAN ID: {CiaanData.CiaanId}
                           {isArchived && (
                             <span className="badge bg-secondary ms-2" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
                               {CiaanData.status === 'completed' ? 'Completed' : 'Archived'}
@@ -107,7 +107,7 @@ export default function CTCiaanCards() {
                 </div>
               ) : (
                 <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
-                  <i className="bi bi-info-circle me-2"></i>No active Ciaan workspaces in this section.
+                  <i className="bi bi-info-circle me-2"></i>No active CIAAN workspaces in this section.
                 </div>
               )}
             </div>
@@ -136,7 +136,7 @@ export default function CTCiaanCards() {
                         role="button"
                       >
                         <div className="ct-Ciaan-card-id">
-                          Ciaan ID: {CiaanData.CiaanId}
+                          CIAAN ID: {CiaanData.CiaanId}
                           {isArchived && (
                             <span className="badge bg-secondary ms-2" style={{ fontSize: '0.65rem', verticalAlign: 'middle' }}>
                               {CiaanData.status === 'completed' ? 'Completed' : 'Archived'}
@@ -160,7 +160,7 @@ export default function CTCiaanCards() {
                 </div>
               ) : (
                 <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
-                  <i className="bi bi-info-circle me-2"></i>No archived or completed Ciaan workspaces in this section.
+                  <i className="bi bi-info-circle me-2"></i>No archived or completed CIAAN workspaces in this section.
                 </div>
               )}
             </div>

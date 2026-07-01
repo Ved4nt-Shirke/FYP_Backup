@@ -105,7 +105,7 @@ const SAPRK4Print = () => {
       {!CiaanData ? (
         <div className="k3-form-card">
           <h3>Missing Ciaan Selection</h3>
-          <p className="k3-error">Please select a Ciaan first for SA-PR-K4 print.</p>
+          <p className="k3-error">Please Select a CIAAN first for SA-PR-K4 print.</p>
           <button
             className="btn btn-success"
             onClick={() => navigate("/msbte/sa-pr-k4/Ciaans?mode=print")}

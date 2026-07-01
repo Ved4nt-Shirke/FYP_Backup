@@ -44,7 +44,7 @@ const CourseDiary2 = () => {
     getInstitutionBranding,
   );
 
-  // Debug: Log Ciaan data structure
+  // Debug: Log CIAAN data structure
   useEffect(() => {
     if (CiaanData) {
       console.log("=== Ciaan DATA STRUCTURE ===");
@@ -174,7 +174,7 @@ const CourseDiary2 = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Ciaan data management
+  // CIAAN data management
   useEffect(() => {
     if (!CiaanData) {
       const storedCiaanData = sessionStorage.getItem("currentCiaanData");

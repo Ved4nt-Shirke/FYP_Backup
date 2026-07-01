@@ -30,7 +30,7 @@ export default function PTDashboard() {
         if (Array.isArray(data)) {
           setCiaanList(data);
         } else {
-          console.error("Invalid Ciaan data:", data);
+          console.error("Invalid CIAAN data:", data);
         }
       } catch (err) {
         console.error("Error fetching Ciaans:", err);
@@ -127,7 +127,7 @@ export default function PTDashboard() {
               <div className="d-flex gap-4 mt-2 flex-wrap">
                 <div className="d-flex align-items-center gap-2">
                   <span className="badge bg-success rounded-circle">1</span>
-                  <span className="text-secondary small">Select a Ciaan class card</span>
+                  <span className="text-secondary small">Select a CIAAN class card</span>
                 </div>
                 <div className="d-flex align-items-center gap-2">
                   <span className="badge bg-success rounded-circle">2</span>
@@ -142,19 +142,19 @@ export default function PTDashboard() {
           </div>
         </div>
 
-        {/* Ciaan Cards */}
+        {/* CIAAN Cards */}
         <div className="row">
           <div className="col-12">
             <h3 className="fw-semibold mb-4 text-dark d-flex align-items-center gap-2">
               <i className="bi bi-card-text text-success"></i>
-              Select Ciaan Card
+              Select CIAAN Card
             </h3>
           </div>
 
           {loading ? (
             <div className="col-12 text-center py-5">
               <div className="spinner-border text-success" role="status" style={{ width: "3rem", height: "3rem" }}>
-                <span className="visually-hidden">Loading Ciaans...</span>
+                <span className="visually-hidden">Loading CIAANs...</span>
               </div>
               <p className="mt-3 text-muted">Loading your Ciaan classes...</p>
             </div>
@@ -162,8 +162,8 @@ export default function PTDashboard() {
             <div className="col-12">
               <div className="card border-0 shadow-sm p-5 text-center rounded-3 bg-light">
                 <i className="bi bi-folder-x fs-1 text-muted mb-3"></i>
-                <h4 className="text-muted">No Ciaan cards found</h4>
-                <p className="text-secondary mb-0">Please create a Ciaan record or check your shared access before using this module.</p>
+                <h4 className="text-muted">No CIAAN cards found</h4>
+                <p className="text-secondary mb-0">Please create a CIAAN record or check your shared access before using this module.</p>
               </div>
             </div>
           ) : (

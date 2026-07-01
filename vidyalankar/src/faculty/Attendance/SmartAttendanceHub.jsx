@@ -238,7 +238,7 @@ const SmartAttendanceHub = () => {
         <div className="sah-header">
           <h1>Smart Attendance Hub</h1>
           <p>
-            Select a Ciaan to mark Theory or Practical attendance in one place.
+            Select a CIAAN to mark Theory or Practical attendance in one place.
           </p>
         </div>
 
@@ -249,7 +249,7 @@ const SmartAttendanceHub = () => {
             <div className="sah-empty">
               <h3>No Ciaans Found</h3>
               <p>
-                You haven't created any Ciaans yet. Go to Create Ciaan to get
+                You haven't created any Ciaans yet. Go to Create CIAAN to get
                 started.
               </p>
             </div>
@@ -260,7 +260,7 @@ const SmartAttendanceHub = () => {
                 className="sah-card"
                 onClick={() => openModal(Ciaan)}
               >
-                <div className="sah-card-id">Ciaan ID: {Ciaan.CiaanId}</div>
+                <div className="sah-card-id">CIAAN ID: {Ciaan.CiaanId}</div>
                 <div className="sah-card-subject">
                   {Ciaan.subject?.name || "Unknown Subject"}
                 </div>
@@ -298,7 +298,7 @@ const SmartAttendanceHub = () => {
               </button>
             </div>
 
-            {/* Ciaan Info */}
+            {/* CIAAN Info */}
             <div className="sah-modal-Ciaan-info">
               <p>
                 {selectedCiaan.subject?.name} ({selectedCiaan.subject?.code})

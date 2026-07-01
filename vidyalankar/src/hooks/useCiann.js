@@ -136,7 +136,7 @@ export const useCiaan = () => {
   // Validate current Ciaan
   const validateCurrentCiaan = useCallback(() => {
     if (!currentCiaan) {
-      return { isValid: false, error: 'No Ciaan selected' };
+      return { isValid: false, error: 'No CIAAN selected' };
     }
     return CiaanUtils.validateCiaan(currentCiaan);
   }, [currentCiaan]);

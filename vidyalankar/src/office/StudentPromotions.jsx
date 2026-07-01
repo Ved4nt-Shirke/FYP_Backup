@@ -310,7 +310,7 @@ const StudentPromotions = () => {
         <div className="header-title-section">
           <h2>Student Promotions & Archiving</h2>
           <p className="subtitle">
-            Promote students and manage historical Ciaan records for the <strong>{department?.name || "Loading..."}</strong> department in <strong>{institutionName}</strong>.
+            Promote students and manage historical CIAAN records for the <strong>{department?.name || "Loading..."}</strong> department in <strong>{institutionName}</strong>.
           </p>
         </div>
       </div>
@@ -538,7 +538,7 @@ const StudentPromotions = () => {
           <div className="archive-header-row">
             <div>
               <h3>Division / Semester History</h3>
-              <p>Lock/freeze historical Ciaan records to prevent further edits after promotion.</p>
+              <p>Lock/freeze historical CIAAN records to prevent further edits after promotion.</p>
             </div>
             <button onClick={fetchArchives} className="promo-refresh-btn" title="Refresh list">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
@@ -563,7 +563,7 @@ const StudentPromotions = () => {
                     <th>Academic Year</th>
                     <th>Division</th>
                     <th>Semester</th>
-                    <th>Ciaan Progress</th>
+                    <th>CIAAN Progress</th>
                     <th>Lock Status</th>
                     <th width="150" style={{ textAlign: "right" }}>Actions</th>
                   </tr>

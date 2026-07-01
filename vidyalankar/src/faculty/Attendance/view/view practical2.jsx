@@ -87,7 +87,7 @@ const ViewPracticalCiaan = () => {
 
             {loading ? (
               <div className="text-center py-5">
-                <p>Loading Ciaans...</p>
+                <p>Loading CIAANs...</p>
               </div>
             ) : CiaanDataList.length > 0 ? (
               <div className="container py-2">
@@ -102,7 +102,7 @@ const ViewPracticalCiaan = () => {
                     </div>
                   ) : (
                     <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
-                      <i className="bi bi-info-circle me-2"></i>No active Ciaan workspaces in this section.
+                      <i className="bi bi-info-circle me-2"></i>No active CIAAN workspaces in this section.
                     </div>
                   )}
                 </div>
@@ -118,7 +118,7 @@ const ViewPracticalCiaan = () => {
                     </div>
                   ) : (
                     <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
-                      <i className="bi bi-info-circle me-2"></i>No archived or completed Ciaan workspaces in this section.
+                      <i className="bi bi-info-circle me-2"></i>No archived or completed CIAAN workspaces in this section.
                     </div>
                   )}
                 </div>

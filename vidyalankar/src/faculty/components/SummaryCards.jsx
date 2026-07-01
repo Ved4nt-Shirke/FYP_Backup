@@ -103,7 +103,7 @@ const SummaryCards = () => {
 
       <div className="edit-Ciaan-page">
         <div className="edit-Ciaan-header">
-          <h2 className="text-center py-2 bg-success text-white">Print Ciaan</h2>
+          <h2 className="text-center py-2 bg-success text-white">Print CIAAN</h2>
         </div>
         {loading ? (
           <div className="loading-container">
@@ -125,7 +125,7 @@ const SummaryCards = () => {
                 </div>
               ) : (
                 <div className="no-workspaces-alert" style={{ padding: '2.5rem', borderRadius: '16px', backgroundColor: '#f8fafc', textAlign: 'center', color: '#64748b', fontWeight: '600', border: '1px dashed #cbd5e1', margin: '10px 0' }}>
-                  <i className="bi bi-info-circle me-2"></i>No active Ciaan workspaces in this section.
+                  <i className="bi bi-info-circle me-2"></i>No active CIAAN workspaces in this section.
                 </div>
               )}
             </div>
@@ -143,7 +143,7 @@ const SummaryCards = () => {
                 </div>
               ) : (
                 <div className="no-workspaces-alert" style={{ padding: '2.5rem', borderRadius: '16px', backgroundColor: '#f8fafc', textAlign: 'center', color: '#64748b', fontWeight: '600', border: '1px dashed #cbd5e1', margin: '10px 0' }}>
-                  <i className="bi bi-info-circle me-2"></i>No archived or completed Ciaan workspaces in this section.
+                  <i className="bi bi-info-circle me-2"></i>No archived or completed CIAAN workspaces in this section.
                 </div>
               )}
             </div>

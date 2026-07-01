@@ -16,11 +16,11 @@ const EditExtraTheoryAttendance2 = ({ onAttendanceUpdated }) => {
     const fetchValidCiaanIds = async () => {
       try {
         const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api$/, "")}/api/Ciaans`);
-        if (!response.ok) throw new Error("Failed to fetch Ciaan IDs");
+        if (!response.ok) throw new Error("Failed to fetch CIAAN IDs");
         const Ciaans = await response.json();
         setValidCiaanIds(Ciaans.map((Ciaan) => Ciaan.CiaanId));
       } catch (err) {
-        console.error("Error fetching valid Ciaan IDs:", err);
+        console.error("Error fetching valid CIAAN IDs:", err);
         setError("Could not load necessary course data.");
         setValidCiaanIds([]);
       }

@@ -63,12 +63,12 @@ const K4Print = () => {
     return (
       <div className="k4-page">
         <div className="k4-form-card">
-          <p className="k4-error">Ciaan or division information is missing.</p>
+          <p className="k4-error">CIAAN or division information is missing.</p>
           <button
             className="btn btn-success"
             onClick={() => navigate("/msbte/k4/print")}
           >
-            Back to Ciaan list
+            Back to CIAAN list
           </button>
         </div>
       </div>

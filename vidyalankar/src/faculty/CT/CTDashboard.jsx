@@ -60,13 +60,13 @@ export default function CTDashboard() {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data?.message || "Failed to fetch Ciaan details");
+        throw new Error(data?.message || "Failed to fetch CIAAN details");
       }
       setCiaanData(data);
     };
 
     fetchCiaanIfNeeded().catch((fetchError) => {
-      setError(fetchError.message || "Failed to fetch Ciaan details");
+      setError(fetchError.message || "Failed to fetch CIAAN details");
     });
   }, [CiaanData, CiaanId, token]);
 

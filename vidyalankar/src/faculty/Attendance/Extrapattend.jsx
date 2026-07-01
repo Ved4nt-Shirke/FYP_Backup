@@ -123,13 +123,13 @@ const StudentAttendancePage = () => {
       const CiaanData = meta.CiaanData;
       if (!CiaanData) {
         setIsSuccess(false);
-        setMessage("Missing Ciaan data. Please select a Ciaan first.");
+        setMessage("Missing CIAAN data. Please Select a CIAAN first.");
         return;
       }
 
       if (!CiaanData.CiaanId) {
         setIsSuccess(false);
-        setMessage("Missing Ciaan ID. Please select a valid Ciaan.");
+        setMessage("Missing CIAAN ID. Please select a valid Ciaan.");
         return;
       }
 

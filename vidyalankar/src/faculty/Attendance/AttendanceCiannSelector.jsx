@@ -78,7 +78,7 @@ const AttendanceCiaanSelector = ({
 
         <div className="ats-details">
           <div className="ats-row">
-            <span className="ats-label">Ciaan ID</span>
+            <span className="ats-label">CIAAN ID</span>
             <span className="ats-value">{CiaanData.CiaanId || "-"}</span>
           </div>
           <div className="ats-row">
@@ -143,7 +143,7 @@ const AttendanceCiaanSelector = ({
         </section>
 
         {loading ? (
-          <div className="ats-state">Loading Ciaans...</div>
+          <div className="ats-state">Loading CIAANs...</div>
         ) : CiaanDataList.length === 0 ? (
           <div className="ats-state">No Ciaans available.</div>
         ) : (

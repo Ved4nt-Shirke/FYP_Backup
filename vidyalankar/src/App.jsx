@@ -32,7 +32,7 @@ import StudentTimetable from "./student/StudentTimetable";
 import ChatPage from "./faculty/chat/ChatPage";
 import FacultyNotices from "./faculty/components/Notices";
 
-// Ciaan / Edit Ciaan Components
+// Ciaan / Edit CIAAN Components
 import CreateCiaan from "./faculty/components/CreateCiann";
 import EditCiaan from "./faculty/components/EditCiann";
 import CourseDiary from "./faculty/editCiann/CourseDiary";

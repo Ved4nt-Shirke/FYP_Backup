@@ -93,7 +93,7 @@ const ViewAssessmentCard = () => {
                 </div>
               ) : (
                 <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
-                  <i className="bi bi-info-circle me-2"></i>No active Ciaan workspaces in this section.
+                  <i className="bi bi-info-circle me-2"></i>No active CIAAN workspaces in this section.
                 </div>
               )}
             </div>
@@ -109,7 +109,7 @@ const ViewAssessmentCard = () => {
                 </div>
               ) : (
                 <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
-                  <i className="bi bi-info-circle me-2"></i>No archived or completed Ciaan workspaces in this section.
+                  <i className="bi bi-info-circle me-2"></i>No archived or completed CIAAN workspaces in this section.
                 </div>
               )}
             </div>

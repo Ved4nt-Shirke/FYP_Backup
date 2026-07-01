@@ -157,7 +157,7 @@ const Dashboard = () => {
         const CiaanResponse = await fetch(config.Ciaans, requestOptions);
         if (!CiaanResponse.ok) {
           throw new Error(
-            `Failed to fetch Ciaan list (${CiaanResponse.status})`,
+            `Failed to fetch CIAAN list (${CiaanResponse.status})`,
           );
         }
 
@@ -224,7 +224,7 @@ const Dashboard = () => {
           percentage,
         });
       } catch (error) {
-        console.error("Error fetching Edit Ciaan progress:", error);
+        console.error("Error fetching Edit CIAAN progress:", error);
         if (!isMounted) return;
         setCiaanProgress({
           loading: false,
@@ -412,8 +412,8 @@ const Dashboard = () => {
     if (CiaanProgress.total === 0)
       return "Create a Ciaan to start tracking progress";
     if (CiaanProgress.percentage === 100)
-      return "Edit Ciaan is fully completed";
-    return "Continue Edit Ciaan to reach 100%";
+      return "Edit CIAAN is fully completed";
+    return "Continue Edit CIAAN to reach 100%";
   }, [CiaanProgress]);
 
   const chartBars = useMemo(() => {
@@ -482,13 +482,13 @@ const Dashboard = () => {
           <p>
             {CiaanProgress.loading
               ? "Preparing your latest dashboard insights..."
-              : `${CiaanProgress.completed} of ${CiaanProgress.total} Ciaan records complete with ${attendancePresenceRate}% attendance presence.`}
+              : `${CiaanProgress.completed} of ${CiaanProgress.total} CIAAN records complete with ${attendancePresenceRate}% attendance presence.`}
           </p>
         </div>
 
         <div className="dashboard-progress-card">
           <div className="dashboard-progress-head">
-            <span>Edit Ciaan Progress</span>
+            <span>Edit CIAAN Progress</span>
             <strong>
               {CiaanProgress.loading ? "--" : `${CiaanProgress.percentage}%`}
             </strong>
@@ -512,7 +512,7 @@ const Dashboard = () => {
       <div className="analytics-grid">
         <article className="analytics-card">
           <div className="analytics-card-head">
-            <h3>Ciaan Completion</h3>
+            <h3>CIAAN Completion</h3>
             <span>
               {CiaanProgress.completed}/{CiaanProgress.total}
             </span>

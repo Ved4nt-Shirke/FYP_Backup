@@ -160,7 +160,7 @@ const K7Generate = () => {
       }
     } catch (err) {
       console.error("Failed to load Ciaan:", err);
-      alert("Error loading Ciaan. Please verify the Ciaan ID.");
+      alert("Error Loading CIAAN. Please verify the CIAAN ID.");
     } finally {
       setLoading(false);
     }

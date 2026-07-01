@@ -93,12 +93,12 @@ const K3CiaanCards = () => {
       <div className="k3-page">
         <div className="k3-page-header">
           <h2>MSBTE Formats (K Scheme)</h2>
-          <p>FA-PR-K3 - Select Ciaan</p>
+          <p>FA-PR-K3 - Select CIAAN</p>
         </div>
 
         {loading ? (
           <div className="text-center py-5">
-            <p>Loading Ciaan entries...</p>
+            <p>Loading CIAAN entries...</p>
           </div>
         ) : error ? (
           <p className="k3-error">{error}</p>
@@ -115,7 +115,7 @@ const K3CiaanCards = () => {
                 </div>
               ) : (
                 <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
-                  <i className="bi bi-info-circle me-2"></i>No active Ciaan workspaces in this section.
+                  <i className="bi bi-info-circle me-2"></i>No active CIAAN workspaces in this section.
                 </div>
               )}
             </div>
@@ -131,13 +131,13 @@ const K3CiaanCards = () => {
                 </div>
               ) : (
                 <div className="no-workspaces-alert" style={{ background: "rgba(255,255,255,0.6)", border: "1px dashed rgba(0,0,0,0.12)", borderRadius: "8px", padding: "1.5rem", textAlign: "center", color: "rgba(0,0,0,0.5)" }}>
-                  <i className="bi bi-info-circle me-2"></i>No archived or completed Ciaan workspaces in this section.
+                  <i className="bi bi-info-circle me-2"></i>No archived or completed CIAAN workspaces in this section.
                 </div>
               )}
             </div>
           </div>
         ) : (
-          <p className="text-center">No Ciaan entries found.</p>
+          <p className="text-center">No CIAAN entries found.</p>
         )}
       </div>
     </>

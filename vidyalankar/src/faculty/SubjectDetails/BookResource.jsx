@@ -39,7 +39,7 @@ export default function BookResource() {
       setLoading(true);
       const CiaanId = getCurrentCiaanId();
       if (!CiaanId) {
-        setError('No Ciaan ID found. Please select a course first.');
+        setError('No CIAAN ID found. Please select a course first.');
         return;
       }
 
@@ -63,7 +63,7 @@ export default function BookResource() {
       setLoading(true);
       const CiaanId = getCurrentCiaanId();
       if (!CiaanId) {
-        setError('No Ciaan ID found. Please select a course first.');
+        setError('No CIAAN ID found. Please select a course first.');
         return;
       }
 

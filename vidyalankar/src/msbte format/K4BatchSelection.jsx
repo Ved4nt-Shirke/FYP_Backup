@@ -83,13 +83,13 @@ const K4BatchSelection = () => {
           <div className="k4-form-card">
             <h3>Batch Selection</h3>
             <p className="k4-error">
-              Ciaan information is missing. Please go back and select a Ciaan.
+              Ciaan information is missing. Please go back and Select a CIAAN.
             </p>
             <button
               className="btn btn-success"
               onClick={() => navigate(`/msbte/k4/${mode}`)}
             >
-              Back to Ciaan list
+              Back to CIAAN list
             </button>
           </div>
         </div>

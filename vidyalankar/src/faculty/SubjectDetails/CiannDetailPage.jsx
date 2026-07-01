@@ -16,7 +16,7 @@ const CiaanDetailPage = () => {
   };
 
   if (!CiaanData || !CiaanData.CiaanId) {
-    return <p>No CIAAN data to display. Please select a CIAAN from the Edit page.</p>;
+    return <p>No CIAAN data to display. Please Select a CIAAN from the Edit page.</p>;
   }
 
   const username = localStorage.getItem('username') || 'Mr. Test User';

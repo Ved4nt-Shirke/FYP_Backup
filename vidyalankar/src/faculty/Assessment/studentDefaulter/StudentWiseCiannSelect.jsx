@@ -233,7 +233,7 @@ const StudentWiseCiannSelect = () => {
         ) : activeCianns.length === 0 ? (
           <div className="assess-empty-state">
             <i className="bi bi-folder-x"></i>
-            <h3>No Active CIAANs Available</h3>
+            <h3>No active CIAANs Available</h3>
             <p>No active CIAANs for the current academic year.</p>
           </div>
         ) : (

@@ -37,7 +37,7 @@ const ExtraAttendanceForm = () => {
         <Header />
         <div className="attendance-main-content">
           <div className="theory-attendance-container">
-            <h3>No CIAAN selected. Please select a CIAAN card first.</h3>
+            <h3>No CIAAN selected. Please Select a CIAAN card first.</h3>
           </div>
         </div>
 
@@ -56,7 +56,7 @@ const ExtraAttendanceForm = () => {
 
           {CiaanData && (
             <div className="Ciaan-info">
-              <strong>Ciaan ID:</strong> {CiaanData.CiaanId} |{" "}
+              <strong>CIAAN ID:</strong> {CiaanData.CiaanId} |{" "}
               <strong>Subject:</strong> {CiaanData.subject?.name} (
               {CiaanData.subject?.code}) | <strong>Division:</strong>{" "}
               {CiaanData.division}

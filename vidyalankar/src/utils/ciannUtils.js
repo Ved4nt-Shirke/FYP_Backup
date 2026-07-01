@@ -88,7 +88,7 @@ export const CiaanUtils = {
     }
   },
 
-  // Request access to an existing Ciaan by Ciaan ID
+  // Request access to an existing Ciaan by CIAAN ID
   requestCiaanAccess: async (CiaanId, permission = "read") => {
     try {
       const response = await axios.post(
@@ -103,7 +103,7 @@ export const CiaanUtils = {
     }
   },
 
-  // Get incoming share requests for Ciaans owned by current user
+  // Get incoming share requests for CIAANs owned by current user
   getIncomingShareRequests: async () => {
     try {
       const response = await axios.get(`${Ciaan_URL}/share-requests/incoming`, {
@@ -179,7 +179,7 @@ export const CiaanUtils = {
       }
       return JSON.parse(CiaanDataStr);
     } catch (error) {
-      console.error("Error parsing Ciaan data from localStorage:", error);
+      console.error("Error parsing CIAAN data from localStorage:", error);
       return null;
     }
   },
@@ -190,7 +190,7 @@ export const CiaanUtils = {
       localStorage.setItem("CiaanData", JSON.stringify(CiaanData));
       return true;
     } catch (error) {
-      console.error("Error saving Ciaan data to localStorage:", error);
+      console.error("Error saving CIAAN data to localStorage:", error);
       return false;
     }
   },
@@ -201,20 +201,20 @@ export const CiaanUtils = {
       localStorage.removeItem("CiaanData");
       return true;
     } catch (error) {
-      console.error("Error clearing Ciaan data from localStorage:", error);
+      console.error("Error clearing CIAAN data from localStorage:", error);
       return false;
     }
   },
 
-  // Validate Ciaan data (allows server-generated CiaanId when specified)
+  // Validate CIAAN data (allows server-generated CiaanId when specified)
   validateCiaan: (CiaanData, { allowGeneratedId = false } = {}) => {
     if (!CiaanData) {
-      return { isValid: false, error: "Ciaan data is required" };
+      return { isValid: false, error: "CIAAN data is required" };
     }
 
     if (!allowGeneratedId) {
       if (!CiaanData.CiaanId) {
-        return { isValid: false, error: "Ciaan ID is required" };
+        return { isValid: false, error: "CIAAN ID is required" };
       }
 
       if (
@@ -222,7 +222,7 @@ export const CiaanUtils = {
         CiaanData.CiaanId < 1000 ||
         CiaanData.CiaanId > 9999
       ) {
-        return { isValid: false, error: "Ciaan ID must be a 4-digit number" };
+        return { isValid: false, error: "CIAAN ID must be a 4-digit number" };
       }
     }
 
@@ -259,7 +259,7 @@ export const CiaanUtils = {
     }
   },
 
-  // Fetch Ciaans owned by a user
+  // Fetch CIAANs owned by a user
   fetchCiaansByUsername: async (username) => {
     try {
       const response = await axios.get(
@@ -273,7 +273,7 @@ export const CiaanUtils = {
     }
   },
 
-  // Sync Ciaan workspace edits
+  // Sync CIAAN workspace edits
   syncCiaan: async (CiaanId, CiaanData, lastSyncedAt, section, details) => {
     try {
       const response = await axios.post(

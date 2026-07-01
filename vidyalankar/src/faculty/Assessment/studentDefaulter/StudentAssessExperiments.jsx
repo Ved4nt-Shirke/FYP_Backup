@@ -57,7 +57,7 @@ export default function StudentAssessExperiments() {
                 const assessmentSubject = a.subjectName || a.subjectCode || a.subject || '';
                 const assessmentCiaanId = a.CiaanId || '';
 
-                // Match by course name/code or Ciaan ID if available
+                // Match by course name/code or CIAAN ID if available
                 const courseMatches = assessmentCourse && (
                   assessmentCourse.toLowerCase().includes(course.toLowerCase()) ||
                   course.toLowerCase().includes(assessmentCourse.toLowerCase())
@@ -154,7 +154,7 @@ export default function StudentAssessExperiments() {
             const assessmentSubject = a.subjectName || a.subjectCode || a.subject || '';
             const assessmentCiaanId = a.CiaanId || '';
 
-            // Match by course name/code or Ciaan ID if available
+            // Match by course name/code or CIAAN ID if available
             const courseMatches = assessmentCourse && (
               assessmentCourse.toLowerCase().includes(course.toLowerCase()) ||
               course.toLowerCase().includes(assessmentCourse.toLowerCase())

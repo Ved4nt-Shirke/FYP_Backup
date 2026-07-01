@@ -484,7 +484,7 @@ const AcademicYearManagement = () => {
                     </div>
                     <div className="ay-stat-info">
                       <span className="ay-stat-value">{selectedYearStats.stats.totalCiaans}</span>
-                      <span className="ay-stat-label">Total Ciaans</span>
+                      <span className="ay-stat-label">Total CIAANs</span>
                     </div>
                   </div>
 
@@ -538,8 +538,8 @@ const AcademicYearManagement = () => {
                           <tr>
                             <th>Faculty Username / ID</th>
                             <th>Total Ciaans Assigned</th>
-                            <th>Completed Ciaans</th>
-                            <th>Active / Pending Ciaans</th>
+                            <th>Completed CIAANs</th>
+                            <th>Active / Pending CIAANs</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -577,7 +577,7 @@ const AcademicYearManagement = () => {
                         <thead>
                           <tr>
                             <th>Department</th>
-                            <th>Total Ciaans</th>
+                            <th>Total CIAANs</th>
                             <th>Completed</th>
                             <th>Pending / Active</th>
                           </tr>
@@ -609,7 +609,7 @@ const AcademicYearManagement = () => {
                         <thead>
                           <tr>
                             <th>Subject Name</th>
-                            <th>Total Ciaans</th>
+                            <th>Total CIAANs</th>
                             <th>Completed</th>
                             <th>Pending / Active</th>
                           </tr>
@@ -639,7 +639,7 @@ const AcademicYearManagement = () => {
                         <thead>
                           <tr>
                             <th>Semester</th>
-                            <th>Total Ciaans</th>
+                            <th>Total CIAANs</th>
                             <th>Completed</th>
                             <th>Pending / Active</th>
                           </tr>

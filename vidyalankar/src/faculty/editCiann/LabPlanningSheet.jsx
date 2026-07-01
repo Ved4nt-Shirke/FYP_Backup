@@ -323,7 +323,7 @@ const LabPlanningSheet = () => {
                 }}
               >
                 <p>
-                  No CIAAN ID available. Please select a CIAAN first to access
+                  No CIAAN ID available. Please Select a CIAAN first to access
                   the Laboratory Planning Sheet.
                 </p>
                 <div

@@ -71,7 +71,7 @@ const StudentAttendance = () => {
 
       if (!CiaanDataStr) {
         setIsSuccess(false);
-        setMessage("Missing Ciaan data. Please select a Ciaan first.");
+        setMessage("Missing CIAAN data. Please Select a CIAAN first.");
         return;
       }
 

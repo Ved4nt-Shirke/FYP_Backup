@@ -130,7 +130,7 @@ const SAPRK4Generate = () => {
 
   const handleSave = async () => {
     if (!CiaanData?.CiaanId || !CiaanData?.division) {
-      alert("Please select a Ciaan first.");
+      alert("Please Select a CIAAN first.");
       return;
     }
 
@@ -209,12 +209,12 @@ const SAPRK4Generate = () => {
 
         {!CiaanData && (
           <div className="alert alert-warning">
-            Please select a Ciaan first for SA-PR-K4.
+            Please Select a CIAAN first for SA-PR-K4.
             <button
               className="btn btn-sm btn-outline-secondary ms-3"
               onClick={() => navigate("/msbte/sa-pr-k4/Ciaans?mode=generate")}
             >
-              Select Ciaan
+              Select CIAAN
             </button>
           </div>
         )}
