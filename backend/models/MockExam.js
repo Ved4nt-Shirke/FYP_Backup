@@ -15,6 +15,28 @@ const mockExamQuestionSchema = new mongoose.Schema(
     correctAnswer: { type: String, default: "" },
     marks: { type: Number, default: 0, min: 0 },
     explanation: { type: String, default: "" },
+    difficulty: {
+      type: String,
+      enum: ["EASY", "MEDIUM", "HARD"],
+      default: "MEDIUM",
+    },
+    chapter: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    image: {
+      type: String,
+      default: "",
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
+    isFavorite: {
+      type: Boolean,
+      default: false,
+    },
   },
   { _id: true },
 );
@@ -65,6 +87,22 @@ const mockExamSchema = new mongoose.Schema(
     shuffleQuestions: { type: Boolean, default: false },
     shuffleOptions: { type: Boolean, default: false },
     negativeMarking: { type: Number, default: 0, min: 0 },
+    attemptsAllowed: {
+      type: String,
+      enum: ["SINGLE", "MULTIPLE"],
+      default: "SINGLE",
+    },
+    maxAttempts: { type: Number, default: 1, min: 1 },
+    resumeEnabled: { type: Boolean, default: true },
+    passingMarks: { type: Number, default: 18, min: 0 },
+    timerPerQuestion: { type: Boolean, default: false },
+    timerPerQuestionDuration: { type: Number, default: 0, min: 0 }, // in seconds
+    fullscreenRequired: { type: Boolean, default: false },
+    preventTabSwitch: { type: Boolean, default: false },
+    sections: {
+      type: Array,
+      default: [], // array of objects { title, startIdx, endIdx }
+    },
   },
   {
     timestamps: { createdAt: true, updatedAt: true },

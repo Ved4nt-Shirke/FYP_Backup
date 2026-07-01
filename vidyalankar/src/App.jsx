@@ -218,6 +218,8 @@ import MockExamDashboard from "./pages/faculty/MockExamDashboard";
 import MockExamForm from "./pages/faculty/MockExamForm";
 import MockExamManage from "./pages/faculty/MockExamManage";
 import MockExamResults from "./pages/faculty/MockExamResults";
+import MockExamQuestions from "./pages/faculty/MockExamQuestions";
+// Dedicated Mock Exam Questions Workspace component
 
 // CT / PT / Course Components
 import CTCiaanCards from "./faculty/CT/CTCiannCards";
@@ -722,6 +724,7 @@ const AppContent = () => {
             <Route path="/faculty/mock-exams/create" element={<MockExamForm />} />
             <Route path="/faculty/mock-exams/edit/:examId" element={<MockExamForm />} />
             <Route path="/faculty/mock-exams/manage" element={<MockExamManage />} />
+            <Route path="/faculty/mock-exams/:examId/questions" element={<MockExamQuestions />} />
             <Route path="/faculty/mock-exams/results" element={<MockExamResults />} />
             <Route path="/faculty/notices" element={<FacultyNotices />} />
             <Route path="/messages" element={<ChatPage />} />

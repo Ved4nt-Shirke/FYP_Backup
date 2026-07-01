@@ -192,27 +192,59 @@ export const studyMaterialsService = {
 export const mockTestsService = {
   // Get all available tests
   getTests: async () => {
-    return await apiRequest('/mock-tests');
+    const token = getAuthToken();
+    const response = await fetch('/api/mock-exams/student/exams', {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      }
+    });
+    if (!response.ok) throw new Error(`Failed to load tests`);
+    const data = await response.json();
+    return Array.isArray(data?.exams) ? data.exams : [];
   },
   
   // Get test by ID
   getTestById: async (id) => {
-    return await apiRequest(`/mock-tests/${id}`);
+    const token = getAuthToken();
+    const response = await fetch(`/api/mock-exams/student/exams/${id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      }
+    });
+    if (!response.ok) throw new Error(`Failed to load test`);
+    const data = await response.json();
+    return data?.exam;
   },
   
   // Start a test
   startTest: async (testId) => {
-    return await apiRequest(`/mock-tests/${testId}/start`, {
-      method: 'POST'
+    const token = getAuthToken();
+    const response = await fetch(`/api/mock-exams/student/exams/${testId}/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      }
     });
+    if (!response.ok) throw new Error(`Failed to start test`);
+    return await response.json();
   },
   
   // Submit test answers
   submitTest: async (testId, answers) => {
-    return await apiRequest(`/mock-tests/${testId}/submit`, {
+    const token = getAuthToken();
+    const response = await fetch(`/api/mock-exams/student/exams/${testId}/submit`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      },
       body: JSON.stringify({ answers })
     });
+    if (!response.ok) throw new Error(`Failed to submit test`);
+    return await response.json();
   }
 };
 

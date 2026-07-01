@@ -4,15 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { config } from "../../config/api";
 import "../../styles/mockExam.css";
 
-const blankQuestion = (type = "MCQ") => ({
-  type,
-  question: "",
-  options: ["", "", "", ""],
-  correctAnswer: "",
-  marks: 1,
-  explanation: "",
-});
-
 const MockExamForm = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
@@ -20,8 +11,11 @@ const MockExamForm = () => {
 
   const [loading, setLoading] = useState(true);
   const [catalog, setCatalog] = useState({ departments: [], courses: [], divisions: [], subjects: [] });
+  const [academicYears, setAcademicYears] = useState([]);
+  const [existingQuestions, setExistingQuestions] = useState([]);
   const [form, setForm] = useState({
     academicYear: "",
+    departmentId: "",
     courseId: "",
     divisionId: "",
     semester: "",
@@ -36,15 +30,27 @@ const MockExamForm = () => {
     shuffleQuestions: false,
     shuffleOptions: false,
     negativeMarking: 0,
+    attemptsAllowed: "SINGLE",
+    maxAttempts: 1,
+    resumeEnabled: true,
+    passingMarks: 18,
+    timerPerQuestion: false,
+    timerPerQuestionDuration: 0,
+    fullscreenRequired: false,
+    preventTabSwitch: false,
+    sections: [],
   });
-  const [questions, setQuestions] = useState([blankQuestion("MCQ")]);
+
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [catalogResponse, examResponse] = await Promise.all([
+        setLoading(true);
+        const [catalogResponse, yearsResponse, examResponse] = await Promise.all([
           axios.get(`${config.mockExams}/catalog`),
+          axios.get(`${config.apiBaseUrl}/academic-year/all`),
           editing ? axios.get(`${config.mockExams}/${examId}`) : Promise.resolve(null),
         ]);
 
@@ -55,10 +61,13 @@ const MockExamForm = () => {
           subjects: catalogResponse.data?.subjects || [],
         });
 
+        setAcademicYears(yearsResponse.data?.academicYears || []);
+
         if (examResponse?.data?.exam) {
           const exam = examResponse.data.exam;
           setForm({
             academicYear: exam.academicYear || "",
+            departmentId: exam.courseId?.departmentId || "",
             courseId: exam.courseId?._id || exam.courseId || "",
             divisionId: exam.divisionId?._id || exam.divisionId || "",
             semester: String(exam.semester || ""),
@@ -73,17 +82,17 @@ const MockExamForm = () => {
             shuffleQuestions: Boolean(exam.shuffleQuestions),
             shuffleOptions: Boolean(exam.shuffleOptions),
             negativeMarking: exam.negativeMarking || 0,
+            attemptsAllowed: exam.attemptsAllowed || "SINGLE",
+            maxAttempts: exam.maxAttempts || 1,
+            resumeEnabled: exam.resumeEnabled !== false,
+            passingMarks: exam.passingMarks || 18,
+            timerPerQuestion: Boolean(exam.timerPerQuestion),
+            timerPerQuestionDuration: exam.timerPerQuestionDuration || 0,
+            fullscreenRequired: Boolean(exam.fullscreenRequired),
+            preventTabSwitch: Boolean(exam.preventTabSwitch),
+            sections: exam.sections || [],
           });
-          setQuestions(
-            (exam.questions || []).map((question) => ({
-              type: question.type || "MCQ",
-              question: question.question || "",
-              options: Array.isArray(question.options) ? [...question.options, "", "", "", ""].slice(0, 4) : ["", "", "", ""],
-              correctAnswer: question.correctAnswer || "",
-              marks: question.marks || 1,
-              explanation: question.explanation || "",
-            })),
-          );
+          setExistingQuestions(exam.questions || []);
         }
       } catch (loadError) {
         setError(loadError?.response?.data?.message || loadError.message || "Failed to load exam form data");
@@ -95,54 +104,82 @@ const MockExamForm = () => {
     load();
   }, [editing, examId]);
 
+  // Cascading Helpers
   const departments = catalog.departments;
-  const filteredCourses = useMemo(
-    () => catalog.courses.filter((course) => !form.departmentId || String(course.departmentId) === String(form.departmentId)),
-    [catalog.courses, form.departmentId],
-  );
+  const filteredCourses = useMemo(() => {
+    const selectedYear = academicYears.find(y => y.yearName === form.academicYear);
+    return catalog.courses.filter((course) => {
+      const matchDept = !form.departmentId || String(course.departmentId) === String(form.departmentId);
+      const matchScheme = !selectedYear || !selectedYear.scheme || course.scheme === selectedYear.scheme;
+      return matchDept && matchScheme;
+    });
+  }, [catalog.courses, form.departmentId, form.academicYear, academicYears]);
+
   const filteredDivisions = useMemo(
     () => catalog.divisions.filter((division) => !form.courseId || String(division.courseId) === String(form.courseId)),
     [catalog.divisions, form.courseId],
   );
+
   const filteredSubjects = useMemo(
     () => catalog.subjects.filter((subject) => !form.courseId || String(subject.courseId) === String(form.courseId)),
     [catalog.subjects, form.courseId],
   );
 
-  const updateQuestion = (index, key, value) => {
-    setQuestions((previous) => previous.map((question, currentIndex) => (currentIndex === index ? { ...question, [key]: value } : question)));
-  };
-
-  const updateOption = (questionIndex, optionIndex, value) => {
-    setQuestions((previous) => previous.map((question, currentIndex) => {
-      if (currentIndex !== questionIndex) return question;
-      const nextOptions = [...question.options];
-      nextOptions[optionIndex] = value;
-      return { ...question, options: nextOptions };
+  // Auto-cascade selectors changes
+  const handleAcademicYearChange = (yearName) => {
+    setForm(prev => ({
+      ...prev,
+      academicYear: yearName,
+      departmentId: "",
+      courseId: "",
+      divisionId: "",
+      subjectId: "",
+      semester: ""
     }));
   };
 
-  const addQuestion = (type) => setQuestions((previous) => [...previous, blankQuestion(type)]);
-  const deleteQuestion = (index) => setQuestions((previous) => previous.filter((_, currentIndex) => currentIndex !== index));
+  const handleDepartmentChange = (deptId) => {
+    setForm(prev => ({
+      ...prev,
+      departmentId: deptId,
+      courseId: "",
+      divisionId: "",
+      subjectId: "",
+      semester: ""
+    }));
+  };
 
+  const handleCourseChange = (courseId) => {
+    const course = catalog.courses.find(c => String(c._id) === String(courseId));
+    setForm(prev => ({
+      ...prev,
+      courseId,
+      semester: course ? String(course.semester) : "",
+      divisionId: "",
+      subjectId: ""
+    }));
+  };
+
+  // Save Mock Exam
   const saveExam = async (publish) => {
     try {
       setError("");
+      if (!form.academicYear || !form.courseId || !form.divisionId || !form.semester || !form.subjectId || !form.title) {
+        setError("Please fill out all academic selectors and the exam Title.");
+        return;
+      }
+
       const payload = {
         ...form,
         semester: Number(form.semester),
         duration: Number(form.duration),
         totalMarks: Number(form.totalMarks),
         negativeMarking: Number(form.negativeMarking),
+        passingMarks: Number(form.passingMarks),
+        maxAttempts: Number(form.maxAttempts),
+        timerPerQuestionDuration: Number(form.timerPerQuestionDuration),
         isPublished: publish,
-        questions: questions.map((question) => ({
-          type: question.type,
-          question: question.question,
-          options: question.type === "MCQ" ? question.options : [],
-          correctAnswer: question.correctAnswer,
-          marks: Number(question.marks || 0),
-          explanation: question.explanation,
-        })),
+        questions: editing ? existingQuestions : [], // preserve existing questions if editing
       };
 
       if (editing) {
@@ -158,141 +195,191 @@ const MockExamForm = () => {
   };
 
   if (loading) {
-    return <div className="mock-exam-shell">Loading mock exam form...</div>;
+    return (
+      <div className="mock-exam-shell d-flex align-items-center justify-content-center" style={{ minHeight: "80vh" }}>
+        <div className="text-center">
+          <div className="spinner-border text-success mb-2" role="status" />
+          <div className="text-muted">Loading Exam Configuration...</div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="mock-exam-shell">
-      <div className="mock-exam-page">
-        <div className="mock-exam-hero">
+      <div className="mock-exam-page" style={{ maxWidth: "1000px", margin: "0 auto" }}>
+        <div className="mock-exam-hero" style={{ padding: "20px 24px" }}>
           <div>
-            <span className="mock-exam-pill">{editing ? "Edit Exam" : "Create Exam"}</span>
-            <h1 className="mock-exam-title">{editing ? "Edit Mock Exam" : "Create Mock Exam"}</h1>
-            <p className="mock-exam-subtitle">All academic selectors are loaded from admin-created data.</p>
+            <span className="mock-exam-pill">{editing ? "Configure Settings" : "New Exam Settings"}</span>
+            <h1 className="mock-exam-title">{editing ? "Edit Exam Settings" : "Create Mock Exam"}</h1>
+            <p className="mock-exam-subtitle">Configure academic details, security limits, timing restrictions, and passing scores.</p>
           </div>
           <div className="d-flex gap-2 flex-wrap">
-            <button className="mock-exam-button secondary" onClick={() => navigate("/faculty/mock-exams/manage")}>Back</button>
-            <button className="mock-exam-button secondary" onClick={() => saveExam(false)}>Save Draft</button>
-            <button className="mock-exam-button" onClick={() => saveExam(true)}>{editing ? "Update & Publish" : "Publish"}</button>
+            <button className="mock-exam-button secondary" onClick={() => navigate("/faculty/mock-exams/manage")}>Cancel</button>
+            <button className="mock-exam-button" onClick={() => saveExam(editing ? form.isPublished : false)}>{editing ? "Update Settings" : "Create Exam"}</button>
           </div>
         </div>
 
-        {error ? <div className="mock-exam-card mb-3" style={{ borderColor: "#fca5a5", color: "#fee2e2" }}>{error}</div> : null}
+        {error ? <div className="alert alert-danger mb-3">{error}</div> : null}
+        {successMsg ? <div className="alert alert-success mb-3">{successMsg}</div> : null}
 
-        <div className="mock-exam-card">
-          <div className="mock-exam-form-grid">
-            <div>
-              <label>Academic Year</label>
-              <input className="mock-exam-input" value={form.academicYear} onChange={(e) => setForm((prev) => ({ ...prev, academicYear: e.target.value }))} placeholder="2025-2026" />
-            </div>
-            <div>
-              <label>Department</label>
-              <select className="mock-exam-select" value={form.departmentId || ""} onChange={(e) => setForm((prev) => ({ ...prev, departmentId: e.target.value, courseId: "", divisionId: "", subjectId: "" }))}>
-                <option value="">Select Department</option>
-                {departments.map((department) => <option key={department._id} value={department._id}>{department.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>Course</label>
-              <select className="mock-exam-select" value={form.courseId} onChange={(e) => setForm((prev) => ({ ...prev, courseId: e.target.value, divisionId: "", subjectId: "", semester: filteredCourses.find((course) => String(course._id) === e.target.value)?.semester || prev.semester }))}>
-                <option value="">Select Course</option>
-                {filteredCourses.map((course) => <option key={course._id} value={course._id}>{course.courseCode} - Sem {course.semester}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>Division</label>
-              <select className="mock-exam-select" value={form.divisionId} onChange={(e) => setForm((prev) => ({ ...prev, divisionId: e.target.value }))}>
-                <option value="">Select Division</option>
-                {filteredDivisions.map((division) => <option key={division._id} value={division._id}>{division.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>Semester</label>
-              <input className="mock-exam-input" type="number" min="1" max="8" value={form.semester} onChange={(e) => setForm((prev) => ({ ...prev, semester: e.target.value }))} />
-            </div>
-            <div>
-              <label>Subject</label>
-              <select className="mock-exam-select" value={form.subjectId} onChange={(e) => setForm((prev) => ({ ...prev, subjectId: e.target.value }))}>
-                <option value="">Select Subject</option>
-                {filteredSubjects.map((subject) => <option key={subject._id} value={subject._id}>{subject.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>Title</label>
-              <input className="mock-exam-input" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="Mid Sem Mock Exam" />
-            </div>
-            <div>
-              <label>Duration (minutes)</label>
-              <input className="mock-exam-input" type="number" min="1" value={form.duration} onChange={(e) => setForm((prev) => ({ ...prev, duration: e.target.value }))} />
-            </div>
-            <div>
-              <label>Total Marks</label>
-              <input className="mock-exam-input" type="number" min="1" value={form.totalMarks} onChange={(e) => setForm((prev) => ({ ...prev, totalMarks: e.target.value }))} />
-            </div>
-            <div>
-              <label>Exam Type</label>
-              <select className="mock-exam-select" value={form.examType} onChange={(e) => setForm((prev) => ({ ...prev, examType: e.target.value }))}>
-                <option value="MCQ">MCQ</option>
-                <option value="THEORY">Theory</option>
-                <option value="MIXED">Mixed</option>
-              </select>
-            </div>
-            <div>
-              <label>Start Date & Time</label>
-              <input className="mock-exam-input" type="datetime-local" value={form.startTime} onChange={(e) => setForm((prev) => ({ ...prev, startTime: e.target.value }))} />
-            </div>
-            <div>
-              <label>End Date & Time</label>
-              <input className="mock-exam-input" type="datetime-local" value={form.endTime} onChange={(e) => setForm((prev) => ({ ...prev, endTime: e.target.value }))} />
-            </div>
-            <div>
-              <label>Negative Marking</label>
-              <input className="mock-exam-input" type="number" min="0" step="0.25" value={form.negativeMarking} onChange={(e) => setForm((prev) => ({ ...prev, negativeMarking: e.target.value }))} />
-            </div>
-          </div>
-
-          <div className="mock-exam-action-row mt-3">
-            <label className="mock-exam-card d-flex align-items-center gap-2"><input type="checkbox" checked={form.shuffleQuestions} onChange={(e) => setForm((prev) => ({ ...prev, shuffleQuestions: e.target.checked }))} /> Shuffle Questions</label>
-            <label className="mock-exam-card d-flex align-items-center gap-2"><input type="checkbox" checked={form.shuffleOptions} onChange={(e) => setForm((prev) => ({ ...prev, shuffleOptions: e.target.checked }))} /> Shuffle Options</label>
-            <label className="mock-exam-card d-flex align-items-center gap-2"><input type="checkbox" checked={form.isPublished} onChange={(e) => setForm((prev) => ({ ...prev, isPublished: e.target.checked }))} /> Publish immediately</label>
-          </div>
-        </div>
-
-        <div className="mock-exam-section-title">Questions</div>
-        <div className="d-flex gap-2 flex-wrap mb-3">
-          <button className="mock-exam-button secondary" onClick={() => addQuestion("MCQ")}>Add MCQ</button>
-          <button className="mock-exam-button secondary" onClick={() => addQuestion("THEORY")}>Add Theory</button>
-        </div>
-
-        {questions.map((question, index) => (
-          <div key={`${index}-${question.type}`} className="mock-exam-question-card">
-            <div className="mock-exam-question-top">
-              <strong>Question {index + 1}</strong>
-              <div className="d-flex gap-2 align-items-center flex-wrap">
-                <select className="mock-exam-select" value={question.type} onChange={(e) => updateQuestion(index, "type", e.target.value)} style={{ width: 150 }}>
-                  <option value="MCQ">MCQ</option>
-                  <option value="THEORY">Theory</option>
+        <div className="d-flex flex-column gap-4">
+          {/* Academic Selector Block */}
+          <div className="mock-exam-card">
+            <h3 className="mock-exam-card-title mb-3" style={{ fontSize: "1rem", borderBottom: "1px solid #f3f4f6", paddingBottom: "10px" }}>
+              <i className="bi bi-mortarboard-fill me-1" /> 1. Academic Configuration
+            </h3>
+            <div className="mock-exam-form-grid" style={{ gap: "16px" }}>
+              <div className="custom-form-group">
+                <label>Academic Year</label>
+                <select className="mock-exam-select" value={form.academicYear} onChange={(e) => handleAcademicYearChange(e.target.value)}>
+                  <option value="">Select Academic Year</option>
+                  {academicYears.map((year) => <option key={year._id} value={year.yearName}>{year.yearName} (Scheme {year.scheme})</option>)}
                 </select>
-                <button className="mock-exam-button danger" onClick={() => deleteQuestion(index)}>Delete</button>
+              </div>
+              <div className="custom-form-group">
+                <label>Department</label>
+                <select className="mock-exam-select" value={form.departmentId} onChange={(e) => handleDepartmentChange(e.target.value)} disabled={!form.academicYear}>
+                  <option value="">Select Department</option>
+                  {departments.map((dept) => <option key={dept._id} value={dept._id}>{dept.name}</option>)}
+                </select>
+              </div>
+              <div className="custom-form-group">
+                <label>Course</label>
+                <select className="mock-exam-select" value={form.courseId} onChange={(e) => handleCourseChange(e.target.value)} disabled={!form.departmentId}>
+                  <option value="">Select Course</option>
+                  {filteredCourses.map((c) => <option key={c._id} value={c._id}>{c.courseCode} - Sem {c.semester}</option>)}
+                </select>
+              </div>
+              <div className="custom-form-group">
+                <label>Division</label>
+                <select className="mock-exam-select" value={form.divisionId} onChange={(e) => setForm((prev) => ({ ...prev, divisionId: e.target.value }))} disabled={!form.courseId}>
+                  <option value="">Select Division</option>
+                  {filteredDivisions.map((div) => <option key={div._id} value={div._id}>{div.name}</option>)}
+                </select>
+              </div>
+              <div className="custom-form-group">
+                <label>Semester</label>
+                <input className="mock-exam-input" type="number" min="1" max="8" value={form.semester} readOnly style={{ background: "#f3f4f6", cursor: "not-allowed" }} />
+              </div>
+              <div className="custom-form-group">
+                <label>Subject</label>
+                <select className="mock-exam-select" value={form.subjectId} onChange={(e) => setForm((prev) => ({ ...prev, subjectId: e.target.value }))} disabled={!form.courseId}>
+                  <option value="">Select Subject</option>
+                  {filteredSubjects.map((sub) => <option key={sub._id} value={sub._id}>{sub.name} ({sub.code})</option>)}
+                </select>
               </div>
             </div>
-            <textarea className="mock-exam-textarea" placeholder="Enter question" value={question.question} onChange={(e) => updateQuestion(index, "question", e.target.value)} />
-            {question.type === "MCQ" ? (
-              <div className="mock-exam-form-grid mt-3">
-                {question.options.map((option, optionIndex) => (
-                  <input key={optionIndex} className="mock-exam-input" value={option} placeholder={`Option ${optionIndex + 1}`} onChange={(e) => updateOption(index, optionIndex, e.target.value)} />
-                ))}
-                <input className="mock-exam-input" value={question.correctAnswer} placeholder="Correct answer" onChange={(e) => updateQuestion(index, "correctAnswer", e.target.value)} />
-                <input className="mock-exam-input" type="number" min="0" value={question.marks} onChange={(e) => updateQuestion(index, "marks", e.target.value)} placeholder="Marks" />
-              </div>
-            ) : (
-              <div className="mock-exam-form-grid mt-3">
-                <textarea className="mock-exam-textarea" placeholder="Model answer / evaluation notes" value={question.explanation} onChange={(e) => updateQuestion(index, "explanation", e.target.value)} />
-                <input className="mock-exam-input" type="number" min="0" value={question.marks} onChange={(e) => updateQuestion(index, "marks", e.target.value)} placeholder="Marks" />
-              </div>
-            )}
           </div>
-        ))}
+
+          {/* Exam Details Block */}
+          <div className="mock-exam-card">
+            <h3 className="mock-exam-card-title mb-3" style={{ fontSize: "1rem", borderBottom: "1px solid #f3f4f6", paddingBottom: "10px" }}>
+              <i className="bi bi-gear-fill me-1" /> 2. Exam Details
+            </h3>
+            <div className="mock-exam-form-grid" style={{ gap: "16px" }}>
+              <div className="custom-form-group">
+                <label>Exam Name</label>
+                <input className="mock-exam-input" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="Mid-Semester Exam" />
+              </div>
+              <div className="custom-form-group">
+                <label>Exam Type</label>
+                <select className="mock-exam-select" value={form.examType} onChange={(e) => setForm((prev) => ({ ...prev, examType: e.target.value }))}>
+                  <option value="MIXED">Mixed (MCQ + Theory)</option>
+                  <option value="MCQ">MCQ Only</option>
+                  <option value="THEORY">Theory Only</option>
+                </select>
+              </div>
+              <div className="custom-form-group">
+                <label>Duration (minutes)</label>
+                <input className="mock-exam-input" type="number" min="1" value={form.duration} onChange={(e) => setForm((prev) => ({ ...prev, duration: e.target.value }))} />
+              </div>
+              <div className="custom-form-group">
+                <label>Total Marks</label>
+                <input className="mock-exam-input" type="number" min="1" value={form.totalMarks} onChange={(e) => setForm((prev) => ({ ...prev, totalMarks: e.target.value }))} />
+              </div>
+              <div className="custom-form-group">
+                <label>Passing Marks</label>
+                <input className="mock-exam-input" type="number" min="0" value={form.passingMarks} onChange={(e) => setForm((prev) => ({ ...prev, passingMarks: e.target.value }))} />
+              </div>
+              <div className="custom-form-group">
+                <label>Negative Marking per incorrect MCQ</label>
+                <input className="mock-exam-input" type="number" min="0" step="0.25" value={form.negativeMarking} onChange={(e) => setForm((prev) => ({ ...prev, negativeMarking: e.target.value }))} />
+              </div>
+              <div className="custom-form-group">
+                <label>Start Date & Time (Scheduled Open)</label>
+                <input className="mock-exam-input" type="datetime-local" value={form.startTime} onChange={(e) => setForm((prev) => ({ ...prev, startTime: e.target.value }))} />
+              </div>
+              <div className="custom-form-group">
+                <label>End Date & Time (Scheduled Close)</label>
+                <input className="mock-exam-input" type="datetime-local" value={form.endTime} onChange={(e) => setForm((prev) => ({ ...prev, endTime: e.target.value }))} />
+              </div>
+            </div>
+          </div>
+
+          {/* Settings & Attempt Controls */}
+          <div className="mock-exam-card">
+            <h3 className="mock-exam-card-title mb-3" style={{ fontSize: "1rem", borderBottom: "1px solid #f3f4f6", paddingBottom: "10px" }}>
+              <i className="bi bi-shield-fill-check me-1" /> 3. Attempt Settings & Security Controls
+            </h3>
+            <div className="row g-3">
+              <div className="col-md-6 custom-form-group">
+                <label>Attempts Mode</label>
+                <select className="mock-exam-select" value={form.attemptsAllowed} onChange={(e) => setForm((prev) => ({ ...prev, attemptsAllowed: e.target.value, maxAttempts: e.target.value === "SINGLE" ? 1 : 2 }))}>
+                  <option value="SINGLE">Single Attempt Only</option>
+                  <option value="MULTIPLE">Multiple Attempts Allowed</option>
+                </select>
+              </div>
+              {form.attemptsAllowed === "MULTIPLE" && (
+                <div className="col-md-6 custom-form-group">
+                  <label>Attempt Limit Count</label>
+                  <input className="mock-exam-input" type="number" min="2" value={form.maxAttempts} onChange={(e) => setForm((prev) => ({ ...prev, maxAttempts: e.target.value }))} />
+                </div>
+              )}
+            </div>
+
+            <div className="d-flex flex-column gap-3 mt-4 border-top pt-3">
+              <h4 style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)" }}>Options & Security Rules</h4>
+              <div className="row g-2">
+                <div className="col-md-4">
+                  <label className="d-flex align-items-center gap-2 p-2 border rounded-3" style={{ cursor: "pointer", fontSize: "0.88rem", fontWeight: 600 }}>
+                    <input type="checkbox" checked={form.shuffleQuestions} onChange={(e) => setForm((prev) => ({ ...prev, shuffleQuestions: e.target.checked }))} />
+                    <span>Shuffle Questions</span>
+                  </label>
+                </div>
+                <div className="col-md-4">
+                  <label className="d-flex align-items-center gap-2 p-2 border rounded-3" style={{ cursor: "pointer", fontSize: "0.88rem", fontWeight: 600 }}>
+                    <input type="checkbox" checked={form.shuffleOptions} onChange={(e) => setForm((prev) => ({ ...prev, shuffleOptions: e.target.checked }))} />
+                    <span>Shuffle Options</span>
+                  </label>
+                </div>
+                <div className="col-md-4">
+                  <label className="d-flex align-items-center gap-2 p-2 border rounded-3" style={{ cursor: "pointer", fontSize: "0.88rem", fontWeight: 600 }}>
+                    <input type="checkbox" checked={form.resumeEnabled} onChange={(e) => setForm((prev) => ({ ...prev, resumeEnabled: e.target.checked }))} />
+                    <span>Allow Auto-Resume</span>
+                  </label>
+                </div>
+                <div className="col-md-6">
+                  <label className="d-flex align-items-center gap-2 p-2 border rounded-3 text-danger border-danger-subtle" style={{ cursor: "pointer", fontSize: "0.88rem", fontWeight: 600, background: "rgba(239,68,68,0.02)" }}>
+                    <input type="checkbox" checked={form.fullscreenRequired} onChange={(e) => setForm((prev) => ({ ...prev, fullscreenRequired: e.target.checked }))} />
+                    <span>Enforce Fullscreen Mode</span>
+                  </label>
+                </div>
+                <div className="col-md-6">
+                  <label className="d-flex align-items-center gap-2 p-2 border rounded-3 text-danger border-danger-subtle" style={{ cursor: "pointer", fontSize: "0.88rem", fontWeight: 600, background: "rgba(239,68,68,0.02)" }}>
+                    <input type="checkbox" checked={form.preventTabSwitch} onChange={(e) => setForm((prev) => ({ ...prev, preventTabSwitch: e.target.checked }))} />
+                    <span>Prevent Tab Switching</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="d-flex justify-content-end gap-3 mt-4 border-top pt-3">
+          <button className="mock-exam-button secondary" onClick={() => navigate("/faculty/mock-exams/manage")}>Cancel</button>
+          <button className="mock-exam-button" onClick={() => saveExam(editing ? form.isPublished : false)}>{editing ? "Update Settings" : "Create Exam"}</button>
+        </div>
       </div>
     </div>
   );
