@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import CiaanSelector from "../components/CiannSelector";
 import CiaanCommentsSection from "../components/CiannCommentsSection";
-import { CiaanUtils } from "../../utils/CiannUtils";
+import { CiaanUtils } from "../../utils/ciannUtils";
 import "./Sidebar1.css";
 
 const extractValue = (data, ...possibleKeys) => {

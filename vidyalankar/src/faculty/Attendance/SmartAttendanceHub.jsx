@@ -12,7 +12,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../basic/Header";
-import { fetchCiaansWithAuth } from "../../utils/CiannFetch";
+import { fetchCiaansWithAuth } from "../../utils/ciannFetch";
 import { config } from "../../config/api";
 import "./SmartAttendanceHub.css";
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../basic/Header';
 import { config } from '../../config/api';
-import { CiaanUtils } from '../../utils/CiannUtils';
+import { CiaanUtils } from '../../utils/ciannUtils';
 import CiaanCollaboratorsModal from './CiannCollaboratorsModal';
 import './EditCiann.css';
 

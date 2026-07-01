@@ -1,6 +1,6 @@
 // Custom hook for Ciaan management
 import { useState, useEffect, useCallback } from 'react';
-import { CiaanUtils } from '../utils/CiannUtils';
+import { CiaanUtils } from '../utils/ciannUtils';
 
 export const useCiaan = () => {
   const [Ciaans, setCiaans] = useState([]);

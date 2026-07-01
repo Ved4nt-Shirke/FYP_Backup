@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { CiaanUtils } from "../utils/CiannUtils";
+import { CiaanUtils } from "../utils/ciannUtils";
 import "./Sidebar.css";
 
 const Sidebar = ({

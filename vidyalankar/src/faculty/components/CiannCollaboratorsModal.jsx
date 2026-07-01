@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CiaanUtils } from "../../utils/CiannUtils";
+import { CiaanUtils } from "../../utils/ciannUtils";
 
 const CiaanCollaboratorsModal = ({ CiaanData, onClose, onUpdate }) => {
   const [activeSubTab, setActiveSubTab] = useState("collaborators"); // 'collaborators' or 'activity'

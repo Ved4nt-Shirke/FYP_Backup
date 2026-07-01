@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../basic/Header";
 import { useNavigate } from "react-router-dom";
-import { fetchCiaansWithAuth } from "../../utils/CiannFetch";
+import { fetchCiaansWithAuth } from "../../utils/ciannFetch";
 import "./AttendanceCiannSelector.css";
 
 const AttendanceCiaanSelector = ({

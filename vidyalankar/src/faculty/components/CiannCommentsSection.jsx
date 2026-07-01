@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { CiaanUtils } from "../../utils/CiannUtils";
+import { CiaanUtils } from "../../utils/ciannUtils";
 
 const CiaanCommentsSection = ({ isOpen, onClose, CiaanId }) => {
   const [comments, setComments] = useState([]);

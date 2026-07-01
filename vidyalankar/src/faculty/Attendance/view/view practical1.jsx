@@ -1,6 +1,6 @@
 // src/Attendance/PracticalCiaanCards.jsx
 import React, { useEffect, useState } from "react";
-import { fetchCiaansWithAuth } from "../../../utils/CiannFetch";
+import { fetchCiaansWithAuth } from "../../../utils/ciannFetch";
 import Header from "../../basic/Header";
 import { useNavigate } from "react-router-dom";
 import "../components/EditCiann.css";

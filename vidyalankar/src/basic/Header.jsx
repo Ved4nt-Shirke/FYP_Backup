@@ -7,7 +7,7 @@ import {
   buildInstitutionLogoUrl,
   getInstitutionInitials,
 } from "../utils/institutionBranding";
-import { CiaanUtils } from "../utils/CiannUtils";
+import { CiaanUtils } from "../utils/ciannUtils";
 import { config } from "../config/api";
 import "./Header.css";
 
