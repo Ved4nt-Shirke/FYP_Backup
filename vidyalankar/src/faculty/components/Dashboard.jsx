@@ -40,12 +40,12 @@ const cardsData = [
     path: "/view-practical-attendance",
   },
   {
-    label: "CREATE Ciaan",
+    label: "CREATE CIAAN",
     icon: "bi-file-earmark-plus",
     path: "/create-Ciaan",
   },
-  { label: "EDIT Ciaan", icon: "bi-pencil-square", path: "/edit-Ciaan" },
-  { label: "PRINT Ciaan", icon: "bi-printer-fill", path: "/summary-cards" },
+  { label: "EDIT CIAAN", icon: "bi-pencil-square", path: "/edit-Ciaan" },
+  { label: "PRINT CIAAN", icon: "bi-printer-fill", path: "/summary-cards" },
   {
     label: "VIEW EXTRA THEORY",
     icon: "bi-eye",
@@ -410,7 +410,7 @@ const Dashboard = () => {
   const progressStatusText = useMemo(() => {
     if (CiaanProgress.loading) return "Checking progress...";
     if (CiaanProgress.total === 0)
-      return "Create a Ciaan to start tracking progress";
+      return "Create a CIAAN to start tracking progress";
     if (CiaanProgress.percentage === 100)
       return "Edit CIAAN is fully completed";
     return "Continue Edit CIAAN to reach 100%";
@@ -478,7 +478,7 @@ const Dashboard = () => {
       >
         <div className="dashboard-hero-copy">
           <span className="dashboard-kicker">Faculty Command Center</span>
-          <h2>Everything important for Ciaan, attendance, and next actions</h2>
+          <h2>Everything important for CIAAN, attendance, and next actions</h2>
           <p>
             {CiaanProgress.loading
               ? "Preparing your latest dashboard insights..."
