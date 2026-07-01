@@ -1,0 +1,1208 @@
+.Ciaan-print-page {
+  height: 100vh;
+  overflow-y: auto !important;
+  background: #f4f6fb;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.Ciaan-print-toolbar {
+  max-width: 1120px;
+  margin: -20px auto 24px auto;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(219, 229, 242, 0.8) !important;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(13, 35, 72, 0.04) !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.Ciaan-print-toolbar .btn {
+  font-family: inherit;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  transition: all 0.2s ease !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: none !important;
+  margin: 0 !important;
+  height: auto !important;
+}
+
+.Ciaan-print-toolbar .btn-outline-secondary {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #374151 !important;
+}
+
+.Ciaan-print-toolbar .btn-outline-secondary:hover {
+  background: #f9fafb !important;
+  border-color: #9ca3af !important;
+  color: #111827 !important;
+}
+
+.Ciaan-print-toolbar .btn-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+}
+
+.Ciaan-print-toolbar .btn-success:hover {
+  filter: brightness(0.95);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3) !important;
+}
+
+.Ciaan-print-sheet {
+  background: #ffffff;
+  color: #111827;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px;
+  border: 1px solid #dbe5f2;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(13, 35, 72, 0.06);
+}
+
+.print-block {
+  margin-bottom: 24px;
+  break-inside: avoid;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #000;
+}
+
+.front-page-block {
+  page-break-after: always;
+}
+
+.course-diary-card {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.course-diary-header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.course-diary-logo-cell {
+  width: 84px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.course-diary-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.course-diary-logo-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background-color: #e5e7eb;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.course-diary-title {
+  flex: 1;
+  background: var(--app-header-bg);
+  color: #fff;
+  text-align: center;
+  font-size: 38px;
+  font-weight: 700;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.course-diary-body-center {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.course-diary-body-center p {
+  margin: 4px 0;
+  font-size: 20px;
+}
+
+.institution-name {
+  font-size: 34px;
+  color: #444;
+  margin: 0 0 8px;
+  text-transform: lowercase;
+}
+
+.Ciaan-name {
+  color: var(--app-header-bg);
+  font-size: 42px;
+  margin: 0 0 8px;
+}
+
+.diary-info-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  display: table;
+  margin-top: 75px;
+}
+
+.diary-row {
+  display: table-row;
+}
+
+.diary-row .label,
+.diary-row .value {
+  display: table-cell;
+  padding: 12px 15px;
+  font-size: 16px;
+  border: 1px solid #d1d5db;
+}
+
+.diary-row .label {
+  width: 35%;
+  background: var(--app-header-bg);
+  color: #fff;
+  font-weight: 700;
+}
+
+.diary-row .value {
+  width: 65%;
+  background: #fff;
+}
+
+.print-grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  border: 2px solid #000;
+}
+
+.print-grid th,
+.print-grid td {
+  border: 1px solid #000;
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 12px;
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+.print-grid thead th {
+  border: 2px solid #000;
+  font-weight: 700;
+  background: #f3f4f6;
+}
+
+.timetable-print-table .time-col {
+  font-weight: 700;
+  width: 180px;
+  background: #f9fafb;
+}
+
+.tt-cell {
+  min-height: 34px;
+}
+
+.syllabus-image-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.syllabus-image-block {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.syllabus-page-label {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.syllabus-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.two-col-grid h4,
+.subject-section h4 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.small-note {
+  margin: 0 0 10px;
+  color: #374151;
+  font-size: 13px;
+}
+
+.subject-section {
+  margin-bottom: 14px;
+}
+
+.plan-page {
+  margin-bottom: 18px;
+  page-break-inside: avoid;
+}
+
+.plan-page-title {
+  display: inline-block;
+  border: 1px solid #d1d5db;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.tp-table th,
+.tp-table td {
+  font-size: 11px;
+}
+
+.tp-table th:nth-child(1),
+.tp-table td:nth-child(1) {
+  width: 12% !important;
+}
+
+
+.tp-table th:nth-child(2),
+.tp-table td:nth-child(2) {
+  width: 25% !important;
+}
+
+
+.tp-table th:nth-child(3),
+.tp-table td:nth-child(3) {
+  width: 30% !important;
+}
+
+
+.tp-table th:nth-child(4),
+.tp-table td:nth-child(4) {
+  width: 8% !important;
+}
+
+
+.tp-table th:nth-child(5),
+.tp-table td:nth-child(5) {
+  width: 12% !important;
+}
+
+
+.tp-table th:nth-child(6),
+.tp-table td:nth-child(6) {
+  width: 13% !important;
+}
+
+.entry-no-cell {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.Ciaan-print-loading {
+  text-align: center;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #374151;
+}
+
+.Ciaan-print-empty {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+
+  .two-col-grid,
+  .syllabus-image-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .course-diary-title {
+    font-size: 24px;
+  }
+
+  .course-diary-body-center p {
+    font-size: 16px;
+  }
+}
+
+@media print {
+  @page {
+    margin: 10mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .Ciaan-print-page {
+    padding: 0 !important;
+    background: #fff !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .Ciaan-print-sheet {
+    max-width: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .print-grid,
+  .course-diary-card,
+  .plan-page,
+  .print-block {
+    page-break-inside: avoid;
+  }
+
+  .front-page-block {
+    page-break-after: always;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .course-diary-title {
+    font-size: 24px;
+  }
+
+  .course-diary-body-center p {
+    font-size: 14px;
+  }
+
+  .Ciaan-name {
+    font-size: 28px;
+  }
+
+  .institution-name {
+    font-size: 22px;
+  }
+}
+
+/* --- MSBTE Format Appends Styles --- */
+
+/* Format K3 (FA-PA) Styles */
+.k3-format-section {
+  background: #fff;
+  border: 1px solid #000;
+  padding: 14px;
+  margin-bottom: 24px;
+}
+
+.k3-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #000;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.k3-sheet-title {
+  text-align: center;
+  flex: 1;
+}
+
+.k3-sheet-board {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.k3-sheet-subtitle {
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.k3-sheet-format {
+  font-weight: 700;
+  font-size: 12px;
+  text-align: right;
+}
+
+.k3-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 6px 18px;
+  font-size: 12px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.k3-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+  table-layout: auto;
+}
+
+.k3-table th,
+.k3-table td {
+  border: 1px solid #000 !important;
+  padding: 3px 2px !important;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+
+.k3-table thead th {
+  background: #f1f3f5;
+  font-weight: 700;
+}
+
+.k3-name {
+  text-align: left !important;
+  padding-left: 6px !important;
+}
+
+.k3-empty {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.k3-signature-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+  font-size: 12px;
+}
+
+.k3-sign-label {
+  font-size: 11px;
+  color: #444;
+}
+
+/* Format K4 (SA-PR) Styles */
+.k4-format-section {
+  border: 1px solid #000;
+  background: #fff;
+  padding: 10px;
+  margin-bottom: 24px;
+}
+
+.k4-print-sheet {
+  background: #fff;
+}
+
+.k4-print-board {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.k4-print-subtitle {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.k4-print-format {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+
+.k4-print-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin-bottom: 0;
+  border: 1px solid #000;
+  font-size: 9px;
+}
+
+.k4-print-table th,
+.k4-print-table td {
+  border: 1px solid #000 !important;
+  font-size: 9px;
+  padding: 3px 2px !important;
+  text-align: center;
+  vertical-align: middle;
+  background: #fff;
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+
+.k4-structure-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.k4-col-roll {
+  width: 10%;
+}
+
+.k4-col-enroll {
+  width: 15%;
+}
+
+.k4-col-name {
+  width: 40%;
+}
+
+.k4-col-seat {
+  width: 15%;
+}
+
+.k4-col-marks {
+  width: 20%;
+}
+
+.k4-sheet-title-cell {
+  padding: 4px 8px !important;
+}
+
+.k4-sheet-title-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.k4-meta-left,
+.k4-meta-right,
+.k4-meta-center {
+  font-size: 11px !important;
+  font-weight: 600;
+  text-align: left !important;
+  padding: 4px 8px !important;
+}
+
+.k4-meta-right {
+  text-align: right !important;
+}
+
+.k4-meta-center {
+  text-align: center !important;
+}
+
+.k4-print-signatures {
+  border: 1px solid #000;
+  border-top: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 110px;
+}
+
+.k4-sign-column {
+  padding: 8px;
+  font-size: 12px;
+  text-align: left;
+}
+
+.k4-sign-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.k4-print-table thead th {
+  background: #f1f3f5 !important;
+  font-weight: 700;
+}
+
+.k4-print-table td.text-start {
+  text-align: left !important;
+  padding-left: 6px !important;
+}
+
+/* Format K5 (FA-TH) Styles */
+.k5-format-section {
+  border: 1px solid #000;
+  background: #fff;
+  padding: 10px;
+  margin-bottom: 24px;
+}
+
+.k5-sheet {
+  background: #fff;
+}
+
+.k5-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+
+.k5-table th,
+.k5-table td {
+  border: 1px solid #000 !important;
+  font-size: 9px;
+  padding: 3px 2px !important;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+
+.k5-title-cell {
+  position: relative;
+  text-align: center;
+  padding: 8px 10px !important;
+}
+
+.k5-title-top {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.k5-title-sub {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.k5-format {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.k5-meta-left,
+.k5-meta-right {
+  text-align: left;
+  padding: 6px 8px !important;
+}
+
+.k5-meta-right {
+  text-align: right !important;
+}
+
+.k5-name {
+  text-align: left !important;
+}
+
+.k5-empty {
+  text-align: center;
+  padding: 16px 8px !important;
+}
+
+.k5-signatures {
+  border: 1px solid #000;
+  border-top: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 13px;
+  min-height: 78px;
+}
+
+.k5-signatures>div {
+  text-align: left;
+}
+
+/* Attendance Records Section Styles */
+.attendance-records-section {
+  background: #fff;
+  border: 1px solid #000;
+  padding: 14px;
+  margin-bottom: 24px;
+}
+
+.attendance-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #000;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.attendance-title-box {
+  text-align: center;
+  flex: 1;
+}
+
+.attendance-board {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.attendance-subtitle {
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.attendance-format-label {
+  font-weight: 700;
+  font-size: 12px;
+  text-align: right;
+}
+
+.attendance-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 6px 18px;
+  font-size: 12px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.attendance-table-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  text-align: left;
+  border-bottom: 1px solid #000;
+  padding-bottom: 4px;
+}
+
+.attendance-log-table,
+.attendance-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+  margin-bottom: 18px;
+}
+
+.attendance-log-table th,
+.attendance-log-table td,
+.attendance-summary-table th,
+.attendance-summary-table td {
+  border: 1px solid #000 !important;
+  padding: 3px 2px !important;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+
+.attendance-log-table thead th,
+.attendance-summary-table thead th {
+  background: #f1f3f5;
+  font-weight: 700;
+}
+
+.attendance-log-table td.text-start,
+.attendance-summary-table td.text-start {
+  text-align: left !important;
+  padding-left: 6px !important;
+}
+
+.attendance-empty {
+  text-align: center;
+  padding: 12px 0;
+  color: #666;
+}
+
+.attendance-signatures {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  font-size: 12px;
+}
+
+.attendance-signatures .sign-label {
+  font-size: 11px;
+  color: #444;
+}
+
+/* Page Break before print format classes */
+.page-break-before {
+  page-break-before: always !important;
+  break-before: page !important;
+  margin-top: 40px;
+}
+
+@media print {
+  .page-break-before {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  .k3-format-section,
+  .k4-format-section,
+  .k5-format-section,
+  .attendance-records-section {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    padding: 10px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+
+/* Vision and Mission Print Pages */
+.vision-mission-print-block {
+  page-break-after: always;
+}
+
+.vision-mission-print-container {
+  padding: 40px;
+  font-family: 'Times New Roman', Times, serif;
+  color: #000;
+  min-height: 900px;
+}
+
+.branding-header {
+  border-bottom: 2px solid #000;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+}
+
+.branding-logo-title {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.branding-logo {
+  width: 90px;
+  height: auto;
+  max-height: 70px;
+  object-fit: contain;
+}
+
+.branding-logo-fallback {
+  width: 70px;
+  height: 70px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.branding-title-text h3 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.branding-title-text h4 {
+  margin: 5px 0 0 0;
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: #374151;
+}
+
+.vm-print-section-header {
+  border-bottom: 3px double #000;
+  padding-bottom: 5px;
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+.vm-print-section-header h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.vm-print-content p {
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  text-align: justify;
+}
+
+.vm-print-sub-section {
+  margin-bottom: 25px;
+}
+
+.vm-print-sub-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 19px;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.vm-print-sub-section p {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.vm-print-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.vm-print-list li {
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.vm-print-outcomes-list {
+  margin-top: 15px;
+}
+
+.outcome-item {
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  text-align: justify;
+}
+
+@media print {
+  .vision-mission-print-block {
+    page-break-before: always !important;
+    page-break-after: always !important;
+    margin: 0 !important;
+    padding: 20px !important;
+  }
+}
+
+/* ─── Section 14: Landscape Attendance Ledger Sheets ─── */
+
+.attendance-sheet-landscape {
+  background: #fff;
+  padding: 10px 6px;
+  margin-top: 30px;
+  overflow-x: auto;
+}
+
+.ledger-header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  padding: 0 2px;
+  color: #000;
+}
+
+.ledger-left {
+  text-align: left;
+  font-size: 12px;
+}
+
+.ledger-center {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex: 1;
+}
+
+.ledger-right {
+  text-align: right;
+  font-size: 11px;
+  color: #555;
+}
+
+.ledger-value {
+  text-decoration: underline;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8px;
+  table-layout: fixed;
+  border: 1.5px solid #000;
+}
+
+.ledger-table th,
+.ledger-table td {
+  border: 1px solid #000;
+  padding: 1px 2px;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.2;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ledger-table thead th {
+  background: #f8f8f8;
+  font-weight: 700;
+  font-size: 7.5px;
+}
+
+.ledger-sr-col {
+  width: 28px !important;
+  min-width: 28px;
+  max-width: 28px;
+  font-size: 7px !important;
+}
+
+.ledger-roll-col {
+  width: 40px !important;
+  min-width: 40px;
+  max-width: 40px;
+  font-size: 7px !important;
+}
+
+.ledger-sig-col {
+  width: 60px !important;
+  min-width: 60px;
+  max-width: 60px;
+  font-size: 6.5px !important;
+}
+
+.ledger-month-header {
+  font-size: 7.5px !important;
+  font-weight: 700 !important;
+  background: #eee !important;
+  letter-spacing: 0.3px;
+  padding: 2px 1px !important;
+}
+
+.ledger-month-header.empty-header {
+  background: #fafafa !important;
+  color: #bbb;
+}
+
+.ledger-date-header {
+  font-size: 7px !important;
+  font-weight: 600 !important;
+  padding: 1px !important;
+}
+
+.ledger-index-header {
+  font-size: 6.5px !important;
+  font-weight: 500 !important;
+  color: #666;
+  padding: 1px !important;
+}
+
+.ledger-sr-cell {
+  font-size: 7px;
+  font-weight: 600;
+  background: #fafafa;
+}
+
+.ledger-roll-cell {
+  font-size: 7px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.ledger-mark-cell {
+  font-size: 7.5px;
+  font-weight: 600;
+  min-width: 14px;
+}
+
+.ledger-sig-cell {
+  min-width: 50px;
+}
+
+/* On-screen scrollable wrapper */
+@media screen {
+  .attendance-sheet-landscape {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .ledger-table {
+    min-width: 900px;
+  }
+}
+
+/* ─── Print: Rotate each ledger sheet 90° to force landscape on portrait page ─── */
+@media print {
+  .attendance-sheet-landscape {
+    page-break-before: always !important;
+    page-break-after: always !important;
+    break-before: page !important;
+    break-after: page !important;
+    /* Layout content in LANDSCAPE proportions first (wide, short) */
+    width: 277mm;
+    height: 190mm;
+    /* Then rotate 90° CW → visual output = 190mm wide × 277mm tall = portrait page */
+    transform-origin: top left;
+    transform: rotate(90deg) translateY(-190mm);
+    /* Reset screen styles */
+    margin: 0 !important;
+    padding: 4mm !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
+  }
+
+  .ledger-table {
+    min-width: unset !important;
+    width: 100% !important;
+    font-size: 7px !important;
+  }
+
+  .ledger-table th,
+  .ledger-table td {
+    padding: 1px !important;
+  }
+
+  .ledger-header-info {
+    margin-bottom: 2mm;
+  }
+
+  .ledger-center {
+    font-size: 11px;
+  }
+
+  .ledger-sr-col {
+    width: 22px !important;
+    min-width: 22px !important;
+  }
+
+  .ledger-roll-col {
+    width: 34px !important;
+    min-width: 34px !important;
+  }
+
+  .ledger-sig-col {
+    width: 50px !important;
+    min-width: 50px !important;
+  }
+}
