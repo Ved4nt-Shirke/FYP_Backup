@@ -15,6 +15,24 @@ const { authenticate } = require("../middleware/auth");
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+const fs = require("fs");
+const path = require("path");
+const examUploadDir = path.join(__dirname, "../uploads/mock-exams");
+if (!fs.existsSync(examUploadDir)) {
+  fs.mkdirSync(examUploadDir, { recursive: true });
+}
+const diskStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, examUploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+  }
+});
+const uploadImage = multer({ storage: diskStorage });
+
 const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(value);
 const normalizeText = (value = "") => String(value || "").trim();
 const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -151,6 +169,41 @@ async function validateSelection(req, selection) {
 }
 
 router.use(authenticate);
+
+// Endpoint to upload question & option images
+router.post("/upload-image", isFacultyOrAdmin, uploadImage.single("image"), async (req, res) => {
+  try {
+    if (req.file) {
+      const url = `/uploads/mock-exams/${req.file.filename}`;
+      return res.json({ success: true, url });
+    }
+
+    if (req.body.image && req.body.image.startsWith("data:image/")) {
+      const base64Data = req.body.image.replace(/^data:image\/\w+;base64,/, "");
+      const buffer = Buffer.from(base64Data, "base64");
+
+      const mimeMatch = req.body.image.match(/^data:(image\/\w+);base64,/);
+      let ext = ".png";
+      if (mimeMatch && mimeMatch[1]) {
+        ext = "." + mimeMatch[1].split("/")[1];
+      }
+
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      const filename = `image-base64-${uniqueSuffix}${ext}`;
+      const filePath = path.join(examUploadDir, filename);
+
+      fs.writeFileSync(filePath, buffer);
+
+      const url = `/uploads/mock-exams/${filename}`;
+      return res.json({ success: true, url });
+    }
+
+    return res.status(400).json({ success: false, message: "No image file or base64 data provided" });
+  } catch (error) {
+    console.error("Image upload error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
 // ──────────────────────────────────────────────
 // Catalog Endpoint
@@ -329,12 +382,19 @@ router.post("/question-bank", isFacultyOrAdmin, async (req, res) => {
       chapter,
       type,
       question,
-      options: type === "MCQ" ? options : [],
+      options: type === "MCQ" ? (options || []).map(o => {
+        if (typeof o === "object" && o !== null) {
+          return { text: normalizeText(o.text), image: o.image || "" };
+        }
+        return normalizeText(o);
+      }) : [],
       correctAnswer,
       marks,
       difficulty,
       tags: Array.isArray(tags) ? tags : [],
       isFavorite: Boolean(isFavorite),
+      image: req.body.image || "",
+      images: Array.isArray(req.body.images) ? req.body.images : [],
       createdBy: req.user._id
     });
 
@@ -356,12 +416,21 @@ router.put("/question-bank/:id", isFacultyOrAdmin, async (req, res) => {
     if (fields.chapter !== undefined) question.chapter = fields.chapter;
     if (fields.type !== undefined) question.type = fields.type;
     if (fields.question !== undefined) question.question = fields.question;
-    if (fields.options !== undefined) question.options = fields.options;
+    if (fields.options !== undefined) {
+      question.options = fields.options.map(o => {
+        if (typeof o === "object" && o !== null) {
+          return { text: normalizeText(o.text), image: o.image || "" };
+        }
+        return normalizeText(o);
+      });
+    }
     if (fields.correctAnswer !== undefined) question.correctAnswer = fields.correctAnswer;
     if (fields.marks !== undefined) question.marks = fields.marks;
     if (fields.difficulty !== undefined) question.difficulty = fields.difficulty;
     if (fields.tags !== undefined) question.tags = fields.tags;
     if (fields.isFavorite !== undefined) question.isFavorite = fields.isFavorite;
+    if (fields.image !== undefined) question.image = fields.image;
+    if (fields.images !== undefined) question.images = fields.images;
 
     await question.save();
     res.json({ success: true, question });
@@ -423,12 +492,19 @@ router.post("/question-bank/import", isFacultyOrAdmin, async (req, res) => {
         chapter: q.chapter || "",
         type: q.type || "MCQ",
         question: q.question,
-        options: q.type === "MCQ" ? q.options : [],
+        options: q.type === "MCQ" ? (q.options || []).map(o => {
+          if (typeof o === "object" && o !== null) {
+            return { text: normalizeText(o.text), image: o.image || "" };
+          }
+          return normalizeText(o);
+        }) : [],
         correctAnswer: q.correctAnswer || "",
         marks: q.marks || 1,
         difficulty: q.difficulty || "MEDIUM",
         tags: Array.isArray(q.tags) ? q.tags : [],
         isFavorite: false,
+        image: q.image || "",
+        images: Array.isArray(q.images) ? q.images : [],
         createdBy: req.user._id
       });
       imported.push(item);
@@ -458,13 +534,27 @@ router.post("/", isFacultyOrAdmin, async (req, res) => {
       ? fields.questions.map((question) => ({
           type: String(question.type || "MCQ").toUpperCase(),
           question: normalizeText(question.question),
-          options: Array.isArray(question.options) ? question.options.map(o => normalizeText(o)).filter(Boolean) : [],
+          options: Array.isArray(question.options) ? question.options.map(o => {
+            if (typeof o === "object" && o !== null) {
+              return {
+                text: normalizeText(o.text),
+                image: o.image || ""
+              };
+            }
+            return normalizeText(o);
+          }).filter(o => {
+            if (typeof o === "object") {
+              return o.text || o.image;
+            }
+            return o !== "";
+          }) : [],
           correctAnswer: normalizeText(question.correctAnswer),
           marks: Number(question.marks || 0),
           explanation: normalizeText(question.explanation),
           difficulty: question.difficulty || "MEDIUM",
           chapter: normalizeText(question.chapter),
           image: question.image || "",
+          images: Array.isArray(question.images) ? question.images : [],
           tags: Array.isArray(question.tags) ? question.tags : [],
           isFavorite: Boolean(question.isFavorite)
         }))
@@ -594,13 +684,27 @@ router.put("/:id", isFacultyOrAdmin, async (req, res) => {
       exam.questions = payload.questions.map((question) => ({
         type: String(question.type || "MCQ").toUpperCase(),
         question: normalizeText(question.question),
-        options: Array.isArray(question.options) ? question.options.map(o => normalizeText(o)).filter(Boolean) : [],
+        options: Array.isArray(question.options) ? question.options.map(o => {
+          if (typeof o === "object" && o !== null) {
+            return {
+              text: normalizeText(o.text),
+              image: o.image || ""
+            };
+          }
+          return normalizeText(o);
+        }).filter(o => {
+          if (typeof o === "object") {
+            return o.text || o.image;
+          }
+          return o !== "";
+        }) : [],
         correctAnswer: normalizeText(question.correctAnswer),
         marks: Number(question.marks || 0),
         explanation: normalizeText(question.explanation),
         difficulty: question.difficulty || "MEDIUM",
         chapter: normalizeText(question.chapter),
         image: question.image || "",
+        images: Array.isArray(question.images) ? question.images : [],
         tags: Array.isArray(question.tags) ? question.tags : [],
         isFavorite: Boolean(question.isFavorite)
       }));

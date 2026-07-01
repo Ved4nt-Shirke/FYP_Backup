@@ -9,7 +9,7 @@ const mockExamQuestionSchema = new mongoose.Schema(
     },
     question: { type: String, required: true, trim: true },
     options: {
-      type: [String],
+      type: [mongoose.Schema.Types.Mixed],
       default: [],
     },
     correctAnswer: { type: String, default: "" },
@@ -28,6 +28,10 @@ const mockExamQuestionSchema = new mongoose.Schema(
     image: {
       type: String,
       default: "",
+    },
+    images: {
+      type: [String],
+      default: [],
     },
     tags: {
       type: [String],

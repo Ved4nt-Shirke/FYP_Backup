@@ -12,6 +12,38 @@ const formatTime = (seconds) => {
   return `${hours}:${minutes}:${secs}`;
 };
 
+const RenderFormattedText = ({ text }) => {
+  if (!text) return null;
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  return (
+    <div className="formatted-text-container">
+      {parts.map((part, index) => {
+        if (part.startsWith("```") && part.endsWith("```")) {
+          const match = part.match(/```(\w*)\n([\s\S]*?)```/);
+          const lang = match ? match[1] : "code";
+          const code = match ? match[2] : part.slice(3, -3);
+          return (
+            <div key={index} className="code-block-wrapper my-2">
+              <div className="code-block-header">{lang}</div>
+              <pre className="m-0"><code>{code}</code></pre>
+            </div>
+          );
+        }
+        let innerHTML = part
+          .replace(/\$\$(.*?)\$\$/g, '<div class="text-center p-2 my-2 border rounded bg-light font-monospace text-dark">$1</div>')
+          .replace(/\$(.*?)\$/g, '<span class="px-1 font-monospace text-danger bg-light border rounded">$1</span>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/<u>(.*?)<\/u>/g, '<u>$1</u>')
+          .replace(/\n/g, '<br />');
+        return (
+          <span key={index} dangerouslySetInnerHTML={{ __html: innerHTML }} />
+        );
+      })}
+    </div>
+  );
+};
+
 const MockExamAttempt = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
@@ -29,6 +61,7 @@ const MockExamAttempt = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [startedAt] = useState(Date.now());
+  const [zoomImage, setZoomImage] = useState(null);
 
   // Security & Warnings
   const [fullscreenRequired, setFullscreenRequired] = useState(false);
@@ -434,9 +467,19 @@ const MockExamAttempt = () => {
             <div className="mock-exam-card">
               <div className="mock-exam-question-top">
                 <strong style={{ fontSize: "1.1rem" }}>Question {currentIndex + 1} of {questions.length}</strong>
-                <div className="d-flex align-items-center gap-2">
+                <div className="d-flex align-items-center gap-2 flex-wrap">
                   <span className="badge bg-secondary">{currentQuestion.type}</span>
                   <span className="badge bg-light text-dark border">{currentQuestion.marks} marks</span>
+                  {currentQuestion.difficulty && (
+                    <span className={`badge ${currentQuestion.difficulty === 'EASY' ? 'bg-success' : currentQuestion.difficulty === 'HARD' ? 'bg-danger' : 'bg-warning text-dark'}`}>
+                      {currentQuestion.difficulty}
+                    </span>
+                  )}
+                  {currentQuestion.chapter && (
+                    <span className="badge bg-info text-dark border border-info">
+                      Ch: {currentQuestion.chapter}
+                    </span>
+                  )}
                   <button className="btn btn-sm btn-light border" onClick={() => toggleMarkForReview(currentQuestion._id)}>
                     <i className={`bi ${reviewList[currentQuestion._id] ? "bi-flag-fill text-warning" : "bi-flag"}`} /> Review
                   </button>
@@ -444,36 +487,60 @@ const MockExamAttempt = () => {
               </div>
 
               {/* Large Question Text */}
-              <h3 className="mb-3 text-dark" style={{ fontWeight: 700, fontSize: "1.3rem", lineHeight: 1.4 }}>
-                {currentQuestion.question}
-              </h3>
+              <div className="mb-3 text-dark" style={{ fontWeight: 700, fontSize: "1.3rem", lineHeight: 1.4 }}>
+                <RenderFormattedText text={currentQuestion.question} />
+              </div>
 
-              {/* Base64 Image Render */}
-              {currentQuestion.image && (
-                <div className="my-3 text-center" style={{ background: "#f3f4f6", padding: 12, borderRadius: 10 }}>
-                  <img src={currentQuestion.image} alt="Question Graphic" style={{ maxHeight: 220, maxWidth: "100%", borderRadius: 8 }} />
+              {/* Question Image Gallery */}
+              {((currentQuestion.images && currentQuestion.images.length > 0) || currentQuestion.image) && (
+                <div className="multiple-images-list my-3" style={{ justifyContent: currentQuestion.imageAlignment === "left" ? "flex-start" : currentQuestion.imageAlignment === "right" ? "flex-end" : "center" }}>
+                  {(currentQuestion.images && currentQuestion.images.length > 0 ? currentQuestion.images : [currentQuestion.image]).filter(Boolean).map((imgUrl, imgIdx) => (
+                    <div key={imgIdx} className="question-image-container" onClick={() => setZoomImage(imgUrl)}>
+                      <img src={imgUrl} alt={`Question graphic ${imgIdx + 1}`} />
+                      <div className="position-absolute bottom-0 end-0 p-1 bg-dark text-white rounded-start" style={{ opacity: 0.7, fontSize: "0.6rem" }}>
+                        <i className="bi bi-zoom-in me-1" />Zoom
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
 
               {/* Options selection */}
               {currentQuestion.type === "MCQ" ? (
-                <div className="mt-4">
-                  {currentQuestion.options.map((opt, oIdx) => (
-                    <div
-                      key={oIdx}
-                      className={`mock-exam-option-card ${currentAnswer === opt ? "selected" : ""}`}
-                      onClick={() => handleAnswerSelect(currentQuestion._id, opt)}
-                    >
-                      <input
-                        type="radio"
-                        name={`q-${currentQuestion._id}`}
-                        value={opt}
-                        checked={currentAnswer === opt}
-                        onChange={() => {}} // click handler handles it
-                      />
-                      <span>{opt}</span>
-                    </div>
-                  ))}
+                <div className="student-option-card-wrapper">
+                  {currentQuestion.options.map((opt, oIdx) => {
+                    const label = ["A", "B", "C", "D"][oIdx];
+                    const optObj = typeof opt === "object" && opt !== null ? opt : { text: opt || "", image: "" };
+                    const optionVal = optObj.text || `Option ${label}`;
+                    const isSelected = currentAnswer === optionVal;
+                    
+                    return (
+                      <div
+                        key={oIdx}
+                        className={`mock-exam-option-card d-flex flex-column align-items-start gap-2 ${isSelected ? "selected" : ""}`}
+                        onClick={() => handleAnswerSelect(currentQuestion._id, optionVal)}
+                        style={{ height: "100%", margin: 0 }}
+                      >
+                        <div className="d-flex align-items-center gap-2 w-100">
+                          <input
+                            type="radio"
+                            name={`q-${currentQuestion._id}`}
+                            value={optionVal}
+                            checked={isSelected}
+                            onChange={() => {}} // handled by wrapper click
+                          />
+                          <strong className="text-secondary">{label}.</strong>
+                          {optObj.text && <span>{optObj.text}</span>}
+                        </div>
+                        
+                        {optObj.image && (
+                          <div className="student-option-image-container" onClick={(e) => { e.stopPropagation(); setZoomImage(optObj.image); }}>
+                            <img src={optObj.image} alt={`Option ${label}`} />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="mt-3">
@@ -505,6 +572,18 @@ const MockExamAttempt = () => {
           )}
         </div>
       </div>
+
+      {/* Zoom Modal overlay */}
+      {zoomImage && (
+        <div className="zoom-modal-backdrop" onClick={() => setZoomImage(null)}>
+          <div className="zoom-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="zoom-modal-close" onClick={() => setZoomImage(null)}>
+              <i className="bi bi-x-lg" />
+            </button>
+            <img src={zoomImage} alt="Enlarged preview" className="zoom-modal-image" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
