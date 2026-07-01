@@ -148,6 +148,12 @@ const AdminSidebar = ({ isSidebarVisible, setIsSidebarVisible }) => {
       label: "Academic Year",
       available: true,
     },
+    {
+      path: "/faculty/mock-exams/results",
+      icon: "bi-clipboard2-pulse-fill",
+      label: "Mock Exams",
+      available: true,
+    },
   ];
 
   const sidebarClasses = `admin-sidebar ${

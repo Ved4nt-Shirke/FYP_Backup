@@ -330,10 +330,12 @@ const Sidebar = ({
 
   const handleMockExamSelect = (option) => {
     setOpenDropdown(null);
-    if (option === "Create Exam") {
+    if (option === "Dashboard") {
+      navigateAndClose("/faculty/mock-exams");
+    } else if (option === "Create Exam") {
       navigateAndClose("/faculty/mock-exams/create");
     } else if (option === "Manage") {
-      navigateAndClose("/faculty/mock-exams");
+      navigateAndClose("/faculty/mock-exams/manage");
     } else if (option === "Results") {
       navigateAndClose("/faculty/mock-exams/results");
     }
@@ -504,6 +506,19 @@ const Sidebar = ({
               >
                 <li>
                   <a
+                    className={`dropdown-item d-flex align-items-center gap-2 ${location.pathname === "/faculty/mock-exams" ? "active" : ""
+                      }`}
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleMockExamSelect("Dashboard");
+                    }}
+                  >
+                    <i className="bi bi-clipboard2-pulse"></i> Dashboard
+                  </a>
+                </li>
+                <li>
+                  <a
                     className={`dropdown-item d-flex align-items-center gap-2 ${location.pathname === "/faculty/mock-exams/create" ? "active" : ""
                       }`}
                     href="#"
@@ -517,7 +532,7 @@ const Sidebar = ({
                 </li>
                 <li>
                   <a
-                    className={`dropdown-item d-flex align-items-center gap-2 ${location.pathname === "/faculty/mock-exams" ? "active" : ""
+                    className={`dropdown-item d-flex align-items-center gap-2 ${location.pathname === "/faculty/mock-exams/manage" ? "active" : ""
                       }`}
                     href="#"
                     onClick={(e) => {
