@@ -37,9 +37,18 @@ const StudyMaterial = () => {
   const [activeVideo, setActiveVideo] = useState(null);
   const videoRef = useRef(null);
   const progressInterval = useRef(null);
-
   // Rich Text modal state
   const [activeRichText, setActiveRichText] = useState(null);
+
+  const drawerRef = useRef(null);
+
+  useEffect(() => {
+    if (selectedChapter && drawerRef.current) {
+      setTimeout(() => {
+        drawerRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 100);
+    }
+  }, [selectedChapter]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -509,7 +518,7 @@ const StudyMaterial = () => {
       </div>
 
       {selectedChapter && (
-        <section className="chapter-explorer-drawer glass-card">
+        <section ref={drawerRef} className="chapter-explorer-drawer glass-card">
           <div className="drawer-header">
             <div>
               <h3>

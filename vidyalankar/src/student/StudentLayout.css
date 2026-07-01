@@ -9,6 +9,7 @@
   --student-muted: var(--text-muted, #64748b);
   --student-on-primary: var(--text-on-primary, #ffffff);
 
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   display: flex;
   width: 100%;
   height: 100vh;
@@ -57,7 +58,7 @@
   margin: 0;
   color: var(--student-on-primary);
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

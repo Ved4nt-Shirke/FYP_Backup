@@ -30,6 +30,28 @@ export default function CTDashboard() {
     return `${subjectName}${subjectCode} - Ciaan ${CiaanData.CiaanId || CiaanId}`;
   }, [CiaanData, CiaanId]);
 
+  const stats = useMemo(() => {
+    const entered = students.filter(
+      (s) => marksMap[s._id] !== "" && marksMap[s._id] !== undefined && marksMap[s._id] !== null
+    );
+    const total = students.length;
+    if (total === 0) return { enteredCount: 0, pendingCount: 0, average: "0.0", passRate: "0" };
+    
+    const sum = entered.reduce((acc, s) => acc + Number(marksMap[s._id] || 0), 0);
+    const avg = entered.length > 0 ? (sum / entered.length).toFixed(1) : "0.0";
+    
+    const passingScore = totalMarks * 0.4;
+    const passed = entered.filter((s) => Number(marksMap[s._id] || 0) >= passingScore).length;
+    const passRate = entered.length > 0 ? ((passed / entered.length) * 100).toFixed(0) : "0";
+    
+    return {
+      enteredCount: entered.length,
+      pendingCount: total - entered.length,
+      average: avg,
+      passRate: passRate
+    };
+  }, [students, marksMap, totalMarks]);
+
   useEffect(() => {
     const fetchCiaanIfNeeded = async () => {
       if (CiaanData) return;
@@ -265,47 +287,116 @@ export default function CTDashboard() {
       <section className="ct-dashboard-panel">
         <div className="ct-table-wrap">
           {loading ? (
-            <p>Loading students and marks...</p>
+            <div className="ct-loading-wrapper">
+              <div className="ct-spinner"></div>
+              <p>Loading students and marks...</p>
+            </div>
           ) : students.length === 0 ? (
             <p className="text-muted mb-0">
               No students found for this Ciaan context.
             </p>
           ) : (
             <>
+              <div className="ct-stats-summary-bar">
+                <div className="ct-stat-card">
+                  <div className="ct-stat-icon text-primary">
+                    <i className="bi bi-people-fill"></i>
+                  </div>
+                  <div className="ct-stat-info">
+                    <span className="ct-stat-label">Total Students</span>
+                    <span className="ct-stat-value">{students.length}</span>
+                  </div>
+                </div>
+                <div className="ct-stat-card">
+                  <div className="ct-stat-icon text-success">
+                    <i className="bi bi-check-circle-fill"></i>
+                  </div>
+                  <div className="ct-stat-info">
+                    <span className="ct-stat-label">Marks Entered</span>
+                    <span className="ct-stat-value">
+                      {stats.enteredCount}
+                      <span className="ct-stat-sub"> / {students.length}</span>
+                    </span>
+                  </div>
+                </div>
+                <div className="ct-stat-card">
+                  <div className="ct-stat-icon text-warning">
+                    <i className="bi bi-clock-history"></i>
+                  </div>
+                  <div className="ct-stat-info">
+                    <span className="ct-stat-label">Pending Entries</span>
+                    <span className="ct-stat-value">{stats.pendingCount}</span>
+                  </div>
+                </div>
+                <div className="ct-stat-card">
+                  <div className="ct-stat-icon text-info">
+                    <i className="bi bi-award-fill"></i>
+                  </div>
+                  <div className="ct-stat-info">
+                    <span className="ct-stat-label">Average Score</span>
+                    <span className="ct-stat-value">
+                      {stats.average}
+                      <span className="ct-stat-sub"> / {totalMarks}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div className="ct-table-caption">
-                <span>Total Students: {students.length}</span>
-                <span>{`Marks range: 0-${totalMarks}`}</span>
+                <span>Student Marks Entry</span>
+                <span>{`Allowed Range: 0 - ${totalMarks}`}</span>
               </div>
               <div className="table-responsive">
-                <table className="table table-bordered table-hover align-middle ct-table">
+                <table className="table table-bordered align-middle ct-table">
                   <thead className="table-light">
                     <tr>
-                      <th style={{ minWidth: 120 }}>Roll No.</th>
-                      <th>Name</th>
-                      <th
-                        style={{ minWidth: 180 }}
-                      >{`Marks (out of ${totalMarks})`}</th>
+                      <th style={{ minWidth: 120, width: "15%" }}>Roll No.</th>
+                      <th style={{ width: "50%" }}>Student Name</th>
+                      <th style={{ minWidth: 180, width: "35%" }}>{`Marks (out of ${totalMarks})`}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {students.map((student) => (
-                      <tr key={student._id}>
-                        <td>{student.rollNo || student.rollId || "-"}</td>
-                        <td>{student.studentName || student.name || "-"}</td>
-                        <td>
-                          <input
-                            type="number"
-                            className="form-control"
-                            min="0"
-                            max={totalMarks}
-                            value={marksMap[student._id] ?? ""}
-                            onChange={(e) =>
-                              handleMarksChange(student._id, e.target.value)
-                            }
-                          />
-                        </td>
-                      </tr>
-                    ))}
+                    {students.map((student) => {
+                      const hasMark = marksMap[student._id] !== "" && marksMap[student._id] !== undefined && marksMap[student._id] !== null;
+                      return (
+                        <tr key={student._id} className={hasMark ? "ct-row-assessed" : "ct-row-pending"}>
+                          <td style={{ fontWeight: "700", color: "#1e293b" }}>
+                            {student.rollNo || student.rollId || "-"}
+                          </td>
+                          <td>
+                            <div className="ct-student-name-wrap">
+                              <span className="ct-student-name">
+                                {student.studentName || student.name || "-"}
+                              </span>
+                              {hasMark ? (
+                                <span className="badge ct-badge-success">
+                                  <i className="bi bi-check-lg me-1"></i>Entered
+                                </span>
+                              ) : (
+                                <span className="badge ct-badge-pending">
+                                  Pending
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <div className="ct-marks-input-wrapper">
+                              <input
+                                type="number"
+                                className="form-control ct-marks-input"
+                                min="0"
+                                max={totalMarks}
+                                value={marksMap[student._id] ?? ""}
+                                placeholder="Enter score"
+                                onChange={(e) =>
+                                  handleMarksChange(student._id, e.target.value)
+                                }
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

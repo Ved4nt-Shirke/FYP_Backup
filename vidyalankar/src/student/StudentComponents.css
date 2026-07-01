@@ -12,9 +12,9 @@
 .student-content-container .content-header h1 {
   color: var(--text-main, #0f172a);
   margin-top: 0;
-  padding-bottom: 15px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border-color, #dbe5f1);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .student-content-container .content-header p {

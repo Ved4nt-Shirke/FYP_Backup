@@ -19,16 +19,27 @@ const StudentDashboard = () => {
   const [latestNotices, setLatestNotices] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Get student info from localStorage
-  const studentName =
-    localStorage.getItem("studentName") ||
-    localStorage.getItem("username") ||
-    "Student";
+  const [studentInfo, setStudentInfo] = useState({
+    name: "Student",
+    enrollmentNo: "",
+    rollNo: "",
+    division: "",
+    batch: ""
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
+
+    // Retrieve info from localStorage
+    const name = localStorage.getItem("studentName") || localStorage.getItem("username") || "Student";
+    const enrollmentNo = localStorage.getItem("enrollmentNo") || "";
+    const rollNo = localStorage.getItem("studentRollNo") || "";
+    const division = localStorage.getItem("studentDivision") || "";
+    const batch = localStorage.getItem("studentBatch") || "";
+
+    setStudentInfo({ name, enrollmentNo, rollNo, division, batch });
 
     return () => clearInterval(timer);
   }, []);
@@ -111,8 +122,30 @@ const StudentDashboard = () => {
           <div className="welcome-info">
             <span className="welcome-emoji">👋</span>
             <div>
-              <h1>{greeting}, {studentName}!</h1>
+              <h1>{greeting}, {studentInfo.name}!</h1>
               <p>Here is what's happening with your academics today.</p>
+              <div className="student-meta-badges">
+                {studentInfo.enrollmentNo && (
+                  <span className="meta-badge">
+                    <i className="bi bi-card-text me-1"></i>Enroll: {studentInfo.enrollmentNo}
+                  </span>
+                )}
+                {studentInfo.rollNo && (
+                  <span className="meta-badge">
+                    <i className="bi bi-hash me-1"></i>Roll: {studentInfo.rollNo}
+                  </span>
+                )}
+                {studentInfo.division && (
+                  <span className="meta-badge">
+                    <i className="bi bi-grid-3x3-gap me-1"></i>Div: {studentInfo.division}
+                  </span>
+                )}
+                {studentInfo.batch && (
+                  <span className="meta-badge">
+                    <i className="bi bi-people me-1"></i>Batch: {studentInfo.batch}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -44,13 +44,33 @@
   font-size: 1.55rem;
   font-weight: 850;
   letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .welcome-info p {
   margin: 4px 0 0;
   color: var(--student-muted, #64748b);
   font-size: 0.92rem;
-  font-weight: 500;
+}
+
+.student-meta-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.meta-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
 }
 
 /* Stats Row */
@@ -500,11 +520,18 @@
     font-size: 1.35rem;
   }
 
+  .student-dashboard-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
   .stats-row {
     grid-template-columns: 1fr;
     gap: 12px;
   }
+}
 
+@media (max-width: 480px) {
   .hero-section-modern {
     padding: 20px;
     flex-direction: column;

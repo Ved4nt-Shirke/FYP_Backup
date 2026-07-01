@@ -264,6 +264,7 @@ const StudentTimetable = () => {
                 <i className="bi bi-cloud-arrow-down-fill text-primary"></i> Download official PDF
               </a>
             )}
+
           </div>
         </div>
 

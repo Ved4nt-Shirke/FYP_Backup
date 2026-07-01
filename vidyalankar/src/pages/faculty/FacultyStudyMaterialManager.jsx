@@ -114,6 +114,7 @@ const FacultyStudyMaterialManager = () => {
       const lower = filename.toLowerCase();
       if (lower.includes("manual") || lower.includes("lab")) return "Lab Manual";
       if (lower.includes("assignment")) return "Assignments";
+
       if (lower.includes("question") || lower.includes("pyq")) return "Question Bank";
       return "Notes";
     }
@@ -871,7 +872,6 @@ const FacultyStudyMaterialManager = () => {
               />
             </label>
           )}
-
           <label className="fsm-field">
             <span>Resource Format</span>
             <select
