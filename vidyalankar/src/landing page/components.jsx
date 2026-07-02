@@ -2,15 +2,15 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { TokenManager, SessionManager } from "../utils/authUtils";
 
-// Assets imports
-import vpLogo from "./assets/vp_ciann_logo_full.png";
-import heroImg from "./assets/teacher_student_hero.png";
-import attendanceImg from "./assets/feature_attendance.png";
-import assessmentImg from "./assets/feature_assessment.png";
-import examsImg from "./assets/feature_exams.png";
-import complianceImg from "./assets/feature_compliance.png";
-import botImg from "./assets/whatsapp_bot.png";
-import collegeBuildingImg from "./assets/college_building.png";
+// Assets references from public directory
+const vpLogo = "/vp-ciaan%20logo.png";
+const heroImg = "/teacher_student_hero.png";
+const attendanceImg = "/feature_attendance.png";
+const assessmentImg = "/feature_assessment.png";
+const examsImg = "/feature_exams.png";
+const complianceImg = "/feature_compliance.png";
+const botImg = "/whatsapp_bot.png";
+const collegeBuildingImg = "/college_building.png";
 
 // Helper to check if user has active session
 const isUserLoggedIn = () => {
