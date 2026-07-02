@@ -355,35 +355,50 @@ const WeekwisePlan = ({
 
         .expt-badges-container {
           display: grid;
-          grid-auto-flow: column;
-          grid-template-rows: repeat(4, auto);
-          gap: 4px 6px;
-          justify-content: start;
-          padding: 4px;
+          grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+          gap: 6px;
+          justify-content: center;
+          padding: 6px;
+          box-sizing: border-box;
+          width: 100%;
+          overflow: visible;
         }
         .expt-badge-btn {
           background-color: #f3f4f6;
           color: #4b5563;
           border: 1px solid #d1d5db;
-          border-radius: 4px;
-          padding: 3px 6px;
-          font-size: 11px;
+          border-radius: 6px;
+          font-size: 11.5px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           user-select: none;
-          min-width: 28px;
-          text-align: center;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          max-width: 38px;
+          aspect-ratio: 1;
           box-sizing: border-box;
+          margin: 0 auto;
         }
         .expt-badge-btn:hover:not(:disabled) {
-          background-color: #e5e7eb;
-          color: #1f2937;
+          background-color: #e2e8f0;
+          color: #0f172a;
+          border-color: #cbd5e1;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         .expt-badge-btn.active {
-          background-color: #e8f5e9;
-          color: #2e7d32;
-          border-color: #a5d6a7;
+          background-color: #dcfce7;
+          color: #166534;
+          border-color: #86efac;
+          box-shadow: 0 0 0 1px #86efac;
+        }
+        .expt-badge-btn.active:hover:not(:disabled) {
+          background-color: #bbf7d0;
+          color: #14532d;
+          border-color: #4ade80;
         }
         .expt-badge-btn:disabled {
           opacity: 0.5;
