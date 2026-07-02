@@ -250,6 +250,8 @@ import CreateInstitution from "./superadmin/CreateInstitution";
 import ViewInstitutions from "./superadmin/ViewInstitutions";
 import ManageInstitution from "./superadmin/ManageInstitution";
 import SuperAdminNavbar from "./superadmin/SuperAdminNavbar";
+import StudentELibrary from "./student/StudentELibrary";
+import FacultyELibrary from "./faculty/FacultyELibrary";
 
 import TestStudents from "./TestStudents";
 import "./App.css";
@@ -612,6 +614,7 @@ const AppContent = () => {
           <Route path="/" element={<StudentLayout />}>
             <Route path="dashboard" element={<StudentDashboard />} />
             <Route path="study-material" element={<StudyMaterial />} />
+            <Route path="elibrary" element={<StudentELibrary />} />
             <Route path="messages" element={<ChatPage />} />
             <Route path="mock-exams" element={<MockExamList />} />
             <Route path="mock-exams/:examId/attempt" element={<MockExamAttempt />} />
@@ -719,6 +722,10 @@ const AppContent = () => {
             <Route
               path="/faculty/study-material"
               element={<FacultyStudyMaterialManager />}
+            />
+            <Route
+              path="/faculty/elibrary"
+              element={<FacultyELibrary />}
             />
             <Route path="/faculty/mock-exams" element={<MockExamDashboard />} />
             <Route path="/faculty/mock-exams/create" element={<MockExamForm />} />

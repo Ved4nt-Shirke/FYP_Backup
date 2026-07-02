@@ -27,7 +27,20 @@ async function generateUniqueCiaanId() {
 function buildScopedFilter(user) {
   if (!user) return {};
 
-  if (["faculty", "office", "hod", "academic_coordinator"].includes(user.role)) {
+  if (user.role === "hod" || user.role === "academic_coordinator") {
+    const filter = {
+      $or: [
+        { owner: user._id },
+        { "sharedWith.user": user._id }
+      ]
+    };
+    if (user.department) {
+      filter.$or.push({ "department._id": user.department });
+    }
+    return filter;
+  }
+
+  if (["faculty", "office"].includes(user.role)) {
     return {
       $or: [{ owner: user._id }, { "sharedWith.user": user._id }],
     };
@@ -484,6 +497,15 @@ function getAccessLevel(Ciaan, user) {
   const sharedPermission = getSharedPermission(Ciaan, user);
   if (sharedPermission === "edit") return "edit";
   if (sharedPermission === "read") return "read";
+
+  // Check if HOD / Academic Coordinator of the same department
+  if ((user.role === "hod" || user.role === "academic_coordinator") && user.department && Ciaan.department) {
+    const ciaanDeptId = (Ciaan.department._id || Ciaan.department).toString();
+    if (ciaanDeptId === user.department.toString()) {
+      return "read";
+    }
+  }
+
   return "none";
 }
 

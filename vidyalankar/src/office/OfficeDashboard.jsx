@@ -5,6 +5,7 @@ import ManageStudents from "./ManageStudents";
 import NoticesPage from "./NoticesPage";
 import OfficeChatPage from "./chat/OfficeChatPage";
 import StudentPromotions from "./StudentPromotions";
+import ELibraryPage from "./ELibraryPage";
 import "./OfficeDashboard.css";
 
 const normalizeValue = (value) =>
@@ -1170,6 +1171,8 @@ const OfficeDashboard = ({ currentTab, setCurrentTab }) => {
         <OfficeChatPage />
       ) : currentTab === "promotions" ? (
         <StudentPromotions />
+      ) : currentTab === "elibrary" ? (
+        <ELibraryPage />
       ) : (
         <ManageStudents />
       )}

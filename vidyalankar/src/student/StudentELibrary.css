@@ -1,0 +1,391 @@
+/* StudentELibrary.css - Custom Modern Design for Student Library */
+
+.student-elibrary-container {
+  padding: 30px;
+  background-color: #fafbfc;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.student-elibrary-header {
+  margin-bottom: 28px;
+}
+
+.student-elibrary-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.025em;
+}
+
+.student-elibrary-subtitle {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Alert styles */
+.student-alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.student-alert.error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+/* Search Box */
+.student-search-bar-row {
+  margin-bottom: 24px;
+}
+
+.student-search-input {
+  width: 100%;
+  padding: 14px 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+  background-color: white;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
+}
+
+.student-search-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* Loading spinner */
+.student-loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  gap: 16px;
+  color: #64748b;
+}
+
+.student-loading-ring {
+  width: 36px;
+  height: 36px;
+  border: 3.5px solid #e2e8f0;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.student-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  background-color: white;
+  color: #64748b;
+}
+
+.student-empty-state h3 {
+  font-size: 18px;
+  color: #334155;
+  margin: 0 0 8px 0;
+}
+
+/* Books Grid */
+.student-ebooks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 24px;
+}
+
+.student-ebook-card {
+  background-color: white;
+  border-radius: 14px;
+  border: 1px solid #f1f5f9;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.student-ebook-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px -3px rgba(0,0,0,0.07), 0 4px 6px -2px rgba(0,0,0,0.03);
+}
+
+.student-ebook-cover-wrapper {
+  position: relative;
+  height: 280px;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.student-ebook-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.student-ebook-cover-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #94a3b8;
+}
+
+.student-ebook-cover-placeholder span {
+  font-size: 52px;
+  margin-bottom: 8px;
+}
+
+.student-read-btn {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%) translateY(40px);
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+}
+
+.student-ebook-cover-wrapper:hover .student-read-btn {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.student-ebook-cover-wrapper:hover .student-ebook-cover-img {
+  transform: scale(1.05);
+}
+
+.student-ebook-info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.student-ebook-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 42px;
+}
+
+.student-ebook-authors {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 4px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.student-ebook-pub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0 0 10px 0;
+}
+
+.student-ebook-domains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.student-domain-pill {
+  font-size: 10px;
+  font-weight: 600;
+  background-color: rgba(79, 70, 229, 0.08);
+  color: #4f46e5;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+/* Preview Modal */
+.student-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.student-modal-dialog {
+  background-color: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 960px;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.student-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.student-modal-title-col h3 {
+  margin: 0 0 2px 0;
+  font-size: 18px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.student-modal-title-col span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.student-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.15s ease;
+}
+
+.student-close-btn:hover {
+  color: #4f46e5;
+}
+
+.student-modal-body {
+  flex-grow: 1;
+  background-color: #525659;
+}
+
+.student-pdf-iframe {
+  border: none;
+}
+
+.student-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.student-btn-primary {
+  background-color: #4f46e5;
+  color: white;
+  text-decoration: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.student-btn-primary:hover {
+  background-color: #4338ca;
+}
+
+.student-btn-outline {
+  background-color: white;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.student-btn-outline:hover {
+  background-color: #f1f5f9;
+  color: #334155;
+  border-color: #94a3b8;
+}
+
+/* Responsive grid */
+@media (max-width: 640px) {
+  .student-ebooks-grid {
+    grid-template-columns: 1fr;
+  }
+  .student-elibrary-container {
+    padding: 16px;
+  }
+}
+
+/* Fullscreen modal styling for E-Library E-Books */
+.elibrary-preview-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 99999 !important; /* Ensure it is above the sidebar and headers */
+  background-color: rgba(15, 23, 42, 0.85) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.full-screen-preview {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+}

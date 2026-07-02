@@ -25,6 +25,9 @@ export const config = {
   // Ciaan endpoints
   Ciaans: `${API_BASE_URL}/Ciaans`,
 
+  // E-Book endpoints
+  ebooks: `${API_BASE_URL}/ebooks`,
+
   // Academic Year endpoints
   academicYear: {
     create: `${API_BASE_URL}/academic-year/create`,

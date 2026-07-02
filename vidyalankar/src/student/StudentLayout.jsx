@@ -157,6 +157,17 @@ const StudentLayout = () => {
             </div>
           </li>
 
+          {/* E-Library */}
+          <li className="sidebar-item">
+            <div
+              className={`menu-item ${isActivePath("/elibrary") ? "active" : ""}`}
+              onClick={() => handleNavigation("/elibrary")}
+            >
+              <i className="bi bi-book"></i>
+              <span>E-Library</span>
+            </div>
+          </li>
+
           {/* Notices */}
           <li className="sidebar-item">
             <div

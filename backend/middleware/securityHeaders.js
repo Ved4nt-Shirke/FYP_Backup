@@ -7,6 +7,18 @@
  * 4. General XSS (Content-Security-Policy)
  */
 const securityHeaders = (req, res, next) => {
+  // Allow uploads to be framed (needed for PDF viewing)
+  if (req.path.startsWith("/uploads/")) {
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.setHeader(
+      "Content-Security-Policy",
+      "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; frame-ancestors 'self' http://localhost:5173 http://localhost:5000 https://vpciaan.in https://www.vpciaan.in;"
+    );
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    return next();
+  }
+
   // Prevent application from being loaded in an iframe on other sites
   res.setHeader("X-Frame-Options", "DENY");
 

@@ -315,6 +315,9 @@ app.use(
 // Office Staff Routes (NEW)
 app.use("/api/office", require("./routes/office"));
 
+// E-Book Routes (NEW)
+app.use("/api/ebooks", require("./routes/ebooks"));
+
 // Catalog Routes (for fetching departments, courses, divisions, subjects)
 app.use("/api/catalog", require("./routes/catalog"));
 

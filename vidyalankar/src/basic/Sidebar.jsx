@@ -1342,6 +1342,15 @@ const Sidebar = ({
               </ul>
             </div>
           </li>
+          {/* E-Library Link */}
+          <li
+            className={`sidebar-item sidebar-link-item ${isRouteActive(["/faculty/elibrary"]) ? "active" : ""
+              }`}
+            onClick={() => navigateAndClose("/faculty/elibrary")}
+          >
+            <i className="bi bi-book"></i>
+            <span>E-Library</span>
+          </li>
         </ul>
       </div>
     </>
