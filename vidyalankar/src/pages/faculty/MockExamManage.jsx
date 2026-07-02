@@ -343,22 +343,43 @@ const MockExamManage = () => {
                       </div>
                       <h6 style={{ fontWeight: 700, margin: "8px 0" }}>Q{idx + 1}. {q.question}</h6>
 
-                      {q.image && (
-                        <div className="my-2 text-center">
-                          <img src={q.image} alt="Question figure" style={{ maxHeight: 120, maxWidth: "100%", borderRadius: 6 }} />
+                      {/* Question Images */}
+                      {((q.images && q.images.length > 0) || q.image) && (
+                        <div className="d-flex flex-wrap gap-2 my-2 justify-content-center">
+                          {(q.images && q.images.length > 0 ? q.images : [q.image]).filter(Boolean).map((imgUrl, imgIdx) => (
+                            <img key={imgIdx} src={imgUrl} alt={`Question graphic ${imgIdx + 1}`} style={{ maxHeight: 100, borderRadius: 6, border: "1px solid #e5e7eb" }} />
+                          ))}
                         </div>
                       )}
 
                       {q.type === "MCQ" ? (
                         <div className="row g-2 mt-2">
-                          {q.options.map((opt, oIdx) => (
-                            <div key={oIdx} className="col-md-6">
-                              <div className={`p-2 border rounded-3 text-start ${opt === q.correctAnswer ? "border-success bg-success-light" : ""}`} style={{ fontSize: "0.85rem", background: opt === q.correctAnswer ? "rgba(16,185,129,0.05)" : "#ffffff" }}>
-                                <strong>Option {["A", "B", "C", "D"][oIdx]}:</strong> {opt}
-                                {opt === q.correctAnswer && <i className="bi bi-check-circle-fill text-success ms-2" />}
+                          {q.options.map((opt, oIdx) => {
+                            const optObj = typeof opt === "object" && opt !== null ? opt : { text: opt || "", image: "" };
+                            const optionVal = optObj.text || `Option ${["A", "B", "C", "D"][oIdx]}`;
+                            const isCorrect = optionVal === q.correctAnswer;
+                            
+                            return (
+                              <div key={oIdx} className="col-md-6">
+                                <div 
+                                  className={`p-2 border rounded-3 text-start d-flex flex-column gap-1 ${isCorrect ? "border-success bg-success-light" : ""}`} 
+                                  style={{ fontSize: "0.85rem", background: isCorrect ? "rgba(16,185,129,0.05)" : "#ffffff" }}
+                                >
+                                  <div className="d-flex align-items-center justify-content-between">
+                                    <span>
+                                      <strong>Option {["A", "B", "C", "D"][oIdx]}:</strong> {optObj.text || "[Image Only]"}
+                                    </span>
+                                    {isCorrect && <i className="bi bi-check-circle-fill text-success ms-2" />}
+                                  </div>
+                                  {optObj.image && (
+                                    <div className="text-center mt-1" style={{ background: "#f9fafb", padding: 4, borderRadius: 4 }}>
+                                      <img src={optObj.image} alt={`Option ${["A", "B", "C", "D"][oIdx]}`} style={{ maxHeight: 60, maxWidth: "100%", objectFit: "contain" }} />
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       ) : (
                         <div className="mt-2 text-muted" style={{ fontSize: "0.85rem", fontStyle: "italic" }}>

@@ -24,8 +24,16 @@ const mockQuestionSchema = new mongoose.Schema(
       trim: true,
     },
     options: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
+    images: {
       type: [String],
       default: [],
+    },
+    image: {
+      type: String,
+      default: "",
     },
     correctAnswer: {
       type: String,

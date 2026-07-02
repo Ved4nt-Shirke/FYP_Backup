@@ -1,12 +1,45 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/mockExam.css";
+
+const RenderFormattedText = ({ text }) => {
+  if (!text) return null;
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  return (
+    <div className="formatted-text-container">
+      {parts.map((part, index) => {
+        if (part.startsWith("```") && part.endsWith("```")) {
+          const match = part.match(/```(\w*)\n([\s\S]*?)```/);
+          const lang = match ? match[1] : "code";
+          const code = match ? match[2] : part.slice(3, -3);
+          return (
+            <div key={index} className="code-block-wrapper my-2">
+              <div className="code-block-header">{lang}</div>
+              <pre className="m-0"><code>{code}</code></pre>
+            </div>
+          );
+        }
+        let innerHTML = part
+          .replace(/\$\$(.*?)\$\$/g, '<div class="text-center p-2 my-2 border rounded bg-light font-monospace text-dark">$1</div>')
+          .replace(/\$(.*?)\$/g, '<span class="px-1 font-monospace text-danger bg-light border rounded">$1</span>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/<u>(.*?)<\/u>/g, '<u>$1</u>')
+          .replace(/\n/g, '<br />');
+        return (
+          <span key={index} dangerouslySetInnerHTML={{ __html: innerHTML }} />
+        );
+      })}
+    </div>
+  );
+};
 
 const MockExamResult = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const result = location.state?.result || null;
   const exam = location.state?.exam || null;
+  const [zoomImage, setZoomImage] = useState(null);
 
   if (!result) {
     return (
@@ -88,11 +121,54 @@ const MockExamResult = () => {
                       </span>
                     </div>
 
-                    <h5 style={{ fontWeight: 700, margin: "8px 0", fontSize: "1.05rem" }}>{q.question}</h5>
+                    <div style={{ fontWeight: 700, margin: "8px 0", fontSize: "1.05rem" }}>
+                      <RenderFormattedText text={q.question} />
+                    </div>
 
-                    {q.image && (
-                      <div className="my-2">
-                        <img src={q.image} alt="Question Diagram" style={{ maxHeight: 120, maxWidth: "100%", borderRadius: 6 }} />
+                    {/* Question Image Gallery */}
+                    {((q.images && q.images.length > 0) || q.image) && (
+                      <div className="multiple-images-list my-2">
+                        {(q.images && q.images.length > 0 ? q.images : [q.image]).filter(Boolean).map((imgUrl, imgIdx) => (
+                          <div key={imgIdx} className="question-image-container" onClick={() => setZoomImage(imgUrl)}>
+                            <img src={imgUrl} alt={`Question graphic ${imgIdx + 1}`} style={{ maxHeight: 100 }} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Options Review List */}
+                    {q.type === "MCQ" && q.options && Array.isArray(q.options) && (
+                      <div className="student-option-card-wrapper mb-3">
+                        {q.options.map((opt, oIdx) => {
+                          const label = ["A", "B", "C", "D"][oIdx];
+                          const optObj = typeof opt === "object" && opt !== null ? opt : { text: opt || "", image: "" };
+                          const optionVal = optObj.text || `Option ${label}`;
+                          const isStudentSelected = answerText === optionVal;
+                          const isCorrectOpt = q.correctAnswer === optionVal;
+                          
+                          let borderClass = "";
+                          if (isCorrectOpt) {
+                            borderClass = "border-success bg-success-light text-success";
+                          } else if (isStudentSelected && !isCorrectOpt) {
+                            borderClass = "border-danger bg-danger-light text-danger";
+                          }
+
+                          return (
+                            <div key={oIdx} className={`mock-exam-option-card d-flex flex-column align-items-start gap-2 ${borderClass}`} style={{ margin: 0 }}>
+                              <div className="d-flex align-items-center gap-2 w-100">
+                                <strong className="text-secondary">{label}.</strong>
+                                {optObj.text && <span>{optObj.text}</span>}
+                                {isCorrectOpt && <i className="bi bi-check-circle-fill text-success ms-auto" />}
+                                {isStudentSelected && !isCorrectOpt && <i className="bi bi-x-circle-fill text-danger ms-auto" />}
+                              </div>
+                              {optObj.image && (
+                                <div className="student-option-image-container" onClick={(e) => { e.stopPropagation(); setZoomImage(optObj.image); }}>
+                                  <img src={optObj.image} alt={`Option ${label}`} style={{ maxHeight: 100 }} />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
@@ -126,6 +202,18 @@ const MockExamResult = () => {
           </button>
         </div>
       </div>
+
+      {/* Zoom Modal overlay */}
+      {zoomImage && (
+        <div className="zoom-modal-backdrop" onClick={() => setZoomImage(null)}>
+          <div className="zoom-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="zoom-modal-close" onClick={() => setZoomImage(null)}>
+              <i className="bi bi-x-lg" />
+            </button>
+            <img src={zoomImage} alt="Enlarged preview" className="zoom-modal-image" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

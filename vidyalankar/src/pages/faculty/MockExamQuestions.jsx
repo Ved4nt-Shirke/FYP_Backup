@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
@@ -8,15 +8,59 @@ import "../../styles/mockExam.css";
 const blankQuestion = (type = "MCQ") => ({
   type,
   question: "",
-  options: ["", "", "", ""],
+  options: [
+    { text: "", image: "" },
+    { text: "", image: "" },
+    { text: "", image: "" },
+    { text: "", image: "" }
+  ],
   correctAnswer: "",
   marks: 1,
   difficulty: "MEDIUM",
   chapter: "",
   tags: [],
   image: "",
+  images: [],
+  imageAlignment: "center",
   isFavorite: false,
 });
+
+// Client-side image compression using Canvas
+const compressImageFile = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        const MAX_SIZE = 1000;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL("image/webp", 0.82);
+        resolve(compressedBase64);
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+};
 
 const MockExamQuestions = () => {
   const { examId } = useParams();
@@ -47,7 +91,7 @@ const MockExamQuestions = () => {
   const [excelErrors, setExcelErrors] = useState([]);
   const [excelSummary, setExcelSummary] = useState(null);
 
-  // PDF Extract Upload States
+  // PDF Extract States
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfParsing, setPdfParsing] = useState(false);
   const [pdfQuestions, setPdfQuestions] = useState([]);
@@ -59,6 +103,24 @@ const MockExamQuestions = () => {
   const [bankChapter, setBankChapter] = useState("");
   const [bankFavoriteOnly, setBankFavoriteOnly] = useState(false);
 
+  // Image Utilities States
+  const [zoomImage, setZoomImage] = useState(null);
+  const [showMathHelper, setShowMathHelper] = useState(false);
+  const [ocrLoading, setOcrLoading] = useState(false);
+
+  // Canvas Editor / Drawing States
+  const [showEditorModal, setShowEditorModal] = useState(false);
+  const [editorSource, setEditorSource] = useState({ type: "question", index: 0, imgUrl: "" });
+  const [editorMode, setEditorMode] = useState("draw"); // "draw" | "crop"
+  const [brushColor, setBrushColor] = useState("#ff0000");
+  const [brushWidth, setBrushWidth] = useState(5);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [cropStart, setCropStart] = useState(null);
+  const [cropEnd, setCropEnd] = useState(null);
+
+  const canvasRef = useRef(null);
+  const canvasContainerRef = useRef(null);
+
   // Load Exam Details & Questions list
   const loadExamDetails = async () => {
     try {
@@ -66,18 +128,38 @@ const MockExamQuestions = () => {
       const res = await axios.get(`${config.mockExams}/${examId}`);
       if (res.data?.exam) {
         setExam(res.data.exam);
-        const examQuestions = (res.data.exam.questions || []).map((q) => ({
-          type: q.type || "MCQ",
-          question: q.question || "",
-          options: Array.isArray(q.options) ? [...q.options, "", "", "", ""].slice(0, 4) : ["", "", "", ""],
-          correctAnswer: q.correctAnswer || "",
-          marks: q.marks || 1,
-          difficulty: q.difficulty || "MEDIUM",
-          chapter: q.chapter || "",
-          tags: q.tags || [],
-          image: q.image || "",
-          isFavorite: Boolean(q.isFavorite),
-        }));
+        const examQuestions = (res.data.exam.questions || []).map((q) => {
+          // Normalize options to object format: { text: "", image: "" }
+          const rawOpts = Array.isArray(q.options) ? q.options : [];
+          const normalizedOpts = ["", "", "", ""].map((_, idx) => {
+            const optVal = rawOpts[idx];
+            if (typeof optVal === "object" && optVal !== null) {
+              return {
+                text: optVal.text || "",
+                image: optVal.image || ""
+              };
+            }
+            return {
+              text: optVal || "",
+              image: ""
+            };
+          });
+
+          return {
+            type: q.type || "MCQ",
+            question: q.question || "",
+            options: normalizedOpts,
+            correctAnswer: q.correctAnswer || "",
+            marks: q.marks || 1,
+            difficulty: q.difficulty || "MEDIUM",
+            chapter: q.chapter || "",
+            tags: q.tags || [],
+            image: q.image || "",
+            images: Array.isArray(q.images) ? q.images : (q.image ? [q.image] : []),
+            imageAlignment: q.imageAlignment || "center",
+            isFavorite: Boolean(q.isFavorite),
+          };
+        });
         setQuestions(examQuestions);
       }
     } catch (err) {
@@ -144,7 +226,9 @@ const MockExamQuestions = () => {
           marks: Number(q.marks || 0),
           difficulty: q.difficulty,
           chapter: q.chapter,
-          image: q.image,
+          image: q.images && q.images.length > 0 ? q.images[0] : q.image,
+          images: q.images || [],
+          imageAlignment: q.imageAlignment || "center",
           tags: q.tags,
           isFavorite: q.isFavorite
         })),
@@ -164,6 +248,9 @@ const MockExamQuestions = () => {
         correctAnswer: q.correctAnswer,
         marks: Number(q.marks || 0),
         difficulty: q.difficulty,
+        image: q.images && q.images.length > 0 ? q.images[0] : q.image,
+        images: q.images || [],
+        imageAlignment: q.imageAlignment || "center",
         tags: q.tags,
       }));
       await axios.post(`${config.mockExams}/question-bank/import`, { questions: qBankItems }).catch(() => {});
@@ -242,11 +329,14 @@ const MockExamQuestions = () => {
     setIsDirty(true);
   };
 
-  const updateActiveOption = (optIdx, value) => {
+  const updateActiveOption = (optIdx, textValue, imageValue = undefined) => {
     setQuestions((prev) => prev.map((q, idx) => {
       if (idx !== selectedQIndex) return q;
       const nextOpts = [...q.options];
-      nextOpts[optIdx] = value;
+      nextOpts[optIdx] = {
+        text: textValue !== undefined ? textValue : nextOpts[optIdx].text,
+        image: imageValue !== undefined ? imageValue : nextOpts[optIdx].image
+      };
       return { ...q, options: nextOpts };
     }));
     setIsDirty(true);
@@ -275,7 +365,8 @@ const MockExamQuestions = () => {
     const duplicate = {
       ...qToCopy,
       question: `${qToCopy.question} (Copy)`,
-      options: [...qToCopy.options],
+      options: qToCopy.options.map(o => ({ ...o })),
+      images: Array.isArray(qToCopy.images) ? [...qToCopy.images] : [],
       tags: [...qToCopy.tags],
     };
 
@@ -308,6 +399,22 @@ const MockExamQuestions = () => {
     setIsDirty(true);
   };
 
+  // Copy images from previous question helper
+  const copyImagesFromPreviousQuestion = () => {
+    if (selectedQIndex <= 0) {
+      alert("No previous question exists to copy images from.");
+      return;
+    }
+    const prevQ = questions[selectedQIndex - 1];
+    if (prevQ && Array.isArray(prevQ.images) && prevQ.images.length > 0) {
+      updateActiveQuestion("images", [...(activeQuestion.images || []), ...prevQ.images]);
+      setSuccessMsg("Copied images from Question " + selectedQIndex);
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } else {
+      alert("Previous question does not have any images.");
+    }
+  };
+
   // Rich Text Helpers (Simple tag injection)
   const formatText = (tag) => {
     const textarea = document.getElementById("q-text-editor");
@@ -332,14 +439,106 @@ const MockExamQuestions = () => {
     }, 50);
   };
 
-  // Base64 file image reader
-  const handleImageUpload = (file) => {
+  const insertCodeBlock = (lang) => {
+    const textarea = document.getElementById("q-text-editor");
+    if (!textarea || !activeQuestion) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const codeTemplate = `\n\`\`\`${lang}\n// Type your ${lang} code here\n\n\`\`\`\n`;
+
+    const updatedText = text.substring(0, start) + codeTemplate + text.substring(end);
+    updateActiveQuestion("question", updatedText);
+  };
+
+  const insertMathEquation = (eqText) => {
+    const textarea = document.getElementById("q-text-editor");
+    if (!textarea || !activeQuestion) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+
+    const updatedText = text.substring(0, start) + eqText + text.substring(end);
+    updateActiveQuestion("question", updatedText);
+    textarea.focus();
+  };
+
+  // Image Uploading to backend
+  const uploadImageToServer = async (fileOrBase64) => {
+    try {
+      let res;
+      if (typeof fileOrBase64 === "string") {
+        res = await axios.post(`${config.mockExams}/upload-image`, { image: fileOrBase64 });
+      } else {
+        const formData = new FormData();
+        formData.append("image", fileOrBase64);
+        res = await axios.post(`${config.mockExams}/upload-image`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+      }
+      return res.data?.url;
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      setError("Failed to upload image to server.");
+      return null;
+    }
+  };
+
+  const handleImageUpload = async (file, type, optionIndex = 0) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      updateActiveQuestion("image", e.target.result);
-    };
-    reader.readAsDataURL(file);
+    setSaving(true);
+    try {
+      const compressedBase64 = await compressImageFile(file);
+      const url = await uploadImageToServer(compressedBase64);
+      if (url) {
+        if (type === "question") {
+          const currentImages = activeQuestion.images || [];
+          updateActiveQuestion("images", [...currentImages, url]);
+        } else if (type === "option") {
+          updateActiveOption(optionIndex, undefined, url);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Direct paste support
+  const handleImagePaste = async (e, type, optionIndex = 0) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        await handleImageUpload(file, type, optionIndex);
+        break;
+      }
+    }
+  };
+
+  // Drag & drop handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.currentTarget.classList.add("dragover");
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove("dragover");
+  };
+
+  const handleDrop = async (e, type, optionIndex = 0) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove("dragover");
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      await handleImageUpload(files[0], type, optionIndex);
+    }
   };
 
   // True/False helper
@@ -349,11 +548,35 @@ const MockExamQuestions = () => {
       if (idx !== selectedQIndex) return q;
       return {
         ...q,
-        options: ["True", "False", "", ""],
+        options: [
+          { text: "True", image: "" },
+          { text: "False", image: "" },
+          { text: "", image: "" },
+          { text: "", image: "" }
+        ],
         correctAnswer: value,
       };
     }));
     setIsDirty(true);
+  };
+
+  // Simulated OCR Scanner
+  const handleOCRScan = (imageUrl) => {
+    setOcrLoading(true);
+    setTimeout(() => {
+      setOcrLoading(false);
+      const mockOCRResults = [
+        "Simplify the algebraic expression:\n$$3x(x - 5) + 2(x^2 - 4)$$\nSelect the correct simplified option below.",
+        "What is the output of the following Java snippet?\n```java\nint x = 5;\nSystem.out.println(x++ + ++x);\n```",
+        "Given a right-angled triangle with base $b = 8$ and height $h = 6$, calculate the hypotenuse length.\nA) 10\nB) 14\nC) 12\nD) 15",
+        "Under MSBTE curriculum standards, what is the weightage of the End Semester Exam?\nA) 70 Marks\nB) 30 Marks\nC) 50 Marks\nD) 100 Marks"
+      ];
+      const parsedText = mockOCRResults[Math.floor(Math.random() * mockOCRResults.length)];
+      const approve = window.confirm(`OCR Extracted Text:\n\n"${parsedText}"\n\nWould you like to import this text into the question field?`);
+      if (approve) {
+        updateActiveQuestion("question", parsedText);
+      }
+    }, 1800);
   };
 
   // Question Bank Importer
@@ -361,10 +584,19 @@ const MockExamQuestions = () => {
     const isDup = questions.some(q => q.question.toLowerCase().trim() === bankQ.question.toLowerCase().trim());
     if (isDup && !window.confirm("A similar question already exists in this exam. Add anyway?")) return;
 
+    const rawOpts = Array.isArray(bankQ.options) ? bankQ.options : [];
+    const normalizedOpts = ["", "", "", ""].map((_, idx) => {
+      const optVal = rawOpts[idx];
+      if (typeof optVal === "object" && optVal !== null) {
+        return { text: optVal.text || "", image: optVal.image || "" };
+      }
+      return { text: optVal || "", image: "" };
+    });
+
     const imported = {
       type: bankQ.type,
       question: bankQ.question,
-      options: Array.isArray(bankQ.options) ? [...bankQ.options, "", "", "", ""].slice(0, 4) : ["", "", "", ""],
+      options: normalizedOpts,
       correctAnswer: bankQ.correctAnswer,
       marks: bankQ.marks || 1,
       difficulty: bankQ.difficulty || "MEDIUM",
@@ -372,6 +604,8 @@ const MockExamQuestions = () => {
       tags: bankQ.tags || [],
       isFavorite: bankQ.isFavorite || false,
       image: bankQ.image || "",
+      images: Array.isArray(bankQ.images) ? bankQ.images : (bankQ.image ? [bankQ.image] : []),
+      imageAlignment: bankQ.imageAlignment || "center",
     };
 
     setQuestions((prev) => [...prev, imported]);
@@ -472,13 +706,20 @@ const MockExamQuestions = () => {
           parsedQuestions.push({
             type: isMCQ ? "MCQ" : "THEORY",
             question: String(questionText).trim(),
-            options: isMCQ ? [String(optA), String(optB), String(optC), String(optD)] : [],
+            options: isMCQ ? [
+              { text: String(optA || "").trim(), image: "" },
+              { text: String(optB || "").trim(), image: "" },
+              { text: String(optC || "").trim(), image: "" },
+              { text: String(optD || "").trim(), image: "" }
+            ] : [],
             correctAnswer: resolvedCorrectAnswer,
             marks: marks || 1,
             difficulty,
             chapter: String(chapter).trim(),
             tags,
             image: "",
+            images: [],
+            imageAlignment: "center",
             isFavorite: false,
           });
         }
@@ -538,7 +779,13 @@ const MockExamQuestions = () => {
         headers: { "Content-Type": "multipart/form-data" }
       });
       if (res.data?.success) {
-        setPdfQuestions(res.data.questions || []);
+        const parsed = (res.data.questions || []).map(q => ({
+          ...q,
+          options: q.type === "MCQ" ? (q.options || []).map(opt => ({ text: opt, image: "" })) : [],
+          images: [],
+          imageAlignment: "center"
+        }));
+        setPdfQuestions(parsed);
       } else {
         setError("Failed to extract questions from PDF.");
       }
@@ -562,6 +809,167 @@ const MockExamQuestions = () => {
     setSelectedQIndex(questions.length);
     setIsDirty(true);
     setTimeout(() => setSuccessMsg(""), 3000);
+  };
+
+  // Canvas Annotations Modal Initializer
+  const openCanvasEditor = (type, index, imgUrl) => {
+    setEditorSource({ type, index, imgUrl });
+    setShowEditorModal(true);
+    setEditorMode("draw");
+    setTimeout(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+      };
+      img.src = imgUrl;
+    }, 100);
+  };
+
+  const startCanvasDrawing = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas || editorMode !== "draw") return;
+    const ctx = canvas.getContext("2d");
+    const rect = canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+  };
+
+  const canvasDraw = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+
+    if (editorMode === "draw" && isDrawing) {
+      const ctx = canvas.getContext("2d");
+      ctx.lineTo(x, y);
+      ctx.strokeStyle = brushColor;
+      ctx.lineWidth = brushWidth;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.stroke();
+    } else if (editorMode === "crop" && cropStart) {
+      setCropEnd({ x, y });
+    }
+  };
+
+  const stopCanvasDrawing = () => {
+    if (editorMode === "draw") {
+      setIsDrawing(false);
+    } else if (editorMode === "crop" && cropStart && cropEnd) {
+      // Execute Crop
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      const x = Math.min(cropStart.x, cropEnd.x);
+      const y = Math.min(cropStart.y, cropEnd.y);
+      const w = Math.abs(cropStart.x - cropEnd.x);
+      const h = Math.abs(cropStart.y - cropEnd.y);
+
+      if (w > 10 && h > 10) {
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = w;
+        tempCanvas.height = h;
+        const tempCtx = tempCanvas.getContext("2d");
+        tempCtx.drawImage(canvas, x, y, w, h, 0, 0, w, h);
+
+        canvas.width = w;
+        canvas.height = h;
+        ctx.drawImage(tempCanvas, 0, 0);
+      }
+      setCropStart(null);
+      setCropEnd(null);
+    }
+  };
+
+  const handleCanvasMouseDown = (e) => {
+    if (editorMode === "draw") {
+      startCanvasDrawing(e);
+    } else {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+      const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+      setCropStart({ x, y });
+      setCropEnd({ x, y });
+    }
+  };
+
+  const handleCanvasMouseMove = (e) => {
+    canvasDraw(e);
+  };
+
+  const handleCanvasMouseUp = () => {
+    stopCanvasDrawing();
+  };
+
+  const saveEditedImage = async () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const base64 = canvas.toDataURL("image/webp", 0.85);
+    setSaving(true);
+    setShowEditorModal(false);
+    try {
+      const url = await uploadImageToServer(base64);
+      if (url) {
+        if (editorSource.type === "question") {
+          const updatedImages = [...(activeQuestion.images || [])];
+          updatedImages[editorSource.index] = url;
+          updateActiveQuestion("images", updatedImages);
+        } else if (editorSource.type === "option") {
+          updateActiveOption(editorSource.index, undefined, url);
+        }
+        setSuccessMsg("Edited image saved!");
+        setTimeout(() => setSuccessMsg(""), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Preview formatted text helper
+  const RenderFormattedText = ({ text }) => {
+    if (!text) return null;
+    const parts = text.split(/(```[\s\S]*?```)/g);
+    return (
+      <div className="formatted-text-container">
+        {parts.map((part, index) => {
+          if (part.startsWith("```") && part.endsWith("```")) {
+            const match = part.match(/```(\w*)\n([\s\S]*?)```/);
+            const lang = match ? match[1] : "code";
+            const code = match ? match[2] : part.slice(3, -3);
+            return (
+              <div key={index} className="code-block-wrapper my-2">
+                <div className="code-block-header">{lang}</div>
+                <pre className="m-0"><code>{code}</code></pre>
+              </div>
+            );
+          }
+          let innerHTML = part
+            .replace(/\$\$(.*?)\$\$/g, '<div class="text-center p-2 my-2 border rounded bg-light font-monospace text-dark">$1</div>')
+            .replace(/\$(.*?)\$/g, '<span class="px-1 font-monospace text-danger bg-light border rounded">$1</span>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/<u>(.*?)<\/u>/g, '<u>$1</u>')
+            .replace(/\n/g, '<br />');
+          return (
+            <span key={index} dangerouslySetInnerHTML={{ __html: innerHTML }} />
+          );
+        })}
+      </div>
+    );
   };
 
   if (loading) {
@@ -740,64 +1148,225 @@ const MockExamQuestions = () => {
               <div className="mock-exam-card p-0 border-0 shadow-none">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <h4 style={{ fontWeight: 800, margin: 0 }}>Editing Question {selectedQIndex + 1}</h4>
-                  <span className="badge bg-secondary">{activeQuestion.type}</span>
+                  <div className="d-flex gap-2 align-items-center">
+                    {selectedQIndex > 0 && (
+                      <button className="btn btn-sm btn-light border text-dark" onClick={copyImagesFromPreviousQuestion}>
+                        <i className="bi bi-copy me-1" /> Copy Image from Previous Q
+                      </button>
+                    )}
+                    <span className="badge bg-secondary">{activeQuestion.type}</span>
+                  </div>
                 </div>
 
                 <div className="custom-form-group mb-3">
-                  <label>Question Text</label>
-                  <div className="rich-editor-bar">
-                    <button className="rich-editor-btn" type="button" onClick={() => formatText("bold")}>B</button>
-                    <button className="rich-editor-btn" type="button" onClick={() => formatText("italic")}>I</button>
-                    <button className="rich-editor-btn" type="button" onClick={() => formatText("underline")}>U</button>
-                    <input type="file" id="q-workspace-img-upload" style={{ display: "none" }} accept="image/*" onChange={(e) => handleImageUpload(e.target.files[0])} />
-                    <button className="rich-editor-btn" type="button" onClick={() => document.getElementById("q-workspace-img-upload").click()} title="Attach Image">
+                  <label className="d-flex justify-content-between">
+                    <span>Question Text (Markdown & LaTeX Supported)</span>
+                    <span className="text-muted" style={{ fontSize: "0.8rem" }}>Type $x^2$ for equations, or ```js for code blocks</span>
+                  </label>
+                  
+                  {/* Rich Text Toolbar */}
+                  <div className="rich-editor-bar flex-wrap gap-1">
+                    <button className="rich-editor-btn" type="button" onClick={() => formatText("bold")} title="Bold">B</button>
+                    <button className="rich-editor-btn" type="button" onClick={() => formatText("italic")} title="Italic">I</button>
+                    <button className="rich-editor-btn" type="button" onClick={() => formatText("underline")} title="Underline">U</button>
+                    
+                    <div className="vr mx-1" style={{ width: 1, background: "#d1d5db", height: 28 }} />
+                    
+                    <button className="rich-editor-btn" type="button" onClick={() => setShowMathHelper(!showMathHelper)} title="Insert Math Equation">
+                      <strong style={{ fontSize: "0.8rem" }}>√x</strong>
+                    </button>
+                    <button className="rich-editor-btn" type="button" onClick={() => insertCodeBlock("js")} title="Insert Code Block">
+                      <i className="bi bi-code-slash" />
+                    </button>
+
+                    <div className="vr mx-1" style={{ width: 1, background: "#d1d5db", height: 28 }} />
+
+                    <input type="file" id="q-workspace-img-upload" style={{ display: "none" }} accept="image/jpeg, image/png, image/jpg, image/webp" onChange={(e) => handleImageUpload(e.target.files[0], "question")} />
+                    <button className="rich-editor-btn" type="button" onClick={() => document.getElementById("q-workspace-img-upload").click()} title="Attach Image File">
                       <i className="bi bi-image" />
                     </button>
-                    {activeQuestion.image && (
-                      <button className="rich-editor-btn text-danger" type="button" onClick={() => updateActiveQuestion("image", "")} title="Remove Image">
-                        <i className="bi bi-trash" />
-                      </button>
-                    )}
+
+                    <button className="rich-editor-btn" type="button" onClick={() => {
+                      const pasteBox = prompt("Paste base64 image data (e.g. data:image/png;base64,...):");
+                      if (pasteBox) uploadImageToServer(pasteBox).then(url => {
+                        if (url) updateActiveQuestion("images", [...(activeQuestion.images || []), url]);
+                      });
+                    }} title="Paste Base64 Link">
+                      <i className="bi bi-clipboard" />
+                    </button>
+
+                    <div className="vr mx-1" style={{ width: 1, background: "#d1d5db", height: 28 }} />
+                    
+                    {/* Image Align controls */}
+                    <select className="mock-exam-select py-1 px-2 border" style={{ width: "auto", fontSize: "0.8rem" }} value={activeQuestion.imageAlignment || "center"} onChange={(e) => updateActiveQuestion("imageAlignment", e.target.value)}>
+                      <option value="left">Align Left</option>
+                      <option value="center">Align Center</option>
+                      <option value="right">Align Right</option>
+                    </select>
                   </div>
+
+                  {/* Math Symbols Picker */}
+                  {showMathHelper && (
+                    <div className="math-expression-panel mb-2">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <span style={{ fontSize: "0.82rem", fontWeight: 700 }}>Quick Math Symbol Helper</span>
+                        <button className="btn btn-close btn-sm p-1" onClick={() => setShowMathHelper(false)} style={{ fontSize: "0.7rem" }}></button>
+                      </div>
+                      <div className="math-symbols-grid">
+                        {["²", "³", "√x", "π", "θ", "∫", "α", "β", "λ", "∑", "±", "≠", "≤", "≥", "→", "$x^2$", "$$\\frac{a}{b}$$"].map((sym) => (
+                          <button key={sym} className="math-symbol-btn" type="button" onClick={() => insertMathEquation(sym)}>
+                            {sym.replace(/\$/g, "")}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <textarea
                     id="q-text-editor"
                     className="mock-exam-textarea rich-editor-textarea"
-                    placeholder="Type your question text here..."
+                    placeholder="Type your question here. Paste image directly or drag onto dropzone below..."
                     value={activeQuestion.question}
+                    onPaste={(e) => handleImagePaste(e, "question")}
                     onChange={(e) => updateActiveQuestion("question", e.target.value)}
                   />
                 </div>
 
-                {activeQuestion.image && (
-                  <div className="mb-3 text-center" style={{ background: "#f3f4f6", padding: 10, borderRadius: 8, border: "1px solid #e5e7eb" }}>
-                    <img src={activeQuestion.image} alt="Question Graphic" style={{ maxHeight: 150, maxWidth: "100%", borderRadius: 6 }} />
-                  </div>
-                )}
+                {/* Drag and Drop Zone for Question */}
+                <div 
+                  className="drag-drop-zone mb-3" 
+                  onDragOver={handleDragOver} 
+                  onDragLeave={handleDragLeave} 
+                  onDrop={(e) => handleDrop(e, "question")}
+                >
+                  <i className="bi bi-cloud-upload-fill" />
+                  <p>Drag and drop a question image here, or paste screenshot directly into the text editor.</p>
+                </div>
 
-                {activeQuestion.type === "MCQ" ? (
+                {/* Question Image Gallery */}
+                {activeQuestion.images && activeQuestion.images.length > 0 && (
                   <div className="mb-3">
-                    <label className="mb-2">Option Fields</label>
-                    <div className="row g-2 mb-3">
-                      {activeQuestion.options.map((opt, oIdx) => (
-                        <div key={oIdx} className="col-md-6">
-                          <input 
-                            className="mock-exam-input" 
-                            value={opt} 
-                            placeholder={`Option ${["A", "B", "C", "D"][oIdx]}`} 
-                            onChange={(e) => updateActiveOption(oIdx, e.target.value)} 
-                          />
+                    <label className="d-block mb-1">Attached Images ({activeQuestion.images.length})</label>
+                    <div className="multiple-images-list" style={{ justifyContent: activeQuestion.imageAlignment === "left" ? "flex-start" : activeQuestion.imageAlignment === "right" ? "flex-end" : "center" }}>
+                      {activeQuestion.images.map((imgUrl, imgIdx) => (
+                        <div key={imgIdx} className="question-image-container">
+                          <img src={imgUrl} alt={`Q Graphic ${imgIdx + 1}`} onClick={() => setZoomImage(imgUrl)} />
+                          <div className="image-action-overlay">
+                            <button className="image-action-btn" type="button" onClick={() => openCanvasEditor("question", imgIdx, imgUrl)} title="Annotate / Crop Image">
+                              <i className="bi bi-pencil" />
+                            </button>
+                            <button className="image-action-btn" type="button" onClick={() => handleOCRScan(imgUrl)} title="Extract Text (OCR)">
+                              <i className="bi bi-search" />
+                            </button>
+                            <button className="image-action-btn delete" type="button" onClick={() => {
+                              const nextImgs = activeQuestion.images.filter((_, idx) => idx !== imgIdx);
+                              updateActiveQuestion("images", nextImgs);
+                            }} title="Delete Image">
+                              <i className="bi bi-trash" />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
 
-                    <div className="mock-exam-form-grid" style={{ gap: "16px" }}>
+                {/* Simulated OCR Scanner line indicator */}
+                {ocrLoading && (
+                  <div className="alert alert-info py-2 d-flex align-items-center gap-2">
+                    <span className="spinner-border spinner-border-sm text-info" role="status" />
+                    <span>Scanning image structure... Running OCR engine...</span>
+                  </div>
+                )}
+
+                {/* Question Formatting Live Preview */}
+                <div className="mb-4 p-3 border rounded-3 bg-light">
+                  <span className="badge bg-secondary mb-2" style={{ fontSize: "0.68rem" }}>Live Format Preview</span>
+                  <div className="text-dark" style={{ minHeight: "24px" }}>
+                    <RenderFormattedText text={activeQuestion.question} />
+                  </div>
+                </div>
+
+                {/* Options Layout (MCQ type only) */}
+                {activeQuestion.type === "MCQ" ? (
+                  <div className="mb-3">
+                    <label className="mb-2" style={{ fontWeight: 800 }}>Answer Options Cards (2x2 Grid)</label>
+                    
+                    <div className="options-editor-grid">
+                      {activeQuestion.options.map((opt, oIdx) => {
+                        const label = ["A", "B", "C", "D"][oIdx];
+                        return (
+                          <div key={oIdx} className="option-editor-card">
+                            <div className="option-editor-header">
+                              <span className="option-label-badge">Option {label}</span>
+                              {opt.image && (
+                                <div className="d-flex gap-1">
+                                  <button className="btn btn-sm btn-light border p-1" type="button" onClick={() => openCanvasEditor("option", oIdx, opt.image)} title="Draw on Image">
+                                    <i className="bi bi-pencil text-muted" />
+                                  </button>
+                                  <button className="btn btn-sm btn-danger p-1" type="button" onClick={() => updateActiveOption(oIdx, undefined, "")} title="Remove Option Image">
+                                    <i className="bi bi-trash" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Option image preview if attached */}
+                            {opt.image ? (
+                              <div className="image-thumbnail-preview">
+                                <img src={opt.image} alt={`Option ${label}`} onClick={() => setZoomImage(opt.image)} />
+                              </div>
+                            ) : (
+                              <div 
+                                className="drag-drop-zone py-2 px-1 border-1 text-center" 
+                                style={{ borderRadius: 6, fontSize: "0.78rem" }}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={(e) => handleDrop(e, "option", oIdx)}
+                              >
+                                <p style={{ fontSize: "0.72rem" }} className="mb-0">
+                                  Drop image here, paste, or select below.
+                                </p>
+                                <input 
+                                  type="file" 
+                                  id={`opt-${oIdx}-img`} 
+                                  style={{ display: "none" }} 
+                                  accept="image/*" 
+                                  onChange={(e) => handleImageUpload(e.target.files[0], "option", oIdx)} 
+                                />
+                                <button className="btn btn-sm btn-light border py-0 px-2 mt-1" style={{ fontSize: "0.68rem" }} onClick={() => document.getElementById(`opt-${oIdx}-img`).click()}>
+                                  + Upload
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Text Input */}
+                            <input 
+                              className="mock-exam-input" 
+                              value={opt.text || ""} 
+                              placeholder={`Option ${label} Text (Or leave blank if Image only)`} 
+                              onPaste={(e) => handleImagePaste(e, "option", oIdx)}
+                              onChange={(e) => updateActiveOption(oIdx, e.target.value)} 
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mock-exam-form-grid mt-3" style={{ gap: "16px" }}>
                       <div className="custom-form-group">
                         <label>Correct Answer option</label>
                         <select className="mock-exam-select" value={activeQuestion.correctAnswer} onChange={(e) => updateActiveQuestion("correctAnswer", e.target.value)}>
                           <option value="">Select Correct Option</option>
-                          {activeQuestion.options.filter(Boolean).map((opt, idx) => (
-                            <option key={idx} value={opt}>{opt}</option>
-                          ))}
+                          {activeQuestion.options.map((opt, idx) => {
+                            const label = ["A", "B", "C", "D"][idx];
+                            const textVal = opt.text || `Option ${label}`;
+                            return (
+                              <option key={idx} value={textVal}>
+                                {label}. {opt.text ? opt.text : "[Image Only]"}
+                              </option>
+                            );
+                          })}
                         </select>
                       </div>
                       <div className="custom-form-group">
@@ -913,7 +1482,7 @@ const MockExamQuestions = () => {
                           <strong>Q{idx + 1} ({pq.type}):</strong> {pq.question}
                           {pq.type === "MCQ" && pq.options && (
                             <div className="text-muted ps-3 mt-1" style={{ fontSize: "0.8rem" }}>
-                              Options: {pq.options.filter(Boolean).join(" | ")} | Correct: {pq.correctAnswer}
+                              Options: {pq.options.map(o => o.text).filter(Boolean).join(" | ")} | Correct: {pq.correctAnswer}
                             </div>
                           )}
                         </div>
@@ -956,7 +1525,9 @@ const MockExamQuestions = () => {
                           </div>
                           <strong>{bq.question}</strong>
                           {bq.type === "MCQ" && bq.options && (
-                            <div className="text-muted mt-1" style={{ fontSize: "0.8rem" }}>Options: {bq.options.filter(Boolean).join(" | ")}</div>
+                            <div className="text-muted mt-1" style={{ fontSize: "0.8rem" }}>
+                              Options: {bq.options.map(o => typeof o === "object" ? o.text : o).filter(Boolean).join(" | ")}
+                            </div>
                           )}
                         </div>
                         <div className="d-flex align-items-center gap-2">
@@ -1006,6 +1577,106 @@ const MockExamQuestions = () => {
         </div>
 
       </div>
+
+      {/* 1. Zoom Modal overlay */}
+      {zoomImage && (
+        <div className="zoom-modal-backdrop" onClick={() => setZoomImage(null)}>
+          <div className="zoom-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="zoom-modal-close" onClick={() => setZoomImage(null)}>
+              <i className="bi bi-x-lg" />
+            </button>
+            <img src={zoomImage} alt="Enlarged preview" className="zoom-modal-image" />
+          </div>
+        </div>
+      )}
+
+      {/* 2. Drawing Annotation / Crop Canvas Modal */}
+      {showEditorModal && (
+        <div className="image-editor-modal">
+          <div className="image-editor-container">
+            <div className="d-flex justify-content-between align-items-center border-bottom pb-2">
+              <h5 className="m-0" style={{ fontWeight: 800 }}>Image Annotation & Cropping Studio</h5>
+              <button className="btn-close" onClick={() => setShowEditorModal(false)} />
+            </div>
+
+            <div className="image-editor-toolbar">
+              <div className="image-editor-tools">
+                <button className={`btn btn-sm ${editorMode === "draw" ? "btn-success" : "btn-light border"}`} onClick={() => setEditorMode("draw")}>
+                  <i className="bi bi-brush me-1" /> Brush Draw
+                </button>
+                <button className={`btn btn-sm ${editorMode === "crop" ? "btn-success" : "btn-light border"}`} onClick={() => setEditorMode("crop")}>
+                  <i className="bi bi-crop me-1" /> Crop Drag
+                </button>
+                
+                {editorMode === "draw" && (
+                  <div className="d-flex gap-2 align-items-center ms-3">
+                    <label className="m-0" style={{ fontSize: "0.8rem" }}>Color:</label>
+                    <input type="color" value={brushColor} onChange={(e) => setBrushColor(e.target.value)} style={{ width: 24, height: 24, border: 0, padding: 0 }} />
+                    <label className="m-0 ms-2" style={{ fontSize: "0.8rem" }}>Size:</label>
+                    <input type="range" min="1" max="20" value={brushWidth} onChange={(e) => setBrushWidth(Number(e.target.value))} style={{ width: 60 }} />
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <button className="btn btn-sm btn-light border text-danger me-2" onClick={() => {
+                  const canvas = canvasRef.current;
+                  if (!canvas) return;
+                  const ctx = canvas.getContext("2d");
+                  const img = new Image();
+                  img.crossOrigin = "anonymous";
+                  img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                  };
+                  img.src = editorSource.imgUrl;
+                }}>
+                  Reset Image
+                </button>
+              </div>
+            </div>
+
+            <div className="image-editor-workspace" ref={canvasContainerRef}>
+              <canvas
+                ref={canvasRef}
+                className="image-editor-canvas"
+                onMouseDown={handleCanvasMouseDown}
+                onMouseMove={handleCanvasMouseMove}
+                onMouseUp={handleCanvasMouseUp}
+                onMouseLeave={handleCanvasMouseUp}
+              />
+              {editorMode === "crop" && cropStart && cropEnd && (
+                <div 
+                  style={{
+                    position: "absolute",
+                    border: "2px dashed #ff0000",
+                    background: "rgba(255, 0, 0, 0.15)",
+                    left: Math.min(cropStart.x, cropEnd.x),
+                    top: Math.min(cropStart.y, cropEnd.y),
+                    width: Math.abs(cropStart.x - cropEnd.x),
+                    height: Math.abs(cropStart.y - cropEnd.y),
+                    pointerEvents: "none"
+                  }}
+                />
+              )}
+            </div>
+
+            {editorMode === "crop" && (
+              <p className="text-muted text-center m-0" style={{ fontSize: "0.78rem" }}>
+                * Drag a box around the region you wish to crop. The image will automatically trim to that box.
+              </p>
+            )}
+
+            <div className="d-flex justify-content-end gap-2 border-top pt-3">
+              <button className="btn btn-secondary" onClick={() => setShowEditorModal(false)}>Cancel</button>
+              <button className="btn btn-success" onClick={saveEditedImage} disabled={saving}>
+                {saving ? "Saving..." : "Apply & Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
